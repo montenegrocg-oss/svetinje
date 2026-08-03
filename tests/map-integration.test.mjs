@@ -35,7 +35,8 @@ test("MapTiler configuration uses only the approved public environment variable"
   assert.match(mapCanvas, /import maplibregl from "maplibre-gl"/);
   assert.doesNotMatch(mapCanvas, /import \* as maplibregl from "maplibre-gl"/);
   assert.match(mapCanvas, /import\.meta\.env\.PUBLIC_MAPTILER_KEY/);
-  assert.match(mapCanvas, /maps\/streets-v4\/style\.json\?key=\$\{encodeURIComponent\(MAPTILER_KEY\)\}/);
+  assert.match(mapCanvas, /maps\/019fc7d8-717c-701d-9ca5-a53d9438d3ce\/style\.json\?key=\$\{encodeURIComponent\(MAPTILER_KEY\)\}/);
+  assert.doesNotMatch(mapCanvas, /maps\/streets-v4\/style\.json/);
   assert.doesNotMatch(mapCanvas, /maps\/outdoor-v4\/style\.json/);
   assert.doesNotMatch(mapCanvas, /style\.json\?key=[A-Za-z0-9_-]{8,}/);
 });
