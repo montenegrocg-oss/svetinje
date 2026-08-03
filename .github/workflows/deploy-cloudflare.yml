@@ -24,17 +24,18 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
-        with:
-          version: 11.9.0
-          run_install: false
-
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: pnpm
+
+      - name: Install pnpm
+        run: npm install --global pnpm@11.9.0
+
+      - name: Verify tool versions
+        run: |
+          node --version
+          pnpm --version
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
