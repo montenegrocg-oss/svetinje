@@ -38,6 +38,11 @@ const { places = [] } = Astro.props;
         Приказан је један запис у радном приказу.
       </p>
       {places.map((place) => <PlaceCard place={place} variant="sidebar" />)}
+      <section class="explorer-no-results" data-explorer-no-results hidden role="status" aria-live="polite" aria-atomic="true">
+        <p class="eyebrow">Претрага каталога</p>
+        <h2 data-no-results-title></h2>
+        <p data-no-results-body></p>
+      </section>
     </div>
   )}
 </aside>

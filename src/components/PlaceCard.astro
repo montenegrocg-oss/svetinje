@@ -1,5 +1,6 @@
 ---
 import type { VisiblePlace } from "../lib/content/publication";
+import { categoryForPlaceType } from "../lib/place-filters";
 
 interface Props {
   place: VisiblePlace;
@@ -7,12 +8,14 @@ interface Props {
 }
 
 const { place, variant = "catalogue" } = Astro.props;
+const category = categoryForPlaceType(place.placeType);
 const location = [place.municipality, place.settlement].filter(Boolean).join(" · ");
 ---
 
 <article
   class:list={["editorial-place-card", `editorial-place-card--${variant}`]}
   data-place-card={place.id}
+  data-place-category={category ?? ""}
   data-place-search={place.searchText.toLocaleLowerCase("sr")}
   data-selected="false"
 >

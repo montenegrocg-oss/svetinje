@@ -41,6 +41,9 @@ if (editorialPreview) {
   if (!homepage?.html.includes('"placeType":"monastery"') || homepage.html.includes('"placeType":"church"')) {
     failures.push("homepage marker data must contain one monastery and no church records");
   }
+  if (!homepage?.html.includes('"category":"monasteries"') || !homepage.html.includes('data-place-category="monasteries"')) {
+    failures.push("homepage preview must provide the shared monastery category to its marker and card");
+  }
   if (!homepage?.html.includes("Манастир Подмаине") || !catalogue?.html.includes("Манастир Подмаине")) {
     failures.push("Podmaine preview card is missing from homepage or catalogue");
   }

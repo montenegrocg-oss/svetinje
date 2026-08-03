@@ -1579,6 +1579,27 @@
     display: none;
   }
 
+  .explorer-no-results {
+    margin-top: 0.75rem;
+    padding: 1.1rem;
+    border: 1px solid rgba(162, 119, 45, 0.28);
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #fffdf7, #f5ecd8);
+  }
+
+  .explorer-no-results h2 {
+    margin-top: 0.35rem;
+    color: var(--navy-950);
+    font-size: 1.05rem;
+  }
+
+  .explorer-no-results p:last-child {
+    margin-top: 0.45rem;
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
   .editorial-place-card__topline {
     display: flex;
     align-items: center;

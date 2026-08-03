@@ -106,7 +106,7 @@ test("map controls, search, and filters expose accessible states and honest feed
   assert.match(controls, /data-map-zoom-out/);
   assert.match(controls, /data-map-reset/);
   assert.match(controls, /aria-label="Прикажи поново Црну Гору"/);
-  assert.match(explorer, /querySelectorAll<HTMLElement>\("\[data-filter-group\]"\)/);
+  assert.match(explorer, /querySelectorAll<HTMLButtonElement>\("button\[data-filter\]"\)/);
 });
 
 test("the required Serbian interface labels are present", async () => {

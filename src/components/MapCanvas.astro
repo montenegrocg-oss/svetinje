@@ -1,5 +1,6 @@
 ---
 import type { VisiblePlace } from "../lib/content/publication";
+import { categoryForPlaceType } from "../lib/place-filters";
 
 interface Props {
   places?: VisiblePlace[];
@@ -12,6 +13,7 @@ const markerPlaces = places.flatMap((place) =>
         id: place.id,
         name: place.name,
         placeType: place.placeType,
+        category: categoryForPlaceType(place.placeType),
         latitude: place.latitude as number,
         longitude: place.longitude as number,
       }]
@@ -133,6 +135,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     id: string;
     name: string;
     placeType: string;
+    category: string | null;
     latitude: number;
     longitude: number;
   }
@@ -222,6 +225,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     let visitorMovedMap = false;
     let resizeTimer: number | undefined;
     const markers: MapLibreMarker[] = [];
+    const markerButtons: HTMLButtonElement[] = [];
 
     const selectPlace = (id: string) => {
       root.querySelectorAll<HTMLButtonElement>("[data-map-marker]").forEach((button) => {
@@ -237,6 +241,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       button.type = "button";
       button.className = "holy-place-marker";
       button.dataset.mapMarker = place.id;
+      button.dataset.placeCategory = place.category ?? "";
       button.setAttribute("aria-label", `${place.name} — отвори детаље`);
       button.setAttribute("aria-pressed", "false");
       const markerAsset = resolveMarkerAsset(place.placeType);
@@ -255,6 +260,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
         button.innerHTML = '<span class="holy-place-marker__fallback" aria-hidden="true"><i></i></span>';
       }
       button.addEventListener("click", () => selectPlace(place.id));
+      markerButtons.push(button);
       markers.push(
         new maplibregl.Marker({ element: button, anchor: "bottom" })
           .setLngLat([place.longitude, place.latitude])
@@ -300,6 +306,36 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       map.resize();
     };
 
+    const clearSelectedMarker = (id: string) => {
+      const marker = markerButtons.find((button) => button.dataset.mapMarker === id);
+      if (!marker || !marker.classList.contains("is-selected")) return;
+      marker.classList.remove("is-selected");
+      marker.setAttribute("aria-pressed", "false");
+      window.dispatchEvent(new CustomEvent("svetinje:place-selection-cleared", { detail: { id } }));
+    };
+
+    const setMarkerVisibility = (visibleIds: Set<string>) => {
+      markerButtons.forEach((button) => {
+        const id = button.dataset.mapMarker ?? "";
+        const visible = visibleIds.has(id);
+        button.hidden = !visible;
+        if (!visible) clearSelectedMarker(id);
+      });
+    };
+
+    const handleFilterChange = ((event: CustomEvent<{ filter?: string }>) => {
+      const filter = event.detail?.filter;
+      if (!filter) return;
+      setMarkerVisibility(new Set(markerButtons
+        .filter((button) => filter === "all" || button.dataset.placeCategory === filter)
+        .map((button) => button.dataset.mapMarker ?? "")));
+    }) as EventListener;
+
+    const handlePlaceVisibilityChange = ((event: CustomEvent<{ visibleIds?: string[] }>) => {
+      if (!Array.isArray(event.detail?.visibleIds)) return;
+      setMarkerVisibility(new Set(event.detail.visibleIds));
+    }) as EventListener;
+
     const removeMap = () => {
       if (removed) return;
       removed = true;
@@ -310,6 +346,8 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       zoomInButton?.removeEventListener("click", zoomIn);
       zoomOutButton?.removeEventListener("click", zoomOut);
       resetButton?.removeEventListener("click", resetView);
+      window.removeEventListener("svetinje:filter-change", handleFilterChange);
+      window.removeEventListener("svetinje:place-visibility-change", handlePlaceVisibilityChange);
       markers.forEach((marker) => marker.remove());
       map.remove();
     };
@@ -321,6 +359,8 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     root.addEventListener("pointerdown", markVisitorMovement, { passive: true });
     root.addEventListener("wheel", markVisitorMovement, { passive: true });
     window.addEventListener("resize", resizeMap, { passive: true });
+    window.addEventListener("svetinje:filter-change", handleFilterChange);
+    window.addEventListener("svetinje:place-visibility-change", handlePlaceVisibilityChange);
     document.addEventListener("astro:before-swap", removeMap, { once: true });
 
     map.once("load", () => {

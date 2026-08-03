@@ -132,6 +132,8 @@ test("the map accepts only server-selected marker data and adds no route geometr
 
   assert.match(mapSource, /data-map-place-data/);
   assert.match(mapSource, /placeType: place\.placeType/);
+  assert.match(mapSource, /category: categoryForPlaceType\(place\.placeType\)/);
+  assert.match(mapSource, /button\.dataset\.placeCategory = place\.category \?\? ""/);
   assert.match(mapSource, /new maplibregl\.Marker/);
   assert.match(mapSource, /new maplibregl\.Marker\(\{ element: button, anchor: "bottom" \}\)/);
   assert.match(mapSource, /data-map-marker/);

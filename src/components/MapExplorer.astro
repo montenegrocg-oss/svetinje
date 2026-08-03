@@ -24,17 +24,6 @@ const places = await loadVisiblePlaces();
 </section>
 
 <script>
-  const filterGroups = document.querySelectorAll<HTMLElement>("[data-filter-group]");
-  filterGroups.forEach((group) => {
-    group.addEventListener("click", (event) => {
-      const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-filter]");
-      if (!button) return;
-      group.querySelectorAll<HTMLButtonElement>("button[data-filter]").forEach((candidate) => {
-        candidate.setAttribute("aria-pressed", String(candidate === button));
-      });
-    });
-  });
-
   document.querySelectorAll<HTMLButtonElement>("[data-notice-trigger]").forEach((button) => {
     button.addEventListener("click", () => {
       const targetId = button.dataset.noticeTrigger;
@@ -50,6 +39,43 @@ const places = await loadVisiblePlaces();
   const searchInput = searchForm?.querySelector<HTMLInputElement>("input[type='search']");
   const placeCards = [...document.querySelectorAll<HTMLElement>("[data-place-card]")];
   const resultStatus = document.getElementById("catalogue-status");
+  const noResults = document.querySelector<HTMLElement>("[data-explorer-no-results]");
+  const noResultsTitle = noResults?.querySelector<HTMLElement>("[data-no-results-title]");
+  const noResultsBody = noResults?.querySelector<HTMLElement>("[data-no-results-body]");
+  const filterButtons = [...document.querySelectorAll<HTMLButtonElement>("button[data-filter]")];
+  const filterIds = new Set(["all", "monasteries", "churches", "holy-places", "routes"]);
+  let activeFilter = "all";
+
+  const singularLabels: Record<string, string> = {
+    monasteries: "манастир",
+    churches: "храм",
+    "holy-places": "свето мјесто",
+    routes: "поклоничка рута",
+    all: "запис",
+  };
+
+  const noResultCopy: Record<string, { title: string; body: string }> = {
+    monasteries: {
+      title: "Нема манастира у овом приказу",
+      body: "Тренутно нема манастира који одговарају изабраном филтеру и претрази.",
+    },
+    churches: {
+      title: "Нема храмова у овом приказу",
+      body: "Тренутно нема храмова доступних у радном приказу.",
+    },
+    "holy-places": {
+      title: "Нема светих мјеста у овом приказу",
+      body: "Тренутно нема светих мјеста доступних у радном приказу.",
+    },
+    routes: {
+      title: "Поклоничке руте су у припреми",
+      body: "Руте ће бити приказане након провјере свих укључених мјеста и практичних података.",
+    },
+    all: {
+      title: "Нема резултата",
+      body: "Покушајте са другим називом или изаберите другу категорију.",
+    },
+  };
 
   const filterPreviewCards = () => {
     const query = searchInput?.value.trim().toLocaleLowerCase("sr") ?? "";
@@ -68,20 +94,86 @@ const places = await loadVisiblePlaces();
     }
   };
 
-  searchInput?.addEventListener("input", filterPreviewCards);
+  const applyExplorerState = () => {
+    if (placeCards.length === 0) return;
+    const query = searchInput?.value.trim().toLocaleLowerCase("sr") ?? "";
+    const visibleIds: string[] = [];
+    let visible = 0;
+
+    placeCards.forEach((card) => {
+      const matchesCategory = activeFilter === "all" || card.dataset.placeCategory === activeFilter;
+      const matchesSearch = !query || (card.dataset.placeSearch ?? "").includes(query);
+      const matches = matchesCategory && matchesSearch;
+      card.hidden = !matches;
+      card.dataset.selected = matches ? card.dataset.selected ?? "false" : "false";
+      if (matches) {
+        visible += 1;
+        visibleIds.push(card.dataset.placeCard ?? "");
+      }
+    });
+
+    filterButtons.forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.filter === activeFilter));
+    });
+
+    if (noResults) noResults.hidden = visible !== 0;
+    if (visible === 0 && noResultsTitle && noResultsBody) {
+      const fallbackCopy = noResultCopy.all;
+      if (!fallbackCopy) return;
+      const copy = (query ? noResultCopy.all : noResultCopy[activeFilter]) ?? fallbackCopy;
+      noResultsTitle.textContent = copy.title;
+      noResultsBody.textContent = copy.body;
+    }
+
+    if (resultStatus) {
+      resultStatus.textContent = visible === 1
+        ? "Приказан је један " + singularLabels[activeFilter] + "."
+        : visible === 0
+          ? "Нема записа за изабрани филтер."
+          : "Приказана су " + visible + " записа.";
+    }
+
+    window.dispatchEvent(new CustomEvent("svetinje:filter-change", { detail: { filter: activeFilter } }));
+    window.dispatchEvent(new CustomEvent("svetinje:place-visibility-change", { detail: { visibleIds } }));
+  };
+
+  void filterPreviewCards;
+
+  filterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const filter = button.dataset.filter;
+      if (!filter || !filterIds.has(filter)) return;
+      activeFilter = filter;
+      applyExplorerState();
+    });
+  });
+
+  searchInput?.addEventListener("input", applyExplorerState);
   searchForm?.addEventListener("submit", (event) => {
     event.preventDefault();
-    filterPreviewCards();
+    applyExplorerState();
     resultStatus?.scrollIntoView({ block: "nearest" });
   });
 
-  window.addEventListener("svetinje:place-select", ((event: CustomEvent<{ id: string }>) => {
+  const handlePlaceSelection = ((event: CustomEvent<{ id: string }>) => {
     placeCards.forEach((card) => {
       const selected = card.dataset.placeCard === event.detail.id;
       card.dataset.selected = String(selected);
-      if (selected) card.hidden = false;
     });
-    if (searchInput) searchInput.value = "";
     if (resultStatus) resultStatus.textContent = "Изабрани запис је истакнут на карти.";
-  }) as EventListener);
+  }) as EventListener;
+
+  window.addEventListener("svetinje:place-select", handlePlaceSelection);
+  const handleClearedSelection = ((event: CustomEvent<{ id: string }>) => {
+    const card = placeCards.find((candidate) => candidate.dataset.placeCard === event.detail.id);
+    if (card) card.dataset.selected = "false";
+  }) as EventListener;
+
+  window.addEventListener("svetinje:place-selection-cleared", handleClearedSelection);
+  applyExplorerState();
+
+  document.addEventListener("astro:before-swap", () => {
+    window.removeEventListener("svetinje:place-select", handlePlaceSelection);
+    window.removeEventListener("svetinje:place-selection-cleared", handleClearedSelection);
+  }, { once: true });
 </script>
