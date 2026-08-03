@@ -80,14 +80,11 @@ test("the renderer is exposed immediately after successful map construction", as
   assert.doesNotMatch(mapCanvas, /triggerRepaint|requestAnimationFrame|map\.on\("render"|map\.once\("idle"|11_000/);
 });
 
-test("non-fatal MapLibre resource errors do not destroy the map or expose request details", async () => {
+test("MapLibre errors remain available through the library's built-in reporting", async () => {
   const mapCanvas = await source("src/components/MapCanvas.astro");
 
-  assert.match(mapCanvas, /map\.on\("error", handleMapError\)/);
-  assert.match(mapCanvas, /root\.dataset\.mapError = "resource-error"/);
-  assert.doesNotMatch(mapCanvas, /console\.(?:debug|error|info|log|warn)/);
-  assert.doesNotMatch(mapCanvas, /event\.error|error\.url|request\.url/);
-  assert.doesNotMatch(mapCanvas, /const handleMapError = \([^)]*\) => \{[\s\S]*?(?:showFallback|removeMap)\(/);
+  assert.doesNotMatch(mapCanvas, /handleMapError|dataset\.mapError/);
+  assert.doesNotMatch(mapCanvas, /map\.(?:on|once|off)\("error"/);
   assert.doesNotMatch(mapCanvas, /__SVETINJE_MAP_DEBUG__|sourcedata|styledata|getContext\s*\(/);
 });
 

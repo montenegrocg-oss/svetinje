@@ -218,10 +218,6 @@
       map.resize();
     };
 
-    const handleMapError = () => {
-      root.dataset.mapError = "resource-error";
-    };
-
     const removeMap = () => {
       if (removed) return;
       removed = true;
@@ -232,7 +228,6 @@
       zoomInButton?.removeEventListener("click", zoomIn);
       zoomOutButton?.removeEventListener("click", zoomOut);
       resetButton?.removeEventListener("click", resetView);
-      map.off("error", handleMapError);
       map.remove();
     };
 
@@ -248,7 +243,6 @@
     map.once("load", () => {
       if (!removed) fitMontenegro(false);
     });
-    map.on("error", handleMapError);
   };
 
   initialiseHomepageMap();
