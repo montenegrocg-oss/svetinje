@@ -1,0 +1,9 @@
+{
+  "name": "svetinje",
+  "compatibility_date": "2026-08-03",
+  "workers_dev": true,
+  "preview_urls": true,
+  "assets": {
+    "directory": "./dist"
+  }
+}
