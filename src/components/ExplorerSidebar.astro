@@ -1,0 +1,26 @@
+---
+import EmptyCatalogueState from "./EmptyCatalogueState.astro";
+import FilterChips from "./FilterChips.astro";
+import InterfaceIcon from "./InterfaceIcon.astro";
+---
+
+<aside class="explorer-sidebar" id="pretraga" aria-label="Претрага и филтри каталога" data-testid="explorer-sidebar">
+  <form class="explorer-search" data-catalogue-search>
+    <label class="sr-only" for="holy-place-search">Претражите светиње</label>
+    <span class="explorer-search__icon"><InterfaceIcon name="search" size={20} /></span>
+    <input
+      id="holy-place-search"
+      name="q"
+      type="search"
+      placeholder="Претражите светиње…"
+      autocomplete="off"
+      aria-describedby="catalogue-status"
+    />
+    <button class="icon-button" type="button" disabled aria-label="Подешавања филтера — ускоро" title="Подешавања филтера су у припреми">
+      <InterfaceIcon name="filter" size={20} />
+    </button>
+  </form>
+
+  <FilterChips group="catalogue" />
+  <EmptyCatalogueState statusId="catalogue-status" />
+</aside>

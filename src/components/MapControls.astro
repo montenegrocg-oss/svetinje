@@ -1,0 +1,38 @@
+---
+import InterfaceIcon from "./InterfaceIcon.astro";
+---
+
+<div class="map-actions" aria-label="Брзи избор на карти" data-filter-group="map">
+  <button type="button" class="map-action" data-filter="monasteries" aria-pressed="false"><InterfaceIcon name="monastery" size={18} /><span>Манастири</span></button>
+  <button type="button" class="map-action" data-filter="churches" aria-pressed="false"><InterfaceIcon name="church" size={18} /><span>Цркве</span></button>
+  <button type="button" class="map-action" data-filter="holy-places" aria-pressed="false"><InterfaceIcon name="place" size={18} /><span>Света мјеста</span></button>
+  <button type="button" class="map-action map-action--wide" data-filter="routes" aria-pressed="false"><InterfaceIcon name="route" size={18} /><span>Поклоничке руте</span></button>
+  <button type="button" class="map-action map-action--primary" data-notice-trigger="route-notice" aria-controls="route-notice"><InterfaceIcon name="route" size={18} /><span>Изгради руту</span></button>
+</div>
+
+<div class="map-tool-stack" aria-label="Контроле карте">
+  <details class="map-popover map-layers">
+    <summary><InterfaceIcon name="layers" size={21} /><span>Слојеви</span></summary>
+    <div class="map-popover__panel">
+      <strong>Слојеви карте</strong>
+      <p>Избор картографских слојева биће доступан након повезивања одобреног извора карте.</p>
+    </div>
+  </details>
+  <div class="map-zoom" aria-label="Зумирање карте">
+    <button type="button" disabled aria-label="Увећај карту — ускоро"><InterfaceIcon name="plus" size={21} /></button>
+    <button type="button" disabled aria-label="Умањи карту — ускоро"><InterfaceIcon name="minus" size={21} /></button>
+  </div>
+  <button class="map-target" type="button" disabled aria-label="Центрирај карту — ускоро" title="Центрирање карте је у припреми"><InterfaceIcon name="target" size={21} /></button>
+</div>
+
+<details class="map-popover map-help">
+  <summary><InterfaceIcon name="info" size={18} /><span>Како користити карту?</span></summary>
+  <div class="map-popover__panel">
+    <strong>Карта је у припреми</strong>
+    <p>Тренутно можете користити претрагу и филтере интерфејса. Провјерене локације и стварне функције карте биће додате након уредничког одобрења.</p>
+  </div>
+</details>
+
+<p class="map-notice" id="route-notice" role="status" tabindex="-1" hidden>
+  Функција планирања руте је у припреми.
+</p>

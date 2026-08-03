@@ -1,4 +1,6 @@
 ---
+import BrandMark from "./BrandMark.astro";
+import InterfaceIcon from "./InterfaceIcon.astro";
 import LanguageSwitcher from "./LanguageSwitcher.astro";
 
 interface Props {
@@ -8,22 +10,21 @@ interface Props {
 const { currentPath } = Astro.props;
 const navigation = [
   { href: "/", label: "Почетна", exact: true },
-  { href: "/svetinje/", label: "Светиње" },
+  { href: "/#mapa", label: "Карта" },
+  { href: "/svetinje/", label: "Манастири" },
+  { href: "/svetinje/", label: "Цркве" },
+  { href: "/#rute", label: "Руте" },
   { href: "/o-projektu/", label: "О пројекту" },
-  { href: "/izvori/", label: "Извори" },
 ];
 
 const isActive = (href: string, exact = false) =>
-  exact ? currentPath === href : currentPath.startsWith(href);
+  exact ? currentPath === href : !href.includes("#") && currentPath.startsWith(href);
 ---
 
 <header class="site-header">
   <div class="shell header-inner">
     <a class="brand" href="/" aria-label="Светиње.me — почетна страница">
-      <span class="brand-mark" aria-hidden="true">
-        <i></i>
-        <b></b>
-      </span>
+      <span class="brand-mark"><BrandMark /></span>
       <span class="brand-lockup">
         <span class="brand-name">Светиње</span>
         <span class="brand-domain">svetinje.me</span>
@@ -34,10 +35,7 @@ const isActive = (href: string, exact = false) =>
       <ul>
         {navigation.map((item) => (
           <li>
-            <a
-              href={item.href}
-              aria-current={isActive(item.href, item.exact) ? "page" : undefined}
-            >
+            <a href={item.href} aria-current={isActive(item.href, item.exact) ? "page" : undefined}>
               {item.label}
             </a>
           </li>
@@ -45,12 +43,20 @@ const isActive = (href: string, exact = false) =>
       </ul>
     </nav>
 
-    <div class="desktop-languages">
-      <LanguageSwitcher currentLocale="sr" />
+    <div class="header-tools desktop-tools">
+      <button class="favourites-control" type="button" disabled aria-label="Омиљене светиње — 0, функција је у припреми">
+        <InterfaceIcon name="heart" size={21} />
+        <span aria-hidden="true">0</span>
+      </button>
+      <details class="header-language">
+        <summary>Српски <InterfaceIcon name="chevron" size={15} /></summary>
+        <div class="header-language__panel"><LanguageSwitcher currentLocale="sr" /></div>
+      </details>
+      <a class="header-search" href="/#pretraga" aria-label="Претрага светиња"><InterfaceIcon name="search" size={22} /></a>
     </div>
 
     <details class="mobile-navigation">
-      <summary>
+      <summary aria-label="Отвори главни мени">
         <span>Мени</span>
         <i aria-hidden="true"></i>
       </summary>
@@ -59,16 +65,17 @@ const isActive = (href: string, exact = false) =>
           <ul>
             {navigation.map((item) => (
               <li>
-                <a
-                  href={item.href}
-                  aria-current={isActive(item.href, item.exact) ? "page" : undefined}
-                >
+                <a href={item.href} aria-current={isActive(item.href, item.exact) ? "page" : undefined}>
                   {item.label}
                 </a>
               </li>
             ))}
           </ul>
         </nav>
+        <div class="mobile-tool-row">
+          <span><InterfaceIcon name="heart" size={19} /> Омиљено 0</span>
+          <a href="/#pretraga"><InterfaceIcon name="search" size={19} /> Претрага</a>
+        </div>
         <LanguageSwitcher currentLocale="sr" />
       </div>
     </details>

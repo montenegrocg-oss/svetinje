@@ -1,0 +1,34 @@
+---
+interface Props {
+  statusId: string;
+}
+
+const { statusId } = Astro.props;
+---
+
+<div class="catalogue-empty" id={statusId} role="status" aria-live="polite">
+  <div class="catalogue-empty__message">
+    <span class="empty-seal" aria-hidden="true">С</span>
+    <div>
+      <h2>Каталог светиња је у припреми.</h2>
+      <p>Провјерени записи ће се појавити овдје након завршене стручне и језичке провјере.</p>
+    </div>
+  </div>
+
+  <div class="catalogue-skeletons" aria-hidden="true">
+    {Array.from({ length: 3 }).map((_, index) => (
+      <div class="catalogue-skeleton">
+        <span class="catalogue-skeleton__media"></span>
+        <span class="catalogue-skeleton__copy">
+          <i></i><i></i><i></i>
+        </span>
+        <small>0{index + 1}</small>
+      </div>
+    ))}
+  </div>
+
+  <a class="panel-link" href="/izvori/">
+    Како садржај постаје јаван
+    <span aria-hidden="true">→</span>
+  </a>
+</div>

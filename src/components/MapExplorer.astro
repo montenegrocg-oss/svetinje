@@ -1,0 +1,50 @@
+---
+import ExplorerSidebar from "./ExplorerSidebar.astro";
+import MapCanvas from "./MapCanvas.astro";
+import MapControls from "./MapControls.astro";
+---
+
+<section class="map-explorer" id="mapa" aria-labelledby="map-explorer-title" data-testid="map-explorer">
+  <header class="map-explorer__heading">
+    <p class="map-eyebrow">Дигитални водич</p>
+    <h1 id="map-explorer-title">Православна Црна Гора</h1>
+    <span class="title-rule" aria-hidden="true"></span>
+    <p>Откријте манастире, храмове и света мјеста широм Црне Горе.</p>
+  </header>
+
+  <div class="map-stage">
+    <MapCanvas />
+    <MapControls />
+  </div>
+
+  <ExplorerSidebar />
+</section>
+
+<script>
+  const filterGroups = document.querySelectorAll<HTMLElement>("[data-filter-group]");
+  filterGroups.forEach((group) => {
+    group.addEventListener("click", (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-filter]");
+      if (!button) return;
+      group.querySelectorAll<HTMLButtonElement>("button[data-filter]").forEach((candidate) => {
+        candidate.setAttribute("aria-pressed", String(candidate === button));
+      });
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>("[data-notice-trigger]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const targetId = button.dataset.noticeTrigger;
+      if (!targetId) return;
+      const notice = document.getElementById(targetId);
+      if (!notice) return;
+      notice.hidden = false;
+      notice.focus({ preventScroll: true });
+    });
+  });
+
+  document.querySelector<HTMLFormElement>("[data-catalogue-search]")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    document.getElementById("catalogue-status")?.scrollIntoView({ block: "nearest" });
+  });
+</script>

@@ -50,16 +50,25 @@ test("research status excludes Podmaine independently of the repository publicat
   }
 });
 
-test("the homepage visual foundation contains no research or media placeholder copy", async () => {
-  const homepage = await import("node:fs/promises").then(({ readFile }) =>
-    readFile(path.join(PROJECT_ROOT, "src", "pages", "index.astro"), "utf8"),
-  );
+test("the map-first homepage contains no research dossier or fictional sacred-place examples", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const files = [
+    "src/pages/index.astro",
+    "src/components/MapExplorer.astro",
+    "src/components/MapCanvas.astro",
+    "src/components/ExplorerSidebar.astro",
+    "src/components/EmptyCatalogueState.astro",
+    "src/components/HomepagePreviews.astro",
+  ];
+  const homepageSource = (await Promise.all(
+    files.map((file) => readFile(path.join(PROJECT_ROOT, file), "utf8")),
+  )).join("\n");
 
-  assert.match(homepage, /Откријте духовно насљеђе Црне Горе/);
-  assert.match(homepage, /class="catalogue-intro section"/);
-  assert.match(homepage, /class="routes-preview section"/);
-  assert.match(homepage, /class="trust-strip"/);
-  assert.match(homepage, /class="regions section"/);
-  assert.match(homepage, /class="development-note"/);
-  assert.doesNotMatch(homepage, /Подмаине|podmaine|Простор за фотографију|hero-arch/iu);
+  assert.match(homepageSource, /Православна Црна Гора/);
+  assert.match(homepageSource, /Каталог светиња је у припреми/);
+  assert.match(homepageSource, /Поклоничке руте су у припреми/);
+  assert.doesNotMatch(
+    homepageSource,
+    /Подмаине|podmaine|Острог|Морача|Савина|Пива|Цетињски манастир|Манастир [А-Ш]/iu,
+  );
 });

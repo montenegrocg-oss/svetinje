@@ -1,0 +1,70 @@
+<div
+  class="map-canvas"
+  role="img"
+  aria-label="Стилизована картографска површина Црне Горе, припремљена за будућу MapLibre карту без ознака светиња."
+  data-testid="map-canvas"
+>
+  <svg class="map-art" viewBox="0 0 1200 650" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <defs>
+      <filter id="map-grain" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="12" result="noise" />
+        <feColorMatrix in="noise" type="saturate" values="0" result="mono" />
+        <feComponentTransfer in="mono"><feFuncA type="table" tableValues="0 0.055" /></feComponentTransfer>
+      </filter>
+      <clipPath id="montenegro-clip">
+        <path d="M474 68 550 55 610 82 680 72 741 112 782 157 778 212 818 257 791 310 747 344 731 397 689 423 664 484 609 511 566 493 528 535 479 515 453 467 404 449 376 406 336 376 359 320 328 275 355 226 375 169 423 143Z" />
+      </clipPath>
+      <linearGradient id="sea-fill" x1="0" y1="0" x2="1" y2="1">
+        <stop stop-color="#c9dbe0" />
+        <stop offset="1" stop-color="#91bac7" />
+      </linearGradient>
+      <linearGradient id="terrain-fill" x1="0" y1="0" x2="1" y2="1">
+        <stop stop-color="#dbe2c8" />
+        <stop offset="0.55" stop-color="#c8d6b7" />
+        <stop offset="1" stop-color="#e8dfc5" />
+      </linearGradient>
+    </defs>
+
+    <rect width="1200" height="650" fill="#ece7da" />
+    <path d="M0 448C146 413 252 421 358 372c56-26 91-43 129-41l90 319H0Z" fill="url(#sea-fill)" />
+    <path d="M0 472c158-44 273-22 393-94M0 530c181-50 313-23 430-115M25 588c185-46 315-28 452-124" fill="none" stroke="#fff" stroke-opacity=".24" />
+
+    <g opacity=".45" fill="none" stroke="#baa98b" stroke-width="1">
+      <path d="M112 100c128 52 184 7 289 47s188 28 285-11 212-8 354 78" />
+      <path d="M86 152c149 43 214 16 321 54s195 18 302-13 230 3 373 72" />
+      <path d="M212 15c22 104-41 185 15 267s66 165 29 298" />
+      <path d="M948 22c-41 102 24 187-34 270s-68 160-29 298" />
+    </g>
+
+    <path
+      d="M474 68 550 55 610 82 680 72 741 112 782 157 778 212 818 257 791 310 747 344 731 397 689 423 664 484 609 511 566 493 528 535 479 515 453 467 404 449 376 406 336 376 359 320 328 275 355 226 375 169 423 143Z"
+      fill="url(#terrain-fill)"
+      stroke="#6c7764"
+      stroke-width="3"
+    />
+
+    <g clip-path="url(#montenegro-clip)" fill="none" stroke-linecap="round">
+      <path d="M302 178c102-69 196-52 279-12s166 45 270-22M299 226c105-65 207-42 285-5s168 38 273-31M305 284c103-54 192-35 280 6s170 33 262-30M316 351c102-54 181-28 268 8s164 29 242-21M348 416c94-44 160-20 234 15s139 25 205-10M389 474c69-28 123-11 185 16s105 20 159 1" stroke="#97aa86" stroke-width="10" opacity=".38" />
+      <path d="M423 70c23 91 77 141 73 224s34 154 104 225M548 42c-18 96 31 151 29 235s31 159 94 232M690 62c-38 89-6 145-7 215s20 117 73 177" stroke="#fff" stroke-width="2" opacity=".45" />
+      <path d="M365 380c89-52 175-54 265-20s129 18 170-11M396 215c87-24 165-8 227 25s126 41 178 19" stroke="#d8b574" stroke-width="2" stroke-dasharray="4 7" opacity=".8" />
+    </g>
+
+    <g fill="#33443f" font-family="Georgia, serif" letter-spacing="7">
+      <text x="509" y="287" font-size="30">ЦРНА</text>
+      <text x="516" y="326" font-size="30">ГОРА</text>
+    </g>
+    <g fill="#66716b" font-family="system-ui, sans-serif" font-size="13" font-weight="650" letter-spacing="2">
+      <text x="81" y="470" transform="rotate(-17 81 470)">ЈАДРАНСКО МОРЕ</text>
+      <text x="781" y="84">СРБИЈА</text>
+      <text x="835" y="430">АЛБАНИЈА</text>
+      <text x="292" y="87">БОСНА И ХЕРЦЕГОВИНА</text>
+      <text x="267" y="359">ХРВАТСКА</text>
+    </g>
+    <rect width="1200" height="650" filter="url(#map-grain)" opacity=".65" />
+  </svg>
+
+  <div class="map-readiness" aria-hidden="true">
+    <span></span>
+    <p>MapLibre<br /><small>спремна основа</small></p>
+  </div>
+</div>
