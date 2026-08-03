@@ -58,6 +58,38 @@ test("custom controls use a responsive Montenegro view without geolocation", asy
   assert.doesNotMatch(mapCanvas, /navigator\.geolocation|GeolocateControl|flyTo\s*\(/);
 });
 
+test("map readiness can be reached through load, render, idle, or the bounded timeout", async () => {
+  const mapCanvas = await source("src/components/MapCanvas.astro");
+
+  assert.match(mapCanvas, /const revealMap = \(\) => \{/);
+  assert.match(mapCanvas, /if \(ready \|\| removed\) return;/);
+  assert.match(mapCanvas, /map\.once\("load", revealMap\)/);
+  assert.match(mapCanvas, /map\.on\("render", handleRender\)/);
+  assert.match(mapCanvas, /map\.once\("idle", revealMap\)/);
+  assert.match(mapCanvas, /map\.isStyleLoaded\(\) \|\| map\.loaded\(\)/);
+  assert.match(mapCanvas, /mapContainer\.contains\(canvas\)/);
+  assert.match(mapCanvas, /map\.off\("render", handleRender\)/);
+  assert.match(mapCanvas, /readinessTimer = window\.setTimeout\([\s\S]*?11_000\);/);
+  assert.match(mapCanvas, /showFallback\(\);\s*removeMap\(\);/);
+  assert.doesNotMatch(mapCanvas, /map\.once\("load", \(\) =>/);
+});
+
+test("non-fatal MapLibre resource errors do not destroy a usable map or expose request URLs", async () => {
+  const mapCanvas = await source("src/components/MapCanvas.astro");
+
+  assert.match(mapCanvas, /map\.on\("error", handleMapError\)/);
+  assert.doesNotMatch(mapCanvas, /console\.(?:debug|error|info|log|warn)/);
+  assert.doesNotMatch(mapCanvas, /event\.error|error\.url|request\.url/);
+  assert.doesNotMatch(mapCanvas, /map\.on\("error", \(\) => \{[\s\S]*?showFallback/);
+});
+
+test("ready-state CSS reveals the renderer and uncovers it from the fallback", async () => {
+  const styles = await source("src/styles/global.css");
+
+  assert.match(styles, /\.map-canvas\[data-map-state="ready"\] \.map-fallback\s*\{[\s\S]*?visibility: hidden;[\s\S]*?opacity: 0;/);
+  assert.match(styles, /\.map-canvas\[data-map-state="ready"\] \.map-renderer\s*\{[\s\S]*?opacity: 1;[\s\S]*?pointer-events: auto;/);
+});
+
 test("the basemap integration adds no sacred-place markers or route geometry", async () => {
   const files = await Promise.all([
     source("src/components/MapCanvas.astro"),

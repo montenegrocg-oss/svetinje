@@ -159,10 +159,10 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
     }
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const { Map } = await import("maplibre-gl");
     let map: MapLibreMap;
 
     try {
+      const { Map } = await import("maplibre-gl");
       map = new Map({
         container: mapContainer,
         style: MAPTILER_OUTDOOR_STYLE,
@@ -187,10 +187,10 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
 
     map.touchZoomRotate.disableRotation();
     let ready = false;
-    let failed = false;
     let removed = false;
     let visitorMovedMap = false;
     let resizeTimer: number | undefined;
+    let readinessTimer: number | undefined;
 
     const animationDuration = () => (reducedMotion.matches ? 0 : 420);
     const fitMontenegro = (animate: boolean) => {
@@ -219,16 +219,62 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
       }, 120);
     };
 
+    const hasUsableStyle = () => {
+      try {
+        return Boolean(map.isStyleLoaded() || map.loaded());
+      } catch {
+        return false;
+      }
+    };
+
+    const hasMapCanvas = () => {
+      try {
+        const canvas = map.getCanvas();
+        return canvas instanceof HTMLCanvasElement && mapContainer.contains(canvas);
+      } catch {
+        return false;
+      }
+    };
+
+    const revealMap = () => {
+      if (ready || removed) return;
+
+      ready = true;
+      window.clearTimeout(readinessTimer);
+      map.off("render", handleRender);
+      root.dataset.mapState = "ready";
+      renderer.setAttribute("aria-hidden", "false");
+      fallback?.setAttribute("aria-hidden", "true");
+      if (fallbackNotice) fallbackNotice.hidden = true;
+      if (attribution) attribution.hidden = false;
+      setControlsEnabled(true);
+      map.resize();
+      fitMontenegro(false);
+    };
+
+    function handleRender() {
+      if (ready || removed) return;
+      if (hasMapCanvas() && hasUsableStyle()) revealMap();
+    }
+
+    const handleMapError = () => {
+      // Individual tile, glyph, sprite, and terrain errors are non-fatal. The
+      // bounded readiness check decides whether the base map is usable.
+    };
+
     const removeMap = () => {
       if (removed) return;
       removed = true;
       window.clearTimeout(resizeTimer);
+      window.clearTimeout(readinessTimer);
       window.removeEventListener("resize", resizeMap);
       root.removeEventListener("pointerdown", markVisitorMovement);
       root.removeEventListener("wheel", markVisitorMovement);
       zoomInButton?.removeEventListener("click", zoomIn);
       zoomOutButton?.removeEventListener("click", zoomOut);
       resetButton?.removeEventListener("click", resetView);
+      map.off("render", handleRender);
+      map.off("error", handleMapError);
       map.remove();
     };
 
@@ -240,24 +286,21 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
     window.addEventListener("resize", resizeMap, { passive: true });
     document.addEventListener("astro:before-swap", removeMap, { once: true });
 
-    map.once("load", () => {
-      if (failed) return;
-      ready = true;
-      root.dataset.mapState = "ready";
-      renderer.setAttribute("aria-hidden", "false");
-      fallback?.setAttribute("aria-hidden", "true");
-      if (fallbackNotice) fallbackNotice.hidden = true;
-      if (attribution) attribution.hidden = false;
-      setControlsEnabled(true);
-      fitMontenegro(false);
-    });
+    map.once("load", revealMap);
+    map.on("render", handleRender);
+    map.once("idle", revealMap);
+    map.on("error", handleMapError);
 
-    map.on("error", () => {
-      if (ready || failed) return;
-      failed = true;
+    readinessTimer = window.setTimeout(() => {
+      if (ready || removed) return;
+      if (hasMapCanvas() && hasUsableStyle()) {
+        revealMap();
+        return;
+      }
+
       showFallback();
-      window.setTimeout(removeMap, 0);
-    });
+      removeMap();
+    }, 11_000);
   };
 
   void initialiseHomepageMap();
