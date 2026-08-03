@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://svetinje.me/schemas/common.schema.json",
+  "title": "Svetinje.me shared schema definitions",
+  "$defs": {
+    "entityId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "minLength": 2,
+      "maxLength": 100
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "minLength": 2,
+      "maxLength": 80
+    },
+    "locale": {
+      "enum": ["sr", "ru", "en"]
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "nonEmptyText": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "editorialStatus": {
+      "enum": [
+        "research",
+        "draft",
+        "fact-review",
+        "ecclesiastical-review",
+        "language-review",
+        "approved",
+        "published",
+        "needs-reverification",
+        "disputed",
+        "archived",
+        "rejected"
+      ]
+    },
+    "verificationStatus": {
+      "enum": ["verified", "requires-verification", "disputed", "unknown", "not-applicable"]
+    },
+    "translationStatus": {
+      "enum": ["source", "missing", "draft", "in-review", "approved", "published", "outdated", "archived"]
+    },
+    "freshnessStatus": {
+      "enum": ["current", "expiring", "stale", "withdrawn", "unknown"]
+    },
+    "publicationSafety": {
+      "enum": ["public", "generalize", "withhold", "review-required"]
+    },
+    "reviewRole": {
+      "enum": [
+        "project-owner",
+        "publishing",
+        "factual",
+        "ecclesiastical",
+        "sr-language",
+        "ru-language",
+        "en-language",
+        "media-rights",
+        "geographic-safety"
+      ]
+    },
+    "audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["created_at", "created_by", "updated_at", "updated_by"],
+      "properties": {
+        "created_at": { "$ref": "#/$defs/timestamp" },
+        "created_by": { "$ref": "#/$defs/entityId" },
+        "updated_at": { "$ref": "#/$defs/timestamp" },
+        "updated_by": { "$ref": "#/$defs/entityId" }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "reviewer_id", "outcome", "reviewed_at", "reviewed_revision", "scope"],
+      "properties": {
+        "role": { "$ref": "#/$defs/reviewRole" },
+        "reviewer_id": { "$ref": "#/$defs/entityId" },
+        "outcome": { "enum": ["approved", "changes-requested", "rejected", "withdrawn"] },
+        "reviewed_at": { "$ref": "#/$defs/timestamp" },
+        "reviewed_revision": { "$ref": "#/$defs/gitSha" },
+        "scope": { "$ref": "#/$defs/nonEmptyText" },
+        "notes": { "$ref": "#/$defs/nonEmptyText" }
+      }
+    },
+    "approvals": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/approval" }
+    },
+    "sourceIdList": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/entityId" },
+      "uniqueItems": true
+    },
+    "entityIdList": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/entityId" },
+      "uniqueItems": true
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "$ref": "#/$defs/verificationStatus" },
+        "source_ids": { "$ref": "#/$defs/sourceIdList" },
+        "reviewed_by": { "$ref": "#/$defs/entityIdList" },
+        "reviewed_at": { "$ref": "#/$defs/date" },
+        "qualification": { "$ref": "#/$defs/nonEmptyText" },
+        "valid_until": { "$ref": "#/$defs/date" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "enum": ["verified", "disputed"] } }, "required": ["status"] },
+          "then": {
+            "required": ["source_ids", "reviewed_by", "reviewed_at"],
+            "properties": {
+              "source_ids": { "type": "array", "minItems": 1 },
+              "reviewed_by": { "type": "array", "minItems": 1 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "status": { "const": "disputed" } }, "required": ["status"] },
+          "then": { "required": ["qualification"] }
+        }
+      ]
+    },
+    "stringFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "verification"],
+      "properties": {
+        "value": { "$ref": "#/$defs/nonEmptyText" },
+        "verification": { "$ref": "#/$defs/verification" }
+      }
+    },
+    "entityIdFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "verification"],
+      "properties": {
+        "value": { "$ref": "#/$defs/entityId" },
+        "verification": { "$ref": "#/$defs/verification" }
+      }
+    },
+    "entityIdListFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "verification"],
+      "properties": {
+        "value": { "$ref": "#/$defs/entityIdList" },
+        "verification": { "$ref": "#/$defs/verification" }
+      }
+    },
+    "numberFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "verification"],
+      "properties": {
+        "value": { "type": "number" },
+        "verification": { "$ref": "#/$defs/verification" }
+      }
+    }
+  }
+}

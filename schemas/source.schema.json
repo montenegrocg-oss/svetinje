@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://svetinje.me/schemas/source.schema.json",
+  "title": "Svetinje.me source record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "editorial_status",
+    "source_type",
+    "title",
+    "publisher",
+    "status",
+    "approvals",
+    "audit"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "$ref": "common.schema.json#/$defs/entityId" },
+    "editorial_status": { "$ref": "common.schema.json#/$defs/editorialStatus" },
+    "source_type": {
+      "enum": [
+        "official-church",
+        "diocesan",
+        "monastery",
+        "official-publication",
+        "academic",
+        "archival",
+        "government",
+        "heritage-institution",
+        "other-approved"
+      ]
+    },
+    "title": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "publisher": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "author": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "url": { "type": "string", "format": "uri", "pattern": "^https://" },
+    "bibliographic_reference": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "publication_date": { "$ref": "#/$defs/sourceDate" },
+    "accessed_at": { "$ref": "common.schema.json#/$defs/date" },
+    "original_language": { "type": "string", "pattern": "^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$" },
+    "locator": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "status": { "enum": ["active", "unavailable", "superseded", "disputed", "withdrawn"] },
+    "archive_url": { "type": "string", "format": "uri", "pattern": "^https://" },
+    "copyright_notes": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "approval_note": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "approvals": { "$ref": "common.schema.json#/$defs/approvals" },
+    "audit": { "$ref": "common.schema.json#/$defs/audit" }
+  },
+  "anyOf": [
+    { "required": ["url"] },
+    { "required": ["bibliographic_reference"] }
+  ],
+  "allOf": [
+    {
+      "if": { "required": ["url"] },
+      "then": { "required": ["accessed_at"] }
+    },
+    {
+      "if": { "properties": { "source_type": { "const": "other-approved" } }, "required": ["source_type"] },
+      "then": { "required": ["approval_note"] }
+    },
+    {
+      "if": {
+        "properties": { "editorial_status": { "enum": ["approved", "published"] } },
+        "required": ["editorial_status"]
+      },
+      "then": { "properties": { "approvals": { "type": "array", "minItems": 1 } } }
+    }
+  ],
+  "$defs": {
+    "sourceDate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["precision"],
+      "properties": {
+        "precision": {
+          "enum": [
+            "exact-date",
+            "year",
+            "year-range",
+            "century",
+            "century-range",
+            "before",
+            "after",
+            "approximate",
+            "traditional-attribution",
+            "unknown"
+          ]
+        },
+        "date": { "$ref": "common.schema.json#/$defs/date" },
+        "year": { "type": "integer" },
+        "start_year": { "type": "integer" },
+        "end_year": { "type": "integer" },
+        "century": { "type": "integer", "minimum": 1 },
+        "start_century": { "type": "integer", "minimum": 1 },
+        "end_century": { "type": "integer", "minimum": 1 },
+        "boundary_year": { "type": "integer" },
+        "display_text_sr": { "$ref": "common.schema.json#/$defs/nonEmptyText" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "precision": { "const": "exact-date" } } },
+          "then": { "required": ["date"] }
+        },
+        {
+          "if": { "properties": { "precision": { "const": "year" } } },
+          "then": { "required": ["year"] }
+        },
+        {
+          "if": { "properties": { "precision": { "const": "year-range" } } },
+          "then": { "required": ["start_year", "end_year"] }
+        },
+        {
+          "if": { "properties": { "precision": { "const": "century" } } },
+          "then": { "required": ["century"] }
+        },
+        {
+          "if": { "properties": { "precision": { "const": "century-range" } } },
+          "then": { "required": ["start_century", "end_century"] }
+        },
+        {
+          "if": { "properties": { "precision": { "enum": ["before", "after"] } } },
+          "then": { "required": ["boundary_year"] }
+        },
+        {
+          "if": { "properties": { "precision": { "enum": ["approximate", "traditional-attribution"] } } },
+          "then": { "required": ["display_text_sr"] }
+        }
+      ]
+    }
+  }
+}

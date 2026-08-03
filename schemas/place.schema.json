@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://svetinje.me/schemas/place.schema.json",
+  "title": "Svetinje.me place core record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "editorial_status",
+    "relationships",
+    "source_ids",
+    "approvals",
+    "audit"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "$ref": "common.schema.json#/$defs/entityId" },
+    "editorial_status": { "$ref": "common.schema.json#/$defs/editorialStatus" },
+    "place_type": { "$ref": "#/$defs/placeTypeFact" },
+    "parent_place_id": { "$ref": "common.schema.json#/$defs/entityIdFact" },
+    "ecclesiastical": { "$ref": "#/$defs/ecclesiastical" },
+    "location": { "$ref": "#/$defs/location" },
+    "relationships": { "$ref": "#/$defs/relationships" },
+    "source_ids": { "$ref": "common.schema.json#/$defs/sourceIdList" },
+    "approvals": { "$ref": "common.schema.json#/$defs/approvals" },
+    "audit": { "$ref": "common.schema.json#/$defs/audit" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "editorial_status": { "enum": ["approved", "published"] } },
+        "required": ["editorial_status"]
+      },
+      "then": {
+        "required": ["place_type"],
+        "properties": {
+          "source_ids": { "type": "array", "minItems": 1 },
+          "approvals": { "type": "array", "minItems": 2 }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "placeType": {
+      "enum": [
+        "monastery",
+        "church",
+        "chapel",
+        "cathedral",
+        "skete",
+        "hermitage",
+        "holy-spring",
+        "cave",
+        "shrine",
+        "other"
+      ]
+    },
+    "placeTypeFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "verification"],
+      "properties": {
+        "value": { "$ref": "#/$defs/placeType" },
+        "verification": { "$ref": "common.schema.json#/$defs/verification" }
+      }
+    },
+    "ecclesiastical": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "authority_id": { "$ref": "common.schema.json#/$defs/entityIdFact" },
+        "jurisdiction": { "$ref": "common.schema.json#/$defs/stringFact" },
+        "dedication_ids": { "$ref": "common.schema.json#/$defs/entityIdListFact" },
+        "community_type": { "$ref": "common.schema.json#/$defs/stringFact" },
+        "associated_entity_ids": { "$ref": "common.schema.json#/$defs/entityIdListFact" }
+      }
+    },
+    "coordinateAccuracy": {
+      "enum": ["exact-entrance", "complex-centroid", "approximate-area", "settlement-level", "withheld"]
+    },
+    "coordinates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["latitude", "longitude", "crs", "accuracy", "publication_safety", "verification"],
+      "properties": {
+        "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+        "longitude": { "type": "number", "minimum": -180, "maximum": 180 },
+        "crs": { "const": "EPSG:4326" },
+        "accuracy": { "$ref": "#/$defs/coordinateAccuracy" },
+        "publication_safety": { "$ref": "common.schema.json#/$defs/publicationSafety" },
+        "verification": { "$ref": "common.schema.json#/$defs/verification" }
+      }
+    },
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "country_code": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "verification"],
+          "properties": {
+            "value": { "type": "string", "pattern": "^[A-Z]{2}$" },
+            "verification": { "$ref": "common.schema.json#/$defs/verification" }
+          }
+        },
+        "municipality": { "$ref": "common.schema.json#/$defs/stringFact" },
+        "settlement": { "$ref": "common.schema.json#/$defs/stringFact" },
+        "postal_address": { "$ref": "common.schema.json#/$defs/stringFact" },
+        "coordinates": { "$ref": "#/$defs/coordinates" },
+        "elevation_m": { "$ref": "common.schema.json#/$defs/numberFact" }
+      }
+    },
+    "relationships": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "related_place_ids": { "$ref": "common.schema.json#/$defs/entityIdList" },
+        "route_ids": { "$ref": "common.schema.json#/$defs/entityIdList" },
+        "article_ids": { "$ref": "common.schema.json#/$defs/entityIdList" },
+        "media_ids": { "$ref": "common.schema.json#/$defs/entityIdList" }
+      }
+    }
+  }
+}

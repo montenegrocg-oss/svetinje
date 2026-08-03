@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://svetinje.me/schemas/media.schema.json",
+  "title": "Svetinje.me media metadata record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "editorial_status",
+    "media_type",
+    "related_place_ids",
+    "localized_text",
+    "approvals",
+    "audit"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "$ref": "common.schema.json#/$defs/entityId" },
+    "editorial_status": { "$ref": "common.schema.json#/$defs/editorialStatus" },
+    "media_type": { "enum": ["image", "video", "audio", "panorama", "model", "other"] },
+    "storage_provider": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "object_key": { "type": "string", "minLength": 1, "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$" },
+    "checksum_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "mime_type": { "type": "string", "pattern": "^[a-z0-9.+-]+/[a-z0-9.+-]+$" },
+    "width": { "type": "integer", "minimum": 1 },
+    "height": { "type": "integer", "minimum": 1 },
+    "duration_seconds": { "type": "number", "exclusiveMinimum": 0 },
+    "creator": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "copyright_owner": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "rights_basis": {
+      "enum": ["project-original", "written-permission", "compatible-license", "public-domain-confirmed", "other-approved"]
+    },
+    "permission_reference": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "license": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "credit_line": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "allowed_uses": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["web-display", "responsive-derivative", "editorial-crop", "social-preview", "archival"] }
+    },
+    "rights_expires_at": { "$ref": "common.schema.json#/$defs/date" },
+    "publication_safety": { "$ref": "common.schema.json#/$defs/publicationSafety" },
+    "related_place_ids": { "$ref": "common.schema.json#/$defs/entityIdList" },
+    "focal_point": { "$ref": "#/$defs/focalPoint" },
+    "localized_text": { "$ref": "#/$defs/localizedTextMap" },
+    "approvals": { "$ref": "common.schema.json#/$defs/approvals" },
+    "audit": { "$ref": "common.schema.json#/$defs/audit" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "editorial_status": { "enum": ["approved", "published"] } },
+        "required": ["editorial_status"]
+      },
+      "then": {
+        "required": [
+          "storage_provider",
+          "object_key",
+          "checksum_sha256",
+          "mime_type",
+          "creator",
+          "copyright_owner",
+          "rights_basis",
+          "credit_line",
+          "allowed_uses",
+          "publication_safety"
+        ],
+        "properties": {
+          "related_place_ids": { "type": "array", "minItems": 1 },
+          "approvals": { "type": "array", "minItems": 1 }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "media_type": { "enum": ["image", "panorama"] } }, "required": ["media_type"] },
+      "then": {
+        "if": {
+          "properties": { "editorial_status": { "enum": ["approved", "published"] } },
+          "required": ["editorial_status"]
+        },
+        "then": { "required": ["width", "height"] }
+      }
+    },
+    {
+      "if": { "properties": { "media_type": { "enum": ["audio", "video"] } }, "required": ["media_type"] },
+      "then": {
+        "if": {
+          "properties": { "editorial_status": { "enum": ["approved", "published"] } },
+          "required": ["editorial_status"]
+        },
+        "then": { "required": ["duration_seconds"] }
+      }
+    },
+    {
+      "if": { "properties": { "rights_basis": { "const": "written-permission" } }, "required": ["rights_basis"] },
+      "then": { "required": ["permission_reference"] }
+    },
+    {
+      "if": { "properties": { "rights_basis": { "const": "compatible-license" } }, "required": ["rights_basis"] },
+      "then": { "required": ["license"] }
+    }
+  ],
+  "$defs": {
+    "focalPoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number", "minimum": 0, "maximum": 1 },
+        "y": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "localizedText": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["translation_status", "approvals"],
+      "properties": {
+        "alt_text": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+        "decorative": { "type": "boolean" },
+        "caption": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+        "caption_source_ids": { "$ref": "common.schema.json#/$defs/sourceIdList" },
+        "translation_status": { "$ref": "common.schema.json#/$defs/translationStatus" },
+        "source_revision": { "$ref": "common.schema.json#/$defs/gitSha" },
+        "approvals": { "$ref": "common.schema.json#/$defs/approvals" }
+      },
+      "anyOf": [
+        { "required": ["alt_text"] },
+        { "properties": { "decorative": { "const": true } }, "required": ["decorative"] }
+      ]
+    },
+    "localizedTextMap": {
+      "type": "object",
+      "propertyNames": { "$ref": "common.schema.json#/$defs/locale" },
+      "additionalProperties": { "$ref": "#/$defs/localizedText" }
+    }
+  }
+}

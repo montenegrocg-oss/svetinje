@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://svetinje.me/schemas/narrative.schema.json",
+  "title": "Svetinje.me localized narrative front matter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "place_id",
+    "locale",
+    "editorial_status",
+    "translation_status",
+    "source_ids",
+    "approvals",
+    "audit"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "place_id": { "$ref": "common.schema.json#/$defs/entityId" },
+    "locale": { "$ref": "common.schema.json#/$defs/locale" },
+    "editorial_status": { "$ref": "common.schema.json#/$defs/editorialStatus" },
+    "translation_status": { "$ref": "common.schema.json#/$defs/translationStatus" },
+    "slug": { "$ref": "common.schema.json#/$defs/slug" },
+    "preferred_name": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "short_name": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "alternate_names": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/alternateName" }
+    },
+    "summary": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "seo_title": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "seo_description": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "source_revision": { "$ref": "common.schema.json#/$defs/gitSha" },
+    "source_ids": { "$ref": "common.schema.json#/$defs/sourceIdList" },
+    "section_sources": { "$ref": "#/$defs/sectionSources" },
+    "approvals": { "$ref": "common.schema.json#/$defs/approvals" },
+    "audit": { "$ref": "common.schema.json#/$defs/audit" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "locale": { "const": "sr" } }, "required": ["locale"] },
+      "then": { "properties": { "translation_status": { "const": "source" } } }
+    },
+    {
+      "if": { "properties": { "locale": { "enum": ["ru", "en"] } }, "required": ["locale"] },
+      "then": {
+        "required": ["source_revision"],
+        "properties": {
+          "translation_status": {
+            "enum": ["missing", "draft", "in-review", "approved", "published", "outdated", "archived"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "editorial_status": { "enum": ["approved", "published"] } },
+        "required": ["editorial_status"]
+      },
+      "then": {
+        "required": ["slug", "preferred_name", "summary", "seo_title", "seo_description", "section_sources"],
+        "properties": {
+          "source_ids": { "type": "array", "minItems": 1 },
+          "approvals": { "type": "array", "minItems": 3 }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "alternateName": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "context", "source_ids", "verification_status"],
+      "properties": {
+        "name": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+        "context": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+        "source_ids": {
+          "allOf": [
+            { "$ref": "common.schema.json#/$defs/sourceIdList" },
+            { "type": "array", "minItems": 1 }
+          ]
+        },
+        "verification_status": { "$ref": "common.schema.json#/$defs/verificationStatus" }
+      }
+    },
+    "sectionKey": {
+      "enum": [
+        "introduction",
+        "history",
+        "spiritual-significance",
+        "architecture-and-art",
+        "relics-icons-and-traditions",
+        "practical-context",
+        "accessibility-context"
+      ]
+    },
+    "sectionSources": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/sectionKey" },
+      "additionalProperties": {
+        "allOf": [
+          { "$ref": "common.schema.json#/$defs/sourceIdList" },
+          { "type": "array", "minItems": 1 }
+        ]
+      }
+    }
+  }
+}

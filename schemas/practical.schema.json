@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://svetinje.me/schemas/practical.schema.json",
+  "title": "Svetinje.me practical information record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "place_id",
+    "editorial_status",
+    "kind",
+    "value_type",
+    "value",
+    "source_ids",
+    "verification_status",
+    "freshness_status",
+    "display_policy",
+    "approvals",
+    "audit"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "$ref": "common.schema.json#/$defs/entityId" },
+    "place_id": { "$ref": "common.schema.json#/$defs/entityId" },
+    "editorial_status": { "$ref": "common.schema.json#/$defs/editorialStatus" },
+    "kind": {
+      "enum": [
+        "public-phone",
+        "public-email",
+        "official-website",
+        "visiting-hours",
+        "service-schedule",
+        "seasonal-access",
+        "temporary-closure",
+        "road-access",
+        "public-transport",
+        "parking",
+        "walking-access",
+        "accessibility",
+        "official-visitor-instruction",
+        "other-approved"
+      ]
+    },
+    "value_type": { "enum": ["contact", "url", "schedule", "localized-text"] },
+    "value": { "type": "object" },
+    "source_ids": { "$ref": "common.schema.json#/$defs/sourceIdList" },
+    "verification_status": { "$ref": "common.schema.json#/$defs/verificationStatus" },
+    "freshness_status": { "$ref": "common.schema.json#/$defs/freshnessStatus" },
+    "verified_at": { "$ref": "common.schema.json#/$defs/date" },
+    "verified_by": { "$ref": "common.schema.json#/$defs/entityIdList" },
+    "valid_from": { "$ref": "common.schema.json#/$defs/date" },
+    "valid_until": { "$ref": "common.schema.json#/$defs/date" },
+    "display_policy": { "enum": ["show", "show-with-verification-date", "show-with-warning", "hide-when-stale", "withdraw"] },
+    "approvals": { "$ref": "common.schema.json#/$defs/approvals" },
+    "audit": { "$ref": "common.schema.json#/$defs/audit" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "value_type": { "const": "contact" } }, "required": ["value_type"] },
+      "then": { "properties": { "value": { "$ref": "#/$defs/contactValue" } } }
+    },
+    {
+      "if": { "properties": { "value_type": { "const": "url" } }, "required": ["value_type"] },
+      "then": { "properties": { "value": { "$ref": "#/$defs/urlValue" } } }
+    },
+    {
+      "if": { "properties": { "value_type": { "const": "schedule" } }, "required": ["value_type"] },
+      "then": { "properties": { "value": { "$ref": "#/$defs/scheduleValue" } } }
+    },
+    {
+      "if": { "properties": { "value_type": { "const": "localized-text" } }, "required": ["value_type"] },
+      "then": { "properties": { "value": { "$ref": "#/$defs/localizedTextValue" } } }
+    },
+    {
+      "if": {
+        "properties": { "editorial_status": { "enum": ["approved", "published"] } },
+        "required": ["editorial_status"]
+      },
+      "then": {
+        "required": ["verified_at", "verified_by"],
+        "properties": {
+          "source_ids": { "type": "array", "minItems": 1 },
+          "verification_status": { "const": "verified" },
+          "freshness_status": { "enum": ["current", "expiring"] },
+          "verified_by": { "type": "array", "minItems": 1 },
+          "approvals": { "type": "array", "minItems": 1 }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "contactValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["canonical_value", "display_value", "public_use_confirmed"],
+      "properties": {
+        "canonical_value": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+        "display_value": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+        "public_use_confirmed": { "type": "boolean" }
+      }
+    },
+    "urlValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url"],
+      "properties": {
+        "url": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "label_sr": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+        "label_ru": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+        "label_en": { "$ref": "common.schema.json#/$defs/nonEmptyText" }
+      }
+    },
+    "scheduleEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applies_on", "start_time", "localized_label"],
+      "properties": {
+        "applies_on": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+        "start_time": { "type": "string", "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$" },
+        "end_time": { "type": "string", "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$" },
+        "localized_label": { "$ref": "#/$defs/localizedTextValue" },
+        "valid_from": { "$ref": "common.schema.json#/$defs/date" },
+        "valid_until": { "$ref": "common.schema.json#/$defs/date" }
+      }
+    },
+    "scheduleValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["timezone", "entries"],
+      "properties": {
+        "timezone": { "type": "string", "pattern": "^[A-Za-z_]+(?:/[A-Za-z_+-]+)+$" },
+        "entries": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/scheduleEntry" } },
+        "exceptions": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/nonEmptyText" } },
+        "localized_notes": { "$ref": "#/$defs/localizedTextValue" }
+      }
+    },
+    "localizedTextEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["locale", "text", "translation_status", "approvals"],
+      "properties": {
+        "locale": { "$ref": "common.schema.json#/$defs/locale" },
+        "text": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+        "translation_status": { "$ref": "common.schema.json#/$defs/translationStatus" },
+        "source_revision": { "$ref": "common.schema.json#/$defs/gitSha" },
+        "approvals": { "$ref": "common.schema.json#/$defs/approvals" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "locale": { "const": "sr" } }, "required": ["locale"] },
+          "then": { "properties": { "translation_status": { "const": "source" } } }
+        },
+        {
+          "if": { "properties": { "locale": { "enum": ["ru", "en"] } }, "required": ["locale"] },
+          "then": { "required": ["source_revision"] }
+        }
+      ]
+    },
+    "localizedTextValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["locales"],
+      "properties": {
+        "locales": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/localizedTextEntry" } }
+      }
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://svetinje.me/schemas/publication-policy.schema.json",
+  "title": "Svetinje.me publication policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "public_publication_locked",
+    "lock_reason",
+    "project_owner_ids",
+    "role_assignments"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schema_version": { "const": 1 },
+    "public_publication_locked": { "type": "boolean" },
+    "lock_reason": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "project_owner_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/entityId" }
+    },
+    "role_assignments": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "publishing",
+        "factual",
+        "ecclesiastical",
+        "sr-language",
+        "ru-language",
+        "en-language",
+        "media-rights",
+        "geographic-safety"
+      ],
+      "properties": {
+        "publishing": { "$ref": "common.schema.json#/$defs/entityIdList" },
+        "factual": { "$ref": "common.schema.json#/$defs/entityIdList" },
+        "ecclesiastical": { "$ref": "common.schema.json#/$defs/entityIdList" },
+        "sr-language": { "$ref": "common.schema.json#/$defs/entityIdList" },
+        "ru-language": { "$ref": "common.schema.json#/$defs/entityIdList" },
+        "en-language": { "$ref": "common.schema.json#/$defs/entityIdList" },
+        "media-rights": { "$ref": "common.schema.json#/$defs/entityIdList" },
+        "geographic-safety": { "$ref": "common.schema.json#/$defs/entityIdList" }
+      }
+    }
+  }
+}

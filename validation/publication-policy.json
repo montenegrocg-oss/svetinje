@@ -1,0 +1,17 @@
+{
+  "$schema": "../schemas/publication-policy.schema.json",
+  "schema_version": 1,
+  "public_publication_locked": true,
+  "lock_reason": "Required factual, ecclesiastical, language, media-rights, and publishing reviews are not all assigned.",
+  "project_owner_ids": ["maxim"],
+  "role_assignments": {
+    "publishing": ["maxim"],
+    "factual": [],
+    "ecclesiastical": [],
+    "sr-language": [],
+    "ru-language": [],
+    "en-language": [],
+    "media-rights": [],
+    "geographic-safety": []
+  }
+}
