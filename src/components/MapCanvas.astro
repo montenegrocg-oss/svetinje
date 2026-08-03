@@ -106,15 +106,15 @@
   import type { LngLatBoundsLike, Map as MapLibreMap, PaddingOptions } from "maplibre-gl";
 
   const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY?.trim();
-  const MONTENEGRO_CONTEXT_BOUNDS: LngLatBoundsLike = [
-    [17.65, 41.35],
-    [20.95, 43.95],
+  const MONTENEGRO_BOUNDS: LngLatBoundsLike = [
+    [18.42, 41.8],
+    [20.36, 43.57],
   ];
 
   const getInitialPadding = (width: number): PaddingOptions => {
-    if (width >= 1088) return { top: 76, right: 96, bottom: 72, left: 430 };
-    if (width >= 768) return { top: 110, right: 72, bottom: 72, left: 350 };
-    return { top: 76, right: 24, bottom: 66, left: 24 };
+    if (width >= 1088) return { top: 96, right: 56, bottom: 52, left: 468 };
+    if (width >= 768) return { top: 160, right: 44, bottom: 50, left: 360 };
+    return { top: 80, right: 22, bottom: 42, left: 22 };
   };
 
   const initialiseHomepageMap = () => {
@@ -182,7 +182,7 @@
 
     const animationDuration = () => (reducedMotion.matches ? 0 : 420);
     const fitMontenegro = (animate: boolean) => {
-      map.fitBounds(MONTENEGRO_CONTEXT_BOUNDS, {
+      map.fitBounds(MONTENEGRO_BOUNDS, {
         padding: getInitialPadding(root.clientWidth),
         duration: animate ? animationDuration() : 0,
         linear: true,

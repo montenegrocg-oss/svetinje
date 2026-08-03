@@ -70,11 +70,15 @@ test("the map structure contains an interactive container and explicit attributi
 test("custom controls use the requested responsive Montenegro view without geolocation", async () => {
   const mapCanvas = await source("src/components/MapCanvas.astro");
 
-  assert.match(mapCanvas, /MONTENEGRO_CONTEXT_BOUNDS/);
-  assert.match(mapCanvas, /map\.fitBounds\(MONTENEGRO_CONTEXT_BOUNDS/);
+  assert.match(mapCanvas, /const MONTENEGRO_BOUNDS: LngLatBoundsLike = \[\s*\[18\.42, 41\.8\],\s*\[20\.36, 43\.57\],\s*\];/);
+  assert.match(mapCanvas, /map\.fitBounds\(MONTENEGRO_BOUNDS/);
+  assert.match(mapCanvas, /if \(width >= 1088\) return \{ top: 96, right: 56, bottom: 52, left: 468 \};/);
+  assert.match(mapCanvas, /if \(width >= 768\) return \{ top: 160, right: 44, bottom: 50, left: 360 \};/);
+  assert.match(mapCanvas, /return \{ top: 80, right: 22, bottom: 42, left: 22 \};/);
   assert.match(mapCanvas, /center: \[19\.25, 42\.7\]/);
   assert.match(mapCanvas, /zoom: 6/);
   assert.match(mapCanvas, /map\.once\("load", \(\) => \{[\s\S]*?fitMontenegro\(false\)/);
+  assert.match(mapCanvas, /const resetView = \(\) => \{[\s\S]*?fitMontenegro\(true\);/);
   assert.match(mapCanvas, /map\.zoomIn/);
   assert.match(mapCanvas, /map\.zoomOut/);
   assert.match(mapCanvas, /resetButton\?\.addEventListener\("click", resetView\)/);
