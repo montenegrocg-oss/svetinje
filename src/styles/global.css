@@ -645,73 +645,30 @@
 
   .map-fallback {
     z-index: 1;
-    opacity: 1;
-    transition: opacity 280ms ease, visibility 280ms ease;
   }
 
   .map-renderer {
     z-index: 2;
     overflow: hidden;
     background: #e9e5da;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 320ms ease;
+    pointer-events: auto;
   }
 
-  .maplibre-map {
+  .maplibre-map,
+  #montenegro-map {
     width: 100%;
     height: 100%;
   }
 
-  .map-canvas[data-map-state="ready"] .map-fallback {
-    visibility: hidden;
-    opacity: 0;
-  }
-
-  .map-canvas[data-map-state="ready"] .map-renderer {
-    opacity: 1;
-    pointer-events: auto;
+  .map-fallback[hidden],
+  .map-renderer[hidden] {
+    display: none;
   }
 
   .map-art {
     min-width: 46rem;
     max-width: none;
     transform: translateX(-19%);
-  }
-
-  .map-readiness {
-    position: absolute;
-    z-index: 3;
-    right: 1rem;
-    bottom: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.45rem 0.6rem;
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: var(--radius-sm);
-    color: rgba(10, 41, 68, 0.76);
-    background: rgba(255, 255, 255, 0.72);
-    backdrop-filter: blur(6px);
-    font-size: 0.68rem;
-    font-weight: 700;
-    line-height: 1.1;
-  }
-
-  .map-readiness span {
-    width: 0.55rem;
-    height: 0.55rem;
-    border: 2px solid var(--gold);
-    border-radius: 50%;
-  }
-
-  .map-readiness small {
-    color: var(--ink-soft);
-    font-weight: 600;
-  }
-
-  .map-canvas[data-map-state="fallback"] .map-readiness {
-    display: none;
   }
 
   .map-fallback-notice,
@@ -1656,11 +1613,6 @@
 
     .map-help {
       right: 1.25rem;
-      bottom: 1rem;
-    }
-
-    .map-readiness {
-      right: 10rem;
       bottom: 1rem;
     }
 
