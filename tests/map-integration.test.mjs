@@ -10,6 +10,21 @@ async function source(file) {
   return readFile(path.join(PROJECT_ROOT, file), "utf8");
 }
 
+test("MapLibre GL JS is pinned exactly to the v5 compatibility release", async () => {
+  const [packageText, lockText] = await Promise.all([
+    source("package.json"),
+    source("pnpm-lock.yaml"),
+  ]);
+  const packageJson = JSON.parse(packageText);
+  const lock = parse(lockText);
+
+  assert.equal(packageJson.dependencies["maplibre-gl"], "5.15.0");
+  assert.deepEqual(lock.importers["."].dependencies["maplibre-gl"], {
+    specifier: "5.15.0",
+    version: "5.15.0",
+  });
+});
+
 test("MapTiler configuration uses only the approved public environment variable", async () => {
   const [mapCanvas, envExample] = await Promise.all([
     source("src/components/MapCanvas.astro"),
@@ -17,7 +32,8 @@ test("MapTiler configuration uses only the approved public environment variable"
   ]);
 
   assert.equal(envExample, "PUBLIC_MAPTILER_KEY=\n");
-  assert.match(mapCanvas, /import \* as maplibregl from "maplibre-gl"/);
+  assert.match(mapCanvas, /import maplibregl from "maplibre-gl"/);
+  assert.doesNotMatch(mapCanvas, /import \* as maplibregl from "maplibre-gl"/);
   assert.match(mapCanvas, /import\.meta\.env\.PUBLIC_MAPTILER_KEY/);
   assert.match(mapCanvas, /maps\/streets-v4\/style\.json\?key=\$\{encodeURIComponent\(MAPTILER_KEY\)\}/);
   assert.doesNotMatch(mapCanvas, /maps\/outdoor-v4\/style\.json/);
@@ -39,7 +55,8 @@ test("the map structure contains an interactive container and explicit attributi
   const mapCanvas = await source("src/components/MapCanvas.astro");
 
   assert.match(mapCanvas, /import "maplibre-gl\/dist\/maplibre-gl\.css"/);
-  assert.match(mapCanvas, /import \* as maplibregl from "maplibre-gl"/);
+  assert.match(mapCanvas, /import maplibregl from "maplibre-gl"/);
+  assert.doesNotMatch(mapCanvas, /import \* as maplibregl from "maplibre-gl"/);
   assert.doesNotMatch(mapCanvas, /await import\("maplibre-gl"\)/);
   assert.match(mapCanvas, /data-testid="maplibre-container"/);
   assert.match(mapCanvas, /role="region"/);
