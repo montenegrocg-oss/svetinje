@@ -12,6 +12,7 @@ interface Props {
 }
 
 const { title, description, canonicalPath, noindex = false } = Astro.props;
+const editorialPreview = process.env.EDITORIAL_PREVIEW === "true";
 ---
 
 <!doctype html>
@@ -24,7 +25,7 @@ const { title, description, canonicalPath, noindex = false } = Astro.props;
       title={title}
       description={description}
       canonicalPath={canonicalPath}
-      noindex={noindex}
+      noindex={noindex || editorialPreview}
     />
   </head>
   <body>

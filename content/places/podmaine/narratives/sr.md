@@ -6,6 +6,7 @@ editorial_status: research
 translation_status: source
 slug: manastir-podmaine
 preferred_name: Манастир Подмаине
+summary: Манастир Подмаине је православни манастир Митрополије црногорско-приморске у Будви, познат и под називима Маине и Подострог.
 source_ids:
   - spc-eparhije-i-crkvene-opstine
   - mitropolija-manastirista-u-mitropoliji
@@ -21,7 +22,7 @@ approvals: []
 audit:
   created_at: 2026-08-03T11:46:30Z
   created_by: maxim
-  updated_at: 2026-08-03T11:46:30Z
+  updated_at: 2026-08-03T21:15:47Z
   updated_by: maxim
 ---
 ## Идентитет {#introduction}

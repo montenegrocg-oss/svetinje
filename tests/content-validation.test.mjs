@@ -97,7 +97,7 @@ test("the repository summary reports actual validated record counts", async () =
   assert.deepEqual(result.counts, {
     places: 1,
     narratives: 1,
-    sources: 3,
+    sources: 5,
     practical: 0,
     media: 1,
   });

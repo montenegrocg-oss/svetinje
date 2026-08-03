@@ -47,9 +47,9 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(homepage, /<HomepagePreviews \/>/);
 
   const explorer = await source("src/components/MapExplorer.astro");
-  assert.match(explorer, /<MapCanvas \/>/);
+  assert.match(explorer, /<MapCanvas places=\{places\} \/>/);
   assert.match(explorer, /<MapControls \/>/);
-  assert.match(explorer, /<ExplorerSidebar \/>/);
+  assert.match(explorer, /<ExplorerSidebar places=\{places\} \/>/);
   assert.match(explorer, /data-testid="map-explorer"/);
 });
 

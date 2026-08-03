@@ -1,3 +1,23 @@
+---
+import type { VisiblePlace } from "../lib/content/publication";
+
+interface Props {
+  places?: VisiblePlace[];
+}
+
+const { places = [] } = Astro.props;
+const markerPlaces = places.flatMap((place) =>
+  Number.isFinite(place.latitude) && Number.isFinite(place.longitude)
+    ? [{
+        id: place.id,
+        name: place.name,
+        latitude: place.latitude as number,
+        longitude: place.longitude as number,
+      }]
+    : [],
+);
+const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
+---
 <div
   class="map-canvas"
   data-home-map
@@ -98,14 +118,23 @@
     <a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener noreferrer">© MapTiler</a>
     <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>
   </div>
+
+  <script type="application/json" data-map-place-data set:html={markerPayload} is:inline />
 </div>
 
 <script>
   import maplibregl from "maplibre-gl";
   import "maplibre-gl/dist/maplibre-gl.css";
-  import type { LngLatBoundsLike, Map as MapLibreMap, PaddingOptions } from "maplibre-gl";
+  import type { LngLatBoundsLike, Map as MapLibreMap, Marker as MapLibreMarker, PaddingOptions } from "maplibre-gl";
 
   const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY?.trim();
+  interface MarkerPlace {
+    id: string;
+    name: string;
+    latitude: number;
+    longitude: number;
+  }
+
   const MONTENEGRO_BOUNDS: LngLatBoundsLike = [
     [18.42, 41.8],
     [20.36, 43.57],
@@ -131,6 +160,10 @@
     const zoomOutButton = stage?.querySelector<HTMLButtonElement>("[data-map-zoom-out]");
     const resetButton = stage?.querySelector<HTMLButtonElement>("[data-map-reset]");
     const mapContainer = root.querySelector<HTMLElement>("#montenegro-map");
+    const markerDataElement = root.querySelector<HTMLScriptElement>("[data-map-place-data]");
+    const markerPlaces: MarkerPlace[] = markerDataElement?.textContent
+      ? JSON.parse(markerDataElement.textContent) as MarkerPlace[]
+      : [];
 
     const setControlsEnabled = (enabled: boolean) => {
       [zoomInButton, zoomOutButton, resetButton].forEach((button) => {
@@ -179,6 +212,32 @@
     let removed = false;
     let visitorMovedMap = false;
     let resizeTimer: number | undefined;
+    const markers: MapLibreMarker[] = [];
+
+    const selectPlace = (id: string) => {
+      root.querySelectorAll<HTMLButtonElement>("[data-map-marker]").forEach((button) => {
+        const selected = button.dataset.mapMarker === id;
+        button.classList.toggle("is-selected", selected);
+        button.setAttribute("aria-pressed", String(selected));
+      });
+      window.dispatchEvent(new CustomEvent("svetinje:place-select", { detail: { id } }));
+    };
+
+    markerPlaces.forEach((place) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "holy-place-marker";
+      button.dataset.mapMarker = place.id;
+      button.setAttribute("aria-label", `${place.name} — отвори детаље`);
+      button.setAttribute("aria-pressed", "false");
+      button.innerHTML = '<span class="holy-place-marker__symbol" aria-hidden="true"><i></i></span>';
+      button.addEventListener("click", () => selectPlace(place.id));
+      markers.push(
+        new maplibregl.Marker({ element: button, anchor: "bottom" })
+          .setLngLat([place.longitude, place.latitude])
+          .addTo(map),
+      );
+    });
 
     const animationDuration = () => (reducedMotion.matches ? 0 : 420);
     const fitMontenegro = (animate: boolean) => {
@@ -228,6 +287,7 @@
       zoomInButton?.removeEventListener("click", zoomIn);
       zoomOutButton?.removeEventListener("click", zoomOut);
       resetButton?.removeEventListener("click", resetView);
+      markers.forEach((marker) => marker.remove());
       map.remove();
     };
 

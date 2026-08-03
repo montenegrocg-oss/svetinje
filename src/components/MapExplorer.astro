@@ -2,6 +2,9 @@
 import ExplorerSidebar from "./ExplorerSidebar.astro";
 import MapCanvas from "./MapCanvas.astro";
 import MapControls from "./MapControls.astro";
+import { loadVisiblePlaces } from "../lib/content/publication";
+
+const places = await loadVisiblePlaces();
 ---
 
 <section class="map-explorer" id="mapa" aria-labelledby="map-explorer-title" data-testid="map-explorer">
@@ -13,11 +16,11 @@ import MapControls from "./MapControls.astro";
   </header>
 
   <div class="map-stage">
-    <MapCanvas />
+    <MapCanvas places={places} />
     <MapControls />
   </div>
 
-  <ExplorerSidebar />
+  <ExplorerSidebar places={places} />
 </section>
 
 <script>
@@ -43,8 +46,42 @@ import MapControls from "./MapControls.astro";
     });
   });
 
-  document.querySelector<HTMLFormElement>("[data-catalogue-search]")?.addEventListener("submit", (event) => {
+  const searchForm = document.querySelector<HTMLFormElement>("[data-catalogue-search]");
+  const searchInput = searchForm?.querySelector<HTMLInputElement>("input[type='search']");
+  const placeCards = [...document.querySelectorAll<HTMLElement>("[data-place-card]")];
+  const resultStatus = document.getElementById("catalogue-status");
+
+  const filterPreviewCards = () => {
+    const query = searchInput?.value.trim().toLocaleLowerCase("sr") ?? "";
+    let visible = 0;
+    placeCards.forEach((card) => {
+      const matches = !query || (card.dataset.placeSearch ?? "").includes(query);
+      card.hidden = !matches;
+      if (matches) visible += 1;
+    });
+    if (resultStatus && placeCards.length > 0) {
+      resultStatus.textContent = visible === 1
+        ? "Приказан је један запис у радном приказу."
+        : visible === 0
+          ? "Нема записа који одговарају претрази."
+          : `Приказано је ${visible} записа.`;
+    }
+  };
+
+  searchInput?.addEventListener("input", filterPreviewCards);
+  searchForm?.addEventListener("submit", (event) => {
     event.preventDefault();
-    document.getElementById("catalogue-status")?.scrollIntoView({ block: "nearest" });
+    filterPreviewCards();
+    resultStatus?.scrollIntoView({ block: "nearest" });
   });
+
+  window.addEventListener("svetinje:place-select", ((event: CustomEvent<{ id: string }>) => {
+    placeCards.forEach((card) => {
+      const selected = card.dataset.placeCard === event.detail.id;
+      card.dataset.selected = String(selected);
+      if (selected) card.hidden = false;
+    });
+    if (searchInput) searchInput.value = "";
+    if (resultStatus) resultStatus.textContent = "Изабрани запис је истакнут на карти.";
+  }) as EventListener);
 </script>

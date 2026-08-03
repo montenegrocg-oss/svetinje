@@ -122,7 +122,7 @@ test("CSS keeps the renderer visible and the selected layer exclusive", async ()
   assert.doesNotMatch(styles, /data-map-state="ready"|map-readiness/);
 });
 
-test("the basemap integration adds no sacred-place markers or route geometry", async () => {
+test("the map accepts only server-selected marker data and adds no route geometry", async () => {
   const files = await Promise.all([
     source("src/components/MapCanvas.astro"),
     source("src/components/MapControls.astro"),
@@ -130,8 +130,12 @@ test("the basemap integration adds no sacred-place markers or route geometry", a
   ]);
   const mapSource = files.join("\n");
 
-  assert.doesNotMatch(mapSource, /\bMarker\b|new\s+Marker|addSource\s*\(|addLayer\s*\(|FeatureCollection|LineString|routeCoordinates|data-map-marker/i);
-  assert.doesNotMatch(mapSource, /Подмаине|podmaine/iu);
+  assert.match(mapSource, /data-map-place-data/);
+  assert.match(mapSource, /new maplibregl\.Marker/);
+  assert.match(mapSource, /data-map-marker/);
+  assert.match(mapSource, /svetinje:place-select/);
+  assert.doesNotMatch(mapSource, /addSource\s*\(|addLayer\s*\(|FeatureCollection|LineString|routeCoordinates/i);
+  assert.doesNotMatch(mapSource, /42\.29799|18\.84452|Манастир Подмаине/iu);
 });
 
 test("only Cloudflare site build steps receive the MapTiler secret", async () => {
@@ -144,14 +148,17 @@ test("only Cloudflare site build steps receive the MapTiler secret", async () =>
   const preview = parse(previewText);
   const secretReference = `${String.fromCharCode(36)}{{ secrets.PUBLIC_MAPTILER_KEY }}`;
 
+  const deployBuild = deploy.jobs.deploy.steps.find((step) => step.name === "Build static site");
+  const previewBuild = preview.jobs.preview.steps.find((step) => step.name === "Build static site");
+  assert.deepEqual(deployBuild.env, { PUBLIC_MAPTILER_KEY: secretReference });
+  assert.deepEqual(previewBuild.env, {
+    PUBLIC_MAPTILER_KEY: secretReference,
+    EDITORIAL_PREVIEW: "true",
+  });
   for (const steps of [deploy.jobs.deploy.steps, preview.jobs.preview.steps]) {
-    const buildStep = steps.find((step) => step.name === "Build static site");
-    assert.deepEqual(buildStep.env, { PUBLIC_MAPTILER_KEY: secretReference });
-    assert.equal(
-      steps.filter((step) => Object.hasOwn(step.env ?? {}, "PUBLIC_MAPTILER_KEY")).length,
-      1,
-    );
+    assert.equal(steps.filter((step) => Object.hasOwn(step.env ?? {}, "PUBLIC_MAPTILER_KEY")).length, 1);
   }
+  assert.doesNotMatch(deployText, /EDITORIAL_PREVIEW/);
   assert.doesNotMatch(validationText, /PUBLIC_MAPTILER_KEY/);
 });
 

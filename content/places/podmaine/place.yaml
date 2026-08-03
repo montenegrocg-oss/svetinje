@@ -17,14 +17,59 @@ ecclesiastical:
       source_ids:
         - spc-eparhije-i-crkvene-opstine
       qualification: Српска Православна Црква наводи Манастир Подмаине у одјељку Митрополије црногорско-приморске; налаз чека независну црквену рецензију.
+location:
+  country_code:
+    value: ME
+    verification:
+      status: requires-verification
+      source_ids:
+        - mitropolija-muski-manastiri
+        - openstreetmap-podmaine-way-161886544
+      qualification: Држава је наведена на основу званичне странице Митрополије и картографског записа; податак чека географску провјеру.
+  municipality:
+    value: Будва
+    verification:
+      status: requires-verification
+      source_ids:
+        - mitropolija-muski-manastiri
+        - openstreetmap-podmaine-way-161886544
+      qualification: Општина је наведена на основу званичне адресе Митрополије и положаја комплекса у OpenStreetMap-у; податак чека географску провјеру.
+  settlement:
+    value: Подмаине
+    verification:
+      status: requires-verification
+      source_ids:
+        - mitropolija-muski-manastiri
+        - openstreetmap-podmaine-way-161886544
+      qualification: Назив насеља прати радни идентитет мјеста и картографски положај комплекса; податак чека географску провјеру.
+  postal_address:
+    value: Маински пут бб, 85310 Будва
+    verification:
+      status: requires-verification
+      source_ids:
+        - mitropolija-muski-manastiri
+      qualification: Адреса је преузета са званичне странице Митрополије црногорско-приморске и није независно теренски провјерена.
+  coordinates:
+    latitude: 42.29799
+    longitude: 18.84452
+    crs: EPSG:4326
+    accuracy: complex-centroid
+    publication_safety: public
+    verification:
+      status: requires-verification
+      source_ids:
+        - openstreetmap-podmaine-way-161886544
+      qualification: Координате представљају центроид манастирског комплекса из OpenStreetMap way 161886544 и не означавају тачан пјешачки улаз.
 relationships: {}
 source_ids:
   - spc-eparhije-i-crkvene-opstine
   - mitropolija-manastirista-u-mitropoliji
   - mitropolija-markus-podmaine-2016
+  - mitropolija-muski-manastiri
+  - openstreetmap-podmaine-way-161886544
 approvals: []
 audit:
   created_at: 2026-08-03T11:46:30Z
   created_by: maxim
-  updated_at: 2026-08-03T11:46:30Z
+  updated_at: 2026-08-03T21:15:47Z
   updated_by: maxim

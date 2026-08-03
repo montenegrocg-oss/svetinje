@@ -16,7 +16,7 @@ const canonical = Astro.site
 
 <title>{fullTitle}</title>
 <meta name="description" content={description} />
-<meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
+<meta name="robots" content={noindex ? "noindex,nofollow,noarchive" : "index, follow"} />
 <link rel="canonical" href={canonical} />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content={siteName} />

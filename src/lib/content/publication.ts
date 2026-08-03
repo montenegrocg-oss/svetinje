@@ -15,12 +15,38 @@ interface PublicationPolicy {
   role_assignments: Record<string, string[]>;
 }
 
+interface Verification {
+  status?: string;
+  source_ids?: string[];
+  qualification?: string;
+}
+
+interface StringFact {
+  value?: string;
+  verification?: Verification;
+}
+
 interface PlaceRecord {
   id: string;
   editorial_status: string;
   place_type?: {
     value?: string;
-    verification?: { status?: string; qualification?: string };
+    verification?: Verification;
+  };
+  ecclesiastical?: {
+    jurisdiction?: StringFact;
+  };
+  location?: {
+    municipality?: StringFact;
+    settlement?: StringFact;
+    postal_address?: StringFact;
+    coordinates?: {
+      latitude?: number;
+      longitude?: number;
+      accuracy?: string;
+      publication_safety?: string;
+      verification?: Verification;
+    };
   };
   source_ids: string[];
   approvals: Approval[];
@@ -37,10 +63,12 @@ interface NarrativeRecord {
   summary?: string;
   source_ids: string[];
   approvals: Approval[];
+  body: string;
 }
 
 interface SourceRecord {
   id: string;
+  title: string;
   editorial_status: string;
   status: string;
   approvals: Approval[];
@@ -54,10 +82,42 @@ export interface PublishablePlace {
   placeType: string;
 }
 
+export interface NarrativeParagraph {
+  text: string;
+  sourceIds: string[];
+}
+
+export interface NarrativeSection {
+  id: string;
+  title: string;
+  paragraphs: NarrativeParagraph[];
+}
+
+export interface VisiblePlace extends PublishablePlace {
+  typeLabel: string;
+  municipality?: string;
+  settlement?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  coordinateAccuracy?: string;
+  ecclesiasticalJurisdiction?: string;
+  preview: boolean;
+  previewStatus?: string;
+  narrativeSections: NarrativeSection[];
+  sourceIds: string[];
+  sources: Array<{ id: string; title: string }>;
+  searchText: string;
+}
+
 export interface ExcludedNarrativeMarker {
   placeId: string;
   slug?: string;
   preferredName?: string;
+}
+
+interface VisiblePlaceOptions {
+  editorialPreview?: boolean;
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -83,7 +143,11 @@ async function readNarrative(file: string): Promise<NarrativeRecord> {
   if (!text.startsWith("---\n")) throw new Error(`${file} has no front matter`);
   const closing = text.indexOf("\n---\n", 4);
   if (closing === -1) throw new Error(`${file} has unclosed front matter`);
-  return parseYamlObject(`${text.slice(4, closing)}\n`, file) as unknown as NarrativeRecord;
+  const frontMatter = parseYamlObject(`${text.slice(4, closing)}\n`, file);
+  return {
+    ...(frontMatter as unknown as Omit<NarrativeRecord, "body">),
+    body: text.slice(closing + 5),
+  };
 }
 
 async function filesIn(directory: string, predicate: (file: string) => boolean): Promise<string[]> {
@@ -227,17 +291,194 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
   });
 }
 
+function parseNarrativeSections(body: string): NarrativeSection[] {
+  const sections: NarrativeSection[] = [];
+  let current: NarrativeSection | undefined;
+  let paragraphLines: string[] = [];
+
+  const flushParagraph = () => {
+    if (!current || paragraphLines.length === 0) return;
+    const raw = paragraphLines.join(" ").trim();
+    paragraphLines = [];
+    if (!raw || /^\[\^[^\]]+\]:/.test(raw)) return;
+    const sourceIds = [...new Set(
+      [...raw.matchAll(/\[\^([^\]]+)\]/g)]
+        .map((match) => match[1])
+        .filter((sourceId): sourceId is string => typeof sourceId === "string"),
+    )];
+    const text = raw.replace(/\[\^[^\]]+\]/g, "").replace(/\s+/g, " ").trim();
+    if (text) current.paragraphs.push({ text, sourceIds });
+  };
+
+  for (const line of body.split(/\r?\n/)) {
+    const heading = line.match(/^##\s+(.+?)\s+\{#([a-z0-9-]+)\}\s*$/);
+    if (heading) {
+      flushParagraph();
+      const section = { title: heading[1]!, id: heading[2]!, paragraphs: [] } satisfies NarrativeSection;
+      current = section;
+      sections.push(section);
+      continue;
+    }
+    if (!current || /^\[\^[^\]]+\]:/.test(line)) continue;
+    if (line.trim() === "") flushParagraph();
+    else paragraphLines.push(line.trim());
+  }
+  flushParagraph();
+  return sections;
+}
+
+function placeTypeLabel(placeType: string): string {
+  return placeType === "monastery" ? "Манастир" : "Свето мјесто";
+}
+
+function assertPreviewField(condition: unknown, message: string): asserts condition {
+  if (!condition) throw new Error(`Editorial preview validation failed: ${message}`);
+}
+
+async function loadPreviewAllowlist(root: string, knownPlaceIds: Set<string>): Promise<string[]> {
+  const file = path.join(root, "validation", "editorial-preview.json");
+  let value: unknown;
+  try {
+    value = JSON.parse(await readFile(file, "utf8"));
+  } catch (error) {
+    throw new Error(`Editorial preview validation failed: cannot read ${file}: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  assertPreviewField(isObject(value), "validation/editorial-preview.json must contain a JSON object");
+  assertPreviewField(
+    Object.keys(value).length === 1 && Object.hasOwn(value, "place_ids"),
+    "validation/editorial-preview.json may contain only place_ids",
+  );
+  assertPreviewField(Array.isArray(value.place_ids), "place_ids must be an array");
+  assertPreviewField(
+    value.place_ids.every((id) => typeof id === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)),
+    "place_ids must contain valid lowercase ASCII kebab-case entity IDs",
+  );
+  const ids = value.place_ids as string[];
+  assertPreviewField(new Set(ids).size === ids.length, "place_ids must not contain duplicates");
+  for (const id of ids) assertPreviewField(knownPlaceIds.has(id), `unknown allowlisted place ID ${id}`);
+  return ids;
+}
+
+export function isEditorialPreviewBuild(): boolean {
+  return process.env.EDITORIAL_PREVIEW === "true";
+}
+
+export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<VisiblePlace[]> {
+  const { places, narratives, sources } = await loadRecords(root);
+  const placeById = new Map(places.map((place) => [place.id, place]));
+  const narrativeByPlace = new Map(
+    narratives.filter((narrative) => narrative.locale === "sr").map((narrative) => [narrative.place_id, narrative]),
+  );
+  const sourceById = new Map(sources.map((source) => [source.id, source]));
+  const allowlist = await loadPreviewAllowlist(root, new Set(placeById.keys()));
+
+  return allowlist.map((id) => {
+    const place = placeById.get(id);
+    const narrative = narrativeByPlace.get(id);
+    assertPreviewField(place, `missing place record for ${id}`);
+    assertPreviewField(narrative, `missing Serbian narrative for ${id}`);
+    assertPreviewField(!["archived", "rejected"].includes(place.editorial_status), `${id} is not eligible for preview`);
+    assertPreviewField(!["archived", "rejected"].includes(narrative.editorial_status), `${id} narrative is not eligible for preview`);
+    assertPreviewField(narrative.translation_status === "source", `${id} Serbian narrative must remain the source text`);
+    assertPreviewField(typeof narrative.slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(narrative.slug), `${id} requires a valid Serbian slug`);
+    assertPreviewField(typeof narrative.preferred_name === "string" && narrative.preferred_name.trim(), `${id} requires a preferred Serbian name`);
+    assertPreviewField(typeof narrative.summary === "string" && narrative.summary.trim(), `${id} requires a Serbian summary`);
+    assertPreviewField(typeof place.place_type?.value === "string", `${id} requires a place type`);
+
+    const coordinates = place.location?.coordinates;
+    assertPreviewField(coordinates?.publication_safety === "public", `${id} coordinates must be public-safe`);
+    assertPreviewField(Number.isFinite(coordinates.latitude) && Number.isFinite(coordinates.longitude), `${id} requires valid coordinates`);
+    assertPreviewField(typeof coordinates.accuracy === "string", `${id} requires a coordinate accuracy classification`);
+    assertPreviewField(typeof place.location?.municipality?.value === "string", `${id} requires a municipality`);
+    assertPreviewField(typeof place.location?.settlement?.value === "string", `${id} requires a settlement`);
+    assertPreviewField(typeof place.location?.postal_address?.value === "string", `${id} requires an address`);
+    assertPreviewField(typeof place.ecclesiastical?.jurisdiction?.value === "string", `${id} requires an ecclesiastical jurisdiction`);
+
+    const sourceIds = [...new Set([...place.source_ids, ...narrative.source_ids])];
+    assertPreviewField(sourceIds.length > 0, `${id} requires registered sources`);
+    const registeredSources = sourceIds.map((sourceId) => {
+      const source = sourceById.get(sourceId);
+      assertPreviewField(source && source.status === "active", `${id} references missing or inactive source ${sourceId}`);
+      return { id: source.id, title: source.title };
+    });
+    const narrativeSections = parseNarrativeSections(narrative.body);
+    assertPreviewField(narrativeSections.length > 0, `${id} requires sourced narrative sections`);
+    for (const section of narrativeSections) {
+      for (const paragraph of section.paragraphs) {
+        assertPreviewField(paragraph.sourceIds.length > 0, `${id} narrative paragraph in ${section.id} requires a source reference`);
+        for (const sourceId of paragraph.sourceIds) {
+          assertPreviewField(sourceById.has(sourceId), `${id} narrative references unknown source ${sourceId}`);
+        }
+      }
+    }
+
+    const municipality = place.location.municipality.value;
+    const settlement = place.location.settlement.value;
+    const latitude = coordinates.latitude as number;
+    const longitude = coordinates.longitude as number;
+    const coordinateAccuracy = coordinates.accuracy as string;
+    const ecclesiasticalJurisdiction = place.ecclesiastical.jurisdiction.value;
+    return {
+      id: place.id,
+      slug: narrative.slug,
+      name: narrative.preferred_name,
+      summary: narrative.summary,
+      placeType: place.place_type.value,
+      typeLabel: placeTypeLabel(place.place_type.value),
+      municipality,
+      settlement,
+      address: place.location.postal_address.value,
+      latitude,
+      longitude,
+      coordinateAccuracy,
+      ecclesiasticalJurisdiction,
+      preview: true,
+      previewStatus: place.editorial_status,
+      narrativeSections,
+      sourceIds,
+      sources: registeredSources,
+      searchText: [narrative.preferred_name, narrative.summary, municipality, settlement].join(" "),
+    };
+  });
+}
+
+export async function loadVisiblePlaces(
+  root = process.cwd(),
+  options: VisiblePlaceOptions = {},
+): Promise<VisiblePlace[]> {
+  const editorialPreview = options.editorialPreview ?? isEditorialPreviewBuild();
+  if (!editorialPreview) {
+    const publicPlaces = await loadPublishablePlaces(root);
+    return publicPlaces.map((place) => ({
+      ...place,
+      typeLabel: placeTypeLabel(place.placeType),
+      preview: false,
+      narrativeSections: [],
+      sourceIds: [],
+      sources: [],
+      searchText: [place.name, place.summary].join(" "),
+    }));
+  }
+
+  const [publicPlaces, previewPlaces] = await Promise.all([
+    loadVisiblePlaces(root, { editorialPreview: false }),
+    loadEditorialPreviewPlaces(root),
+  ]);
+  const previewIds = new Set(previewPlaces.map((place) => place.id));
+  return [...publicPlaces.filter((place) => !previewIds.has(place.id)), ...previewPlaces];
+}
+
 export async function loadExcludedNarrativeMarkers(
   root = process.cwd(),
 ): Promise<ExcludedNarrativeMarker[]> {
-  const publicIds = new Set((await loadPublishablePlaces(root)).map((place) => place.id));
+  const visibleIds = new Set((await loadVisiblePlaces(root)).map((place) => place.id));
   const narrativeFiles = await filesIn(
     path.join(root, "content", "places"),
     (file) => file.endsWith(`${path.sep}narratives${path.sep}sr.md`),
   );
   const narratives = await Promise.all(narrativeFiles.map(readNarrative));
   return narratives
-    .filter((narrative) => !publicIds.has(narrative.place_id))
+    .filter((narrative) => !visibleIds.has(narrative.place_id))
     .map((narrative) => ({
       placeId: narrative.place_id,
       ...(narrative.slug ? { slug: narrative.slug } : {}),

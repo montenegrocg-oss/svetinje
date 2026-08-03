@@ -2,6 +2,14 @@
 import EmptyCatalogueState from "./EmptyCatalogueState.astro";
 import FilterChips from "./FilterChips.astro";
 import InterfaceIcon from "./InterfaceIcon.astro";
+import PlaceCard from "./PlaceCard.astro";
+import type { VisiblePlace } from "../lib/content/publication";
+
+interface Props {
+  places?: VisiblePlace[];
+}
+
+const { places = [] } = Astro.props;
 ---
 
 <aside class="explorer-sidebar" id="pretraga" aria-label="Претрага и филтри каталога" data-testid="explorer-sidebar">
@@ -22,5 +30,14 @@ import InterfaceIcon from "./InterfaceIcon.astro";
   </form>
 
   <FilterChips group="catalogue" />
-  <EmptyCatalogueState statusId="catalogue-status" />
+  {places.length === 0 ? (
+    <EmptyCatalogueState statusId="catalogue-status" />
+  ) : (
+    <div class="explorer-results">
+      <p id="catalogue-status" class="sr-only" role="status" aria-live="polite">
+        Приказан је један запис у радном приказу.
+      </p>
+      {places.map((place) => <PlaceCard place={place} variant="sidebar" />)}
+    </div>
+  )}
 </aside>

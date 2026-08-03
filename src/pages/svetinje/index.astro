@@ -1,8 +1,10 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { loadPublishablePlaces } from "../../lib/content/publication";
+import PlaceCard from "../../components/PlaceCard.astro";
+import { isEditorialPreviewBuild, loadVisiblePlaces } from "../../lib/content/publication";
 
-const places = await loadPublishablePlaces();
+const places = await loadVisiblePlaces();
+const editorialPreview = isEditorialPreviewBuild();
 ---
 
 <BaseLayout
@@ -14,7 +16,11 @@ const places = await loadPublishablePlaces();
     <div class="shell narrow">
       <p class="eyebrow">Каталог</p>
       <h1>Светиње</h1>
-      <p>Овдје ће бити приказани само записи који су прошли све обавезне стручне, црквене, језичке и издавачке провјере.</p>
+      {editorialPreview ? (
+        <p>Приказују се записи које власник пројекта тренутно прегледа.</p>
+      ) : (
+        <p>Овдје ће бити приказани само записи који су прошли све обавезне стручне, црквене, језичке и издавачке провјере.</p>
+      )}
     </div>
   </header>
 
@@ -29,15 +35,9 @@ const places = await loadPublishablePlaces();
           <a class="text-link" href="/izvori/">Прочитај уређивачку политику <span aria-hidden="true">→</span></a>
         </div>
       ) : (
-        <ul class="catalogue-grid">
+        <ul class="catalogue-grid editorial-catalogue" aria-label="Светиње у радном приказу">
           {places.map((place) => (
-            <li>
-              <article class="place-card">
-                <p class="eyebrow">{place.placeType}</p>
-                <h2>{place.name}</h2>
-                <p>{place.summary}</p>
-              </article>
-            </li>
+            <li><PlaceCard place={place} variant="catalogue" /></li>
           ))}
         </ul>
       )}
