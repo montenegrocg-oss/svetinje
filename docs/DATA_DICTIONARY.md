@@ -1,626 +1,1063 @@
-# Svetinje.me Data Dictionary
+# Svetinje.me Proposed Content Schema Specification
+
+- Status: Proposed for Phase 1
+- Schema version: 1
+- Date: 2026-08-03
+- Scope: YAML and Markdown content design only
+- Implementation status: Not implemented
 
 ## Purpose
 
-This document defines the conceptual data model for future YAML and Markdown content. It is documentation, not an implementation schema. No sample sacred-place records or fictional values are included intentionally.
+This document converts the Phase 0 conceptual data dictionary into an implementable specification for future content files. It defines file locations, identities, field types, controlled values, cross-file references, validation behavior, and publication gates.
 
-The model separates:
+It does not create content records, application code, Astro configuration, or dependencies. No sample monastery, church, coordinate, schedule, contact, source, or historical claim is included.
 
-- stable identity;
-- language-neutral facts;
-- localized prose;
-- source provenance;
-- verification state;
-- translation state;
-- time-sensitive practical information;
-- geographic accuracy;
-- media rights;
-- publication state.
+The first research scope is the Metropolitanate of Montenegro and the Littoral. Scope does not prove jurisdiction, ownership, status, or any other fact for a specific place. Those relationships must be verified per place.
 
-Phase 1 will translate this dictionary into explicit content schemas after approval.
+## 1. Normative language
 
-## 1. General conventions
+The words must, must not, required, should, and may are normative within this proposed specification.
 
-### Stable IDs
+- Must and must not define validation or publication requirements.
+- Required means a file cannot reach the specified editorial state without the field.
+- Optional means the field may be absent.
+- Unknown means the value is not known and must not be replaced with a placeholder.
+- Not applicable means a field does not apply and should normally be absent.
 
-Each entity has an immutable ID.
+Phase 1 implementation may add stricter validation, but must not weaken the accuracy, review, rights, or publication requirements without owner approval.
 
-An ID:
+## 2. Approved design decisions
 
-- is unique within its entity type;
-- uses lowercase ASCII characters, digits, and hyphens;
-- does not encode a locale;
-- does not change when a public name or slug changes;
-- is never reused after archival.
+The schema implements these owner decisions:
 
-An ID should not assert an uncertain fact. If identity is unresolved, do not create a publishable entity.
+- Serbian Cyrillic is the source and default language.
+- Russian uses the /ru/ locale.
+- English uses the /en/ locale.
+- Technical entity IDs are immutable lowercase ASCII kebab-case.
+- Content is stored in Git as YAML and Markdown.
+- Large original media files are not stored in Git.
+- No database, CMS, custom admin panel, or server-side rendering is used for the prototype.
+- Maxim is project owner and initial publishing reviewer.
+- Factual, ecclesiastical, Serbian-language, Russian-language, and English-language reviewers are TBD and required before relevant public publication.
+- MapLibre is the future renderer; the tile provider is deferred.
 
-### Required, optional, unknown, and not applicable
+## 3. Directory and filename structure
 
-- Required means the record cannot reach its target publication state without the field.
-- Optional means the field may be omitted.
-- Unknown means the value is not known and must not be guessed.
-- Not applicable means the field does not apply to the entity.
+The future editorial root is content/ at repository root. It remains separate from application source code.
 
-Prefer omission plus editorial status over empty strings, placeholder text, zero coordinates, or invented values.
+    content/
+      places/
+        {place-id}/
+          place.yaml
+          narratives/
+            sr.md
+            ru.md
+            en.md
+      sources/
+        {source-id}.yaml
+      practical/
+        {place-id}/
+          {practical-id}.yaml
+      media/
+        {media-id}.yaml
 
-### Dates and times
+Only files that contain real, researched material should exist. Do not create empty locale files, empty practical files, placeholder sources, or fictional fixtures in the public content tree.
 
-Use ISO 8601 representations in structured data:
+### 3.1 Place core
 
-- calendar date: YYYY-MM-DD;
-- timestamp: UTC timestamp with Z;
-- year only or approximate historical date: use a dedicated historical-date representation rather than inventing a complete date.
+Path:
 
-Historical precision and uncertainty must be stored explicitly. Do not turn a century or approximate period into an exact date.
+    content/places/{place-id}/place.yaml
 
-### Locales
+Rules:
 
-Approved locale keys:
+- Directory name must equal the id field.
+- One place.yaml exists per stable place entity.
+- The file contains language-neutral identity, classification, relationships, geographic facts, source references, workflow status, and approvals.
+- It does not contain localized narrative prose or volatile practical values.
 
-| Key | Language | Role |
+### 3.2 Localized narrative
+
+Paths:
+
+    content/places/{place-id}/narratives/sr.md
+    content/places/{place-id}/narratives/ru.md
+    content/places/{place-id}/narratives/en.md
+
+Rules:
+
+- The filename is exactly the locale key.
+- sr.md is the Serbian Cyrillic source narrative.
+- ru.md and en.md are translations tied to an approved Serbian revision.
+- Missing translations are represented by missing files, not empty pages.
+- Front matter contains structured metadata; the Markdown body contains localized prose and citations.
+- A locale file is not publishable merely because it exists.
+
+### 3.3 Source
+
+Path:
+
+    content/sources/{source-id}.yaml
+
+Rules:
+
+- Filename must equal the id field.
+- One source file represents one identifiable publication, official page, archival item, or academic work.
+- A source record may be referenced by many places and claims.
+- A source URL alone is not an adequate source record.
+
+### 3.4 Practical information
+
+Path:
+
+    content/practical/{place-id}/{practical-id}.yaml
+
+Rules:
+
+- The directory must reference an existing place ID.
+- Filename must equal the id field.
+- One file represents one independently reviewable volatile item.
+- Schedules, visiting hours, contacts, access conditions, and temporary notices must not be embedded in historical narrative.
+- Independent files allow withdrawal or re-verification without changing unrelated facts.
+
+### 3.5 Media metadata
+
+Path:
+
+    content/media/{media-id}.yaml
+
+Rules:
+
+- Filename must equal the id field.
+- The file contains metadata, rights, storage references, review status, and localized alt text or captions.
+- Large binary originals and bulk derivatives must not exist in Git.
+- An object key does not prove rights; rights fields and review are separately required.
+
+## 4. Encoding and serialization rules
+
+All YAML and Markdown files must:
+
+- be UTF-8;
+- use LF line endings;
+- end with one newline;
+- contain no tab indentation;
+- contain no duplicate keys;
+- use two-space YAML indentation;
+- avoid YAML anchors, aliases, custom tags, and merge keys;
+- use only the schema-defined keys;
+- omit unknown values rather than use empty strings, null, zero, TBD, unknown text, or invented placeholders;
+- use ISO 8601 calendar dates as YYYY-MM-DD;
+- use UTC timestamps with Z when time is required;
+- preserve Serbian Cyrillic as Unicode text.
+
+YAML booleans must be true or false. Identifiers and controlled values must be quoted only when YAML parsing would otherwise be ambiguous; validation operates on parsed values, not formatting.
+
+Markdown must have exactly one YAML front matter block at the beginning. A byte-order mark is not permitted.
+
+## 5. Shared primitive types
+
+### 5.1 EntityId
+
+Pattern:
+
+    ^[a-z0-9]+(?:-[a-z0-9]+)*$
+
+Constraints:
+
+- lowercase ASCII only;
+- starts and ends with a letter or digit;
+- single hyphens between segments;
+- immutable after assignment;
+- unique within its entity type;
+- never reused after archival;
+- contains no locale key as a naming suffix merely to represent translation;
+- contains no unverified date, jurisdiction, rank, or status.
+
+Entity IDs are approved after identity research. The owner-supplied prototype labels are not IDs.
+
+### 5.2 Locale
+
+Allowed values:
+
+- sr
+- ru
+- en
+
+### 5.3 UrlSlug
+
+Proposed pattern:
+
+    ^[a-z0-9]+(?:-[a-z0-9]+)*$
+
+A slug is locale-specific, lowercase ASCII kebab-case, and language-approved. It is not the immutable entity ID. Detailed rules are in SLUG_AND_URL_POLICY.md.
+
+### 5.4 SourceId, PlaceId, PracticalId, MediaId, ContributorId
+
+Each is an EntityId interpreted in the appropriate namespace. Cross-namespace reuse is allowed technically but discouraged where it could confuse editors.
+
+### 5.5 Date
+
+Exact calendar date in YYYY-MM-DD. Do not use an exact date for a historical claim when the source supports only a year, century, range, or approximation.
+
+### 5.6 Timestamp
+
+UTC timestamp in ISO 8601 form ending in Z.
+
+### 5.7 HistoricalDate
+
+A discriminated structure for historical precision.
+
+Required fields:
+
+| Field | Type | Rule |
 | --- | --- | --- |
-| sr | Serbian Cyrillic | Primary source and default public locale |
-| ru | Russian | Translation locale under /ru/ |
-| en | English | Translation locale under /en/ |
+| precision | enum | Determines which value fields are allowed |
+| display_text_sr | Serbian Cyrillic text | Required when a machine value cannot express the source faithfully |
+| source_ids | SourceId list | At least one |
+| verification_status | VerificationStatus | Must reflect evidence |
 
-The Serbian HTML language value is sr-Cyrl-ME. Public alternate-language metadata uses the search-compatible values approved in ADR 0002.
+Allowed precision values:
 
-### References
+- exact_date;
+- year;
+- year_range;
+- century;
+- century_range;
+- before;
+- after;
+- approximate;
+- traditional_attribution;
+- unknown.
 
-Relationships use stable IDs, not copied display names. A missing referenced entity is a validation error when the relationship is required for publication.
+Value fields are conditional:
 
-### Audit fields
+- exact_date uses date;
+- year uses year;
+- year_range uses start_year and end_year;
+- century uses century;
+- century_range uses start_century and end_century;
+- before and after use boundary_year when the source supports it;
+- approximate uses the narrowest supported machine value plus display_text_sr;
+- traditional_attribution requires display_text_sr;
+- unknown has no machine value and is never a publishable claim by itself.
 
-Every editorial entity should support:
+A validator must reject false precision, inverted ranges, and incompatible fields.
 
-- created_at;
-- created_by;
-- updated_at;
-- updated_by.
+### 5.8 ReviewApproval
 
-Reviewable entities additionally support reviewer and review-date fields appropriate to their status.
-
-Personal data in contributor fields must be limited to approved public or internal identifiers. Do not expose private contact details.
-
-## 2. Shared status enumerations
-
-### editorial_status
-
-| Value | Meaning | Public eligibility |
+| Field | Type | Required |
 | --- | --- | --- |
-| research | Investigation only | Never |
-| draft | Incomplete or unreviewed | Never |
-| fact_review | Under factual review | Never |
-| language_review | Under language review | Never |
-| approved | Required reviews complete | Protected preview only by default |
-| published | Publishing approval complete | Yes |
-| needs_reverification | Previously reviewed, another check required | Conditional by field risk |
-| disputed | Credible conflict is unresolved | Conditional with approved wording |
-| archived | Retained but inactive | No |
-| rejected | Not accepted for publication | No |
+| role | ReviewRole | Yes |
+| reviewer_id | ContributorId | Yes |
+| outcome | approval enum | Yes |
+| reviewed_at | Timestamp | Yes |
+| reviewed_revision | 40-character Git commit SHA | Yes |
+| scope | non-empty text | Yes |
+| notes | non-empty text | No |
 
-### verification_status
+Allowed outcomes:
 
-| Value | Meaning |
-| --- | --- |
-| verified | Supported by allowed source and factual review |
-| requires_verification | Evidence is incomplete |
-| disputed | Credible allowed sources conflict |
-| unknown | No acceptable value is known |
-| not_applicable | Field does not apply |
+- approved;
+- changes_requested;
+- rejected;
+- withdrawn.
 
-### translation_status
+Only approved satisfies a publication gate. A later material change invalidates an approval for the affected scope until reviewed again.
 
-| Value | Meaning | Public eligibility |
+### 5.9 AuditBlock
+
+| Field | Type | Required |
 | --- | --- | --- |
-| missing | No translation exists | No |
-| draft | Translation is incomplete | No |
-| in_review | Language review in progress | No |
-| approved | Review complete | Preview |
-| published | Publishing approval complete | Yes |
-| outdated | Serbian source changed materially | No until reviewed |
-| archived | Translation retired | No |
+| created_at | Timestamp | Yes |
+| created_by | ContributorId | Yes |
+| updated_at | Timestamp | Yes |
+| updated_by | ContributorId | Yes |
 
-### freshness_status
+updated_at must not precede created_at.
 
-| Value | Meaning |
-| --- | --- |
-| current | Verified within its approved validity rule |
-| expiring | Approaching known validity end |
-| stale | Validity ended or review is overdue |
-| withdrawn | Explicitly removed from display |
-| unknown | Freshness cannot be established |
+### 5.10 VerificationBlock
 
-### source_status
+| Field | Type | Required |
+| --- | --- | --- |
+| status | VerificationStatus | Yes |
+| source_ids | SourceId list | Required when verified or disputed |
+| reviewed_by | ContributorId list | Required when verified or disputed |
+| reviewed_at | Date | Required when verified or disputed |
+| qualification | text | Required when disputed or approximate |
+| valid_until | Date | No |
 
-| Value | Meaning |
-| --- | --- |
-| active | Available and usable |
-| unavailable | Temporarily or permanently inaccessible |
-| superseded | Replaced by a newer authoritative source |
-| disputed | Source reliability or interpretation is challenged |
-| withdrawn | Publisher or rights holder withdrew it |
+The reviewers listed here document factual checking. They do not replace ReviewApproval records required for publication.
 
-### publication_safety
+## 6. Controlled values
 
-| Value | Meaning |
-| --- | --- |
-| public | May be published when other reviews pass |
-| generalize | Publish only reduced precision or detail |
-| withhold | Do not publish the value |
-| review_required | Safety decision is pending |
+### 6.1 EditorialStatus
 
-## 3. Entity: place
+- research
+- draft
+- fact-review
+- ecclesiastical-review
+- language-review
+- approved
+- published
+- needs-reverification
+- disputed
+- archived
+- rejected
 
-The place entity stores stable, language-neutral identity and facts.
+Only published is eligible for public production. approved is eligible for protected preview after all required non-publishing reviews.
 
-### Identity fields
+### 6.2 VerificationStatus
 
-| Field | Type | Required for publication | Meaning |
-| --- | --- | --- | --- |
-| id | stable ID | Yes | Immutable place identifier |
-| place_type | enum | Yes | Approved category |
-| editorial_status | enum | Yes | Workflow state for the core record |
-| parent_place_id | place ID | No | Parent complex or institution when verified |
-| alternate_external_ids | list of external references | No | IDs from approved catalogues with source context |
-| created_at | timestamp | Yes | Record creation time |
-| created_by | contributor ID | Yes | Record creator |
-| updated_at | timestamp | Yes | Last structured-record change |
-| updated_by | contributor ID | Yes | Last editor |
+- verified
+- requires-verification
+- disputed
+- unknown
+- not-applicable
 
-### place_type
+requires-verification and unknown are never publicly rendered as facts. disputed requires qualified wording and approval.
 
-Initial controlled values:
+### 6.3 TranslationStatus
 
-- monastery;
-- church;
-- chapel;
-- cathedral;
-- skete;
-- hermitage;
-- holy_spring;
-- cave;
-- shrine;
-- other.
+- source
+- missing
+- draft
+- in-review
+- approved
+- published
+- outdated
+- archived
 
-Use other only with an explanatory classification note and review. Do not choose a type from appearance or tourism listings alone.
+sr.md must use source. ru.md and en.md must not use source.
 
-### Ecclesiastical fields
+### 6.4 FreshnessStatus
 
-| Field | Type | Required | Meaning |
-| --- | --- | --- | --- |
-| diocese_id | referenced entity ID | No | Diocese supported by an approved source |
-| jurisdiction | verified text or reference | No | Jurisdiction when appropriate and sourced |
-| dedication_refs | list of referenced entity IDs or controlled records | No | Dedication or patron references |
-| community_type | controlled value | No | Monastic community classification when relevant and verified |
-| associated_entity_ids | list | No | Saints, relics, feasts, or related entities |
-| ecclesiastical_source_ids | source ID list | Conditional | Evidence for populated ecclesiastical fields |
-| ecclesiastical_verification | verification block | Conditional | Review state for populated fields |
+- current
+- expiring
+- stale
+- withdrawn
+- unknown
 
-Do not use free-form tags as a substitute for reviewed relationships.
+### 6.5 PublicationSafety
 
-### Relationship fields
+- public
+- generalize
+- withhold
+- review-required
 
-| Field | Type | Required | Meaning |
-| --- | --- | --- | --- |
-| related_place_ids | place ID list | No | Editorially approved relationships |
-| route_ids | route ID list | No | Routes containing or referring to the place |
-| article_ids | article ID list | No | Related history or guide articles |
-| source_ids | source ID list | Yes for published factual content | Sources supporting core facts |
-| media_ids | media ID list | No | Approved related media |
-| unresolved_notes | internal text | No | Non-public verification questions |
+### 6.6 ReviewRole
 
-A nearby relationship must not be inferred from name or municipality alone. Geographic proximity can be generated later from coordinates, while editorially related remains a separate concept.
+- project-owner
+- publishing
+- factual
+- ecclesiastical
+- sr-language
+- ru-language
+- en-language
+- media-rights
+- geographic-safety
 
-## 4. Entity: place_translation
-
-The place_translation entity stores locale-specific public wording. It does not own coordinates, contact facts, or source identity.
-
-| Field | Type | Required for localized publication | Meaning |
-| --- | --- | --- | --- |
-| id | stable ID | Yes | Translation record identifier |
-| place_id | place ID | Yes | Linked core place |
-| locale | locale enum | Yes | sr, ru, or en |
-| translation_status | enum | Yes | Locale workflow state |
-| source_revision | commit or content revision | Yes for ru and en | Approved Serbian revision translated |
-| preferred_name | text | Yes | Primary display name |
-| short_name | text | No | Short display form |
-| alternate_names | structured list | No | Historical or common names with context and sources |
-| slug | text | Yes | Reviewed locale-specific public slug |
-| summary | text | Yes | Concise sourced description |
-| introduction | Markdown | No | Introductory narrative |
-| history | Markdown | No | Historical narrative |
-| spiritual_significance | Markdown | No | Sourced spiritual context |
-| architecture_and_art | Markdown | No | Sourced description |
-| relics_icons_traditions | Markdown | No | Sourced and carefully qualified content |
-| practical_notes | Markdown | No | Localized non-volatile guidance |
-| accessibility_notes | Markdown | No | Localized verified accessibility wording |
-| seo_title | text | Yes | Accurate localized title |
-| seo_description | text | Yes | Accurate localized description |
-| section_source_refs | map of section to source IDs | Conditional | Traceability for narrative sections |
-| translator_id | contributor ID | Required for ru and en | Translator |
-| translated_at | date | Required for ru and en | Translation date |
-| language_reviewer_id | contributor ID | Yes | Locale reviewer |
-| language_reviewed_at | date | Yes | Review date |
-| factual_reviewer_id | contributor ID | Yes for Serbian source | Reviewer of factual content |
-| factual_reviewed_at | date | Yes for Serbian source | Factual review date |
-
-File presence must not substitute for translation_status.
-
-## 5. Entity: source
-
-A source is reusable evidence, not merely a URL.
-
-| Field | Type | Required | Meaning |
-| --- | --- | --- | --- |
-| id | stable ID | Yes | Immutable source identifier |
-| title | text | Yes | Source title |
-| publisher | text | Yes | Responsible institution or publisher |
-| author | text | No | Author when known and relevant |
-| source_type | enum | Yes | Controlled source category |
-| url | URL | Conditional | Online location |
-| bibliographic_reference | text | Conditional | Complete offline reference |
-| publication_date | historical/date value | No | Date at supported precision |
-| accessed_at | date | Required for online source | Last editorial access |
-| original_locale | locale or language tag | No | Original language |
-| locator | text | Conditional | Page, chapter, section, or paragraph |
-| status | source_status | Yes | Availability or reliability state |
-| copyright_notes | text | No | Reuse limitations |
-| archive_reference | text | No | Approved archived-copy reference |
-| notes | internal text | No | Editorial context, not public fact |
-
-At least one of url or bibliographic_reference is required. A URL alone is not adequate when title and publisher are unknown.
-
-### source_type
+### 6.7 PlaceType
 
 Initial values:
 
-- official_church;
-- diocesan;
-- monastery;
-- official_publication;
-- academic;
-- archival;
-- government;
-- heritage_institution;
-- other_approved.
+- monastery
+- church
+- chapel
+- cathedral
+- skete
+- hermitage
+- holy-spring
+- cave
+- shrine
+- other
 
-other_approved requires a documented approval note. Discovery-only sources are not registered as supporting evidence unless policy later permits them.
+other requires an explanatory note and factual and ecclesiastical review. No place type is assigned from the owner-supplied label alone.
 
-## 6. Entity: claim_reference
+### 6.8 CoordinateAccuracy
 
-A claim_reference connects a specific claim or content section to evidence.
+- exact-entrance
+- complex-centroid
+- approximate-area
+- settlement-level
+- withheld
 
-| Field | Type | Required | Meaning |
-| --- | --- | --- | --- |
-| id | stable ID | Yes | Reference identifier |
-| entity_id | stable ID | Yes | Place, translation, route, article, or practical record |
-| field_or_section | controlled path | Yes | Exact supported field or section |
-| source_ids | source ID list | Yes | Supporting sources |
-| locator_notes | text | No | More precise location in sources |
-| verification_status | enum | Yes | Evidence state |
-| factual_reviewer_id | contributor ID | Required when verified | Reviewer |
-| reviewed_at | date | Required when verified | Review date |
-| qualification | text | No | Approximation, dispute, or scope |
-| internal_notes | text | No | Non-public review notes |
+### 6.9 SourceType
 
-This entity may be implemented as embedded structured metadata rather than a separate file. The traceability requirement remains the same.
+- official-church
+- diocesan
+- monastery
+- official-publication
+- academic
+- archival
+- government
+- heritage-institution
+- other-approved
 
-## 7. Entity: geographic_location
+other-approved requires an approval note from the project owner.
 
-Geographic data is language-neutral.
+### 6.10 PracticalKind
 
-| Field | Type | Required for map publication | Meaning |
-| --- | --- | --- | --- |
-| place_id | place ID | Yes | Linked place |
-| country_code | ISO country code | Yes | ME unless a future approved scope expands |
-| municipality | referenced or verified text | No | Municipality supported by source |
-| settlement | verified text | No | Settlement supported by source |
-| postal_address | structured text | No | Public address if verified |
-| latitude | decimal | Conditional | WGS 84 latitude |
-| longitude | decimal | Conditional | WGS 84 longitude |
-| coordinate_reference_system | fixed value | Required with coordinates | EPSG:4326 |
-| coordinate_accuracy | enum | Required with coordinates | Precision and intended display |
-| coordinate_source_ids | source ID list | Required with coordinates | Evidence |
-| verified_at | date | Required with coordinates | Review date |
-| verified_by | contributor ID | Required with coordinates | Factual reviewer |
-| publication_safety | enum | Required with coordinates | Public, generalize, withhold, or review |
-| elevation_m | number | No | Elevation only when verified and useful |
-| notes | internal text | No | Ambiguity or field-check notes |
+- public-phone
+- public-email
+- official-website
+- visiting-hours
+- service-schedule
+- seasonal-access
+- temporary-closure
+- road-access
+- public-transport
+- parking
+- walking-access
+- accessibility
+- official-visitor-instruction
+- other-approved
 
-### coordinate_accuracy
+### 6.11 PracticalValueType
 
-- exact_entrance;
-- complex_centroid;
-- approximate_area;
-- settlement_level;
-- withheld.
+- contact
+- url
+- schedule
+- localized-text
 
-Latitude and longitude are both present or both absent. Zero is not a missing-value marker. More decimal places do not constitute stronger accuracy.
+### 6.12 DisplayPolicy
 
-## 8. Entity: practical_information
+- show
+- show-with-verification-date
+- show-with-warning
+- hide-when-stale
+- withdraw
 
-This entity groups volatile visitor information separately from historical prose.
+### 6.13 MediaType
 
-| Field | Type | Required | Meaning |
-| --- | --- | --- | --- |
-| id | stable ID | Yes | Practical record ID |
-| place_id | place ID | Yes | Linked place |
-| field_type | enum | Yes | Type of practical information |
-| value | structured value or localized reference | Yes | Exact reviewed value |
-| locale | locale | Conditional | Required when wording is localized |
-| source_ids | source ID list | Yes | Current evidence |
-| verification_status | enum | Yes | Evidence state |
-| freshness_status | enum | Yes | Currentness state |
-| verified_at | date | Yes | Verification date |
-| verified_by | contributor ID | Yes | Reviewer |
-| valid_from | date | No | Start of stated validity |
-| valid_until | date | No | End of stated validity |
-| display_policy | enum | Yes | Show, warn, hide, or withdraw |
-| editorial_status | enum | Yes | Workflow state |
-| notes | internal text | No | Review notes |
+- image
+- video
+- audio
+- panorama
+- model
+- other
 
-### practical field types
+### 6.14 RightsBasis
 
-Initial categories:
+- project-original
+- written-permission
+- compatible-license
+- public-domain-confirmed
+- other-approved
 
-- public_phone;
-- public_email;
-- official_website;
-- visiting_hours;
-- service_schedule;
-- seasonal_access;
-- temporary_closure;
-- road_access;
-- public_transport;
-- parking;
-- walking_access;
-- accessibility;
-- official_visitor_instruction;
-- other_approved.
+## 7. Place core schema
 
-No default values are permitted.
+File:
 
-### display_policy
+    content/places/{place-id}/place.yaml
 
-- show;
-- show_with_verification_date;
-- show_with_warning;
-- hide_when_stale;
-- withdrawn.
+### 7.1 Required top-level keys
 
-Schedules, temporary closures, and event-like information should normally use hide_when_stale unless a later policy explicitly approves another behavior.
+| Key | Type | Required |
+| --- | --- | --- |
+| schema_version | integer literal 1 | Yes |
+| id | PlaceId | Yes |
+| editorial_status | EditorialStatus | Yes |
+| place_type | fact block | Yes after identity research |
+| parent_place_id | fact block | No |
+| ecclesiastical | object | No, but required facts must be researched before publication |
+| location | object | No |
+| relationships | object | Yes; empty lists allowed only in research or draft |
+| source_ids | SourceId list | Yes from fact-review onward |
+| approvals | ReviewApproval list | Yes from approved onward |
+| audit | AuditBlock | Yes |
 
-## 9. Entity: media
+No localized names, summaries, slugs, captions, schedules, contact values, or prose are allowed in place.yaml.
 
-Media metadata is stored in Git. Large originals are not.
+### 7.2 Generic fact block
 
-| Field | Type | Required for publication | Meaning |
-| --- | --- | --- | --- |
-| id | stable ID | Yes | Media identifier |
-| media_type | enum | Yes | Image, video, audio, model, panorama, or other |
-| storage_provider | controlled text | Yes for external media | Approved object store |
-| object_key | text | Yes for external media | Versioned storage key |
-| checksum | text | Yes | Integrity identifier |
-| mime_type | text | Yes | Media type |
-| width | integer | Required for images | Pixel width |
-| height | integer | Required for images | Pixel height |
-| duration | duration | Required for audio/video | Media duration |
-| creator | text | Yes | Photographer or creator |
-| copyright_owner | text | Yes | Rights owner |
-| rights_basis | enum | Yes | Original, permission, or compatible license |
-| permission_reference | text | Conditional | Evidence of permission |
-| license | text | Conditional | License name and version |
-| credit_line | text | Yes | Required public credit |
-| allowed_uses | list | Yes | Approved uses |
-| expires_at | date | No | Rights expiry |
-| withdrawal_status | enum | Yes | Active, review, or withdrawn |
-| related_entity_ids | list | Yes | Places, routes, or articles |
-| focal_point | structured coordinate | No | Crop guidance |
-| publication_status | editorial status | Yes | Media workflow state |
-| publication_safety | enum | Yes | Public or restricted handling |
-| created_at | timestamp | Yes | Metadata creation |
-| updated_at | timestamp | Yes | Metadata update |
+Language-neutral factual fields use:
 
-### Localized media text
+| Key | Type | Required |
+| --- | --- | --- |
+| value | field-specific type | Yes unless status is unknown |
+| verification | VerificationBlock | Yes |
 
-Store separately per locale:
+Unknown values should usually omit the entire optional fact. A required research target may temporarily use a block whose verification.status is requires-verification, but it cannot advance to approved or published.
 
-- media_id;
+### 7.3 place_type
+
+- value must be PlaceType.
+- verification must cite at least one allowed source when status is verified.
+- a factual reviewer and ecclesiastical reviewer are both required before publication.
+
+### 7.4 parent_place_id
+
+- value must reference another place.
+- self-reference is forbidden.
+- the full graph must be acyclic.
+- a parent relationship must be sourced and reviewed.
+- absence does not mean no parent exists.
+
+### 7.5 ecclesiastical object
+
+Allowed keys:
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| authority_id | fact block of EntityId | Verified ecclesiastical authority relationship |
+| jurisdiction | fact block of text or EntityId | Verified jurisdiction when appropriate |
+| dedication_ids | fact block of EntityId list | Verified dedications or patrons |
+| community_type | fact block of controlled text | Verified monastic community classification |
+| associated_entity_ids | fact block of EntityId list | Saints, relics, feasts, or related entities |
+
+Until controlled registries are approved, these optional fields remain absent rather than free-form guessed values. Publication requires ecclesiastical review for every populated ecclesiastical field.
+
+The Phase 1 project scope must not be copied automatically into authority_id or jurisdiction.
+
+### 7.6 location object
+
+Allowed keys:
+
+| Key | Type | Meaning |
+| --- | --- | --- |
+| country_code | fact block of two-letter code | Country |
+| municipality | fact block of text or future reference | Municipality |
+| settlement | fact block of text or future reference | Settlement |
+| postal_address | fact block of structured address | Public verified address |
+| coordinates | coordinate block | Geographic position |
+| elevation_m | fact block of number | Verified elevation when useful |
+
+Coordinate block:
+
+| Key | Type | Required with public coordinates |
+| --- | --- | --- |
+| latitude | number from -90 through 90 | Yes |
+| longitude | number from -180 through 180 | Yes |
+| crs | literal EPSG:4326 | Yes |
+| accuracy | CoordinateAccuracy | Yes |
+| publication_safety | PublicationSafety | Yes |
+| verification | VerificationBlock | Yes |
+
+Latitude and longitude must be both present or both absent. Zero is a valid numeric value and must never be used as a placeholder. Decimal precision must not exceed evidence.
+
+### 7.7 relationships object
+
+Allowed keys:
+
+- related_place_ids;
+- route_ids;
+- article_ids;
+- media_ids.
+
+All values are deduplicated EntityId lists. References must resolve. Relationships do not prove geography, ecclesiastical authority, or historical association without supporting claim references.
+
+### 7.8 Place publication gate
+
+place.yaml may use editorial_status published only when:
+
+- id and path match;
+- place_type is verified;
+- every public fact is verified or approved as disputed;
+- all source references resolve to active or explicitly accepted source records;
+- no requires-verification or unknown fact is marked for display;
+- required factual approval exists from an assigned factual reviewer;
+- required ecclesiastical approval exists from an assigned ecclesiastical reviewer;
+- Maxim has provided publishing approval;
+- all approvals cover the current material revision;
+- coordinates, if public, have publication_safety public or an approved generalized value;
+- referenced media and practical records independently satisfy their gates.
+
+Because factual and ecclesiastical reviewers are currently TBD, no place is eligible for public publication yet.
+
+## 8. Localized narrative schema
+
+File:
+
+    content/places/{place-id}/narratives/{locale}.md
+
+### 8.1 Front matter keys
+
+| Key | Type | Required |
+| --- | --- | --- |
+| schema_version | integer literal 1 | Yes |
+| place_id | PlaceId | Yes |
+| locale | Locale | Yes |
+| editorial_status | EditorialStatus | Yes |
+| translation_status | TranslationStatus | Yes |
+| slug | UrlSlug | Required from language-review onward |
+| preferred_name | non-empty localized text | Required from fact-review onward |
+| short_name | localized text | No |
+| alternate_names | structured list | No |
+| summary | localized text | Required from language-review onward |
+| seo_title | localized text | Required from approved onward |
+| seo_description | localized text | Required from approved onward |
+| source_revision | 40-character Git SHA | Required for ru and en |
+| source_ids | SourceId list | Required for factual prose |
+| section_sources | map | Required when factual sections exist |
+| approvals | ReviewApproval list | Required from approved onward |
+| audit | AuditBlock | Yes |
+
+Serbian preferred_name, summary, and body must be Serbian Cyrillic except for proper names, abbreviations, quotations, or technical forms approved by the Serbian-language reviewer.
+
+### 8.2 alternate_names item
+
+| Key | Type | Required |
+| --- | --- | --- |
+| name | localized text | Yes |
+| context | localized text | Yes |
+| source_ids | SourceId list | Yes |
+| verification_status | VerificationStatus | Yes |
+
+An alternate name is not a replacement slug unless separately approved.
+
+### 8.3 Section vocabulary
+
+Permitted H2 section keys for the prototype:
+
+- introduction
+- history
+- spiritual-significance
+- architecture-and-art
+- relics-icons-and-traditions
+- practical-context
+- accessibility-context
+
+Visible translated headings may differ, but front matter section_sources uses these stable keys.
+
+A Markdown file may omit unsupported sections. Empty sections and filler are forbidden.
+
+### 8.4 section_sources
+
+section_sources maps each present factual section key to a non-empty SourceId list.
+
+For claims needing finer traceability, use Markdown footnote references whose labels are immutable lowercase ASCII kebab-case. Every cited source must also appear in source_ids. The Phase 1 validator must reject:
+
+- an unknown section key;
+- a factual section without sources;
+- a footnote reference without a definition;
+- a defined claim footnote that is never referenced;
+- a source ID that does not resolve.
+
+### 8.5 Serbian narrative gate
+
+sr.md may use editorial_status published only when:
+
+- locale is sr;
+- translation_status is source;
+- preferred_name and public prose passed factual review;
+- ecclesiastical statements passed ecclesiastical review;
+- Serbian Cyrillic passed an assigned sr-language reviewer;
+- Maxim provided publishing approval;
+- source IDs resolve;
+- slug follows SLUG_AND_URL_POLICY.md and has Serbian-language approval;
+- all approvals cover the current material revision.
+
+The sr-language reviewer is currently TBD; public publication is blocked.
+
+### 8.6 Russian and English narrative gates
+
+ru.md or en.md may publish only when:
+
+- the linked Serbian source revision is approved and still current;
+- translation_status is published;
+- all inherited factual and ecclesiastical approvals remain valid;
+- the relevant ru-language or en-language reviewer approved the exact translation revision;
+- Maxim provided publishing approval;
+- localized slug and metadata are approved;
+- no Serbian fallback prose is used.
+
+Russian and English reviewers are currently TBD; public publication is blocked.
+
+## 9. Source schema
+
+File:
+
+    content/sources/{source-id}.yaml
+
+### 9.1 Keys
+
+| Key | Type | Required |
+| --- | --- | --- |
+| schema_version | integer literal 1 | Yes |
+| id | SourceId | Yes |
+| editorial_status | EditorialStatus | Yes |
+| source_type | SourceType | Yes |
+| title | non-empty text | Yes |
+| publisher | non-empty text | Yes |
+| author | non-empty text | No |
+| url | HTTPS URL | Conditional |
+| bibliographic_reference | non-empty text | Conditional |
+| publication_date | HistoricalDate | No |
+| accessed_at | Date | Required with url |
+| original_language | language tag | No |
+| locator | non-empty text | No |
+| status | SourceStatus | Yes |
+| archive_url | HTTPS URL | No |
+| copyright_notes | non-empty text | No |
+| approval_note | non-empty text | Required for other-approved |
+| audit | AuditBlock | Yes |
+
+At least one of url or bibliographic_reference is required. title and publisher are always required. A source record must not contain copied protected content.
+
+### 9.2 SourceStatus
+
+- active
+- unavailable
+- superseded
+- disputed
+- withdrawn
+
+Unavailable or superseded sources remain for provenance. Publication logic must not silently discard them. A newly disputed or withdrawn source triggers review of dependent claims.
+
+### 9.3 Source validation
+
+Reject:
+
+- filename and id mismatch;
+- unsupported source_type;
+- non-HTTPS public URL without documented exception;
+- url without accessed_at;
+- other-approved without owner approval_note;
+- title or publisher placeholders;
+- duplicate records that identify the same source without a documented reason;
+- discovery-only sources presented as final evidence.
+
+## 10. Practical information schema
+
+File:
+
+    content/practical/{place-id}/{practical-id}.yaml
+
+### 10.1 Common keys
+
+| Key | Type | Required |
+| --- | --- | --- |
+| schema_version | integer literal 1 | Yes |
+| id | PracticalId | Yes |
+| place_id | PlaceId | Yes |
+| editorial_status | EditorialStatus | Yes |
+| kind | PracticalKind | Yes |
+| value_type | PracticalValueType | Yes |
+| value | discriminated value object | Yes |
+| source_ids | SourceId list | Yes from fact-review onward |
+| verification_status | VerificationStatus | Yes |
+| freshness_status | FreshnessStatus | Yes |
+| verified_at | Date | Required when verified |
+| verified_by | ContributorId list | Required when verified |
+| valid_from | Date | No |
+| valid_until | Date | No |
+| display_policy | DisplayPolicy | Yes |
+| approvals | ReviewApproval list | Required from approved onward |
+| audit | AuditBlock | Yes |
+
+place_id must match the parent directory and resolve to a place.
+
+### 10.2 Contact value
+
+Used by public-phone and public-email.
+
+Allowed keys:
+
+- canonical_value;
+- display_value;
+- public_use_confirmed.
+
+Email must parse as an email address. Phone canonical form should use E.164 when the source supports it. Do not fabricate a country code. public_use_confirmed must be true before publication.
+
+### 10.3 URL value
+
+Used by official-website.
+
+Allowed keys:
+
+- url;
+- label_sr;
+- label_ru;
+- label_en.
+
+url must use HTTPS unless an official site genuinely lacks HTTPS and the exception is approved. Translated labels require language review; absence of a translated label must not block the URL itself if the interface can supply a generic approved label.
+
+### 10.4 Schedule value
+
+Used by visiting-hours and service-schedule.
+
+Allowed keys:
+
+- timezone;
+- entries;
+- exceptions;
+- localized_notes.
+
+Each entry may contain:
+
+- applies_on controlled day or date expression;
+- start_time;
+- end_time when supported;
+- localized_label;
+- valid_from;
+- valid_until.
+
+Schedule structure must reproduce the official source without inferring missing occurrences, seasons, feast exceptions, or calendar rules. If the source is too complex for faithful structure, use localized-text and require clear verification dates.
+
+Concrete day-expression and liturgical-calendar vocabularies remain Phase 1 implementation decisions and must be approved before schedule records are created.
+
+### 10.5 Localized text value
+
+Used by access, transport, parking, accessibility, closures, and official visitor instructions.
+
+Each locale entry contains:
+
 - locale;
-- alt_text;
-- caption;
-- caption_source_refs;
-- language reviewer;
-- review date;
-- translation status.
+- text;
+- translation_status;
+- source_revision for ru or en;
+- approvals.
 
-Alt text and caption are different fields. A caption may contain facts and therefore may require sources.
+Serbian text is required before translation. No locale may be synthesized automatically.
 
-### rights_basis
+### 10.6 Practical publication gate
 
-- project_original;
-- written_permission;
-- compatible_license;
-- public_domain_confirmed;
-- other_approved.
+A practical record may publish only when:
 
-A web page containing an image is not evidence of reuse permission.
+- the place exists;
+- value shape matches kind and value_type;
+- source is current enough for the claim;
+- verification_status is verified;
+- freshness_status is current or expiring under an approved rule;
+- verified_at, verified_by, and source_ids are present;
+- factual reviewer approved;
+- ecclesiastical reviewer approved service schedules or institution-specific religious instructions;
+- relevant language reviewer approved public wording;
+- Maxim provided publishing approval;
+- display_policy is compatible with freshness.
 
-## 10. Entity: route
+stale, withdrawn, unknown, and requires-verification values cannot display as current. Schedules, temporary closures, and event-like information default to hide-when-stale.
 
-Routes are future content but need a compatible conceptual model.
+No concrete review intervals are assumed in this specification; they must be approved before public launch.
 
-### Route core
+## 11. Media metadata schema
 
-| Field | Type | Required for publication | Meaning |
-| --- | --- | --- | --- |
-| id | stable ID | Yes | Route identity |
-| route_type | enum | Yes | Editorial route category |
-| editorial_status | enum | Yes | Core workflow |
-| place_ids | ordered place ID list | Yes | Approved stops |
-| geometry | GeoJSON reference | Conditional | Reviewed LineString or MultiLineString |
-| distance | measured value | No | Only when sourced or measured under approved method |
-| ascent | measured value | No | Only when sourced or measured |
-| difficulty | controlled value | No | Requires approved methodology |
-| surface | controlled values | No | Requires evidence |
-| safety_status | verification block | Conditional | Review and date |
-| accessibility_status | verification block | Conditional | Review and date |
-| source_ids | source ID list | Yes | Evidence |
-| verified_at | date | Yes | Route review |
-| verified_by | contributor ID | Yes | Factual reviewer |
+File:
 
-No route should promise safety or accessibility without a defined, dated assessment method.
+    content/media/{media-id}.yaml
 
-### Route translation
+### 11.1 Keys
 
-Supports:
+| Key | Type | Required for publication |
+| --- | --- | --- |
+| schema_version | integer literal 1 | Yes |
+| id | MediaId | Yes |
+| editorial_status | EditorialStatus | Yes |
+| media_type | MediaType | Yes |
+| storage_provider | controlled non-empty text | Yes for external media |
+| object_key | non-empty versioned text | Yes for external media |
+| checksum_sha256 | 64-character lowercase hex | Yes |
+| mime_type | valid MIME type | Yes |
+| width | positive integer | Required for images and panoramas |
+| height | positive integer | Required for images and panoramas |
+| duration_seconds | positive number | Required for audio and video |
+| creator | non-empty text | Yes |
+| copyright_owner | non-empty text | Yes |
+| rights_basis | RightsBasis | Yes |
+| permission_reference | non-empty text | Conditional |
+| license | non-empty text | Conditional |
+| credit_line | non-empty text | Yes |
+| allowed_uses | non-empty controlled list | Yes |
+| rights_expires_at | Date | No |
+| publication_safety | PublicationSafety | Yes |
+| related_place_ids | PlaceId list | Yes for place media |
+| focal_point | normalized x and y | No |
+| localized_text | locale map | Yes |
+| approvals | ReviewApproval list | Yes |
+| audit | AuditBlock | Yes |
 
-- route_id;
-- locale;
-- localized name;
-- slug;
-- summary;
-- narrative;
-- directions;
-- safety wording;
-- practical notes;
-- SEO metadata;
-- source revision;
-- translator;
-- language reviewer;
-- translation status.
+### 11.2 localized_text entry
 
-## 11. Entity: article
+| Key | Type | Required |
+| --- | --- | --- |
+| alt_text | localized text | Yes unless media is approved as decorative |
+| caption | localized text | No |
+| caption_source_ids | SourceId list | Required for factual caption |
+| translation_status | TranslationStatus | Yes |
+| approvals | ReviewApproval list | Yes before locale publication |
 
-Articles support history, lives of saints, guides, and project information.
+### 11.3 Rights conditions
 
-| Field | Type | Required for publication | Meaning |
-| --- | --- | --- | --- |
-| id | stable ID | Yes | Article identity |
-| article_type | enum | Yes | History, saint, guide, policy, or approved type |
-| locale | locale | Yes | Article language |
-| source_revision | revision | Required for translation | Serbian source revision |
-| title | text | Yes | Reviewed title |
-| slug | text | Yes | Locale route slug |
-| summary | text | Yes | Reviewed summary |
-| body | Markdown | Yes | Main content |
-| related_place_ids | place ID list | No | Related places |
-| related_route_ids | route ID list | No | Related routes |
-| section_source_refs | mapping | Yes for factual articles | Sources |
-| editorial_status | enum | Yes | Workflow state |
-| translation_status | enum | Conditional | Translation workflow |
-| factual_review | review block | Yes for factual content | Reviewer and date |
-| language_review | review block | Yes | Reviewer and date |
-| seo_title | text | Yes | Accurate localized metadata |
-| seo_description | text | Yes | Accurate localized metadata |
+- project-original requires documented creator and copyright owner;
+- written-permission requires permission_reference;
+- compatible-license requires license and attribution compliance;
+- public-domain-confirmed requires evidence;
+- other-approved requires owner approval.
 
-A policy or about page may have different source requirements from a historical article, but its publication and language review remain explicit.
+A remote URL is not a permission reference. Media without complete rights metadata is not publishable.
 
-## 12. Entity: contributor and review record
+### 11.4 Git boundary
 
-Contributor identities support accountability without exposing private data.
+The content tree may contain metadata only. Validation and repository checks must reject large binary media and known raw formats in content/. Exact byte thresholds and allowed small documentation assets are repository-policy decisions outside this schema.
 
-### contributor
+## 12. Approvals and reviewer constraints
 
-| Field | Type | Required | Meaning |
-| --- | --- | --- | --- |
-| id | stable ID | Yes | Internal contributor identifier |
-| display_name | text | Yes | Approved name |
-| roles | controlled list | Yes | Authorized editorial roles |
-| locales | locale list | No | Language competencies |
-| active | boolean | Yes | Current assignment |
-| public_profile | boolean | Yes | Whether public attribution is permitted |
+Approved contributor assignment:
 
-### review_record
+| Contributor ID | Person | Roles |
+| --- | --- | --- |
+| maxim | Maxim | project-owner, publishing |
 
-| Field | Type | Required | Meaning |
-| --- | --- | --- | --- |
-| id | stable ID | Yes | Review identifier |
-| entity_id | stable ID | Yes | Reviewed entity |
-| entity_revision | revision | Yes | Exact reviewed revision |
-| review_type | enum | Yes | Fact, language, rights, publication, safety |
-| reviewer_id | contributor ID | Yes | Reviewer |
-| outcome | enum | Yes | Approved, changes requested, rejected, or withdrawn |
-| reviewed_at | timestamp | Yes | Review time |
-| notes | internal text | No | Rationale or required changes |
+TBD required roles:
 
-Role assignments must be real and approved. Do not create fictional contributors.
+- factual;
+- ecclesiastical;
+- sr-language;
+- ru-language;
+- en-language.
 
-## 13. File and content separation
+Additional media-rights and geographic-safety assignments remain required when the content uses those scopes.
 
-The approved conceptual separation is:
+No record may claim a TBD reviewer approval. Maxim’s publishing approval confirms completion of required reviews; it does not replace factual, ecclesiastical, or language approval.
 
-- YAML: place core, sources, practical information, geographic facts, media metadata, route core, relationships, and review metadata.
-- Markdown: localized long-form prose.
-- Markdown front matter: stable link to entity, locale, revision, status, slug, review references, and section source mapping.
-- External object storage: large original and derivative media.
-- Generated output: GeoJSON, sitemaps, search index, and other build artifacts.
+Detailed rules are in REVIEW_ROLES.md.
 
-Generated output is never the editorial source of truth.
+## 13. URL derivation
 
-Exact directories and filenames are deferred to Phase 1. Existing documentation must not be reorganized merely to match this conceptual model.
+Public URLs derive only from an approved narrative slug:
 
-## 14. Validation requirements for Phase 1
+- sr: /svetinje/{slug}/
+- ru: /ru/svyatyni/{slug}/
+- en: /en/holy-places/{slug}/
 
-Future schemas should reject:
+The place ID never appears by requirement and is not automatically used as the slug. A missing approved locale narrative produces no locale URL.
 
-- duplicate IDs;
-- duplicate active slugs within a locale and route scope;
-- invalid locale values;
-- invalid status transitions where enforceable;
-- references to missing entities;
-- a parent cycle;
-- partial coordinate pairs;
-- coordinates without source, accuracy, review, or safety;
-- published Serbian content without required factual and language review;
-- published Russian or English content without source revision and language review;
-- time-sensitive values without verified_at, verified_by, source_ids, and freshness status;
-- stale values configured to display as current;
-- historical claims without required source references;
-- media without rights basis, owner, credit, and approved use;
-- large binary media placed in content directories;
-- published SEO metadata that is missing or not localized;
-- an approved or published translation marked outdated.
+Detailed normalization, collision, and redirect behavior is in SLUG_AND_URL_POLICY.md.
 
-## 15. Publication eligibility rules
+## 14. Cross-file validation
 
-A place page may publish only when:
+A future validator must build an index of all files and reject:
 
-- the core place is eligible;
-- the Serbian translation record is published;
-- required sources exist and are usable;
-- required factual and Serbian language reviews exist for the exact revision;
-- media included on the page is rights-approved;
-- coordinates displayed on the page are approved for publication;
-- time-sensitive fields follow their freshness and display policy;
-- unresolved required claims are removed, qualified, or approved as disputed.
+- duplicate entity IDs within a type;
+- filename or directory mismatch;
+- unresolved references;
+- locale filename and front matter mismatch;
+- practical directory and place_id mismatch;
+- a parent-place cycle;
+- duplicate active slug within a locale and route namespace;
+- repeated source IDs within a list;
+- repeated relationship IDs;
+- an approval by an unassigned role;
+- an approval whose outcome is not approved when used for a gate;
+- a published record missing required approvals;
+- a published translation tied to a non-current Serbian source revision;
+- media linked to a missing place;
+- a narrative linked to a missing place;
+- practical information linked to a missing place;
+- source references to missing source records;
+- a public source reference whose status is withdrawn without an approved exception;
+- public facts marked unknown or requires-verification;
+- stale practical information configured as show;
+- a public coordinate marked withhold or review-required;
+- any large original media under content/.
 
-A Russian or English equivalent additionally requires:
+## 15. YAML validation rules
 
-- approved or published translation status according to the final build rule;
-- an exact Serbian source revision;
-- locale language review;
-- no material source change left unresolved.
+The YAML validator must:
 
-A page may publish without optional facts. It must not publish invented replacements for them.
+1. Select schema by path.
+2. Require schema_version 1.
+3. Reject unknown top-level and nested keys.
+4. Enforce primitive types and controlled enums.
+5. Enforce EntityId and slug patterns.
+6. Enforce filename and ID equality.
+7. Enforce conditional required fields.
+8. Reject empty strings and empty placeholder objects.
+9. Reject duplicate list values where order does not intentionally carry meaning.
+10. Normalize nothing silently.
+11. Reject invalid or false-precision dates.
+12. Require HTTPS URLs unless an explicit approved exception field exists.
+13. Enforce review gates for approved and published states.
+14. Enforce freshness and display-policy compatibility.
+15. Report file path and field path for every error.
 
-## 16. Open schema decisions for Phase 1
+Warnings may identify approaching expiry, unavailable sources, or nonmaterial style issues. Warnings must not substitute for errors where publication safety is involved.
 
-The following remain to be finalized before implementation:
+## 16. Markdown validation rules
 
-- exact file and directory layout;
-- exact stable-ID prefixes, if any;
-- slug and transliteration rules;
-- historical-date representation;
-- controlled vocabularies for dioceses, dedications, saints, feast names, route types, difficulty, and accessibility;
-- minimum required place-page fields;
-- review interval rules by practical field type;
-- whether claim references are embedded or separate records;
-- how internal-only notes are kept out of the public repository or build;
-- exact media derivative and object-key conventions;
-- final validation behavior for disputed content;
-- named contributors and reviewer authority.
+The Markdown validator must:
 
-No implementation should resolve these open questions through undocumented assumptions.
+1. Require exactly one YAML front matter block at the start.
+2. Validate front matter against the narrative schema.
+3. Require file locale to equal front matter locale.
+4. Require place directory to equal place_id.
+5. Require one H1 or generate it later from preferred_name; the implementation choice must be consistent.
+6. Allow only approved H2 section keys in source form.
+7. Reject empty headings and placeholder prose.
+8. Require section_sources for every factual section.
+9. Validate citation and footnote references.
+10. Reject raw HTML by default; exceptions require an allowlist.
+11. Reject executable script, iframe, object, embed, and inline event handlers.
+12. Reject links with unsafe protocols.
+13. Require descriptive link text.
+14. Require image references to resolve to approved media IDs rather than arbitrary binaries.
+15. Enforce Serbian Cyrillic expectations in sr.md, with allowlisted exceptions.
+16. Require source_revision for ru.md and en.md.
+17. Reject published translation_status when required language approval is missing.
+18. reject machine-generated or placeholder markers in approved or published files.
+19. Report line and field locations where possible.
+
+Markdown formatting rules must not alter quoted source text or Serbian Cyrillic spelling automatically.
+
+## 17. Editorial state transitions
+
+Permitted normal transitions:
+
+    research → draft
+    draft → fact-review
+    fact-review → ecclesiastical-review
+    ecclesiastical-review → language-review
+    language-review → approved
+    approved → published
+
+Permitted exceptional transitions:
+
+- any non-archived state → needs-reverification;
+- any reviewed state → disputed;
+- any state → archived with reason;
+- review state → draft when changes are requested;
+- published → needs-reverification, disputed, or archived;
+- any non-published state → rejected.
+
+A validator may enforce state shape but Git review governs who authorizes a transition.
+
+## 18. Publication eligibility summary
+
+No content is currently eligible for public publication because the required factual, ecclesiastical, and language reviewers are TBD.
+
+Research and draft records may be created in later Phase 1 work only when:
+
+- they contain real research;
+- uncertainty is explicit;
+- no fictional values or placeholder facts are used;
+- the file status prevents public output;
+- restricted research material stays outside the public repository.
+
+Maxim may approve planning, schema, and protected preview readiness. Maxim may mark publishing approval only after all other required role approvals exist.
+
+## 19. Deferred schema items
+
+The following remain deferred and must not be guessed:
+
+- named factual, ecclesiastical, and language reviewers;
+- exact review intervals for practical kinds;
+- exact controlled registries for ecclesiastical authorities, saints, feasts, and dedications;
+- liturgical schedule recurrence grammar;
+- final media storage provider and object-key convention;
+- map tile provider;
+- policy for sensitive coordinates;
+- minimum verified content required for launch;
+- whether a dedicated review-record directory is later preferable to embedded approvals;
+- exact Astro/Zod implementation.
+
+## 20. Related documents
+
+- PHASE_1_PLAN.md
+- SLUG_AND_URL_POLICY.md
+- REVIEW_ROLES.md
+- CONTENT_GUIDE.md
+- EDITORIAL_WORKFLOW.md
+- TECHNICAL_ROADMAP.md
+- decisions/0002-locale-url-structure.md
+- decisions/0003-content-storage.md
+- decisions/0004-map-architecture.md
