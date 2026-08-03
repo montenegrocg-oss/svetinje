@@ -72,11 +72,12 @@ const location = [place.settlement, place.municipality].filter(Boolean).join(", 
     </div>
   </section>
 
+  {place.latitude !== undefined && place.longitude !== undefined ? (
   <section class="place-location-band" aria-labelledby="place-location-title">
     <div class="shell place-location-band__grid">
       <div>
         <p class="eyebrow">Положај</p>
-        <h2 id="place-location-title">Центар манастирског комплекса</h2>
+        <h2 id="place-location-title">Положај светиње</h2>
         <p>Координате означавају центроид комплекса, а не тачан пјешачки улаз.</p>
       </div>
       <div class="coordinate-block">
@@ -86,6 +87,17 @@ const location = [place.settlement, place.municipality].filter(Boolean).join(", 
       </div>
     </div>
   </section>
+  ) : (
+    <section class="place-location-band" aria-labelledby="place-location-title">
+      <div class="shell place-location-band__grid">
+        <div>
+          <p class="eyebrow">Положај</p>
+          <h2 id="place-location-title">Географска провјера у току</h2>
+          <p>Тачна локација на мапи биће додата након географске провјере.</p>
+        </div>
+      </div>
+    </section>
+  )}
 
   <section class="section place-sources" aria-labelledby="place-sources-title">
     <div class="shell narrow">

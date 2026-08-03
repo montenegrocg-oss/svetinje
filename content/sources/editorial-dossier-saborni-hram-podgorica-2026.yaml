@@ -1,0 +1,18 @@
+schema_version: 1
+id: editorial-dossier-saborni-hram-podgorica-2026
+editorial_status: research
+source_type: other-approved
+title: "Уреднички документ: Саборни храм Христовог Васкрсења у Подгорици"
+publisher: "Није наведен у достављеном документу"
+author: "Није наведен у достављеном документу"
+bibliographic_reference: Приложени уреднички документ, август 2026.
+original_language: sr-Cyrl
+locator: Цјелокупан достављени уреднички документ.
+status: active
+approval_note: Запис је регистрован за research рад; све чињенице остају у статусу requires-verification до стручне провјере.
+approvals: []
+audit:
+  created_at: 2026-08-04T00:00:00Z
+  created_by: maxim
+  updated_at: 2026-08-04T00:00:00Z
+  updated_by: maxim

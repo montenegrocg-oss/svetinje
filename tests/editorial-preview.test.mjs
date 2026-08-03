@@ -40,10 +40,13 @@ test("production ignores the preview allowlist and keeps Podmaine excluded", asy
   assert.equal(policy.public_publication_locked, true);
 });
 
-test("editorial preview returns exactly the allowlisted Podmaine dossier", async () => {
+test("editorial preview returns the two allowlisted research dossiers", async () => {
   const places = await loadVisiblePlaces(PROJECT_ROOT, { editorialPreview: true });
-  assert.equal(places.length, 1);
-  const [podmaine] = places;
+  assert.equal(places.length, 2);
+  const podmaine = places.find((place) => place.id === "podmaine");
+  const cathedral = places.find((place) => place.id === "saborni-hram-podgorica");
+  assert.ok(podmaine);
+  assert.ok(cathedral);
   assert.equal(podmaine.id, "podmaine");
   assert.equal(podmaine.slug, "manastir-podmaine");
   assert.equal(podmaine.name, "Манастир Подмаине");
@@ -60,6 +63,14 @@ test("editorial preview returns exactly the allowlisted Podmaine dossier", async
   assert.ok(podmaine.narrativeSections.some((section) => section.id === "introduction"));
   assert.ok(podmaine.narrativeSections.some((section) => section.id === "history"));
   assert.ok(podmaine.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length > 0)));
+  assert.equal(cathedral.slug, "saborni-hram-hristovog-vaskrsenja-podgorica");
+  assert.equal(cathedral.placeType, "cathedral");
+  assert.equal(cathedral.typeLabel, "Саборни храм");
+  assert.equal(cathedral.latitude, undefined);
+  assert.equal(cathedral.longitude, undefined);
+  assert.match(cathedral.searchText, /Предраг Ристић/);
+  assert.match(cathedral.searchText, /Храм Васкрсења/);
+  assert.ok(cathedral.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length > 0)));
 });
 
 test("preview allowlist rejects duplicates and unknown place IDs", async (t) => {

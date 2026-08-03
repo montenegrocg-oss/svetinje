@@ -16,9 +16,16 @@ const SCHEMA_FILES = {
 const ALLOWED_SECTION_KEYS = new Set([
   "introduction",
   "history",
+  "consecration",
   "spiritual-significance",
   "architecture-and-art",
+  "frescoes-and-interior",
+  "crypt-of-all-saints",
   "relics-icons-and-traditions",
+  "spiritual-and-cultural-life",
+  "services",
+  "visitor-information",
+  "verification-notes",
   "practical-context",
   "accessibility-context",
 ]);

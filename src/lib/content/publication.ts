@@ -61,6 +61,7 @@ interface NarrativeRecord {
   slug?: string;
   preferred_name?: string;
   summary?: string;
+  alternate_names?: Array<{ name?: string }>;
   source_ids: string[];
   approvals: Approval[];
   body: string;
@@ -328,7 +329,10 @@ function parseNarrativeSections(body: string): NarrativeSection[] {
 }
 
 function placeTypeLabel(placeType: string): string {
-  return placeType === "monastery" ? "Манастир" : "Свето мјесто";
+  if (placeType === "monastery") return "Манастир";
+  if (placeType === "cathedral") return "Саборни храм";
+  if (["church", "chapel"].includes(placeType)) return "Храм";
+  return "Свето мјесто";
 }
 
 function assertPreviewField(condition: unknown, message: string): asserts condition {
@@ -386,9 +390,11 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
     assertPreviewField(typeof place.place_type?.value === "string", `${id} requires a place type`);
 
     const coordinates = place.location?.coordinates;
-    assertPreviewField(coordinates?.publication_safety === "public", `${id} coordinates must be public-safe`);
-    assertPreviewField(Number.isFinite(coordinates.latitude) && Number.isFinite(coordinates.longitude), `${id} requires valid coordinates`);
-    assertPreviewField(typeof coordinates.accuracy === "string", `${id} requires a coordinate accuracy classification`);
+    if (coordinates) {
+      assertPreviewField(coordinates.publication_safety === "public", id + " coordinates must be public-safe");
+      assertPreviewField(Number.isFinite(coordinates.latitude) && Number.isFinite(coordinates.longitude), id + " requires valid coordinates");
+      assertPreviewField(typeof coordinates.accuracy === "string", id + " requires a coordinate accuracy classification");
+    }
     assertPreviewField(typeof place.location?.municipality?.value === "string", `${id} requires a municipality`);
     assertPreviewField(typeof place.location?.settlement?.value === "string", `${id} requires a settlement`);
     assertPreviewField(typeof place.location?.postal_address?.value === "string", `${id} requires an address`);
@@ -414,9 +420,9 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
 
     const municipality = place.location.municipality.value;
     const settlement = place.location.settlement.value;
-    const latitude = coordinates.latitude as number;
-    const longitude = coordinates.longitude as number;
-    const coordinateAccuracy = coordinates.accuracy as string;
+    const latitude = coordinates?.latitude;
+    const longitude = coordinates?.longitude;
+    const coordinateAccuracy = coordinates?.accuracy;
     const ecclesiasticalJurisdiction = place.ecclesiastical.jurisdiction.value;
     return {
       id: place.id,
@@ -428,16 +434,23 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       municipality,
       settlement,
       address: place.location.postal_address.value,
-      latitude,
-      longitude,
-      coordinateAccuracy,
+      ...(latitude !== undefined ? { latitude } : {}),
+      ...(longitude !== undefined ? { longitude } : {}),
+      ...(coordinateAccuracy !== undefined ? { coordinateAccuracy } : {}),
       ecclesiasticalJurisdiction,
       preview: true,
       previewStatus: place.editorial_status,
       narrativeSections,
       sourceIds,
       sources: registeredSources,
-      searchText: [narrative.preferred_name, narrative.summary, municipality, settlement].join(" "),
+      searchText: [
+        narrative.preferred_name,
+        narrative.summary,
+        ...(narrative.alternate_names ?? []).map((alternate) => alternate.name ?? ""),
+        narrative.body,
+        municipality,
+        settlement,
+      ].join(" "),
     };
   });
 }
