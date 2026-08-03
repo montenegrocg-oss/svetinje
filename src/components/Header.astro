@@ -20,11 +20,17 @@ const isActive = (href: string, exact = false) =>
 <header class="site-header">
   <div class="shell header-inner">
     <a class="brand" href="/" aria-label="Светиње.me — почетна страница">
-      <span class="brand-mark" aria-hidden="true"><i></i></span>
-      <span class="brand-name">Светиње<span>.me</span></span>
+      <span class="brand-mark" aria-hidden="true">
+        <i></i>
+        <b></b>
+      </span>
+      <span class="brand-lockup">
+        <span class="brand-name">Светиње</span>
+        <span class="brand-domain">svetinje.me</span>
+      </span>
     </a>
 
-    <nav class="primary-navigation" aria-label="Главна навигација">
+    <nav class="primary-navigation desktop-navigation" aria-label="Главна навигација">
       <ul>
         {navigation.map((item) => (
           <li>
@@ -39,6 +45,32 @@ const isActive = (href: string, exact = false) =>
       </ul>
     </nav>
 
-    <LanguageSwitcher currentLocale="sr" />
+    <div class="desktop-languages">
+      <LanguageSwitcher currentLocale="sr" />
+    </div>
+
+    <details class="mobile-navigation">
+      <summary>
+        <span>Мени</span>
+        <i aria-hidden="true"></i>
+      </summary>
+      <div class="mobile-navigation-panel">
+        <nav aria-label="Главна мобилна навигација">
+          <ul>
+            {navigation.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  aria-current={isActive(item.href, item.exact) ? "page" : undefined}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <LanguageSwitcher currentLocale="sr" />
+      </div>
+    </details>
   </div>
 </header>

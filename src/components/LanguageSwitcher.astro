@@ -14,16 +14,18 @@ const locales = Object.entries(localeConfig) as [Locale, (typeof localeConfig)[L
     {locales.map(([locale, config]) => (
       <li>
         {config.available ? (
-          <a href="/" lang={config.htmlLang} aria-current={locale === currentLocale ? "page" : undefined}>
+          <a class="language-current" href="/" lang={config.htmlLang} aria-current={locale === currentLocale ? "page" : undefined}>
             {config.label}
           </a>
         ) : (
           <span
+            class="language-unavailable"
             lang={config.htmlLang}
             aria-disabled="true"
             title="Превод још није доступан"
           >
-            {config.label}
+            <span>{config.label}</span>
+            <small>ускоро</small>
           </span>
         )}
       </li>

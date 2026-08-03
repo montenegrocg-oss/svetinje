@@ -4,66 +4,138 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="Светиње.me"
-  description="Пажљиво документован дигитални водич кроз православну баштину Црне Горе."
+  description="Поуздан водич кроз православне светиње, поклоничке руте и духовно насљеђе Црне Горе."
   canonicalPath="/"
 >
   <section class="hero">
     <div class="shell hero-grid">
       <div class="hero-copy">
-        <p class="eyebrow">Православна баштина Црне Горе</p>
-        <h1>Светиње, документоване с пажњом.</h1>
+        <p class="eyebrow">Православне светиње Црне Горе</p>
+        <h1>Откријте духовно насљеђе Црне Горе</h1>
         <p class="hero-lead">
-          Градимо миран и поуздан дигитални водич у којем свака објављена
-          тврдња има извор, а свака страница пролази стручну и језичку провјеру.
+          Поуздан водич кроз манастире, храмове и света мјеста — са провјереном
+          историјом, маршрутама и практичним информацијама.
         </p>
         <div class="button-row">
-          <a class="button button-primary" href="/svetinje/">Отвори каталог</a>
-          <a class="button button-secondary" href="/o-projektu/">Упознај пројекат</a>
+          <a class="button button-primary" href="/svetinje/">Истражите светиње</a>
+          <a class="button button-secondary" href="/o-projektu/">О пројекту</a>
         </div>
+        <ul class="hero-signals" aria-label="Области водича">
+          <li>Светиње</li>
+          <li>Поклоничке руте</li>
+          <li>Провјерени извори</li>
+        </ul>
       </div>
-      <div class="hero-frame" aria-hidden="true">
-        <div class="hero-arch">
-          <span class="hero-horizon"></span>
-          <span class="hero-sun"></span>
+
+      <figure class="hero-media">
+        <div class="hero-media-surface" aria-hidden="true">
+          <span class="landscape-sky"></span>
+          <span class="landscape-ridge ridge-far"></span>
+          <span class="landscape-ridge ridge-near"></span>
+          <span class="landscape-stone"></span>
+          <span class="landscape-water"></span>
         </div>
-        <p>Простор за фотографију са потврђеним правима</p>
-      </div>
+        <figcaption>
+          <span>Црна Гора</span>
+          <span>Планине · камен · Јадран</span>
+        </figcaption>
+      </figure>
     </div>
   </section>
 
-  <section class="principles section">
-    <div class="shell">
-      <div class="section-heading">
-        <p class="eyebrow">Уређивачки темељ</p>
-        <h2>Мање тврдњи. Више повјерења.</h2>
+  <section class="catalogue-intro section">
+    <div class="shell editorial-grid">
+      <div class="section-intro">
+        <span class="section-index" aria-hidden="true">01</span>
+        <p class="eyebrow">Будући каталог</p>
+        <h2>Мјеста која носе живо насљеђе.</h2>
+        <p>Каталог ће повезати духовни значај, документовану историју и корисне информације за пажљиво планирану посјету.</p>
+        <a class="text-link" href="/svetinje/">Погледајте каталог <span aria-hidden="true">→</span></a>
       </div>
-      <div class="principle-grid">
-        <article>
+      <ol class="catalogue-lines">
+        <li>
           <span>01</span>
-          <h3>Извор прије тврдње</h3>
-          <p>Садржај се ослања на званичне црквене, институционалне и академске изворе.</p>
-        </article>
-        <article>
+          <div><h3>Манастири</h3><p>Поријекло, црквени контекст и прича мјеста.</p></div>
+        </li>
+        <li>
           <span>02</span>
-          <h3>Рецензија прије објаве</h3>
-          <p>Истраживачки и радни записи остају ван јавних страница док све потребне провјере не буду завршене.</p>
-        </article>
-        <article>
+          <div><h3>Храмови</h3><p>Прегледани подаци за разумијевање и посјету.</p></div>
+        </li>
+        <li>
           <span>03</span>
-          <h3>Српски изворни текст</h3>
-          <p>Српска ћирилица је основни језик, а будући преводи остају повезани са прегледаном изворном верзијом.</p>
-        </article>
+          <div><h3>Света мјеста</h3><p>Повезане локације и традиције, јасно означене према изворима.</p></div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="routes-preview section">
+    <div class="shell routes-grid">
+      <div class="route-visual" aria-hidden="true">
+        <span class="contour contour-one"></span>
+        <span class="contour contour-two"></span>
+        <span class="contour contour-three"></span>
+        <span class="route-line"></span>
+        <i class="route-point point-one"></i>
+        <i class="route-point point-two"></i>
+        <i class="route-point point-three"></i>
+        <b>42°</b>
+      </div>
+      <div class="routes-copy">
+        <span class="section-index" aria-hidden="true">02</span>
+        <p class="eyebrow">Карта и поклоничке руте</p>
+        <h2>Од обале до планине, пут добија смисао.</h2>
+        <p>Будући простор за географски преглед, тематске руте и практично планирање — без мијешања провјерених чињеница и радних података.</p>
+        <ul class="feature-tags" aria-label="Планиране могућности">
+          <li>Преглед по областима</li>
+          <li>Поклоничке руте</li>
+          <li>Практичне напомене</li>
+        </ul>
       </div>
     </div>
   </section>
 
-  <section class="editorial-band">
-    <div class="shell editorial-band-inner">
+  <section class="trust-strip">
+    <div class="shell trust-grid">
+      <div class="trust-heading">
+        <p class="eyebrow">Повјерење је уређивачки принцип</p>
+        <h2>Свака објава пролази јасан пут.</h2>
+      </div>
+      <ol>
+        <li><span>01</span><p><strong>Извор</strong> прије тврдње</p></li>
+        <li><span>02</span><p><strong>Рецензија</strong> прије објаве</p></li>
+        <li><span>03</span><p><strong>Права</strong> прије фотографије</p></li>
+      </ol>
+      <a class="text-link" href="/izvori/">Уређивачка политика <span aria-hidden="true">→</span></a>
+    </div>
+  </section>
+
+  <section class="regions section">
+    <div class="shell">
+      <div class="regions-heading">
+        <div>
+          <span class="section-index" aria-hidden="true">03</span>
+          <p class="eyebrow">Црна Гора као контекст</p>
+        </div>
+        <h2>Једно насљеђе, различити предјели.</h2>
+        <p>Водич ће светиње смјестити у њихов природни и културни простор — од Јадрана и камена до планинских долина.</p>
+      </div>
+      <ul class="region-list">
+        <li><span>01</span><h3>Приморје</h3><p>Јадран · камен · залеђе</p></li>
+        <li><span>02</span><h3>Средишњи крајеви</h3><p>Крш · поља · стара језгра</p></li>
+        <li><span>03</span><h3>Сјевер</h3><p>Планине · долине · висоравни</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <aside class="development-note" aria-labelledby="development-title">
+    <div class="shell development-note-inner">
       <div>
         <p class="eyebrow">Пројекат у развоју</p>
-        <h2>Јавни каталог се отвара тек када садржај буде спреман.</h2>
+        <h2 id="development-title">Јавни каталог се припрема.</h2>
       </div>
-      <a class="text-link" href="/izvori/">Како провјеравамо садржај <span aria-hidden="true">→</span></a>
+      <p>Истраживачки записи остају ван јавног приказа док не прођу све потребне стручне и језичке провјере.</p>
+      <a class="text-link" href="/o-projektu/">Сазнајте више <span aria-hidden="true">→</span></a>
     </div>
-  </section>
+  </aside>
 </BaseLayout>

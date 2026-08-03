@@ -49,3 +49,17 @@ test("research status excludes Podmaine independently of the repository publicat
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("the homepage visual foundation contains no research or media placeholder copy", async () => {
+  const homepage = await import("node:fs/promises").then(({ readFile }) =>
+    readFile(path.join(PROJECT_ROOT, "src", "pages", "index.astro"), "utf8"),
+  );
+
+  assert.match(homepage, /Откријте духовно насљеђе Црне Горе/);
+  assert.match(homepage, /class="catalogue-intro section"/);
+  assert.match(homepage, /class="routes-preview section"/);
+  assert.match(homepage, /class="trust-strip"/);
+  assert.match(homepage, /class="regions section"/);
+  assert.match(homepage, /class="development-note"/);
+  assert.doesNotMatch(homepage, /Подмаине|podmaine|Простор за фотографију|hero-arch/iu);
+});
