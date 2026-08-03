@@ -106,7 +106,12 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
 
 <script>
   import "maplibre-gl/dist/maplibre-gl.css";
-  import type { LngLatBoundsLike, Map as MapLibreMap, PaddingOptions } from "maplibre-gl";
+  import type {
+    ErrorEvent as MapLibreErrorEvent,
+    LngLatBoundsLike,
+    Map as MapLibreMap,
+    PaddingOptions,
+  } from "maplibre-gl";
 
   const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY?.trim();
   const MAPTILER_OUTDOOR_STYLE = MAPTILER_KEY
@@ -116,6 +121,50 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
     [17.65, 41.35],
     [20.95, 43.95],
   ];
+  const EXPECTED_SOURCE_IDS = [
+    "maptiler_planet_v4",
+    "outdoor",
+    "contours",
+    "landform",
+    "terrain-rgb",
+  ] as const;
+
+  type MapDebugState = {
+    mapState: string;
+    canvasPresent: boolean;
+    canvasWidth: number;
+    canvasHeight: number;
+    webglAvailable: boolean;
+    styleLoaded: boolean;
+    tilesLoaded: boolean;
+    zoom: number;
+    center: { lng: number; lat: number };
+    sourceIds: string[];
+    sourceStates: Record<string, boolean>;
+    recentErrors: string[];
+  };
+
+  type MapDebugWindow = Window & {
+    __SVETINJE_MAP_DEBUG__?: MapDebugState;
+  };
+
+  const sanitizeMapError = (message: unknown) => {
+    let sanitized = typeof message === "string" ? message : "MapLibre resource error";
+
+    if (MAPTILER_KEY) sanitized = sanitized.replaceAll(MAPTILER_KEY, "[redacted-key]");
+
+    sanitized = sanitized
+      .replace(/\b(?:https?|blob):\/\/[^\s"'<>]+/gi, "[redacted-resource]")
+      .replace(/\b(?:api\.)?maptiler\.com\/[^\s"'<>]+/gi, "[redacted-resource]")
+      .replace(/\?[^\s"'<>]*/g, "")
+      .replace(/\bkey\s*[:=]\s*[^&\s,"'<>]*/gi, "key=[redacted]")
+      .replace(/PUBLIC_MAPTILER_KEY/gi, "[redacted-key-name]")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 300);
+
+    return sanitized || "MapLibre resource error";
+  };
 
   const getInitialPadding = (width: number): PaddingOptions => {
     if (width >= 1088) return { top: 76, right: 96, bottom: 72, left: 430 };
@@ -192,6 +241,9 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
     let resizeTimer: number | undefined;
     let readinessTimer: number | undefined;
     let readinessFrame: number | undefined;
+    let diagnosticTimer: number | undefined;
+    const recentErrors: string[] = [];
+    const debugWindow = window as MapDebugWindow;
 
     const animationDuration = () => (reducedMotion.matches ? 0 : 420);
     const fitMontenegro = (animate: boolean) => {
@@ -237,6 +289,57 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
       }
     };
 
+    const updateMapDebug = () => {
+      if (removed) return;
+
+      let canvas: HTMLCanvasElement | undefined;
+      let webglAvailable = false;
+      let styleLoaded = false;
+      let tilesLoaded = false;
+      let zoom = 0;
+      let center = { lng: 0, lat: 0 };
+
+      try {
+        canvas = map.getCanvas();
+        webglAvailable = Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl"));
+        styleLoaded = Boolean(map.isStyleLoaded());
+        tilesLoaded = map.areTilesLoaded();
+        zoom = Number(map.getZoom().toFixed(2));
+        const mapCenter = map.getCenter();
+        center = {
+          lng: Number(mapCenter.lng.toFixed(4)),
+          lat: Number(mapCenter.lat.toFixed(4)),
+        };
+      } catch {
+        // Diagnostic reads must never affect map rendering.
+      }
+
+      const sourceStates = Object.fromEntries(
+        EXPECTED_SOURCE_IDS.map((sourceId) => {
+          try {
+            return [sourceId, map.isSourceLoaded(sourceId)];
+          } catch {
+            return [sourceId, false];
+          }
+        }),
+      );
+
+      debugWindow.__SVETINJE_MAP_DEBUG__ = {
+        mapState: root.dataset.mapState ?? "loading",
+        canvasPresent: Boolean(canvas?.isConnected && mapContainer.contains(canvas)),
+        canvasWidth: canvas?.width ?? 0,
+        canvasHeight: canvas?.height ?? 0,
+        webglAvailable,
+        styleLoaded,
+        tilesLoaded,
+        zoom,
+        center,
+        sourceIds: [...EXPECTED_SOURCE_IDS],
+        sourceStates,
+        recentErrors: [...recentErrors],
+      };
+    };
+
     const revealMap = () => {
       if (ready || removed) return;
 
@@ -252,6 +355,7 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
       setControlsEnabled(true);
       map.resize();
       fitMontenegro(false);
+      updateMapDebug();
     };
 
     function handleRender() {
@@ -259,16 +363,23 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
       if (hasRenderableCanvas()) revealMap();
     }
 
-    const handleMapError = () => {
-      // Individual tile, glyph, sprite, and terrain errors are non-fatal. The
-      // bounded readiness check decides whether the base map is usable.
+    const handleMapError = (event: MapLibreErrorEvent) => {
+      const sanitizedMessage = sanitizeMapError(event.error?.message);
+      recentErrors.push(sanitizedMessage);
+      if (recentErrors.length > 5) recentErrors.splice(0, recentErrors.length - 5);
+      root.dataset.mapLastError = sanitizedMessage;
+      console.error("[Svetinje map]", sanitizedMessage);
+      updateMapDebug();
     };
+
+    const handleDiagnosticUpdate = () => updateMapDebug();
 
     const removeMap = () => {
       if (removed) return;
       removed = true;
       window.clearTimeout(resizeTimer);
       window.clearTimeout(readinessTimer);
+      window.clearTimeout(diagnosticTimer);
       if (readinessFrame !== undefined) window.cancelAnimationFrame(readinessFrame);
       window.removeEventListener("resize", resizeMap);
       root.removeEventListener("pointerdown", markVisitorMovement);
@@ -278,7 +389,12 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
       resetButton?.removeEventListener("click", resetView);
       map.off("render", handleRender);
       map.off("error", handleMapError);
+      map.off("styledata", handleDiagnosticUpdate);
+      map.off("sourcedata", handleDiagnosticUpdate);
+      map.off("load", updateMapDebug);
+      map.off("idle", updateMapDebug);
       map.remove();
+      delete debugWindow.__SVETINJE_MAP_DEBUG__;
     };
 
     zoomInButton?.addEventListener("click", zoomIn);
@@ -293,6 +409,10 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
     map.on("render", handleRender);
     map.once("idle", revealMap);
     map.on("error", handleMapError);
+    map.on("styledata", handleDiagnosticUpdate);
+    map.on("sourcedata", handleDiagnosticUpdate);
+    map.once("load", updateMapDebug);
+    map.once("idle", updateMapDebug);
 
     map.resize();
     map.triggerRepaint();
@@ -313,6 +433,9 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
       showFallback();
       removeMap();
     }, 11_000);
+
+    diagnosticTimer = window.setTimeout(updateMapDebug, 3_000);
+    updateMapDebug();
   };
 
   void initialiseHomepageMap();
