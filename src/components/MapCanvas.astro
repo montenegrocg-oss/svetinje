@@ -1,17 +1,13 @@
----
-const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
----
-
 <div
   class="map-canvas"
   data-home-map
-  data-map-state={mapTilerAvailable ? "loading" : "fallback"}
   data-testid="map-canvas"
 >
   <div
     class="map-fallback"
     data-map-fallback
     role="img"
+    aria-hidden="false"
     aria-label="Стилизована картографска површина Црне Горе без ознака светиња."
   >
     <svg class="map-art" viewBox="0 0 1200 650" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
@@ -73,13 +69,14 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
     <rect width="1200" height="650" filter="url(#map-grain)" opacity=".65" />
     </svg>
 
-    <div class="map-readiness" aria-hidden="true">
-      <span></span>
-      <p>MapLibre<br /><small>учитавање карте</small></p>
-    </div>
   </div>
 
-  <div class="map-renderer" data-map-renderer aria-hidden="true">
+  <div
+    class="map-renderer"
+    data-map-renderer
+    hidden
+    aria-hidden="true"
+  >
     <div
       id="montenegro-map"
       class="maplibre-map"
@@ -93,7 +90,6 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
     class="map-fallback-notice"
     data-map-fallback-notice
     role="status"
-    hidden={mapTilerAvailable}
   >
     Интерактивна карта тренутно није доступна.
   </p>
@@ -105,25 +101,23 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
 </div>
 
 <script>
+  import maplibregl from "maplibre-gl";
   import "maplibre-gl/dist/maplibre-gl.css";
   import type { LngLatBoundsLike, Map as MapLibreMap, PaddingOptions } from "maplibre-gl";
 
   const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY?.trim();
-  const MAPTILER_OUTDOOR_STYLE = MAPTILER_KEY
-    ? `https://api.maptiler.com/maps/outdoor-v4/style.json?key=${encodeURIComponent(MAPTILER_KEY)}`
-    : null;
-  const MONTENEGRO_CONTEXT_BOUNDS: LngLatBoundsLike = [
-    [17.65, 41.35],
-    [20.95, 43.95],
+  const MONTENEGRO_BOUNDS: LngLatBoundsLike = [
+    [18.42, 41.8],
+    [20.36, 43.57],
   ];
 
   const getInitialPadding = (width: number): PaddingOptions => {
-    if (width >= 1088) return { top: 76, right: 96, bottom: 72, left: 430 };
-    if (width >= 768) return { top: 110, right: 72, bottom: 72, left: 350 };
-    return { top: 76, right: 24, bottom: 66, left: 24 };
+    if (width >= 1088) return { top: 78, right: 28, bottom: 30, left: 292 };
+    if (width >= 768) return { top: 135, right: 26, bottom: 34, left: 245 };
+    return { top: 62, right: 14, bottom: 26, left: 14 };
   };
 
-  const initialiseHomepageMap = async () => {
+  const initialiseHomepageMap = () => {
     const root = document.querySelector<HTMLElement>("[data-home-map]");
     if (!root || root.dataset.mapInitialised === "true") return;
 
@@ -145,7 +139,8 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
     };
 
     const showFallback = () => {
-      root.dataset.mapState = "fallback";
+      if (renderer) renderer.hidden = true;
+      if (fallback) fallback.hidden = false;
       renderer?.setAttribute("aria-hidden", "true");
       fallback?.setAttribute("aria-hidden", "false");
       if (fallbackNotice) fallbackNotice.hidden = false;
@@ -153,7 +148,7 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
       setControlsEnabled(false);
     };
 
-    if (!MAPTILER_OUTDOOR_STYLE || !mapContainer || !renderer) {
+    if (!MAPTILER_KEY || !mapContainer || !renderer) {
       showFallback();
       return;
     }
@@ -162,16 +157,11 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
     let map: MapLibreMap;
 
     try {
-      const { Map } = await import("maplibre-gl");
-      map = new Map({
+      map = new maplibregl.Map({
         container: mapContainer,
-        style: MAPTILER_OUTDOOR_STYLE,
-        bounds: MONTENEGRO_CONTEXT_BOUNDS,
-        fitBoundsOptions: {
-          padding: getInitialPadding(root.clientWidth),
-          duration: 0,
-          maxZoom: 8,
-        },
+        style: `https://api.maptiler.com/maps/019fc7d8-717c-701d-9ca5-a53d9438d3ce/style.json?key=${encodeURIComponent(MAPTILER_KEY)}`,
+        center: [19.25, 42.7],
+        zoom: 6,
         attributionControl: false,
         cooperativeGestures: true,
         dragRotate: false,
@@ -186,16 +176,13 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
     }
 
     map.touchZoomRotate.disableRotation();
-    let ready = false;
     let removed = false;
     let visitorMovedMap = false;
     let resizeTimer: number | undefined;
-    let readinessTimer: number | undefined;
-    let readinessFrame: number | undefined;
 
     const animationDuration = () => (reducedMotion.matches ? 0 : 420);
     const fitMontenegro = (animate: boolean) => {
-      map.fitBounds(MONTENEGRO_CONTEXT_BOUNDS, {
+      map.fitBounds(MONTENEGRO_BOUNDS, {
         padding: getInitialPadding(root.clientWidth),
         duration: animate ? animationDuration() : 0,
         linear: true,
@@ -220,67 +207,31 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
       }, 120);
     };
 
-    const hasRenderableCanvas = () => {
-      try {
-        const canvas = map.getCanvas();
-        return (
-          canvas instanceof HTMLCanvasElement &&
-          canvas.isConnected &&
-          mapContainer.contains(canvas) &&
-          canvas.clientWidth > 0 &&
-          canvas.clientHeight > 0 &&
-          canvas.width > 0 &&
-          canvas.height > 0
-        );
-      } catch {
-        return false;
-      }
-    };
-
-    const revealMap = () => {
-      if (ready || removed) return;
-
-      ready = true;
-      window.clearTimeout(readinessTimer);
-      if (readinessFrame !== undefined) window.cancelAnimationFrame(readinessFrame);
-      map.off("render", handleRender);
-      root.dataset.mapState = "ready";
+    const showInteractiveMap = () => {
+      renderer.hidden = false;
+      if (fallback) fallback.hidden = true;
       renderer.setAttribute("aria-hidden", "false");
       fallback?.setAttribute("aria-hidden", "true");
       if (fallbackNotice) fallbackNotice.hidden = true;
       if (attribution) attribution.hidden = false;
       setControlsEnabled(true);
       map.resize();
-      fitMontenegro(false);
-    };
-
-    function handleRender() {
-      if (ready || removed) return;
-      if (hasRenderableCanvas()) revealMap();
-    }
-
-    const handleMapError = () => {
-      // Individual tile, glyph, sprite, and terrain errors are non-fatal. The
-      // bounded readiness check decides whether the base map is usable.
     };
 
     const removeMap = () => {
       if (removed) return;
       removed = true;
       window.clearTimeout(resizeTimer);
-      window.clearTimeout(readinessTimer);
-      if (readinessFrame !== undefined) window.cancelAnimationFrame(readinessFrame);
       window.removeEventListener("resize", resizeMap);
       root.removeEventListener("pointerdown", markVisitorMovement);
       root.removeEventListener("wheel", markVisitorMovement);
       zoomInButton?.removeEventListener("click", zoomIn);
       zoomOutButton?.removeEventListener("click", zoomOut);
       resetButton?.removeEventListener("click", resetView);
-      map.off("render", handleRender);
-      map.off("error", handleMapError);
       map.remove();
     };
 
+    showInteractiveMap();
     zoomInButton?.addEventListener("click", zoomIn);
     zoomOutButton?.addEventListener("click", zoomOut);
     resetButton?.addEventListener("click", resetView);
@@ -289,31 +240,10 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
     window.addEventListener("resize", resizeMap, { passive: true });
     document.addEventListener("astro:before-swap", removeMap, { once: true });
 
-    map.once("load", revealMap);
-    map.on("render", handleRender);
-    map.once("idle", revealMap);
-    map.on("error", handleMapError);
-
-    map.resize();
-    map.triggerRepaint();
-    readinessFrame = window.requestAnimationFrame(() => {
-      if (ready || removed) return;
-      map.resize();
-      map.triggerRepaint();
-      if (hasRenderableCanvas()) revealMap();
+    map.once("load", () => {
+      if (!removed) fitMontenegro(false);
     });
-
-    readinessTimer = window.setTimeout(() => {
-      if (ready || removed) return;
-      if (hasRenderableCanvas()) {
-        revealMap();
-        return;
-      }
-
-      showFallback();
-      removeMap();
-    }, 11_000);
   };
 
-  void initialiseHomepageMap();
+  initialiseHomepageMap();
 </script>
