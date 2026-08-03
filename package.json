@@ -2,20 +2,31 @@
   "name": "svetinje-content-validation",
   "version": "0.1.0",
   "private": true,
-  "description": "Schema and cross-reference validation for Svetinje.me editorial content.",
+  "description": "Static-first Astro website and editorial validation for Svetinje.me.",
   "type": "module",
   "packageManager": "pnpm@11.9.0",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12"
   },
   "scripts": {
+    "dev": "astro dev",
     "validate:content": "node scripts/validate-content.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "pnpm run validate:content && pnpm test"
+    "typecheck": "astro check",
+    "check": "pnpm run validate:content && pnpm test && pnpm run typecheck",
+    "build": "pnpm run validate:content && astro build && pnpm run test:production-output",
+    "test:production-output": "node scripts/verify-production-output.mjs",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "7.1.6",
+    "yaml": "2.9.0"
   },
   "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@types/node": "24.13.3",
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1",
-    "yaml": "2.9.0"
+    "typescript": "6.0.3"
   }
 }

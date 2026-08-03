@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { stringify } from "yaml";
-import { validateRepository } from "../scripts/content-validation.mjs";
+import { validateRepository, validateRepositoryWithSummary } from "../scripts/content-validation.mjs";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 const AUDIT = {
@@ -89,6 +89,19 @@ function has(errors, text) {
 test("the repository skeleton validates with no content records", async (t) => {
   const root = await project(t);
   assert.deepEqual(await validateRepository(root), []);
+});
+
+test("the repository summary reports actual validated record counts", async () => {
+  const result = await validateRepositoryWithSummary(PROJECT_ROOT);
+  assert.deepEqual(result.errors, []);
+  assert.deepEqual(result.counts, {
+    places: 1,
+    narratives: 1,
+    sources: 3,
+    practical: 0,
+    media: 0,
+  });
+  assert.equal(result.publicationLocked, true);
 });
 
 test("neutral draft structural records validate", async (t) => {

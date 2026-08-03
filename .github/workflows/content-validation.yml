@@ -6,10 +6,14 @@ on:
       - "content/**"
       - "schemas/**"
       - "scripts/**"
+      - "src/**"
       - "tests/**"
       - "validation/**"
+      - "astro.config.mjs"
       - "package.json"
       - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "tsconfig.json"
       - ".github/workflows/content-validation.yml"
   push:
     branches:
@@ -18,10 +22,14 @@ on:
       - "content/**"
       - "schemas/**"
       - "scripts/**"
+      - "src/**"
       - "tests/**"
       - "validation/**"
+      - "astro.config.mjs"
       - "package.json"
       - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "tsconfig.json"
       - ".github/workflows/content-validation.yml"
 
 permissions:
@@ -48,8 +56,11 @@ jobs:
           node-version: 24
           cache: pnpm
 
-      - name: Install validation dependencies
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run validation and tests
+      - name: Run validation, tests, and type checks
         run: pnpm run check
+
+      - name: Build and inspect static output
+        run: pnpm run build

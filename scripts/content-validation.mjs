@@ -31,6 +31,14 @@ const ENTITY_PATHS = [
   { kind: "media", pattern: /^content\/media\/([^/]+)\.yaml$/ },
 ];
 
+const COUNT_KEY = {
+  place: "places",
+  narrative: "narratives",
+  source: "sources",
+  practical: "practical",
+  media: "media",
+};
+
 const PUBLIC_STATUSES = new Set(["approved", "published"]);
 const PLACE_ROLES = ["factual", "ecclesiastical"];
 const LOCALE_ROLE = { sr: "sr-language", ru: "ru-language", en: "en-language" };
@@ -384,13 +392,14 @@ function validatePolicyState(records, policy, policyFile) {
   return errors;
 }
 
-export async function validateRepository(root) {
+export async function validateRepositoryWithSummary(root) {
   const errors = [];
+  const counts = { places: 0, narratives: 0, sources: 0, practical: 0, media: 0 };
   let validators;
   try {
     validators = await buildValidators(root);
   } catch (error) {
-    return [issue("schemas", "/", `cannot load schemas: ${error.message}`)];
+    return { errors: [issue("schemas", "/", `cannot load schemas: ${error.message}`)], counts, publicationLocked: undefined };
   }
 
   const policyFile = "validation/publication-policy.json";
@@ -398,7 +407,7 @@ export async function validateRepository(root) {
   try {
     policy = await loadJson(path.join(root, policyFile));
   } catch (error) {
-    return [issue(policyFile, "/", `cannot read publication policy: ${error.message}`)];
+    return { errors: [issue(policyFile, "/", `cannot read publication policy: ${error.message}`)], counts, publicationLocked: undefined };
   }
   if (!validators.policy(policy)) {
     for (const error of validators.policy.errors ?? []) errors.push(issue(policyFile, formatAjvPath(error), error.message));
@@ -409,7 +418,7 @@ export async function validateRepository(root) {
   try {
     files = await walkFiles(contentRoot);
   } catch (error) {
-    return [...errors, issue("content", "/", `cannot read content directory: ${error.message}`)];
+    return { errors: [...errors, issue("content", "/", `cannot read content directory: ${error.message}`)], counts, publicationLocked: policy.public_publication_locked };
   }
 
   const records = [];
@@ -421,6 +430,7 @@ export async function validateRepository(root) {
       errors.push(issue(file, "/", "file is not in an allowed content path"));
       continue;
     }
+    counts[COUNT_KEY[classification.kind]] += 1;
     const text = await readFile(absoluteFile, "utf8");
     const parsed = classification.kind === "narrative" ? parseMarkdown(text, file) : parseYaml(text, file);
     errors.push(...parsed.errors);
@@ -441,7 +451,15 @@ export async function validateRepository(root) {
     errors.push(...validatePolicyState(records, policy, policyFile));
   }
   errors.push(...validateUniqueness(records), ...validateReferences(records));
-  return errors.sort((a, b) => a.file.localeCompare(b.file) || a.field.localeCompare(b.field) || a.message.localeCompare(b.message));
+  return {
+    errors: errors.sort((a, b) => a.file.localeCompare(b.file) || a.field.localeCompare(b.field) || a.message.localeCompare(b.message)),
+    counts,
+    publicationLocked: policy.public_publication_locked,
+  };
+}
+
+export async function validateRepository(root) {
+  return (await validateRepositoryWithSummary(root)).errors;
 }
 
 export function formatIssues(errors) {

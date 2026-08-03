@@ -1,0 +1,29 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath: string;
+  noindex?: boolean;
+}
+
+const { title, description, canonicalPath, noindex = false } = Astro.props;
+const siteName = "Светиње.me";
+const fullTitle = title === siteName ? title : `${title} | ${siteName}`;
+const canonical = Astro.site
+  ? new URL(canonicalPath, Astro.site).toString()
+  : canonicalPath;
+---
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
+<link rel="canonical" href={canonical} />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={siteName} />
+<meta property="og:locale" content="sr_ME" />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />

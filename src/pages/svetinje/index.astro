@@ -1,0 +1,46 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { loadPublishablePlaces } from "../../lib/content/publication";
+
+const places = await loadPublishablePlaces();
+---
+
+<BaseLayout
+  title="Светиње"
+  description="Каталог провјерених православних светиња Црне Горе."
+  canonicalPath="/svetinje/"
+>
+  <header class="page-hero compact">
+    <div class="shell narrow">
+      <p class="eyebrow">Каталог</p>
+      <h1>Светиње</h1>
+      <p>Овдје ће бити приказани само записи који су прошли све обавезне стручне, црквене, језичке и издавачке провјере.</p>
+    </div>
+  </header>
+
+  <section class="section catalogue-section">
+    <div class="shell">
+      {places.length === 0 ? (
+        <div class="empty-state" role="status">
+          <span class="empty-ornament" aria-hidden="true"></span>
+          <p class="eyebrow">Каталог је у припреми</p>
+          <h2>Још нема садржаја спремног за јавно објављивање.</h2>
+          <p>Истраживачки и радни записи намјерно нису видљиви на овој страници.</p>
+          <a class="text-link" href="/izvori/">Прочитај уређивачку политику <span aria-hidden="true">→</span></a>
+        </div>
+      ) : (
+        <ul class="catalogue-grid">
+          {places.map((place) => (
+            <li>
+              <article class="place-card">
+                <p class="eyebrow">{place.placeType}</p>
+                <h2>{place.name}</h2>
+                <p>{place.summary}</p>
+              </article>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </section>
+</BaseLayout>

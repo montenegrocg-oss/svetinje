@@ -1,0 +1,38 @@
+---
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import PageMetadata from "../components/PageMetadata.astro";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath: string;
+  noindex?: boolean;
+}
+
+const { title, description, canonicalPath, noindex = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="sr-Cyrl-ME">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#172822" />
+    <PageMetadata
+      title={title}
+      description={description}
+      canonicalPath={canonicalPath}
+      noindex={noindex}
+    />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Пређи на главни садржај</a>
+    <Header currentPath={Astro.url.pathname} />
+    <main id="main-content">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

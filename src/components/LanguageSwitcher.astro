@@ -1,0 +1,32 @@
+---
+import { localeConfig, type Locale } from "../i18n/config";
+
+interface Props {
+  currentLocale?: Locale;
+}
+
+const { currentLocale = "sr" } = Astro.props;
+const locales = Object.entries(localeConfig) as [Locale, (typeof localeConfig)[Locale]][];
+---
+
+<nav class="language-switcher" aria-label="Избор језика">
+  <ul>
+    {locales.map(([locale, config]) => (
+      <li>
+        {config.available ? (
+          <a href="/" lang={config.htmlLang} aria-current={locale === currentLocale ? "page" : undefined}>
+            {config.label}
+          </a>
+        ) : (
+          <span
+            lang={config.htmlLang}
+            aria-disabled="true"
+            title="Превод још није доступан"
+          >
+            {config.label}
+          </span>
+        )}
+      </li>
+    ))}
+  </ul>
+</nav>
