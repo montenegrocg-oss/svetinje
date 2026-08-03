@@ -191,6 +191,7 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
     let visitorMovedMap = false;
     let resizeTimer: number | undefined;
     let readinessTimer: number | undefined;
+    let readinessFrame: number | undefined;
 
     const animationDuration = () => (reducedMotion.matches ? 0 : 420);
     const fitMontenegro = (animate: boolean) => {
@@ -219,18 +220,18 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
       }, 120);
     };
 
-    const hasUsableStyle = () => {
-      try {
-        return Boolean(map.isStyleLoaded() || map.loaded());
-      } catch {
-        return false;
-      }
-    };
-
-    const hasMapCanvas = () => {
+    const hasRenderableCanvas = () => {
       try {
         const canvas = map.getCanvas();
-        return canvas instanceof HTMLCanvasElement && mapContainer.contains(canvas);
+        return (
+          canvas instanceof HTMLCanvasElement &&
+          canvas.isConnected &&
+          mapContainer.contains(canvas) &&
+          canvas.clientWidth > 0 &&
+          canvas.clientHeight > 0 &&
+          canvas.width > 0 &&
+          canvas.height > 0
+        );
       } catch {
         return false;
       }
@@ -241,6 +242,7 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
 
       ready = true;
       window.clearTimeout(readinessTimer);
+      if (readinessFrame !== undefined) window.cancelAnimationFrame(readinessFrame);
       map.off("render", handleRender);
       root.dataset.mapState = "ready";
       renderer.setAttribute("aria-hidden", "false");
@@ -254,7 +256,7 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
 
     function handleRender() {
       if (ready || removed) return;
-      if (hasMapCanvas() && hasUsableStyle()) revealMap();
+      if (hasRenderableCanvas()) revealMap();
     }
 
     const handleMapError = () => {
@@ -267,6 +269,7 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
       removed = true;
       window.clearTimeout(resizeTimer);
       window.clearTimeout(readinessTimer);
+      if (readinessFrame !== undefined) window.cancelAnimationFrame(readinessFrame);
       window.removeEventListener("resize", resizeMap);
       root.removeEventListener("pointerdown", markVisitorMovement);
       root.removeEventListener("wheel", markVisitorMovement);
@@ -291,9 +294,18 @@ const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
     map.once("idle", revealMap);
     map.on("error", handleMapError);
 
+    map.resize();
+    map.triggerRepaint();
+    readinessFrame = window.requestAnimationFrame(() => {
+      if (ready || removed) return;
+      map.resize();
+      map.triggerRepaint();
+      if (hasRenderableCanvas()) revealMap();
+    });
+
     readinessTimer = window.setTimeout(() => {
       if (ready || removed) return;
-      if (hasMapCanvas() && hasUsableStyle()) {
+      if (hasRenderableCanvas()) {
         revealMap();
         return;
       }

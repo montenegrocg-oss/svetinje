@@ -58,7 +58,7 @@ test("custom controls use a responsive Montenegro view without geolocation", asy
   assert.doesNotMatch(mapCanvas, /navigator\.geolocation|GeolocateControl|flyTo\s*\(/);
 });
 
-test("map readiness can be reached through load, render, idle, or the bounded timeout", async () => {
+test("map readiness uses a renderable canvas rather than complete style loading", async () => {
   const mapCanvas = await source("src/components/MapCanvas.astro");
 
   assert.match(mapCanvas, /const revealMap = \(\) => \{/);
@@ -66,12 +66,28 @@ test("map readiness can be reached through load, render, idle, or the bounded ti
   assert.match(mapCanvas, /map\.once\("load", revealMap\)/);
   assert.match(mapCanvas, /map\.on\("render", handleRender\)/);
   assert.match(mapCanvas, /map\.once\("idle", revealMap\)/);
-  assert.match(mapCanvas, /map\.isStyleLoaded\(\) \|\| map\.loaded\(\)/);
+  assert.match(mapCanvas, /const hasRenderableCanvas = \(\) => \{/);
+  assert.match(mapCanvas, /canvas\.isConnected/);
   assert.match(mapCanvas, /mapContainer\.contains\(canvas\)/);
+  assert.match(mapCanvas, /canvas\.clientWidth > 0/);
+  assert.match(mapCanvas, /canvas\.clientHeight > 0/);
+  assert.match(mapCanvas, /canvas\.width > 0/);
+  assert.match(mapCanvas, /canvas\.height > 0/);
+  assert.match(mapCanvas, /function handleRender\(\) \{[\s\S]*?if \(hasRenderableCanvas\(\)\) revealMap\(\);[\s\S]*?\}/);
   assert.match(mapCanvas, /map\.off\("render", handleRender\)/);
-  assert.match(mapCanvas, /readinessTimer = window\.setTimeout\([\s\S]*?11_000\);/);
-  assert.match(mapCanvas, /showFallback\(\);\s*removeMap\(\);/);
+  assert.doesNotMatch(mapCanvas, /map\.isStyleLoaded\(\)|map\.loaded\(\)/);
+  assert.doesNotMatch(mapCanvas, /hasRenderableCanvas\(\)\s*&&/);
+  assert.doesNotMatch(mapCanvas, /hasUsableStyle/);
   assert.doesNotMatch(mapCanvas, /map\.once\("load", \(\) =>/);
+});
+
+test("initial repaint and timeout reveal a usable canvas and otherwise fall back", async () => {
+  const mapCanvas = await source("src/components/MapCanvas.astro");
+
+  assert.match(mapCanvas, /map\.resize\(\);\s*map\.triggerRepaint\(\);\s*readinessFrame = window\.requestAnimationFrame/);
+  assert.match(mapCanvas, /requestAnimationFrame\(\(\) => \{[\s\S]*?map\.resize\(\);\s*map\.triggerRepaint\(\);\s*if \(hasRenderableCanvas\(\)\) revealMap\(\);/);
+  assert.match(mapCanvas, /readinessTimer = window\.setTimeout\(\(\) => \{[\s\S]*?if \(hasRenderableCanvas\(\)\) \{\s*revealMap\(\);\s*return;\s*\}\s*showFallback\(\);\s*removeMap\(\);[\s\S]*?11_000\);/);
+  assert.doesNotMatch(mapCanvas, /hasRenderableCanvas\(\)\s*&&\s*hasUsableStyle\(\)/);
 });
 
 test("non-fatal MapLibre resource errors do not destroy a usable map or expose request URLs", async () => {
