@@ -1,0 +1,35 @@
+schema_version: 1
+id: home-hero
+editorial_status: draft
+media_type: image
+storage_provider: repository-static-assets
+object_key: public/images/home/hero.webp
+checksum_sha256: 5cd243ff14d945f56b615edee09ef51b3feb99f313db6b7c239eea9502d6bf75
+mime_type: image/webp
+width: 2400
+height: 1425
+creator: Maxim Shestakov
+copyright_owner: Maxim Shestakov
+rights_basis: written-permission
+permission_reference: "Direct authorization by the creator and rights holder for homepage use on svetinje.me, 2026-08-03."
+credit_line: "Фотографија: Maxim Shestakov"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+publication_safety: public
+related_place_ids: []
+focal_point:
+  x: 0.5
+  y: 0.5
+localized_text:
+  sr:
+    alt_text: Поглед из ваздуха на православни храм међу каменим кућама и црвеним крововима старог града у Црној Гори.
+    translation_status: source
+    approvals: []
+approvals: []
+audit:
+  created_at: 2026-08-03T13:13:26Z
+  created_by: maxim
+  updated_at: 2026-08-03T13:13:26Z
+  updated_by: maxim

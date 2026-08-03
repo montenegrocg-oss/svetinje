@@ -28,16 +28,22 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       </div>
 
       <figure class="hero-media">
-        <div class="hero-media-surface" aria-hidden="true">
-          <span class="landscape-sky"></span>
-          <span class="landscape-ridge ridge-far"></span>
-          <span class="landscape-ridge ridge-near"></span>
-          <span class="landscape-stone"></span>
-          <span class="landscape-water"></span>
+        <div class="hero-media-surface">
+          <img
+            src="/images/home/hero.webp"
+            srcset="/images/home/hero.webp 2400w"
+            sizes="(min-width: 64rem) 40vw, (min-width: 48rem) 44vw, calc(100vw - 2rem)"
+            width="2400"
+            height="1425"
+            alt="Поглед из ваздуха на православни храм међу каменим кућама и црвеним крововима старог града у Црној Гори."
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+          />
         </div>
         <figcaption>
           <span>Црна Гора</span>
-          <span>Планине · камен · Јадран</span>
+          <span>Фотографија: Maxim Shestakov</span>
         </figcaption>
       </figure>
     </div>

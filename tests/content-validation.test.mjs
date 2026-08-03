@@ -99,7 +99,7 @@ test("the repository summary reports actual validated record counts", async () =
     narratives: 1,
     sources: 3,
     practical: 0,
-    media: 0,
+    media: 1,
   });
   assert.equal(result.publicationLocked, true);
 });
