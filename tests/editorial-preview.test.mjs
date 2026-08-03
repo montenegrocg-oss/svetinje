@@ -47,6 +47,7 @@ test("editorial preview returns exactly the allowlisted Podmaine dossier", async
   assert.equal(podmaine.id, "podmaine");
   assert.equal(podmaine.slug, "manastir-podmaine");
   assert.equal(podmaine.name, "Манастир Подмаине");
+  assert.equal(podmaine.placeType, "monastery");
   assert.equal(podmaine.preview, true);
   assert.equal(podmaine.previewStatus, "research");
   assert.equal(podmaine.latitude, 42.29799);

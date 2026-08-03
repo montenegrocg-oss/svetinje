@@ -38,6 +38,9 @@ if (editorialPreview) {
   if (!homepage?.html.includes('"latitude":42.29799') || !homepage.html.includes('"longitude":18.84452')) {
     failures.push("homepage is missing the allowlisted Podmaine marker coordinates");
   }
+  if (!homepage?.html.includes('"placeType":"monastery"') || homepage.html.includes('"placeType":"church"')) {
+    failures.push("homepage marker data must contain one monastery and no church records");
+  }
   if (!homepage?.html.includes("Манастир Подмаине") || !catalogue?.html.includes("Манастир Подмаине")) {
     failures.push("Podmaine preview card is missing from homepage or catalogue");
   }

@@ -1,4 +1,4 @@
-@layer reset, tokens, base, components, explorer, homepage, pages, responsive;
+@layer reset, tokens, base, components, explorer, homepage, pages, editorial-preview, responsive;
 
 @layer reset {
   *,
@@ -204,47 +204,14 @@
     display: inline-flex;
     width: fit-content;
     align-items: center;
-    gap: 0.72rem;
     text-decoration: none;
   }
 
-  .brand-mark {
-    display: grid;
-    width: 2.65rem;
-    height: 2.65rem;
-    place-items: center;
-    color: var(--gold);
-  }
-
-  .brand-symbol {
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-    stroke: currentColor;
-    stroke-width: 2.3;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .brand-lockup {
-    display: grid;
-    line-height: 1;
-  }
-
-  .brand-name {
-    color: var(--navy-950);
-    font-family: var(--font-display);
-    font-size: 1.55rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
-
-  .brand-domain {
-    margin-top: 0.28rem;
-    color: var(--gold);
-    font-size: 0.67rem;
-    font-weight: 750;
-    letter-spacing: 0.075em;
+  .brand-image {
+    display: block;
+    width: 9.375rem;
+    height: auto;
+    object-fit: contain;
   }
 
   .desktop-navigation,
@@ -1522,64 +1489,62 @@
 @layer editorial-preview {
   .holy-place-marker {
     position: relative;
-    display: grid;
     width: 2.75rem;
     height: 2.75rem;
     padding: 0;
-    place-items: center;
-    border: 2px solid #d0ab61;
-    border-radius: 50% 50% 50% 0.65rem;
-    color: var(--white);
-    background: var(--navy-900);
-    box-shadow: 0 0.35rem 1rem rgba(10, 41, 68, 0.28);
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
     cursor: pointer;
+    overflow: visible;
   }
 
-  .holy-place-marker:hover,
-  .holy-place-marker.is-selected {
-    border-color: #f0d292;
-    background: var(--navy-950);
-    box-shadow: 0 0 0 0.25rem rgba(208, 171, 97, 0.28), 0 0.45rem 1.2rem rgba(10, 41, 68, 0.34);
+  .holy-place-marker__image {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: auto;
+    max-width: none;
+    height: 3.5rem;
+    object-fit: contain;
+    filter: drop-shadow(0 0.2rem 0.28rem rgba(10, 25, 40, 0.28));
+    pointer-events: none;
+    transform: translateX(-50%);
+    transform-origin: 50% 100%;
+    transition: transform 160ms ease, filter 160ms ease;
+  }
+
+  .holy-place-marker:hover .holy-place-marker__image,
+  .holy-place-marker:focus-visible .holy-place-marker__image {
+    transform: translateX(-50%) scale(1.06);
+  }
+
+  .holy-place-marker.is-selected .holy-place-marker__image {
+    filter: drop-shadow(0 0 0.2rem rgba(208, 171, 97, 0.85)) drop-shadow(0 0.3rem 0.35rem rgba(10, 41, 68, 0.34));
+    transform: translateX(-50%) scale(1.15);
+  }
+
+  .holy-place-marker.is-selected:hover .holy-place-marker__image,
+  .holy-place-marker.is-selected:focus-visible .holy-place-marker__image {
+    transform: translateX(-50%) scale(1.18);
   }
 
   .holy-place-marker:focus-visible {
     outline: 3px solid var(--white);
-    outline-offset: 3px;
-    box-shadow: 0 0 0 0.4rem var(--navy-900);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 0.32rem var(--navy-900), 0 0 0 0.48rem rgba(208, 171, 97, 0.85);
   }
 
-  .holy-place-marker__symbol {
-    position: relative;
+  .holy-place-marker__fallback {
     display: block;
-    width: 1.05rem;
-    height: 1.15rem;
-    border: 2px solid currentColor;
-    border-top: 0;
-    border-radius: 0.08rem;
-  }
-
-  .holy-place-marker__symbol::before {
-    position: absolute;
-    top: -0.38rem;
-    left: 0.12rem;
-    width: 0.62rem;
-    height: 0.62rem;
-    border-top: 2px solid currentColor;
-    border-left: 2px solid currentColor;
-    content: "";
-    transform: rotate(45deg);
-  }
-
-  .holy-place-marker__symbol::after {
-    position: absolute;
-    top: -0.82rem;
-    left: 50%;
-    width: 0.42rem;
-    height: 0.52rem;
-    border-top: 1.5px solid currentColor;
-    border-left: 1.5px solid currentColor;
-    content: "";
-    transform: translateX(-50%) rotate(90deg);
+    width: 2.1rem;
+    height: 2.1rem;
+    margin: 0.325rem;
+    border: 2px solid #d0ab61;
+    border-radius: 50% 50% 50% 0.45rem;
+    background: var(--navy-900);
+    box-shadow: 0 0.25rem 0.65rem rgba(10, 41, 68, 0.28);
+    transform: rotate(-45deg);
   }
 
   .explorer-results {
@@ -1914,13 +1879,12 @@
       min-height: 5rem;
     }
 
-    .brand-mark {
-      width: 3rem;
-      height: 3rem;
+    .brand-image {
+      width: 11rem;
     }
 
-    .brand-name {
-      font-size: 1.85rem;
+    .holy-place-marker__image {
+      height: 3.875rem;
     }
 
     .map-explorer__heading {
@@ -2074,6 +2038,10 @@
     .header-inner {
       grid-template-columns: minmax(14rem, 0.9fr) auto minmax(14rem, 0.9fr);
       min-height: 5.25rem;
+    }
+
+    .brand-image {
+      width: 12.375rem;
     }
 
     .desktop-navigation,

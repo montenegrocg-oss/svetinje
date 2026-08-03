@@ -11,6 +11,7 @@ const markerPlaces = places.flatMap((place) =>
     ? [{
         id: place.id,
         name: place.name,
+        placeType: place.placeType,
         latitude: place.latitude as number,
         longitude: place.longitude as number,
       }]
@@ -131,6 +132,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
   interface MarkerPlace {
     id: string;
     name: string;
+    placeType: string;
     latitude: number;
     longitude: number;
   }
@@ -139,6 +141,13 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     [18.42, 41.8],
     [20.36, 43.57],
   ];
+
+  const MARKER_ASSETS: Partial<Record<string, { src: string; width: number; height: number }>> = {
+    monastery: { src: "/images/map/pin-monastery.png", width: 362, height: 512 },
+    church: { src: "/images/map/pin-church.png", width: 342, height: 512 },
+  };
+
+  const resolveMarkerAsset = (placeType: string) => MARKER_ASSETS[placeType];
 
   const getInitialPadding = (width: number): PaddingOptions => {
     if (width >= 1088) return { top: 78, right: 28, bottom: 30, left: 292 };
@@ -230,7 +239,21 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       button.dataset.mapMarker = place.id;
       button.setAttribute("aria-label", `${place.name} — отвори детаље`);
       button.setAttribute("aria-pressed", "false");
-      button.innerHTML = '<span class="holy-place-marker__symbol" aria-hidden="true"><i></i></span>';
+      const markerAsset = resolveMarkerAsset(place.placeType);
+      if (markerAsset) {
+        const markerImage = document.createElement("img");
+        markerImage.className = "holy-place-marker__image";
+        markerImage.src = markerAsset.src;
+        markerImage.alt = "";
+        markerImage.width = markerAsset.width;
+        markerImage.height = markerAsset.height;
+        markerImage.decoding = "async";
+        markerImage.draggable = false;
+        markerImage.setAttribute("aria-hidden", "true");
+        button.append(markerImage);
+      } else {
+        button.innerHTML = '<span class="holy-place-marker__fallback" aria-hidden="true"><i></i></span>';
+      }
       button.addEventListener("click", () => selectPlace(place.id));
       markers.push(
         new maplibregl.Marker({ element: button, anchor: "bottom" })

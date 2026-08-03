@@ -131,11 +131,34 @@ test("the map accepts only server-selected marker data and adds no route geometr
   const mapSource = files.join("\n");
 
   assert.match(mapSource, /data-map-place-data/);
+  assert.match(mapSource, /placeType: place\.placeType/);
   assert.match(mapSource, /new maplibregl\.Marker/);
+  assert.match(mapSource, /new maplibregl\.Marker\(\{ element: button, anchor: "bottom" \}\)/);
   assert.match(mapSource, /data-map-marker/);
   assert.match(mapSource, /svetinje:place-select/);
+  assert.match(mapSource, /button\.type = "button"/);
+  assert.match(mapSource, /button\.setAttribute\("aria-label", `\$\{place\.name\} — отвори детаље`\)/);
   assert.doesNotMatch(mapSource, /addSource\s*\(|addLayer\s*\(|FeatureCollection|LineString|routeCoordinates/i);
   assert.doesNotMatch(mapSource, /42\.29799|18\.84452|Манастир Подмаине/iu);
+});
+
+test("marker assets resolve by place type without creating a church marker", async () => {
+  const [mapCanvas, styles] = await Promise.all([
+    source("src/components/MapCanvas.astro"),
+    source("src/styles/global.css"),
+  ]);
+
+  assert.match(mapCanvas, /monastery: \{ src: "\/images\/map\/pin-monastery\.png", width: 362, height: 512 \}/);
+  assert.match(mapCanvas, /church: \{ src: "\/images\/map\/pin-church\.png", width: 342, height: 512 \}/);
+  assert.match(mapCanvas, /const resolveMarkerAsset = \(placeType: string\) => MARKER_ASSETS\[placeType\]/);
+  assert.match(mapCanvas, /markerImage\.src = markerAsset\.src/);
+  assert.match(mapCanvas, /markerImage\.alt = ""/);
+  assert.match(mapCanvas, /holy-place-marker__fallback/);
+  assert.doesNotMatch(mapCanvas, /markerPlaces\.push\([\s\S]*?placeType:\s*["']church["']/);
+  assert.match(styles, /\.holy-place-marker\s*\{[\s\S]*?width: 2\.75rem;[\s\S]*?height: 2\.75rem;/);
+  assert.match(styles, /\.holy-place-marker__image\s*\{[\s\S]*?bottom: 0;[\s\S]*?height: 3\.5rem;[\s\S]*?transform-origin: 50% 100%;/);
+  assert.match(styles, /\.holy-place-marker\.is-selected \.holy-place-marker__image\s*\{[\s\S]*?scale\(1\.15\)/);
+  assert.match(styles, /\.holy-place-marker:focus-visible\s*\{[\s\S]*?outline: 3px solid/);
 });
 
 test("only Cloudflare site build steps receive the MapTiler secret", async () => {

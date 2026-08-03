@@ -11,15 +11,51 @@ async function source(file) {
   return readFile(path.join(PROJECT_ROOT, file), "utf8");
 }
 
-test("the original brand separates the project name from the domain", async () => {
-  const [header, mark] = await Promise.all([
+async function pngInfo(file) {
+  const asset = await readFile(path.join(PROJECT_ROOT, file));
+  assert.equal(asset.subarray(1, 4).toString("ascii"), "PNG");
+  return {
+    asset,
+    width: asset.readUInt32BE(16),
+    height: asset.readUInt32BE(20),
+    colorType: asset[25],
+  };
+}
+
+test("the approved transparent logo replaces the generated header lockup", async () => {
+  const [header, styles, logo] = await Promise.all([
     source("src/components/Header.astro"),
-    source("src/components/BrandMark.astro"),
+    source("src/styles/global.css"),
+    pngInfo("public/images/brand/logo-svetinje.png"),
   ]);
-  assert.match(header, /class="brand-name">Светиње<\/span>/);
-  assert.match(header, /class="brand-domain">svetinje\.me<\/span>/);
-  assert.match(header, /<BrandMark \/>/);
-  assert.match(mark, /class="brand-symbol"/);
+
+  assert.match(header, /href="\/" aria-label="Светиње — почетна страница"/);
+  assert.match(header, /src="\/images\/brand\/logo-svetinje\.png"/);
+  assert.match(header, /width="1000"/);
+  assert.match(header, /height="321"/);
+  assert.match(header, /alt="Светиње"/);
+  assert.match(header, /loading="eager"/);
+  assert.match(header, /fetchpriority="high"/);
+  assert.doesNotMatch(header, /BrandMark|brand-mark|brand-lockup|brand-name|brand-domain/);
+  assert.match(styles, /\.brand-image\s*\{[\s\S]*?object-fit: contain;/);
+  assert.equal(logo.width, 1000);
+  assert.equal(logo.height, 321);
+  assert.equal(logo.colorType, 6, "logo PNG must preserve RGBA transparency");
+  assert.ok(logo.asset.length < 600_000, `logo is ${logo.asset.length} bytes`);
+});
+
+test("approved map pins are optimized RGBA assets", async () => {
+  const [monastery, church] = await Promise.all([
+    pngInfo("public/images/map/pin-monastery.png"),
+    pngInfo("public/images/map/pin-church.png"),
+  ]);
+
+  assert.deepEqual([monastery.width, monastery.height], [362, 512]);
+  assert.deepEqual([church.width, church.height], [342, 512]);
+  assert.equal(monastery.colorType, 6);
+  assert.equal(church.colorType, 6);
+  assert.ok(monastery.asset.length < 300_000, `pin-monastery.png is ${monastery.asset.length} bytes`);
+  assert.ok(church.asset.length < 300_000, `pin-church.png is ${church.asset.length} bytes`);
 });
 
 test("desktop and mobile navigation expose the required Serbian guide sections", async () => {
@@ -109,6 +145,7 @@ test("the visual system includes required breakpoints, touch targets, and reduce
   assert.match(css, /min-height: 2\.75rem/);
   assert.match(css, /overflow-x: hidden/);
   assert.match(css, /\.place-previews/);
+  assert.match(css, /@layer reset, tokens, base, components, explorer, homepage, pages, editorial-preview, responsive;/);
 });
 
 test("the authorized homepage photograph keeps reserved responsive dimensions", async () => {
