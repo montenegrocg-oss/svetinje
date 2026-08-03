@@ -1,0 +1,17 @@
+schema_version: 1
+id: mitropolija-manastirista-u-mitropoliji
+editorial_status: research
+source_type: diocesan
+title: Манастиришта у Митрополији
+publisher: Православна Митрополија црногорско-приморска
+url: https://mitropolija.com/manastirista-u-mitropoliji/
+accessed_at: 2026-08-03
+original_language: sr-Cyrl
+locator: Одјељак „Манастиришта у општини Будва“, пасуси који разликују данашњи манастир Подмаине, Маине или Подострог од некадашњих манастира Свете Петке и Светог Марка.
+status: active
+approvals: []
+audit:
+  created_at: 2026-08-03T11:46:30Z
+  created_by: maxim
+  updated_at: 2026-08-03T11:46:30Z
+  updated_by: maxim

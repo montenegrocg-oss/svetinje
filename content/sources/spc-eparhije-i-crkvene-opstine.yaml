@@ -1,0 +1,17 @@
+schema_version: 1
+id: spc-eparhije-i-crkvene-opstine
+editorial_status: research
+source_type: official-church
+title: Епархије Српске Православне Цркве
+publisher: Српска Православна Црква
+url: https://www.spc.rs/sr/82.eparhije-srpske-pravoslavne-crkve.html
+accessed_at: 2026-08-03
+original_language: sr-Cyrl
+locator: Одјељак „Митрополија црногорско-приморска“, ставка „Манастир Подмаине“.
+status: active
+approvals: []
+audit:
+  created_at: 2026-08-03T11:46:30Z
+  created_by: maxim
+  updated_at: 2026-08-03T11:46:30Z
+  updated_by: maxim
