@@ -66,8 +66,10 @@ test("map controls, search, and filters expose accessible states and honest feed
   assert.match(filters, /aria-pressed=/);
   assert.match(controls, /Функција планирања руте је у припреми/);
   assert.match(controls, /role="status"/);
-  assert.match(controls, /Увећај карту — ускоро/);
-  assert.match(controls, /Центрирај карту — ускоро/);
+  assert.match(controls, /data-map-zoom-in/);
+  assert.match(controls, /data-map-zoom-out/);
+  assert.match(controls, /data-map-reset/);
+  assert.match(controls, /aria-label="Прикажи поново Црну Гору"/);
   assert.match(explorer, /querySelectorAll<HTMLElement>\("\[data-filter-group\]"\)/);
 });
 

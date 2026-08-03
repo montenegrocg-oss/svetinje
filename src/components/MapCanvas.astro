@@ -1,10 +1,20 @@
+---
+const mapTilerAvailable = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
+---
+
 <div
   class="map-canvas"
-  role="img"
-  aria-label="Стилизована картографска површина Црне Горе, припремљена за будућу MapLibre карту без ознака светиња."
+  data-home-map
+  data-map-state={mapTilerAvailable ? "loading" : "fallback"}
   data-testid="map-canvas"
 >
-  <svg class="map-art" viewBox="0 0 1200 650" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+  <div
+    class="map-fallback"
+    data-map-fallback
+    role="img"
+    aria-label="Стилизована картографска површина Црне Горе без ознака светиња."
+  >
+    <svg class="map-art" viewBox="0 0 1200 650" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
     <defs>
       <filter id="map-grain" x="-10%" y="-10%" width="120%" height="120%">
         <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="12" result="noise" />
@@ -61,10 +71,194 @@
       <text x="267" y="359">ХРВАТСКА</text>
     </g>
     <rect width="1200" height="650" filter="url(#map-grain)" opacity=".65" />
-  </svg>
+    </svg>
 
-  <div class="map-readiness" aria-hidden="true">
-    <span></span>
-    <p>MapLibre<br /><small>спремна основа</small></p>
+    <div class="map-readiness" aria-hidden="true">
+      <span></span>
+      <p>MapLibre<br /><small>учитавање карте</small></p>
+    </div>
+  </div>
+
+  <div class="map-renderer" data-map-renderer aria-hidden="true">
+    <div
+      id="montenegro-map"
+      class="maplibre-map"
+      data-testid="maplibre-container"
+      role="region"
+      aria-label="Интерактивна карта Црне Горе"
+    ></div>
+  </div>
+
+  <p
+    class="map-fallback-notice"
+    data-map-fallback-notice
+    role="status"
+    hidden={mapTilerAvailable}
+  >
+    Интерактивна карта тренутно није доступна.
+  </p>
+
+  <div class="map-attribution" data-map-attribution aria-label="Извори картографских података" hidden>
+    <a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener noreferrer">© MapTiler</a>
+    <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>
   </div>
 </div>
+
+<script>
+  import "maplibre-gl/dist/maplibre-gl.css";
+  import type { LngLatBoundsLike, Map as MapLibreMap, PaddingOptions } from "maplibre-gl";
+
+  const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY?.trim();
+  const MAPTILER_OUTDOOR_STYLE = MAPTILER_KEY
+    ? `https://api.maptiler.com/maps/outdoor-v4/style.json?key=${encodeURIComponent(MAPTILER_KEY)}`
+    : null;
+  const MONTENEGRO_CONTEXT_BOUNDS: LngLatBoundsLike = [
+    [17.65, 41.35],
+    [20.95, 43.95],
+  ];
+
+  const getInitialPadding = (width: number): PaddingOptions => {
+    if (width >= 1088) return { top: 76, right: 96, bottom: 72, left: 430 };
+    if (width >= 768) return { top: 110, right: 72, bottom: 72, left: 350 };
+    return { top: 76, right: 24, bottom: 66, left: 24 };
+  };
+
+  const initialiseHomepageMap = async () => {
+    const root = document.querySelector<HTMLElement>("[data-home-map]");
+    if (!root || root.dataset.mapInitialised === "true") return;
+
+    root.dataset.mapInitialised = "true";
+    const renderer = root.querySelector<HTMLElement>("[data-map-renderer]");
+    const fallback = root.querySelector<HTMLElement>("[data-map-fallback]");
+    const fallbackNotice = root.querySelector<HTMLElement>("[data-map-fallback-notice]");
+    const attribution = root.querySelector<HTMLElement>("[data-map-attribution]");
+    const stage = root.closest<HTMLElement>(".map-stage");
+    const zoomInButton = stage?.querySelector<HTMLButtonElement>("[data-map-zoom-in]");
+    const zoomOutButton = stage?.querySelector<HTMLButtonElement>("[data-map-zoom-out]");
+    const resetButton = stage?.querySelector<HTMLButtonElement>("[data-map-reset]");
+    const mapContainer = root.querySelector<HTMLElement>("#montenegro-map");
+
+    const setControlsEnabled = (enabled: boolean) => {
+      [zoomInButton, zoomOutButton, resetButton].forEach((button) => {
+        if (button) button.disabled = !enabled;
+      });
+    };
+
+    const showFallback = () => {
+      root.dataset.mapState = "fallback";
+      renderer?.setAttribute("aria-hidden", "true");
+      fallback?.setAttribute("aria-hidden", "false");
+      if (fallbackNotice) fallbackNotice.hidden = false;
+      if (attribution) attribution.hidden = true;
+      setControlsEnabled(false);
+    };
+
+    if (!MAPTILER_OUTDOOR_STYLE || !mapContainer || !renderer) {
+      showFallback();
+      return;
+    }
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const { Map } = await import("maplibre-gl");
+    let map: MapLibreMap;
+
+    try {
+      map = new Map({
+        container: mapContainer,
+        style: MAPTILER_OUTDOOR_STYLE,
+        bounds: MONTENEGRO_CONTEXT_BOUNDS,
+        fitBoundsOptions: {
+          padding: getInitialPadding(root.clientWidth),
+          duration: 0,
+          maxZoom: 8,
+        },
+        attributionControl: false,
+        cooperativeGestures: true,
+        dragRotate: false,
+        pitchWithRotate: false,
+        fadeDuration: reducedMotion.matches ? 0 : 300,
+        minZoom: 4,
+        maxZoom: 16,
+      });
+    } catch {
+      showFallback();
+      return;
+    }
+
+    map.touchZoomRotate.disableRotation();
+    let ready = false;
+    let failed = false;
+    let removed = false;
+    let visitorMovedMap = false;
+    let resizeTimer: number | undefined;
+
+    const animationDuration = () => (reducedMotion.matches ? 0 : 420);
+    const fitMontenegro = (animate: boolean) => {
+      map.fitBounds(MONTENEGRO_CONTEXT_BOUNDS, {
+        padding: getInitialPadding(root.clientWidth),
+        duration: animate ? animationDuration() : 0,
+        linear: true,
+        maxZoom: 8,
+      });
+    };
+
+    const zoomIn = () => map.zoomIn({ duration: animationDuration() });
+    const zoomOut = () => map.zoomOut({ duration: animationDuration() });
+    const resetView = () => {
+      visitorMovedMap = false;
+      fitMontenegro(true);
+    };
+    const markVisitorMovement = () => {
+      visitorMovedMap = true;
+    };
+    const resizeMap = () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        map.resize();
+        if (!visitorMovedMap) fitMontenegro(false);
+      }, 120);
+    };
+
+    const removeMap = () => {
+      if (removed) return;
+      removed = true;
+      window.clearTimeout(resizeTimer);
+      window.removeEventListener("resize", resizeMap);
+      root.removeEventListener("pointerdown", markVisitorMovement);
+      root.removeEventListener("wheel", markVisitorMovement);
+      zoomInButton?.removeEventListener("click", zoomIn);
+      zoomOutButton?.removeEventListener("click", zoomOut);
+      resetButton?.removeEventListener("click", resetView);
+      map.remove();
+    };
+
+    zoomInButton?.addEventListener("click", zoomIn);
+    zoomOutButton?.addEventListener("click", zoomOut);
+    resetButton?.addEventListener("click", resetView);
+    root.addEventListener("pointerdown", markVisitorMovement, { passive: true });
+    root.addEventListener("wheel", markVisitorMovement, { passive: true });
+    window.addEventListener("resize", resizeMap, { passive: true });
+    document.addEventListener("astro:before-swap", removeMap, { once: true });
+
+    map.once("load", () => {
+      if (failed) return;
+      ready = true;
+      root.dataset.mapState = "ready";
+      renderer.setAttribute("aria-hidden", "false");
+      fallback?.setAttribute("aria-hidden", "true");
+      if (fallbackNotice) fallbackNotice.hidden = true;
+      if (attribution) attribution.hidden = false;
+      setControlsEnabled(true);
+      fitMontenegro(false);
+    });
+
+    map.on("error", () => {
+      if (ready || failed) return;
+      failed = true;
+      showFallback();
+      window.setTimeout(removeMap, 0);
+    });
+  };
+
+  void initialiseHomepageMap();
+</script>

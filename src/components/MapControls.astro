@@ -15,21 +15,21 @@ import InterfaceIcon from "./InterfaceIcon.astro";
     <summary><InterfaceIcon name="layers" size={21} /><span>Слојеви</span></summary>
     <div class="map-popover__panel">
       <strong>Слојеви карте</strong>
-      <p>Избор картографских слојева биће доступан након повезивања одобреног извора карте.</p>
+      <p>Основни Outdoor приказ је активан. Избор додатних картографских слојева биће доступан у каснијој фази.</p>
     </div>
   </details>
   <div class="map-zoom" aria-label="Зумирање карте">
-    <button type="button" disabled aria-label="Увећај карту — ускоро"><InterfaceIcon name="plus" size={21} /></button>
-    <button type="button" disabled aria-label="Умањи карту — ускоро"><InterfaceIcon name="minus" size={21} /></button>
+    <button type="button" data-map-zoom-in disabled aria-label="Увећај карту"><InterfaceIcon name="plus" size={21} /></button>
+    <button type="button" data-map-zoom-out disabled aria-label="Умањи карту"><InterfaceIcon name="minus" size={21} /></button>
   </div>
-  <button class="map-target" type="button" disabled aria-label="Центрирај карту — ускоро" title="Центрирање карте је у припреми"><InterfaceIcon name="target" size={21} /></button>
+  <button class="map-target" type="button" data-map-reset disabled aria-label="Прикажи поново Црну Гору"><InterfaceIcon name="target" size={21} /></button>
 </div>
 
 <details class="map-popover map-help">
   <summary><InterfaceIcon name="info" size={18} /><span>Како користити карту?</span></summary>
   <div class="map-popover__panel">
-    <strong>Карта је у припреми</strong>
-    <p>Тренутно можете користити претрагу и филтере интерфејса. Провјерене локације и стварне функције карте биће додате након уредничког одобрења.</p>
+    <strong>Интерактивна основна карта</strong>
+    <p>Карту можете помјерати и зумирати. Ознаке светиња и руте неће бити приказане док подаци не прођу уредничко одобрење.</p>
   </div>
 </details>
 
