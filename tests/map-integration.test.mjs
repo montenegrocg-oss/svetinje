@@ -72,9 +72,9 @@ test("custom controls use the requested responsive Montenegro view without geolo
 
   assert.match(mapCanvas, /const MONTENEGRO_BOUNDS: LngLatBoundsLike = \[\s*\[18\.42, 41\.8\],\s*\[20\.36, 43\.57\],\s*\];/);
   assert.match(mapCanvas, /map\.fitBounds\(MONTENEGRO_BOUNDS/);
-  assert.match(mapCanvas, /if \(width >= 1088\) return \{ top: 96, right: 56, bottom: 52, left: 468 \};/);
-  assert.match(mapCanvas, /if \(width >= 768\) return \{ top: 160, right: 44, bottom: 50, left: 360 \};/);
-  assert.match(mapCanvas, /return \{ top: 80, right: 22, bottom: 42, left: 22 \};/);
+  assert.match(mapCanvas, /if \(width >= 1088\) return \{ top: 78, right: 28, bottom: 30, left: 292 \};/);
+  assert.match(mapCanvas, /if \(width >= 768\) return \{ top: 135, right: 26, bottom: 34, left: 245 \};/);
+  assert.match(mapCanvas, /return \{ top: 62, right: 14, bottom: 26, left: 14 \};/);
   assert.match(mapCanvas, /center: \[19\.25, 42\.7\]/);
   assert.match(mapCanvas, /zoom: 6/);
   assert.match(mapCanvas, /map\.once\("load", \(\) => \{[\s\S]*?fitMontenegro\(false\)/);
