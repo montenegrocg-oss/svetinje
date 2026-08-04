@@ -47,6 +47,12 @@ export function createOutputModel(places) {
     };
   });
   const expectedRealRelatedCount = Math.min(4, Math.max(0, normalizedPlaces.length - 1));
+  const primaryPlaces = normalizedPlaces.slice(0, 4);
+  const continuationPlaces = normalizedPlaces.slice(4);
+  const continuationSlots = Array.from(
+    { length: Math.max(4, continuationPlaces.length) },
+    (_, index) => ({ slot: String(index + 5).padStart(2, "0"), place: continuationPlaces[index] }),
+  );
 
   return {
     places: normalizedPlaces,
@@ -58,6 +64,12 @@ export function createOutputModel(places) {
     placesById: new Map(normalizedPlaces.map((place) => [place.id, place])),
     markerPlaces: normalizedPlaces.filter(hasCoordinates),
     mediaPlaces: normalizedPlaces.filter((place) => typeof place.previewImageSrc === "string"),
+    primaryPlaces,
+    continuationPlaces,
+    continuationSlots,
+    primaryPlaceCount: primaryPlaces.length,
+    continuationRealCount: continuationPlaces.length,
+    continuationPlaceholderCount: Math.max(0, 4 - continuationPlaces.length),
     expectedRealRelatedCount,
     expectedRelatedPlaceholderCount: 4 - expectedRealRelatedCount,
   };

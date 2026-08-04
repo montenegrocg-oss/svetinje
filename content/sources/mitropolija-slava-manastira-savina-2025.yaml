@@ -1,0 +1,20 @@
+schema_version: 1
+id: mitropolija-slava-manastira-savina-2025
+editorial_status: research
+source_type: diocesan
+title: Манастир Савина прославио славу
+publisher: Православна Митрополија црногорско-приморска
+url: https://mitropolija.com/2025/08/28/manastir-savina-proslavio-slavu/
+publication_date:
+  precision: exact-date
+  date: 2025-08-28
+accessed_at: 2026-08-04
+original_language: sr-Cyrl
+locator: Извјештај Митрополије о прослави Успења Пресвете Богородице, манастирске славе Савине, 28. августа 2025.
+status: active
+approvals: []
+audit:
+  created_at: 2026-08-04T21:15:45Z
+  created_by: maxim
+  updated_at: 2026-08-04T21:15:45Z
+  updated_by: maxim

@@ -1,0 +1,84 @@
+schema_version: 1
+id: manastir-savina
+editorial_status: research
+place_type:
+  value: monastery
+  verification:
+    status: requires-verification
+    source_ids:
+      - mitropolija-muski-manastiri
+      - manastirsavina-pocetna
+    qualification: Званични регистар Митрополије и званични сајт манастира наводе Савину као манастир; податак остаје у research статусу до стручне и црквене провјере.
+ecclesiastical:
+  jurisdiction:
+    value: Митрополија црногорско-приморска
+    verification:
+      status: requires-verification
+      source_ids:
+        - mitropolija-muski-manastiri
+      qualification: Припадност је наведена у званичном регистру мушких манастира Митрополије и чека црквену провјеру за јавно објављивање.
+  community_type:
+    value: православни мушки манастир
+    verification:
+      status: requires-verification
+      source_ids:
+        - mitropolija-muski-manastiri
+      qualification: Савина је наведена у званичном регистру мушких манастира; податак остаје у research статусу.
+location:
+  country_code:
+    value: ME
+    verification:
+      status: requires-verification
+      source_ids:
+        - manastirsavina-kontakt
+        - openstreetmap-manastir-savina-way-147257044
+      qualification: Држава је потврђена званичном контакт-страницом и картографским записом; податак чека географску провјеру.
+  municipality:
+    value: Херцег Нови
+    verification:
+      status: requires-verification
+      source_ids:
+        - manastirsavina-kontakt
+      qualification: Општина је наведена у званичној адреси манастира и чека географску провјеру.
+  settlement:
+    value: Савина
+    verification:
+      status: requires-verification
+      source_ids:
+        - openstreetmap-manastir-savina-way-147257044
+      qualification: Назив подручја је преузет из картографског записа и чека географску провјеру.
+  postal_address:
+    value: Манастирска 21, 85340 Херцег Нови
+    verification:
+      status: requires-verification
+      source_ids:
+        - manastirsavina-kontakt
+      qualification: Адреса је преузета са званичне контакт-странице и чека директну провјеру.
+  coordinates:
+    latitude: 42.45241989804254
+    longitude: 18.554391598000464
+    crs: EPSG:4326
+    accuracy: complex-centroid
+    publication_safety: public
+    verification:
+      status: requires-verification
+      source_ids:
+        - openstreetmap-manastir-savina-way-147257044
+      qualification: Координате представљају радни центроид манастирског комплекса према OpenStreetMap way 147257044 и не означавају тачан пјешачки или колски улаз.
+relationships: {}
+source_ids:
+  - mitropolija-muski-manastiri
+  - manastirsavina-pocetna
+  - manastirsavina-o-manastiru
+  - manastirsavina-crkve
+  - manastirsavina-riznica
+  - manastirsavina-biblioteka
+  - manastirsavina-kontakt
+  - mitropolija-slava-manastira-savina-2025
+  - openstreetmap-manastir-savina-way-147257044
+approvals: []
+audit:
+  created_at: 2026-08-04T21:15:45Z
+  created_by: maxim
+  updated_at: 2026-08-04T21:15:45Z
+  updated_by: maxim

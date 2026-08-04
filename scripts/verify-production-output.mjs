@@ -200,11 +200,30 @@ function verifyDetail(detailCase, model, pagesByRoute, failures) {
 }
 
 function verifyFixedHomepageContracts(homepageHtml, model, failures) {
-  if (countMatches(homepageHtml, /data-testid="explorer-continuation-placeholder"/g) !== 4) failures.push("homepage must contain exactly four neutral continuation placeholders");
-  for (const slot of ["05", "06", "07", "08"]) {
-    if (!homepageHtml.includes(`data-continuation-slot="${slot}"`)) failures.push(`homepage is missing continuation slot ${slot}`);
+  const realContinuationCards = countMatches(homepageHtml, /data-place-card="[^"]+"[^>]*data-continuation-slot=/g);
+  const continuationPlaceholderCount = countMatches(homepageHtml, /data-testid="explorer-continuation-placeholder"/g);
+  if (realContinuationCards !== model.continuationRealCount) {
+    failures.push(`homepage must contain ${model.continuationRealCount} real continuation card(s), found ${realContinuationCards}`);
   }
-  if (/data-continuation-slot="00[5-8]"/.test(homepageHtml)) failures.push("homepage continuation slots must use two-digit numbering");
+  if (continuationPlaceholderCount !== model.continuationPlaceholderCount) {
+    failures.push(`homepage must contain ${model.continuationPlaceholderCount} neutral continuation placeholder(s), found ${continuationPlaceholderCount}`);
+  }
+  for (const { slot, place } of model.continuationSlots) {
+    const card = place ? elementContaining(homepageHtml, "article", `data-place-card="${place.id}"`) : "";
+    const placeholder = !place ? elementContaining(homepageHtml, "article", `data-continuation-slot="${slot}"`) : "";
+    if (place) {
+      if (!card || !card.includes(`data-continuation-slot="${slot}"`)) {
+        failures.push(`homepage continuation slot ${slot} must contain the loaded place ${place.id}`);
+      } else if (!card.includes(`href="/svetinje/${place.slug}/"`)) {
+        failures.push(`homepage continuation card ${place.id} has the wrong detail route`);
+      } else if (!place.previewImageSrc && !card.includes("editorial-place-card__media--fallback")) {
+        failures.push(`homepage continuation card ${place.id} must retain its honest no-image fallback`);
+      }
+    } else if (!placeholder || !placeholder.includes('data-testid="explorer-continuation-placeholder"')) {
+      failures.push(`homepage continuation slot ${slot} must remain an honest placeholder`);
+    }
+  }
+  if (/data-continuation-slot="00\d+"/.test(homepageHtml)) failures.push("homepage continuation slots must use two-digit numbering");
 
   const visibleRecommendations = RECOMMENDED_PLACE_IDS.flatMap((id) => {
     const place = model.placesById.get(id);
@@ -286,7 +305,7 @@ for (const detailCase of model.detailRoutes) {
 
 for (const page of pages) {
   if (/rating|>\s*Оцјена\s*</i.test(page.html) || /033\/459-084|manastirmaine@gmail\.com/i.test(page.html)) failures.push(`${page.relative} contains prohibited practical or commercial preview data`);
-  if (/180\s*m|08:00|16:00|18:00|Дјелимично активан|XVI вијек|Манастир Прасквица|Црква Св\. Тројице|Манастир Стањевићи|Манастир Дуљево/i.test(page.html)) failures.push(`${page.relative} contains unsupported reference-screenshot content`);
+  if (/180\s*m|08:00|16:00|18:00|Дјелимично активан|Манастир Прасквица|Црква Св\. Тројице|Манастир Стањевићи|Манастир Дуљево/i.test(page.html)) failures.push(`${page.relative} contains unsupported reference-screenshot content`);
 }
 
 if (!editorialPreview) {

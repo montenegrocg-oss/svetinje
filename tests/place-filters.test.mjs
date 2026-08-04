@@ -49,6 +49,10 @@ test("the explorer keeps one shared filter state across cards, controls, and map
   assert.match(explorer, /new CustomEvent\("svetinje:filter-change"/);
   assert.match(explorer, /new CustomEvent\("svetinje:place-visibility-change"/);
   assert.match(explorer, /new ResizeObserver\(syncContinuationHeight\)/);
+  assert.match(explorer, /const primaryPlaces = places\.slice\(0, 4\)/);
+  assert.match(explorer, /const continuationPlaces = places\.slice\(4\)/);
+  assert.match(explorer, /<ExplorerSidebar places=\{primaryPlaces\} \/>/);
+  assert.match(explorer, /<ExplorerContinuation places=\{continuationPlaces\} \/>/);
   assert.match(explorer, /sidebarBottom - continuationTop/);
   assert.match(explorer, /\[data-testid='recommended-places'\]/);
   assert.match(explorer, /\[data-testid='popular-routes'\]/);

@@ -110,15 +110,17 @@ test("the homepage is composed from reusable map-explorer components", async () 
   ]);
   assert.match(explorer, /<MapCanvas places=\{places\} \/>/);
   assert.match(explorer, /<MapControls \/>/);
-  assert.match(explorer, /<ExplorerSidebar places=\{places\} \/>/);
+  assert.match(explorer, /const primaryPlaces = places\.slice\(0, 4\)/);
+  assert.match(explorer, /const continuationPlaces = places\.slice\(4\)/);
+  assert.match(explorer, /<ExplorerSidebar places=\{primaryPlaces\} \/>/);
   assert.match(explorer, /<RecommendedPlaces places=\{places\} \/>/);
   assert.match(explorer, /import PopularRoutes from "\.\/PopularRoutes\.astro"/);
   assert.match(explorer, /import ExplorerContinuation from "\.\/ExplorerContinuation\.astro"/);
   assert.match(explorer, /<PopularRoutes \/>/);
-  assert.match(explorer, /<ExplorerContinuation \/>/);
+  assert.match(explorer, /<ExplorerContinuation places=\{continuationPlaces\} \/>/);
   assert.ok(
     explorer.indexOf("<RecommendedPlaces places={places} />") < explorer.indexOf("<PopularRoutes />")
-      && explorer.indexOf("<PopularRoutes />") < explorer.indexOf("<ExplorerContinuation />"),
+      && explorer.indexOf("<PopularRoutes />") < explorer.indexOf("<ExplorerContinuation places={continuationPlaces} />"),
     "recommendations, routes, and continuation must retain their required MapExplorer order",
   );
   assert.match(explorer, /data-testid="map-explorer"/);
@@ -148,12 +150,15 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(routes, /data-testid="popular-routes"/);
   assert.match(routes, /class="popular-routes__inner"/);
   assert.doesNotMatch(routes, /class="shell popular-routes__inner"/);
-  assert.match(continuation, /const PLACEHOLDER_SLOTS = \[5, 6, 7, 8\] as const/);
+  assert.match(continuation, /const MINIMUM_SLOT_COUNT = 4/);
+  assert.match(continuation, /Math\.max\(MINIMUM_SLOT_COUNT, places\.length\)/);
+  assert.match(continuation, /slot: index \+ 5/);
   assert.match(continuation, /String\(slot\)\.padStart\(2, "0"\)/);
   assert.equal((continuation.match(/data-testid="explorer-continuation-placeholder"/g) ?? []).length, 1);
   assert.match(continuation, /data-testid="explorer-continuation"/);
   assert.match(continuation, /data-continuation-slot=\{formatSlot\(slot\)\}/);
-  assert.doesNotMatch(continuation, /data-place-card|data-place-category|data-place-search|005|006|007|008/);
+  assert.match(continuation, /<PlaceCard place=\{place\} variant="continuation" continuationSlot=\{formatSlot\(slot\)\} \/>/);
+  assert.match(continuation, /data-continuation-slot=\{formatSlot\(slot\)\}/);
 });
 
 test("catalogue pages share the established category mapping instead of duplicating it", async () => {

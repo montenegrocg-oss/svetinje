@@ -35,6 +35,10 @@ test("four-place output model derives routes, categories, markers, and media", (
   assert.deepEqual(model.mediaPlaces.map(({ id }) => id), ["alpha", "delta"]);
   assert.equal(model.expectedRealRelatedCount, 3);
   assert.equal(model.expectedRelatedPlaceholderCount, 1);
+  assert.equal(model.primaryPlaceCount, 4);
+  assert.equal(model.continuationRealCount, 0);
+  assert.equal(model.continuationPlaceholderCount, 4);
+  assert.deepEqual(model.continuationSlots.map(({ slot }) => slot), ["05", "06", "07", "08"]);
 });
 
 test("a fifth place changes every inventory-derived expectation without helper edits", () => {
@@ -60,6 +64,11 @@ test("a fifth place changes every inventory-derived expectation without helper e
   assert.ok(fivePlaceModel.mediaPlaces.some(({ previewImageSrc }) => previewImageSrc === "/images/epsilon.webp"));
   assert.equal(fivePlaceModel.expectedRealRelatedCount, 4);
   assert.equal(fivePlaceModel.expectedRelatedPlaceholderCount, 0);
+  assert.equal(fivePlaceModel.primaryPlaceCount, 4);
+  assert.equal(fivePlaceModel.continuationRealCount, 1);
+  assert.equal(fivePlaceModel.continuationPlaceholderCount, 3);
+  assert.equal(fivePlaceModel.continuationSlots[0].slot, "05");
+  assert.equal(fivePlaceModel.continuationSlots[0].place.id, "epsilon");
 });
 
 test("a place without coordinates or media still has cards and a detail route", () => {
@@ -74,4 +83,6 @@ test("a place without coordinates or media still has cards and a detail route", 
   assert.equal(model.detailRoutes[0].previewImageSrc, undefined);
   assert.equal(model.expectedRealRelatedCount, 0);
   assert.equal(model.expectedRelatedPlaceholderCount, 4);
+  assert.equal(model.primaryPlaceCount, 1);
+  assert.equal(model.continuationRealCount, 0);
 });

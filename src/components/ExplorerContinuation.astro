@@ -1,6 +1,18 @@
 ---
-const PLACEHOLDER_SLOTS = [5, 6, 7, 8] as const;
+import PlaceCard from "./PlaceCard.astro";
+import type { VisiblePlace } from "../lib/content/publication";
+
+interface Props {
+  places?: VisiblePlace[];
+}
+
+const { places = [] } = Astro.props;
+const MINIMUM_SLOT_COUNT = 4;
 const formatSlot = (slot: number) => String(slot).padStart(2, "0");
+const slots = Array.from({ length: Math.max(MINIMUM_SLOT_COUNT, places.length) }, (_, index) => ({
+  place: places[index],
+  slot: index + 5,
+}));
 ---
 
 <section
@@ -8,7 +20,9 @@ const formatSlot = (slot: number) => String(slot).padStart(2, "0");
   aria-label="Будући записи светиња"
   data-testid="explorer-continuation"
 >
-  {PLACEHOLDER_SLOTS.map((slot) => (
+  {slots.map(({ place, slot }) => place ? (
+    <PlaceCard place={place} variant="continuation" continuationSlot={formatSlot(slot)} />
+  ) : (
     <article
       class="explorer-continuation__placeholder"
       data-testid="explorer-continuation-placeholder"
@@ -25,7 +39,7 @@ const formatSlot = (slot: number) => String(slot).padStart(2, "0");
       </div>
       <h3>Запис у припреми</h3>
       <p class="explorer-continuation__location">Локација ће бити додата</p>
-      <p class="explorer-continuation__summary">Фотографија и подаци биће додати након уређивачке провјере.</p>
+      <p class="explorer-continuation__summary">Фотографија и подаци биће додати након уредничке провјере.</p>
     </article>
   ))}
 </section>

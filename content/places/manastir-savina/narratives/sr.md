@@ -1,0 +1,114 @@
+---
+schema_version: 1
+place_id: manastir-savina
+locale: sr
+editorial_status: research
+translation_status: source
+slug: manastir-savina
+preferred_name: Манастир Савина
+alternate_names:
+  - name: Манастир Успења Пресвете Богородице – Савина
+    context: Пуни назив у званичном регистру мушких манастира Митрополије.
+    source_ids:
+      - mitropolija-muski-manastiri
+    verification_status: requires-verification
+summary: Манастир Савина је православни мушки манастир Митрополије црногорско-приморске у Херцег Новом. Манастирски комплекс обухвата малу и велику цркву Успења Пресвете Богородице и цркву Светог Саве.
+source_ids:
+  - mitropolija-muski-manastiri
+  - manastirsavina-pocetna
+  - manastirsavina-o-manastiru
+  - manastirsavina-crkve
+  - manastirsavina-riznica
+  - manastirsavina-biblioteka
+  - manastirsavina-kontakt
+  - mitropolija-slava-manastira-savina-2025
+  - openstreetmap-manastir-savina-way-147257044
+section_sources:
+  introduction:
+    - mitropolija-muski-manastiri
+    - manastirsavina-crkve
+  architecture-and-art:
+    - manastirsavina-crkve
+  relics-icons-and-traditions:
+    - manastirsavina-pocetna
+    - manastirsavina-riznica
+    - manastirsavina-biblioteka
+  feasts:
+    - mitropolija-slava-manastira-savina-2025
+    - manastirsavina-crkve
+  history:
+    - manastirsavina-o-manastiru
+    - manastirsavina-crkve
+    - manastirsavina-riznica
+  location:
+    - manastirsavina-kontakt
+    - openstreetmap-manastir-savina-way-147257044
+  visitor-information:
+    - manastirsavina-pocetna
+    - manastirsavina-kontakt
+  verification-notes:
+    - manastirsavina-kontakt
+    - openstreetmap-manastir-savina-way-147257044
+approvals: []
+audit:
+  created_at: 2026-08-04T21:15:45Z
+  created_by: maxim
+  updated_at: 2026-08-04T21:15:45Z
+  updated_by: maxim
+---
+
+## Основни подаци {#introduction}
+
+Манастир Савина је православни мушки манастир Митрополије црногорско-приморске у Херцег Новом. Званични регистар Митрополије комплекс наводи под пуним именом Манастир Успења Пресвете Богородице – Савина.[^mitropolija-muski-manastiri]
+
+Комплекс обухвата малу и велику цркву Успења Пресвете Богородице, као и цркву Светог Саве. Званична страница манастира о црквама разликује та три храма у оквиру Савине.[^manastirsavina-crkve]
+
+## Цркве и архитектура {#architecture-and-art}
+
+Према званичном опису манастира, мала црква Успења Пресвете Богородице чува најстарији слој комплекса, док се црква Светог Саве налази изнад манастирског дворишта. Предање о њеном оснивању везује је за Светог Саву, али се оно не представља као независно потврђена чињеница.[^manastirsavina-crkve]
+
+Велика црква Успења Пресвете Богородице грађена је од 1777. до 1799. године. Званични опис у њеној архитектури препознаје романичке, готичке, византијске и православно-барокне елементе, а наводи да је иконостас завршен 1797. године.[^manastirsavina-crkve]
+
+## Светиње, ризница и библиотека {#relics-icons-and-traditions}
+
+Званични сајт манастира икону Богородице Савинске назива чудотворном и преноси монашко предање о њеној вези са Савином. Ово је предањско тумачење које овај research запис не представља као независно историјски доказану чињеницу.[^manastirsavina-pocetna]
+
+У ризници се, према званичном опису, чувају предмети повезани са насљеђем Тврдоша и Милешеве; дио предмета донијели су монаси који су, с владиком Саватијем Љубибратићем, дошли из Тврдоша 1693/4. године. За Крст Светог Саве званична страница наводи претпоставку о његовом поријеклу, па се она овдје не наводи као сигурно утврђена.[^manastirsavina-riznica]
+
+Манастирска библиотека има рукописне и старе штампане књиге датоване од XIV до XVIII вијека. Званична библиотечка страница посебно наводи Савински препис Законоправила Светог Саве из XVI вијека.[^manastirsavina-biblioteka]
+
+## Манастирска слава {#feasts}
+
+Манастирска слава је Успење Пресвете Богородице, које је у извјештају Митрополије о прослави Савине 2025. године наведено 28. августа. И мала и велика црква у комплексу посвећене су Успењу Пресвете Богородице.[^mitropolija-slava-manastira-savina-2025][^manastirsavina-crkve]
+
+## Историја {#history}
+
+Званични историјски преглед упозорава да старост и оснивач манастира нису са сигурношћу утврђени. Предање малу цркву повезује са 1030. годином, док исти преглед садашњи облик мале цркве и цркве Светог Саве везује за XV вијек; зато се 1030. не наводи као документовани датум оснивања.[^manastirsavina-o-manastiru][^manastirsavina-crkve]
+
+Манастир је, према званичном историјском прегледу, више пута напуштан и обнављан. Значајна обнова крајем XVII вијека повезује се с доласком монаха из разореног манастира Тврдош, предвођених владиком Саватијем Љубибратићем; званична страница ризнице прецизније помиње њихов долазак 1693/4. године.[^manastirsavina-o-manastiru][^manastirsavina-riznica]
+
+Обновљени манастирски живот достигао је важан период у другој половини XVIII вијека, а велика црква је грађена између 1777. и 1799. године.[^manastirsavina-o-manastiru][^manastirsavina-crkve]
+
+## Положај манастира {#location}
+
+Манастир се налази на подручју Савине у Херцег Новом; званична поштанска адреса је Манастирска 21, 85340 Херцег Нови, Црна Гора.[^manastirsavina-kontakt]
+
+Ознака на мапи представља радни центроид манастирског комплекса из OpenStreetMap way 147257044, а не тачан пјешачки или колски улаз.[^openstreetmap-manastir-savina-way-147257044]
+
+## Информације за посјетиоце {#visitor-information}
+
+Савина је активно мјесто богослужења. Посјетиоци треба да поштују службу, тишину и манастирски живот, а актуелне информације о посјети и богослужењима да провјере на званичном сајту манастира непосредно прије доласка.[^manastirsavina-pocetna][^manastirsavina-kontakt]
+
+## Подаци за додатну провјеру {#verification-notes}
+
+Прије јавног објављивања потребна је директна провјера тачног пјешачког и колског улаза, актуелних богослужбених термина, услова отворености, паркирања, приступачности, садржаја за посјетиоце, правила за фотографисање и снимање, као и евентуалних конзерваторских или обновитељских ограничења.[^manastirsavina-kontakt][^openstreetmap-manastir-savina-way-147257044]
+
+[^mitropolija-muski-manastiri]: [Православна Митрополија црногорско-приморска, „Мушки манастири“](https://mitropolija.com/muski-manastiri/)
+[^manastirsavina-pocetna]: [Манастир Савина, почетна страница](https://www.manastirsavina.org/)
+[^manastirsavina-o-manastiru]: [Манастир Савина, „О манастиру“](https://www.manastirsavina.org/o-manastiru)
+[^manastirsavina-crkve]: [Манастир Савина, „Цркве“](https://www.manastirsavina.org/crkve)
+[^manastirsavina-riznica]: [Манастир Савина, „Ризница“](https://www.manastirsavina.org/riznica)
+[^manastirsavina-biblioteka]: [Манастир Савина, „Библиотека“](https://www.manastirsavina.org/biblioteka)
+[^manastirsavina-kontakt]: [Манастир Савина, „Контакт“](https://www.manastirsavina.org/kontakt)
+[^mitropolija-slava-manastira-savina-2025]: [Православна Митрополија црногорско-приморска, „Манастир Савина прославио славу“](https://mitropolija.com/2025/08/28/manastir-savina-proslavio-slavu/)
+[^openstreetmap-manastir-savina-way-147257044]: [OpenStreetMap way 147257044](https://www.openstreetmap.org/way/147257044)

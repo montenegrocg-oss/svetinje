@@ -1,0 +1,17 @@
+schema_version: 1
+id: manastirsavina-o-manastiru
+editorial_status: research
+source_type: monastery
+title: О манастиру
+publisher: Манастир Савина
+url: https://www.manastirsavina.org/o-manastiru
+accessed_at: 2026-08-04
+original_language: sr-Cyrl
+locator: Званични историјски преглед; предања о раном раздобљу, обнова крајем XVII вијека и развој манастирског живота.
+status: active
+approvals: []
+audit:
+  created_at: 2026-08-04T21:15:45Z
+  created_by: maxim
+  updated_at: 2026-08-04T21:15:45Z
+  updated_by: maxim

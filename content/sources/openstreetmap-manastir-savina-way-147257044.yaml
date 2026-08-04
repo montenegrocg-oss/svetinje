@@ -1,0 +1,18 @@
+schema_version: 1
+id: openstreetmap-manastir-savina-way-147257044
+editorial_status: research
+source_type: other-approved
+title: OpenStreetMap way 147257044 — Манастир Савина
+publisher: OpenStreetMap contributors
+url: https://www.openstreetmap.org/way/147257044
+accessed_at: 2026-08-04
+original_language: en
+locator: Полигон манастирског комплекса; центроид геометрије је израчунат као радна координата за мапу.
+status: active
+approval_note: Картографски извор је одобрен само за геометрију и радни центроид комплекса; не потврђује историјске, црквене или практичне податке.
+approvals: []
+audit:
+  created_at: 2026-08-04T21:15:45Z
+  created_by: maxim
+  updated_at: 2026-08-04T21:15:45Z
+  updated_by: maxim

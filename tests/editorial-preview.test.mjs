@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -122,6 +122,48 @@ test("Dajbabe remains research-only, sourced, and public-safe", async () => {
   assert.match(narrative, /## Чудесно откриће светиње \{#discovery\}/);
   assert.match(narrative, /## Канонизација и празник \{#canonization\}/);
   assert.match(narrative, /## Положај манастира \{#location\}/);
+  assert.doesNotMatch(narrative, /радно вријеме|телефон|електронск[а-я]+ пошта|паркинг/i);
+});
+
+test("Savina is a sourced fifth editorial-preview monastery without media", async () => {
+  const [placeText, narrative, osmText, manifestText, mediaDirectory] = await Promise.all([
+    source("content/places/manastir-savina/place.yaml"),
+    source("content/places/manastir-savina/narratives/sr.md"),
+    source("content/sources/openstreetmap-manastir-savina-way-147257044.yaml"),
+    source("validation/editorial-preview.json"),
+    readdir(path.join(PROJECT_ROOT, "content", "media")),
+  ]);
+  const place = parse(placeText);
+  const osm = parse(osmText);
+  const manifest = JSON.parse(manifestText);
+
+  assert.equal(manifest.place_ids.at(-1), "manastir-savina");
+  assert.equal(place.id, "manastir-savina");
+  assert.equal(place.editorial_status, "research");
+  assert.equal(place.place_type.value, "monastery");
+  assert.equal(place.location.coordinates.latitude, 42.45241989804254);
+  assert.equal(place.location.coordinates.longitude, 18.554391598000464);
+  assert.equal(place.location.coordinates.accuracy, "complex-centroid");
+  assert.equal(place.location.coordinates.publication_safety, "public");
+  assert.match(place.location.coordinates.verification.qualification, /центроид манастирског комплекса/);
+  assert.equal(osm.url, "https://www.openstreetmap.org/way/147257044");
+  assert.equal(osm.source_type, "other-approved");
+  assert.match(narrative, /slug: manastir-savina/);
+  assert.match(narrative, /summary: Манастир Савина је православни мушки манастир/);
+  for (const sectionId of [
+    "introduction",
+    "architecture-and-art",
+    "relics-icons-and-traditions",
+    "feasts",
+    "history",
+    "location",
+    "visitor-information",
+    "verification-notes",
+  ]) {
+    assert.match(narrative, new RegExp(`\\{#${sectionId}\\}`));
+  }
+  assert.match(narrative, /по предању|Предање/);
+  assert.equal(mediaDirectory.some((file) => /savina/i.test(file)), false);
   assert.doesNotMatch(narrative, /радно вријеме|телефон|електронск[а-я]+ пошта|паркинг/i);
 });
 

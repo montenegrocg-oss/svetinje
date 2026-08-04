@@ -8,6 +8,8 @@ import RecommendedPlaces from "./RecommendedPlaces.astro";
 import { loadVisiblePlaces } from "../lib/content/publication";
 
 const places = await loadVisiblePlaces();
+const primaryPlaces = places.slice(0, 4);
+const continuationPlaces = places.slice(4);
 ---
 
 <section class="map-explorer" id="mapa" aria-labelledby="map-explorer-title" data-testid="map-explorer">
@@ -23,10 +25,10 @@ const places = await loadVisiblePlaces();
     <MapControls />
   </div>
 
-  <ExplorerSidebar places={places} />
+  <ExplorerSidebar places={primaryPlaces} />
   <RecommendedPlaces places={places} />
   <PopularRoutes />
-  <ExplorerContinuation />
+  <ExplorerContinuation places={continuationPlaces} />
 </section>
 
 <script>
