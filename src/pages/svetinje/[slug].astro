@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PlaceDetailGallery from "../../components/place-detail/PlaceDetailGallery.astro";
 import PlaceDetailHero from "../../components/place-detail/PlaceDetailHero.astro";
+import PlaceNarrativeSegments from "../../components/place-detail/PlaceNarrativeSegments.astro";
 import PlacePracticalPanel from "../../components/place-detail/PlacePracticalPanel.astro";
 import PlaceRelatedShelf from "../../components/place-detail/PlaceRelatedShelf.astro";
 import type { VisiblePlace } from "../../lib/content/publication";
@@ -52,8 +53,27 @@ export async function getStaticPaths() {
   }));
 }
 
+const HISTORY_SECTION_IDS = new Set([
+  "history",
+  "discovery",
+  "foundation",
+  "consecration",
+  "saint-simeon",
+  "relics",
+  "canonization",
+]);
+const ARRIVAL_SECTION_IDS = new Set(["location"]);
+const PRACTICAL_SECTION_IDS = new Set(["services", "visitor-information", "verification-notes"]);
+
 const { place, relatedPlaces } = Astro.props as { place: VisiblePlace; relatedPlaces: RelatedPlace[] };
-const [introSection, ...remainingNarrativeSections] = place.narrativeSections;
+const historySections = place.narrativeSections.filter((section) => HISTORY_SECTION_IDS.has(section.id));
+const arrivalSections = place.narrativeSections.filter((section) => ARRIVAL_SECTION_IDS.has(section.id));
+const practicalSections = place.narrativeSections.filter((section) => PRACTICAL_SECTION_IDS.has(section.id));
+const aboutSections = place.narrativeSections.filter((section) =>
+  !HISTORY_SECTION_IDS.has(section.id)
+  && !ARRIVAL_SECTION_IDS.has(section.id)
+  && !PRACTICAL_SECTION_IDS.has(section.id)
+);
 ---
 
 <BaseLayout
@@ -69,45 +89,34 @@ const [introSection, ...remainingNarrativeSections] = place.narrativeSections;
       <article class="place-profile-about prose" aria-labelledby="place-about-title">
         <p class="eyebrow">Уређивачки преглед</p>
         <h2 id="place-about-title">О светињи</h2>
-        {introSection ? (
-          <section aria-labelledby={`narrative-${introSection.id}`}>
-            <h3 id={`narrative-${introSection.id}`} class="place-profile-about__original-title">{introSection.title}</h3>
-            {introSection.paragraphs.map((paragraph) => (
-              <p>
-                {paragraph.text}
-                {paragraph.sourceIds.map((sourceId, index) => (
-                  <sup><a href={`#source-${sourceId}`} aria-label={`Извор ${index + 1} за овај навод`}>[{index + 1}]</a></sup>
-                ))}
-              </p>
-            ))}
-          </section>
+        {aboutSections.length > 0 ? (
+          <PlaceNarrativeSegments sections={aboutSections} />
         ) : (
-          <p>Уређивачки текст је у припреми.</p>
+          <p>Општи подаци о светињи су у припреми.</p>
         )}
       </article>
 
       <PlaceDetailGallery place={place} />
-      <PlacePracticalPanel place={place} />
+      <PlacePracticalPanel place={place} practicalSections={practicalSections} />
 
       <div class="place-profile-cards">
-        {remainingNarrativeSections.map((section) => (
-          <section class="place-editorial-card prose" aria-labelledby={`narrative-${section.id}`}>
-            <h2 id={`narrative-${section.id}`}>{section.title}</h2>
-            {section.paragraphs.map((paragraph) => (
-              <p>
-                {paragraph.text}
-                {paragraph.sourceIds.map((sourceId, index) => (
-                  <sup><a href={`#source-${sourceId}`} aria-label={`Извор ${index + 1} за овај навод`}>[{index + 1}]</a></sup>
-                ))}
-              </p>
-            ))}
-          </section>
-        ))}
+        <section class="place-editorial-card prose" aria-labelledby="place-history-title">
+          <h2 id="place-history-title">Историја</h2>
+          {historySections.length > 0 ? (
+            <PlaceNarrativeSegments sections={historySections} />
+          ) : (
+            <p>Историјски подаци су у припреми.</p>
+          )}
+        </section>
 
         <section class="place-editorial-card place-arrival-card" aria-labelledby="place-arrival-title">
           <h2 id="place-arrival-title">Како стићи</h2>
           {place.address && <p><strong>Адреса:</strong> {place.address}</p>}
-          <p>Локација је означена на главној карти. Прије посјете провјерите приступ и услове на терену.</p>
+          {arrivalSections.length > 0 ? (
+            <PlaceNarrativeSegments sections={arrivalSections} />
+          ) : (
+            <p>Локација је означена на главној карти. Прије посјете провјерите приступ и услове на терену.</p>
+          )}
           <a class="place-inline-link" href="/#mapa">Прикажи на главној карти <span aria-hidden="true">→</span></a>
         </section>
       </div>

@@ -2395,16 +2395,6 @@
     font-size: clamp(1.45rem, 2.2vw, 2rem);
   }
 
-  .place-profile-about__original-title {
-    margin-top: 1rem;
-    color: var(--gold);
-    font-family: var(--font-body);
-    font-size: 0.72rem;
-    font-weight: 850;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
   .place-profile-about p {
     margin-top: 0.8rem;
     color: var(--ink-soft);
@@ -2413,7 +2403,8 @@
   }
 
   .place-profile-about sup a,
-  .place-editorial-card sup a {
+  .place-editorial-card sup a,
+  .place-practical-panel__disclosure sup a {
     margin-left: 0.16rem;
     color: var(--gold);
     font-size: 0.68rem;
@@ -2594,6 +2585,10 @@
     color: var(--ink-soft);
     font-size: 0.7rem;
     line-height: 1.5;
+  }
+
+  .place-narrative-segment + .place-narrative-segment {
+    margin-top: 0.85rem;
   }
 
   .place-mini-map {

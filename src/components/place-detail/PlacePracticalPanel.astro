@@ -1,13 +1,15 @@
 ---
 import InterfaceIcon from "../InterfaceIcon.astro";
-import type { VisiblePlace } from "../../lib/content/publication";
+import type { NarrativeSection, VisiblePlace } from "../../lib/content/publication";
 import PlaceMiniMap from "./PlaceMiniMap.astro";
+import PlaceNarrativeSegments from "./PlaceNarrativeSegments.astro";
 
 interface Props {
   place: VisiblePlace;
+  practicalSections?: NarrativeSection[];
 }
 
-const { place } = Astro.props;
+const { place, practicalSections = [] } = Astro.props;
 const location = [place.settlement, place.municipality].filter(Boolean).join(" · ");
 const hasCoordinates = place.latitude !== undefined && place.longitude !== undefined;
 const coordinateText = hasCoordinates ? `${place.latitude}, ${place.longitude}` : undefined;
@@ -55,7 +57,11 @@ const coordinateQualification = place.placeType === "cathedral"
   {coordinateText && <p class="place-practical-panel__coordinate-note">{coordinateQualification}</p>}
   <details class="place-practical-panel__disclosure">
     <summary>Напомена о подацима</summary>
-    <p>Додатне практичне информације су у припреми. Подаци у радном приказу захтијевају уређивачку провјеру прије јавне објаве.</p>
+    {practicalSections.length > 0 ? (
+      <PlaceNarrativeSegments sections={practicalSections} />
+    ) : (
+      <p>Додатне практичне информације су у припреми. Подаци у радном приказу захтијевају уређивачку провјеру прије јавне објаве.</p>
+    )}
   </details>
   <p class="place-practical-panel__copy-status" role="status" aria-live="polite" data-coordinate-copy-status></p>
 

@@ -1,0 +1,22 @@
+---
+import type { NarrativeSection } from "../../lib/content/publication";
+
+interface Props {
+  sections: NarrativeSection[];
+}
+
+const { sections } = Astro.props;
+---
+
+{sections.map((section) => (
+  <section class="place-narrative-segment" data-narrative-source-section={section.id}>
+    {section.paragraphs.map((paragraph) => (
+      <p>
+        {paragraph.text}
+        {paragraph.sourceIds.map((sourceId, index) => (
+          <sup><a href={`#source-${sourceId}`} aria-label={`Извор ${index + 1} за овај навод`}>[{index + 1}]</a></sup>
+        ))}
+      </p>
+    ))}
+  </section>
+))}

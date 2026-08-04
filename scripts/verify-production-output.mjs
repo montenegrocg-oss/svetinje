@@ -2,7 +2,34 @@
 
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
-import { loadExcludedNarrativeMarkers } from "../src/lib/content/publication.ts";
+import { loadExcludedNarrativeMarkers, loadVisiblePlaces } from "../src/lib/content/publication.ts";
+
+const HISTORY_SECTION_IDS = new Set([
+  "history",
+  "discovery",
+  "foundation",
+  "consecration",
+  "saint-simeon",
+  "relics",
+  "canonization",
+]);
+const ARRIVAL_SECTION_IDS = new Set(["location"]);
+const PRACTICAL_SECTION_IDS = new Set(["services", "visitor-information", "verification-notes"]);
+const FIXED_DETAIL_HEADINGS = ["О светињи", "Историја", "Како стићи", "Практичне информације"];
+
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const countMatches = (text, pattern) => text.match(pattern)?.length ?? 0;
+const htmlToPlainText = (html) => html
+  .replace(/<[^>]*>/g, " ")
+  .replaceAll("&amp;", "&")
+  .replaceAll("&quot;", '"')
+  .replaceAll("&#39;", "'")
+  .replaceAll("&apos;", "'")
+  .replaceAll("&lt;", "<")
+  .replaceAll("&gt;", ">")
+  .replaceAll("&nbsp;", " ")
+  .replace(/\s+/g, " ")
+  .trim();
 
 async function htmlFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -26,6 +53,7 @@ const pages = await Promise.all(files.map(async (file) => ({
 const failures = [];
 
 if (editorialPreview) {
+  const visiblePlaces = await loadVisiblePlaces(root, { editorialPreview: true });
   const homepage = pages.find((page) => page.relative === "index.html");
   const catalogue = pages.find((page) => page.relative === "svetinje/index.html");
   const monasteries = pages.find((page) => page.relative === "manastiri/index.html");
@@ -108,6 +136,7 @@ if (editorialPreview) {
   ];
   for (const detailCase of detailCases) {
     const html = detailCase.page?.html ?? "";
+    const place = visiblePlaces.find((candidate) => candidate.id === detailCase.id);
     const heroPattern = new RegExp(`class="place-profile-hero"[^>]*data-place-id="${detailCase.id}"[\\s\\S]*?class="place-profile-hero__image"[^>]*src="${detailCase.image}"`);
     const breadcrumbPattern = new RegExp(`class="place-profile-breadcrumbs"[\\s\\S]*?href="${detailCase.categoryHref}"`);
     if (!heroPattern.test(html) || !breadcrumbPattern.test(html)) {
@@ -127,6 +156,76 @@ if (editorialPreview) {
     }
     if (!html.includes("Извори и напомене") || !html.includes('id="source-')) {
       failures.push(`${detailCase.id} detail page must preserve its source trail`);
+    }
+    if (!place) {
+      failures.push(`${detailCase.id} is missing from the editorial preview loader`);
+      continue;
+    }
+
+    for (const heading of FIXED_DETAIL_HEADINGS) {
+      const headingPattern = new RegExp(`<h[23][^>]*>${escapeRegExp(heading)}</h[23]>`, "g");
+      if (countMatches(html, headingPattern) !== 1) {
+        failures.push(`${detailCase.id} detail page must contain exactly one ${heading} heading`);
+      }
+    }
+
+    const blockBoundaries = {
+      about: [html.indexOf('id="place-about-title"'), html.indexOf('data-testid="place-detail-gallery"')],
+      practical: [html.indexOf('class="place-practical-panel"'), html.indexOf('class="place-profile-cards"')],
+      history: [html.indexOf('id="place-history-title"'), html.indexOf('id="place-arrival-title"')],
+      arrival: [html.indexOf('id="place-arrival-title"'), html.indexOf('data-testid="place-related-shelf"')],
+    };
+    if (Object.values(blockBoundaries).some(([start, end]) => start < 0 || end < 0 || start >= end)) {
+      failures.push(`${detailCase.id} detail page is missing a stable four-block narrative boundary`);
+      continue;
+    }
+
+    const pageText = htmlToPlainText(html);
+    const lastSectionIndexByGroup = { about: -1, history: -1, arrival: -1, practical: -1 };
+    const expectedCitationCounts = new Map();
+    for (const section of place.narrativeSections) {
+      const marker = `data-narrative-source-section="${section.id}"`;
+      if (countMatches(html, new RegExp(escapeRegExp(marker), "g")) !== 1) {
+        failures.push(`${detailCase.id} narrative section ${section.id} must be rendered exactly once`);
+        continue;
+      }
+      const group = HISTORY_SECTION_IDS.has(section.id)
+        ? "history"
+        : ARRIVAL_SECTION_IDS.has(section.id)
+          ? "arrival"
+          : PRACTICAL_SECTION_IDS.has(section.id)
+            ? "practical"
+            : "about";
+      const markerIndex = html.indexOf(marker);
+      const [start, end] = blockBoundaries[group];
+      if (markerIndex < start || markerIndex >= end) {
+        failures.push(`${detailCase.id} narrative section ${section.id} is outside its ${group} block`);
+      }
+      if (markerIndex <= lastSectionIndexByGroup[group]) {
+        failures.push(`${detailCase.id} narrative section ${section.id} is outside its original ${group} order`);
+      }
+      lastSectionIndexByGroup[group] = markerIndex;
+      for (const paragraph of section.paragraphs) {
+        const paragraphText = paragraph.text.replace(/\s+/g, " ").trim();
+        if (!pageText.includes(paragraphText)) {
+          failures.push(`${detailCase.id} is missing narrative text from section ${section.id}`);
+        }
+        for (const sourceId of paragraph.sourceIds) {
+          expectedCitationCounts.set(sourceId, (expectedCitationCounts.get(sourceId) ?? 0) + 1);
+        }
+      }
+      if (!FIXED_DETAIL_HEADINGS.includes(section.title)) {
+        const originalHeadingPattern = new RegExp(`<h[23][^>]*>${escapeRegExp(section.title)}</h[23]>`, "g");
+        if (countMatches(html, originalHeadingPattern) !== 0) {
+          failures.push(`${detailCase.id} exposes original narrative heading ${section.title}`);
+        }
+      }
+    }
+    for (const [sourceId, expectedCount] of expectedCitationCounts) {
+      const citationPattern = new RegExp(`href="#source-${escapeRegExp(sourceId)}"`, "g");
+      if (countMatches(html, citationPattern) !== expectedCount) {
+        failures.push(`${detailCase.id} must preserve all ${expectedCount} citation link(s) for ${sourceId}`);
+      }
     }
   }
   if (![previewImages.podmaine, previewImages.dajbabe, previewImages.podgorica, previewImages.bar].every((image) => homepage?.html.includes(image) && catalogue?.html.includes(image))) {

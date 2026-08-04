@@ -215,6 +215,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
     detail,
     detailHero,
     detailGallery,
+    narrativeSegments,
     practicalPanel,
     miniMap,
     relatedShelf,
@@ -229,6 +230,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
     source("src/pages/svetinje/[slug].astro"),
     source("src/components/place-detail/PlaceDetailHero.astro"),
     source("src/components/place-detail/PlaceDetailGallery.astro"),
+    source("src/components/place-detail/PlaceNarrativeSegments.astro"),
     source("src/components/place-detail/PlacePracticalPanel.astro"),
     source("src/components/place-detail/PlaceMiniMap.astro"),
     source("src/components/place-detail/PlaceRelatedShelf.astro"),
@@ -237,7 +239,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
     source(".github/workflows/preview-cloudflare.yml"),
     source(".github/workflows/deploy-cloudflare.yml"),
   ]);
-  const detailSources = [detail, detailHero, detailGallery, practicalPanel, miniMap, relatedShelf].join("\n");
+  const detailSources = [detail, detailHero, detailGallery, narrativeSegments, practicalPanel, miniMap, relatedShelf].join("\n");
   const combined = [mapCanvas, explorer, card, detailSources].join("\n");
 
   assert.match(mapCanvas, /new maplibregl\.Marker/);
@@ -253,14 +255,27 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.match(detail, /coordinateDistance/);
   assert.match(detail, /candidate\.id !== place\.id/);
   assert.match(detail, /hasCoordinates: candidate\.latitude !== undefined/);
+  assert.match(detail, /const HISTORY_SECTION_IDS = new Set\(\[[\s\S]*?"history"[\s\S]*?"canonization"[\s\S]*?\]\)/);
+  assert.match(detail, /const ARRIVAL_SECTION_IDS = new Set\(\["location"\]\)/);
+  assert.match(detail, /const PRACTICAL_SECTION_IDS = new Set\(\["services", "visitor-information", "verification-notes"\]\)/);
+  assert.match(detail, /<PlaceNarrativeSegments sections=\{aboutSections\}/);
+  assert.match(detail, /<PlaceNarrativeSegments sections=\{historySections\}/);
+  assert.match(detail, /<PlaceNarrativeSegments sections=\{arrivalSections\}/);
+  assert.match(detail, /<PlacePracticalPanel place=\{place\} practicalSections=\{practicalSections\}/);
+  assert.doesNotMatch(detail, /introSection|remainingNarrativeSections|place-profile-about__original-title/);
   assert.match(detailHero, /class="place-profile-hero"/);
   assert.match(detailHero, /place\.previewImageSrc/);
   assert.match(detailHero, /categoryForPlaceType/);
   assert.match(detailGallery, /const placeholderSlots = \[1, 2, 3, 4\]/);
   assert.equal((detailGallery.match(/<img\b/g) ?? []).length, 1);
+  assert.match(narrativeSegments, /data-narrative-source-section=\{section\.id\}/);
+  assert.match(narrativeSegments, /paragraph\.sourceIds\.map/);
+  assert.doesNotMatch(narrativeSegments, /<h[23]\b/);
   assert.match(practicalPanel, /data-copy-coordinates/);
   assert.match(practicalPanel, /aria-live="polite"/);
   assert.match(practicalPanel, /place\.coordinateAccuracy/);
+  assert.match(practicalPanel, /practicalSections\?: NarrativeSection\[\]/);
+  assert.match(practicalPanel, /<PlaceNarrativeSegments sections=\{practicalSections\}/);
   assert.match(miniMap, /import\.meta\.env\.PUBLIC_MAPTILER_KEY/);
   assert.match(miniMap, /019fc7d8-717c-701d-9ca5-a53d9438d3ce/);
   assert.match(miniMap, /new maplibregl\.Marker/);
