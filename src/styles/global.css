@@ -558,7 +558,8 @@
     position: relative;
     z-index: 8;
     padding: 1.2rem 1rem 1rem;
-    border-bottom: 1px solid var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
     background: var(--paper);
   }
 
@@ -1850,6 +1851,8 @@
   }
 
   .explorer-results {
+    display: grid;
+    gap: 0.9rem;
     margin-top: 0.75rem;
     padding-top: 0.75rem;
     border-top: 1px solid var(--line);
@@ -2215,6 +2218,11 @@
 
 @layer responsive {
   @media (min-width: 48rem) {
+    .map-explorer {
+      --explorer-panel-left: max(1.5rem, calc((100vw - 94rem) / 2));
+      --explorer-panel-width: 26.5rem;
+    }
+
     .header-inner {
       min-height: 5rem;
     }
@@ -2230,12 +2238,15 @@
     .map-explorer__heading {
       position: absolute;
       top: 1rem;
-      left: max(1.5rem, calc((100vw - 94rem) / 2));
-      width: 26.5rem;
       padding: 0.75rem 1rem;
-      border: 0;
       background: rgba(255, 254, 250, 0.87);
       backdrop-filter: blur(6px);
+    }
+
+    .map-explorer__heading,
+    .explorer-sidebar {
+      left: var(--explorer-panel-left);
+      width: var(--explorer-panel-width);
     }
 
     .map-stage {
@@ -2251,8 +2262,6 @@
       position: absolute;
       z-index: 25;
       top: 11.75rem;
-      left: max(1.5rem, calc((100vw - 94rem) / 2));
-      width: 23rem;
       padding: 0.75rem;
       border: 1px solid rgba(24, 37, 52, 0.13);
       border-radius: var(--radius-lg);
@@ -2293,7 +2302,7 @@
       top: 6.5rem;
       right: 1rem;
       left: auto;
-      max-width: calc(100% - 26rem);
+      max-width: calc(100% - var(--explorer-panel-left) - var(--explorer-panel-width) - 2.5rem);
       flex-wrap: wrap;
       justify-content: flex-end;
       overflow: visible;
@@ -2317,14 +2326,9 @@
       min-height: 4.2rem;
     }
 
-    .map-explorer {
-      --explorer-sidebar-left: max(1.5rem, calc((100vw - 94rem) / 2));
-      --explorer-sidebar-width: 23rem;
-    }
-
     .map-explorer__recommended {
-      margin-right: var(--explorer-sidebar-left);
-      margin-left: calc(var(--explorer-sidebar-left) + var(--explorer-sidebar-width) + 1.5rem);
+      margin-right: var(--explorer-panel-left);
+      margin-left: calc(var(--explorer-panel-left) + var(--explorer-panel-width) + 1.5rem);
       min-height: var(--explorer-sidebar-clearance, 0px);
       padding-block: 1.5rem;
       border-bottom: 0;
@@ -2378,6 +2382,10 @@
   }
 
   @media (min-width: 68rem) {
+    .map-explorer {
+      --explorer-panel-width: 27rem;
+    }
+
     .header-inner {
       grid-template-columns: minmax(14rem, 0.9fr) auto minmax(14rem, 0.9fr);
       min-height: 5.25rem;
@@ -2410,12 +2418,10 @@
 
     .map-explorer__heading {
       top: 1rem;
-      width: 27rem;
     }
 
     .explorer-sidebar {
       top: 11rem;
-      width: 24rem;
     }
 
     .map-actions {
@@ -2438,10 +2444,6 @@
     .map-attribution {
       right: max(12rem, calc((100vw - 94rem) / 2 + 10.5rem));
       left: max(25.5rem, calc((100vw - 94rem) / 2 + 25rem));
-    }
-
-    .map-explorer {
-      --explorer-sidebar-width: 24rem;
     }
 
     .popular-routes__inner {
@@ -2474,11 +2476,6 @@
 
     .explorer-sidebar {
       top: 11.3rem;
-      width: 24.5rem;
-    }
-
-    .map-explorer {
-      --explorer-sidebar-width: 24.5rem;
     }
 
     .catalogue-skeleton {

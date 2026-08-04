@@ -30,12 +30,13 @@ if (editorialPreview) {
   const catalogue = pages.find((page) => page.relative === "svetinje/index.html");
   const monasteries = pages.find((page) => page.relative === "manastiri/index.html");
   const churches = pages.find((page) => page.relative === "crkve/index.html");
+  const holyPlaces = pages.find((page) => page.relative === "sveta-mjesta/index.html");
   const podmaine = pages.find((page) => page.relative === "svetinje/manastir-podmaine/index.html");
   const cathedral = pages.find((page) => page.relative === "svetinje/saborni-hram-hristovog-vaskrsenja-podgorica/index.html");
   const dajbabe = pages.find((page) => page.relative === "svetinje/manastir-dajbabe/index.html");
   const barCathedral = pages.find((page) => page.relative === "svetinje/saborni-hram-svetog-jovana-vladimira-bar/index.html");
-  if (files.length !== 10) failures.push("editorial preview must generate exactly 10 HTML pages");
-  if (!homepage || !catalogue || !monasteries || !churches || !podmaine || !cathedral || !dajbabe || !barCathedral) failures.push("editorial preview must generate the homepage, catalogue, category pages, and all allowlisted detail pages");
+  if (files.length !== 11) failures.push("editorial preview must generate exactly 11 HTML pages");
+  if (!homepage || !catalogue || !monasteries || !churches || !holyPlaces || !podmaine || !cathedral || !dajbabe || !barCathedral) failures.push("editorial preview must generate the homepage, catalogue, category pages, and all allowlisted detail pages");
   for (const page of pages) {
     if (!page.html.includes('<meta name="robots" content="noindex,nofollow,noarchive">')) {
       failures.push(`${page.relative} is missing editorial-preview noindex metadata`);
@@ -124,11 +125,17 @@ if (editorialPreview) {
   if ((catalogue?.html.match(/data-place-card=/g) ?? []).length !== 4) {
     failures.push("the general catalogue must contain exactly four preview cards");
   }
+  if ((holyPlaces?.html.match(/data-place-card=/g) ?? []).length !== 0 || !holyPlaces?.html.includes("Још нема светих мјеста спремних за јавно објављивање.")) {
+    failures.push("the holy-places catalogue must retain its protected empty state");
+  }
   if (!monasteries?.html.includes('href="/manastiri/" aria-current="page"') || monasteries.html.includes('href="/crkve/" aria-current="page"')) {
     failures.push("the monasteries page must activate only its navigation link");
   }
   if (!churches?.html.includes('href="/crkve/" aria-current="page"') || churches.html.includes('href="/manastiri/" aria-current="page"')) {
     failures.push("the churches page must activate only its navigation link");
+  }
+  if (!holyPlaces?.html.includes('href="/sveta-mjesta/" aria-current="page"') || holyPlaces.html.includes('href="/manastiri/" aria-current="page"') || holyPlaces.html.includes('href="/crkve/" aria-current="page"')) {
+    failures.push("the holy-places page must activate only its navigation link");
   }
   if (!podmaine?.html.includes("Радни приказ") || !podmaine.html.includes("Ауторска фотографија биће додата")) {
     failures.push("Podmaine detail page is missing its preview or honest media notice");
@@ -148,7 +155,7 @@ if (editorialPreview) {
     }
   }
 } else {
-  if (files.length !== 6) failures.push("production must generate exactly 6 HTML pages");
+  if (files.length !== 7) failures.push("production must generate exactly 7 HTML pages");
   const excluded = await loadExcludedNarrativeMarkers(root);
   for (const marker of excluded) {
     const values = [marker.placeId, marker.slug, marker.preferredName].filter(
@@ -180,11 +187,15 @@ if (editorialPreview) {
   }
   const monasteries = pages.find((page) => page.relative === "manastiri/index.html");
   const churches = pages.find((page) => page.relative === "crkve/index.html");
+  const holyPlaces = pages.find((page) => page.relative === "sveta-mjesta/index.html");
   if (!monasteries?.html.includes("Још нема манастира спремних за јавно објављивање.")) {
     failures.push("production monasteries page is missing its protected empty state");
   }
   if (!churches?.html.includes("Још нема храмова спремних за јавно објављивање.")) {
     failures.push("production churches page is missing its protected empty state");
+  }
+  if (!holyPlaces?.html.includes("Још нема светих мјеста спремних за јавно објављивање.") || (holyPlaces.html.match(/data-place-card=/g) ?? []).length !== 0) {
+    failures.push("production holy-places page is missing its protected empty state");
   }
 }
 

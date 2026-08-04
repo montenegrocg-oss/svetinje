@@ -8,16 +8,15 @@ interface Props {
 
 const { currentPath } = Astro.props;
 const navigation = [
-  { href: "/", label: "Почетна", exact: true },
-  { href: "/#mapa", label: "Карта" },
   { href: "/manastiri/", label: "Манастири" },
   { href: "/crkve/", label: "Цркве" },
+  { href: "/sveta-mjesta/", label: "Света мјеста" },
+  { href: "/#mapa", label: "Мапа" },
   { href: "/#rute", label: "Руте" },
   { href: "/o-projektu/", label: "О пројекту" },
 ];
 
-const isActive = (href: string, exact = false) =>
-  exact ? currentPath === href : !href.includes("#") && currentPath.startsWith(href);
+const isActive = (href: string) => !href.includes("#") && currentPath.startsWith(href);
 ---
 
 <header class="site-header">
@@ -39,7 +38,7 @@ const isActive = (href: string, exact = false) =>
       <ul>
         {navigation.map((item) => (
           <li>
-            <a href={item.href} aria-current={isActive(item.href, item.exact) ? "page" : undefined}>
+            <a href={item.href} aria-current={isActive(item.href) ? "page" : undefined}>
               {item.label}
             </a>
           </li>
@@ -69,7 +68,7 @@ const isActive = (href: string, exact = false) =>
           <ul>
             {navigation.map((item) => (
               <li>
-                <a href={item.href} aria-current={isActive(item.href, item.exact) ? "page" : undefined}>
+                <a href={item.href} aria-current={isActive(item.href) ? "page" : undefined}>
                   {item.label}
                 </a>
               </li>

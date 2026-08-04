@@ -60,15 +60,30 @@ test("approved map pins are optimized RGBA assets", async () => {
 
 test("desktop and mobile navigation expose the required Serbian guide sections", async () => {
   const header = await source("src/components/Header.astro");
-  for (const label of ["Почетна", "Карта", "Манастири", "Цркве", "Руте", "О пројекту"]) {
-    assert.match(header, new RegExp(label));
+  const navigation = header.match(/const navigation = \[[\s\S]*?\n\];/)?.[0] ?? "";
+  const expectedItems = [
+    ["/manastiri/", "Манастири"],
+    ["/crkve/", "Цркве"],
+    ["/sveta-mjesta/", "Света мјеста"],
+    ["/#mapa", "Мапа"],
+    ["/#rute", "Руте"],
+    ["/o-projektu/", "О пројекту"],
+  ];
+  let previousIndex = -1;
+  for (const [href, label] of expectedItems) {
+    const index = navigation.indexOf(`{ href: "${href}", label: "${label}" }`);
+    assert.ok(index > previousIndex, `${label} must follow the required navigation order`);
+    previousIndex = index;
   }
+  assert.doesNotMatch(navigation, /Почетна|href: "\/"/);
+  assert.equal((header.match(/navigation\.map/g) ?? []).length, 2);
   assert.match(header, /<details class="mobile-navigation">/);
   assert.match(header, /aria-label="Отвори главни мени"/);
   assert.match(header, /Омиљене светиње — 0/);
   assert.match(header, /aria-label="Претрага светиња"/);
   assert.match(header, /\{ href: "\/manastiri\/", label: "Манастири" \}/);
   assert.match(header, /\{ href: "\/crkve\/", label: "Цркве" \}/);
+  assert.match(header, /\{ href: "\/sveta-mjesta\/", label: "Света мјеста" \}/);
   assert.doesNotMatch(header, /\{ href: "\/svetinje\/", label: "Манастири" \}/);
   assert.doesNotMatch(header, /\{ href: "\/svetinje\/", label: "Цркве" \}/);
 });
@@ -121,10 +136,11 @@ test("the homepage is composed from reusable map-explorer components", async () 
 });
 
 test("catalogue pages share the established category mapping instead of duplicating it", async () => {
-  const [catalogue, monasteries, churches, general, filters] = await Promise.all([
+  const [catalogue, monasteries, churches, holyPlaces, general, filters] = await Promise.all([
     source("src/components/CategoryCatalogue.astro"),
     source("src/pages/manastiri/index.astro"),
     source("src/pages/crkve/index.astro"),
+    source("src/pages/sveta-mjesta/index.astro"),
     source("src/pages/svetinje/index.astro"),
     source("src/lib/place-filters.ts"),
   ]);
@@ -134,6 +150,9 @@ test("catalogue pages share the established category mapping instead of duplicat
   assert.match(catalogue, /<PlaceCard place=\{place\} variant="catalogue" \/>/);
   assert.match(monasteries, /category="monasteries"/);
   assert.match(churches, /category="churches"/);
+  assert.match(holyPlaces, /category="holy-places"/);
+  assert.match(holyPlaces, /canonicalPath="\/sveta-mjesta\/"/);
+  assert.match(holyPlaces, /Још нема светих мјеста спремних за јавно објављивање/);
   assert.doesNotMatch(general, /category=/);
   assert.match(filters, /skete: "monasteries"/);
   assert.match(filters, /hermitage: "monasteries"/);
