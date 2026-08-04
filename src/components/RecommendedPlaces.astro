@@ -26,8 +26,18 @@ const placeholderCount = 5 - recommendations.length;
       return (
         <article class="place-preview place-preview--record" role="listitem" data-testid="recommended-place-card" data-recommended-place={place.id}>
           <a class="place-preview__record-link" href={`/svetinje/${place.slug}/`}>
-            <div class="place-preview__media" aria-hidden="true">
-              <span></span><i></i>
+            <div class:list={["place-preview__media", place.previewImageSrc && "place-preview__media--image"]}>
+              {place.previewImageSrc ? (
+                <img
+                  class="place-preview__record-image"
+                  src={place.previewImageSrc}
+                  alt={place.previewImageAlt ?? place.name}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <><span></span><i></i></>
+              )}
             </div>
             <div class="place-preview__record-body">
               <div class="place-preview__record-meta">

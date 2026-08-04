@@ -99,7 +99,7 @@ test("the repository summary reports actual validated record counts", async () =
     narratives: 4,
     sources: 16,
     practical: 0,
-    media: 1,
+    media: 5,
   });
   assert.equal(result.publicationLocked, true);
 });
@@ -246,4 +246,41 @@ test("approved media without rights metadata is rejected", async (t) => {
   const errors = await validateRepository(root);
   assert.ok(has(errors, "must have required property 'rights_basis'"));
   assert.ok(has(errors, "missing approved media-rights review"));
+});
+
+test("an owner-approved original photograph validates for editorial preview without a media-rights assignment", async (t) => {
+  const root = await project(t);
+  await yamlFile(root, "content/places/validation-subject/place.yaml", place());
+  await yamlFile(root, "content/media/validation-owner-original.yaml", {
+    schema_version: 1,
+    id: "validation-owner-original",
+    editorial_status: "approved",
+    media_type: "image",
+    storage_provider: "local-public",
+    object_key: "public/images/places/validation-owner-original.jpg",
+    checksum_sha256: "a".repeat(64),
+    mime_type: "image/jpeg",
+    width: 1,
+    height: 1,
+    creator: "Project owner",
+    copyright_owner: "Project owner",
+    rights_basis: "project-original",
+    credit_line: "Photo: Project owner",
+    allowed_uses: ["web-display"],
+    publication_safety: "public",
+    related_place_ids: ["validation-subject"],
+    localized_text: {
+      sr: { alt_text: "Неутрална тестна фотографија.", translation_status: "source", approvals: [] },
+    },
+    approvals: [{
+      role: "project-owner",
+      reviewer_id: "maxim",
+      outcome: "approved",
+      reviewed_at: "2026-08-04T00:00:00Z",
+      reviewed_revision: "a".repeat(40),
+      scope: "Neutral editorial-preview fixture only.",
+    }],
+    audit: { ...AUDIT },
+  });
+  assert.deepEqual(await validateRepository(root), []);
 });

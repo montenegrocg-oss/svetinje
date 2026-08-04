@@ -19,6 +19,17 @@ const location = [place.municipality, place.settlement].filter(Boolean).join(" �
   data-place-search={place.searchText.toLocaleLowerCase("sr")}
   data-selected="false"
 >
+  {place.previewImageSrc && (
+    <div class="editorial-place-card__media">
+      <img
+        class="editorial-place-card__image"
+        src={place.previewImageSrc}
+        alt={place.previewImageAlt ?? place.name}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  )}
   <div class="editorial-place-card__topline">
     <p class="eyebrow">{place.typeLabel}</p>
     {place.preview && <span class="preview-badge">Радни приказ</span>}

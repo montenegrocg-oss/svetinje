@@ -102,6 +102,19 @@ test("editorial preview returns the four allowlisted research dossiers", async (
   assert.match(barCathedral.searchText, /Барски Саборни храм/);
   assert.match(barCathedral.searchText, /Предраг Ристић/);
   assert.ok(barCathedral.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length > 0)));
+
+  const expectedPreviewImages = new Map([
+    ["podmaine", { src: "/images/places/manastir_podmaine.jpg", alt: "Манастир Подмаине" }],
+    ["dajbabe", { src: "/images/places/manastir_dajbabe.jpg", alt: "Манастир Дајбабе" }],
+    ["saborni-hram-podgorica", { src: "/images/places/saborni_hram_podgorica.jpg", alt: "Саборни храм Христовог Васкрсења у Подгорици" }],
+    ["saborni-hram-bar", { src: "/images/places/saborni_hram_bar.jpg", alt: "Саборни храм Светог Јована Владимира у Бару" }],
+  ]);
+  for (const place of [podmaine, cathedral, dajbabe, barCathedral]) {
+    const expected = expectedPreviewImages.get(place.id);
+    assert.ok(expected);
+    assert.equal(place.previewImageSrc, expected.src);
+    assert.equal(place.previewImageAlt, expected.alt);
+  }
 });
 
 test("preview allowlist rejects duplicates and unknown place IDs", async (t) => {
@@ -212,6 +225,9 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.match(mapCanvas, /svetinje:place-select/);
   assert.match(explorer, /loadVisiblePlaces/);
   assert.match(card, /Радни приказ/);
+  assert.match(card, /place\.previewImageSrc/);
+  assert.match(card, /class="editorial-place-card__image"/);
+  assert.match(card, /alt=\{place\.previewImageAlt \?\? place\.name\}/);
   assert.match(detail, /getStaticPaths/);
   assert.match(detail, /loadVisiblePlaces/);
   assert.match(detail, /Ауторска фотографија биће додата/);

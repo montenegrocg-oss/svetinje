@@ -208,7 +208,13 @@ function requiredRoles(record) {
     }
   }
   if (record.kind === "media") {
-    roles.push("media-rights");
+    const ownerApprovedOriginal =
+      data.editorial_status === "approved" &&
+      data.rights_basis === "project-original" &&
+      (data.approvals ?? []).some(
+        (approval) => approval.role === "project-owner" && approval.outcome === "approved",
+      );
+    if (!ownerApprovedOriginal) roles.push("media-rights");
     for (const [locale, localized] of Object.entries(data.localized_text ?? {})) {
       if (["approved", "published"].includes(localized.translation_status)) roles.push(LOCALE_ROLE[locale]);
     }

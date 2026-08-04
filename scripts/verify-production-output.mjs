@@ -75,6 +75,25 @@ if (editorialPreview) {
   ) {
     failures.push("homepage recommendations must contain the Podgorica cathedral and Dajbabe, never Podmaine or the Bar cathedral");
   }
+  const previewImages = {
+    podmaine: "/images/places/manastir_podmaine.jpg",
+    dajbabe: "/images/places/manastir_dajbabe.jpg",
+    podgorica: "/images/places/saborni_hram_podgorica.jpg",
+    bar: "/images/places/saborni_hram_bar.jpg",
+  };
+  if (![previewImages.podmaine, previewImages.dajbabe, previewImages.podgorica, previewImages.bar].every((image) => homepage?.html.includes(image) && catalogue?.html.includes(image))) {
+    failures.push("homepage and general catalogue must include each matching preview image");
+  }
+  if (![previewImages.podmaine, previewImages.dajbabe].every((image) => monasteries?.html.includes(image)) || [previewImages.podgorica, previewImages.bar].some((image) => monasteries?.html.includes(image))) {
+    failures.push("the monasteries catalogue must include only the two monastery images");
+  }
+  if (![previewImages.podgorica, previewImages.bar].every((image) => churches?.html.includes(image)) || [previewImages.podmaine, previewImages.dajbabe].some((image) => churches?.html.includes(image))) {
+    failures.push("the churches catalogue must include only the two cathedral images");
+  }
+  const recommendationHasImage = (id, image) => new RegExp(`data-recommended-place="${id}"[\\s\\S]*?src="${image}"`).test(homepage?.html ?? "");
+  if (!recommendationHasImage("saborni-hram-podgorica", previewImages.podgorica) || !recommendationHasImage("dajbabe", previewImages.dajbabe)) {
+    failures.push("homepage recommendations must render the matching Podgorica cathedral and Dajbabe images");
+  }
   if ((homepage?.html.match(/"category":"monasteries"/g) ?? []).length !== 2 || (homepage?.html.match(/data-place-category="monasteries"/g) ?? []).length !== 2 || (homepage?.html.match(/"category":"churches"/g) ?? []).length !== 2 || (homepage?.html.match(/data-place-category="churches"/g) ?? []).length !== 2) {
     failures.push("homepage preview must provide the shared monastery and church categories to markers and cards");
   }
@@ -147,6 +166,14 @@ if (editorialPreview) {
   const homepage = pages.find((page) => page.relative === "index.html");
   if ((homepage?.html.match(/data-recommended-place=/g) ?? []).length !== 0 || (homepage?.html.match(/data-testid="recommended-placeholder"/g) ?? []).length !== 5) {
     failures.push("production recommendations must retain five neutral placeholders and no research records");
+  }
+  for (const image of [
+    "/images/places/manastir_podmaine.jpg",
+    "/images/places/manastir_dajbabe.jpg",
+    "/images/places/saborni_hram_podgorica.jpg",
+    "/images/places/saborni_hram_bar.jpg",
+  ]) {
+    if (pages.some((page) => page.html.includes(image))) failures.push(`production contains excluded research image ${image}`);
   }
   for (const value of ["saborni-hram-bar", "saborni-hram-svetog-jovana-vladimira-bar", "Саборни храм Светог Јована Владимира", "42.10145", "19.09394"]) {
     if (pages.some((page) => page.html.includes(value))) failures.push(`production contains excluded Bar cathedral value ${value}`);

@@ -311,7 +311,12 @@ async function previewMediaForPlace(
       continue;
     }
     const src = await localMediaSrc(root, media.object_key);
-    if (src) return { previewImageSrc: src, previewImageAlt: placeName };
+    if (src) {
+      return {
+        previewImageSrc: src,
+        previewImageAlt: typeof localized.alt_text === "string" ? localized.alt_text : placeName,
+      };
+    }
   }
   return {};
 }

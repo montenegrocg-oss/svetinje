@@ -108,7 +108,13 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(recommended, /length: placeholderCount/);
   assert.match(recommended, /Радни приказ/);
   assert.match(recommended, /Отвори страницу/);
-  assert.doesNotMatch(recommended, /podmaine|hero\.webp|<img\b|https?:\/\//i);
+  assert.match(recommended, /place\.previewImageSrc/);
+  assert.match(recommended, /class="place-preview__record-image"/);
+  assert.match(recommended, /alt=\{place\.previewImageAlt \?\? place\.name\}/);
+  assert.match(recommended, /place\.previewImageSrc/);
+  assert.match(recommended, /class="place-preview__record-image"/);
+  assert.match(recommended, /alt=\{place\.previewImageAlt \?\? place\.name\}/);
+  assert.doesNotMatch(recommended, /podmaine|hero\.webp|https?:\/\//i);
   assert.doesNotMatch(recommended, /saborni-hram-bar|Саборни храм Светог Јована Владимира/);
   assert.match(routes, /Популарне руте/);
   assert.match(routes, /class="popular-routes"/);
