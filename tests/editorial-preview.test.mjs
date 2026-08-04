@@ -208,17 +208,37 @@ test("Bar cathedral remains research-only, sourced, and public-safe", async () =
 });
 
 test("preview UI is allowlist-driven, noindex, and free of prohibited data", async () => {
-  const [mapCanvas, explorer, card, detail, baseLayout, metadata, previewWorkflow, productionWorkflow] = await Promise.all([
+  const [
+    mapCanvas,
+    explorer,
+    card,
+    detail,
+    detailHero,
+    detailGallery,
+    practicalPanel,
+    miniMap,
+    relatedShelf,
+    baseLayout,
+    metadata,
+    previewWorkflow,
+    productionWorkflow,
+  ] = await Promise.all([
     source("src/components/MapCanvas.astro"),
     source("src/components/MapExplorer.astro"),
     source("src/components/PlaceCard.astro"),
     source("src/pages/svetinje/[slug].astro"),
+    source("src/components/place-detail/PlaceDetailHero.astro"),
+    source("src/components/place-detail/PlaceDetailGallery.astro"),
+    source("src/components/place-detail/PlacePracticalPanel.astro"),
+    source("src/components/place-detail/PlaceMiniMap.astro"),
+    source("src/components/place-detail/PlaceRelatedShelf.astro"),
     source("src/layouts/BaseLayout.astro"),
     source("src/components/PageMetadata.astro"),
     source(".github/workflows/preview-cloudflare.yml"),
     source(".github/workflows/deploy-cloudflare.yml"),
   ]);
-  const combined = [mapCanvas, explorer, card, detail].join("\n");
+  const detailSources = [detail, detailHero, detailGallery, practicalPanel, miniMap, relatedShelf].join("\n");
+  const combined = [mapCanvas, explorer, card, detailSources].join("\n");
 
   assert.match(mapCanvas, /new maplibregl\.Marker/);
   assert.match(mapCanvas, /aria-label.*отвори детаље/);
@@ -230,13 +250,29 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.match(card, /alt=\{place\.previewImageAlt \?\? place\.name\}/);
   assert.match(detail, /getStaticPaths/);
   assert.match(detail, /loadVisiblePlaces/);
-  assert.match(detail, /Ауторска фотографија биће додата/);
+  assert.match(detail, /coordinateDistance/);
+  assert.match(detail, /candidate\.id !== place\.id/);
+  assert.match(detail, /hasCoordinates: candidate\.latitude !== undefined/);
+  assert.match(detailHero, /class="place-profile-hero"/);
+  assert.match(detailHero, /place\.previewImageSrc/);
+  assert.match(detailHero, /categoryForPlaceType/);
+  assert.match(detailGallery, /const placeholderSlots = \[1, 2, 3, 4\]/);
+  assert.equal((detailGallery.match(/<img\b/g) ?? []).length, 1);
+  assert.match(practicalPanel, /data-copy-coordinates/);
+  assert.match(practicalPanel, /aria-live="polite"/);
+  assert.match(practicalPanel, /place\.coordinateAccuracy/);
+  assert.match(miniMap, /import\.meta\.env\.PUBLIC_MAPTILER_KEY/);
+  assert.match(miniMap, /019fc7d8-717c-701d-9ca5-a53d9438d3ce/);
+  assert.match(miniMap, /new maplibregl\.Marker/);
+  assert.match(relatedShelf, /data-current-place/);
+  assert.match(relatedShelf, /data-related-place/);
   assert.doesNotMatch(detail, /1630|1747|1869|1979|1995|2007/);
   assert.match(baseLayout, /EDITORIAL_PREVIEW/);
   assert.match(metadata, /noindex,nofollow,noarchive/);
   assert.match(previewWorkflow, /EDITORIAL_PREVIEW: "true"/);
   assert.doesNotMatch(productionWorkflow, /EDITORIAL_PREVIEW/);
   assert.doesNotMatch(combined, /rating|оцјена|радно вријеме|телефон|033\/|@gmail\.com/i);
+  assert.doesNotMatch(detailSources, /180\s*m|08:00|16:00|18:00|Дјелимично активан|XVI вијек|Манастир Прасквица|Црква Св\. Тројице|Манастир Стањевићи|Манастир Дуљево/i);
   assert.doesNotMatch(combined, /FeatureCollection|LineString|routeCoordinates|addSource\s*\(|addLayer\s*\(/);
-  assert.doesNotMatch(detail, /<img\b|https?:\/\/.*\.(?:jpg|jpeg|png|webp)/i);
+  assert.doesNotMatch(miniMap, /FeatureCollection|LineString|routeCoordinates|addSource\s*\(|addLayer\s*\(/);
 });

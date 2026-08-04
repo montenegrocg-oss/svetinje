@@ -1,0 +1,46 @@
+---
+import type { VisiblePlace } from "../../lib/content/publication";
+
+interface RelatedPlace {
+  place: VisiblePlace;
+  distanceKm: number | undefined;
+}
+
+interface Props {
+  currentPlace: VisiblePlace;
+  relatedPlaces: RelatedPlace[];
+}
+
+const { currentPlace, relatedPlaces } = Astro.props;
+const placeholders = Array.from({ length: Math.max(0, 4 - relatedPlaces.length) });
+const locationFor = (place: VisiblePlace) => [place.settlement, place.municipality].filter(Boolean).join(" · ");
+---
+
+<section class="place-related" aria-labelledby="place-related-title" data-testid="place-related-shelf" data-current-place={currentPlace.id}>
+  <div class="place-related__heading">
+    <div><p class="eyebrow">Наставите истраживање</p><h2 id="place-related-title">Сличне светиње у близини</h2></div>
+    <a href="/svetinje/">Прикажи све</a>
+  </div>
+  <div class="place-related__shelf">
+    {relatedPlaces.map(({ place, distanceKm }) => (
+      <a class="place-related-card" href={`/svetinje/${place.slug}/`} data-related-place={place.id}>
+        {place.previewImageSrc ? (
+          <img src={place.previewImageSrc} alt={place.previewImageAlt ?? place.name} loading="lazy" decoding="async" />
+        ) : (
+          <span class="place-related-card__media" aria-hidden="true"></span>
+        )}
+        <span class="place-related-card__copy">
+          <strong>{place.name}</strong>
+          {locationFor(place) && <small>{locationFor(place)}</small>}
+          {distanceKm !== undefined && <small>≈ {distanceKm.toFixed(1)} км ваздушном линијом</small>}
+        </span>
+      </a>
+    ))}
+    {placeholders.map(() => (
+      <div class="place-related-card place-related-card--placeholder" data-related-placeholder>
+        <span class="place-related-card__media" aria-hidden="true"></span>
+        <span class="place-related-card__copy"><strong>Запис у припреми</strong><small>Подаци ће бити додати након провјере.</small></span>
+      </div>
+    ))}
+  </div>
+</section>

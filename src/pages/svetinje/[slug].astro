@@ -1,15 +1,59 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import PlaceDetailGallery from "../../components/place-detail/PlaceDetailGallery.astro";
+import PlaceDetailHero from "../../components/place-detail/PlaceDetailHero.astro";
+import PlacePracticalPanel from "../../components/place-detail/PlacePracticalPanel.astro";
+import PlaceRelatedShelf from "../../components/place-detail/PlaceRelatedShelf.astro";
 import type { VisiblePlace } from "../../lib/content/publication";
 import { loadVisiblePlaces } from "../../lib/content/publication";
 
-export async function getStaticPaths() {
-  const places = await loadVisiblePlaces();
-  return places.map((place) => ({ params: { slug: place.slug }, props: { place } }));
+interface RelatedPlace {
+  place: VisiblePlace;
+  distanceKm: number | undefined;
 }
 
-const { place } = Astro.props as { place: VisiblePlace };
-const location = [place.settlement, place.municipality].filter(Boolean).join(", ");
+export async function getStaticPaths() {
+  const EARTH_RADIUS_KM = 6371;
+  const toRadians = (degrees: number) => degrees * Math.PI / 180;
+  const coordinateDistance = (from: VisiblePlace, to: VisiblePlace): number | undefined => {
+    if (
+      from.latitude === undefined || from.longitude === undefined ||
+      to.latitude === undefined || to.longitude === undefined
+    ) return undefined;
+    const latitudeDelta = toRadians(to.latitude - from.latitude);
+    const longitudeDelta = toRadians(to.longitude - from.longitude);
+    const fromLatitude = toRadians(from.latitude);
+    const toLatitude = toRadians(to.latitude);
+    const haversine = Math.sin(latitudeDelta / 2) ** 2
+      + Math.cos(fromLatitude) * Math.cos(toLatitude) * Math.sin(longitudeDelta / 2) ** 2;
+    return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(haversine));
+  };
+  const relatedPlacesFor = (place: VisiblePlace, places: VisiblePlace[]): RelatedPlace[] =>
+    places
+      .filter((candidate) => candidate.id !== place.id)
+      .map((candidate) => ({
+        place: candidate,
+        distanceKm: coordinateDistance(place, candidate),
+        hasCoordinates: candidate.latitude !== undefined && candidate.longitude !== undefined,
+      }))
+      .sort((left, right) => {
+        if (left.distanceKm !== undefined && right.distanceKm !== undefined) return left.distanceKm - right.distanceKm;
+        if (left.distanceKm !== undefined) return -1;
+        if (right.distanceKm !== undefined) return 1;
+        if (left.hasCoordinates !== right.hasCoordinates) return left.hasCoordinates ? -1 : 1;
+        return left.place.name.localeCompare(right.place.name, "sr");
+      })
+      .map(({ place: candidate, distanceKm }) => ({ place: candidate, distanceKm }))
+      .slice(0, 4);
+  const places = await loadVisiblePlaces();
+  return places.map((place) => ({
+    params: { slug: place.slug },
+    props: { place, relatedPlaces: relatedPlacesFor(place, places) },
+  }));
+}
+
+const { place, relatedPlaces } = Astro.props as { place: VisiblePlace; relatedPlaces: RelatedPlace[] };
+const [introSection, ...remainingNarrativeSections] = place.narrativeSections;
 ---
 
 <BaseLayout
@@ -18,45 +62,36 @@ const location = [place.settlement, place.municipality].filter(Boolean).join(", 
   canonicalPath={`/svetinje/${place.slug}/`}
   noindex={place.preview}
 >
-  <header class="place-detail-hero">
-    <div class="shell">
-      <nav class="breadcrumbs" aria-label="Путања странице">
-        <a href="/">Почетна</a><span aria-hidden="true">/</span>
-        <a href="/svetinje/">Светиње</a><span aria-hidden="true">/</span>
-        <span aria-current="page">{place.name}</span>
-      </nav>
+  <PlaceDetailHero place={place} />
 
-      <div class="place-detail-hero__grid">
-        <div class="place-detail-hero__copy">
-          {place.preview && <p class="preview-notice">Радни приказ · садржај провјерава уредник пројекта</p>}
-          <p class="eyebrow">{place.typeLabel}</p>
-          <h1>{place.name}</h1>
-          <p class="place-detail-summary">{place.summary}</p>
-        </div>
-        <div class="place-media-placeholder" role="img" aria-label="Фотографија још није додата">
-          <span aria-hidden="true"></span>
-          <p>Ауторска фотографија биће додата</p>
-        </div>
-      </div>
-    </div>
-  </header>
+  <section class="place-profile-body">
+    <div class="shell place-profile-grid">
+      <article class="place-profile-about prose" aria-labelledby="place-about-title">
+        <p class="eyebrow">Уређивачки преглед</p>
+        <h2 id="place-about-title">О светињи</h2>
+        {introSection ? (
+          <section aria-labelledby={`narrative-${introSection.id}`}>
+            <h3 id={`narrative-${introSection.id}`} class="place-profile-about__original-title">{introSection.title}</h3>
+            {introSection.paragraphs.map((paragraph) => (
+              <p>
+                {paragraph.text}
+                {paragraph.sourceIds.map((sourceId, index) => (
+                  <sup><a href={`#source-${sourceId}`} aria-label={`Извор ${index + 1} за овај навод`}>[{index + 1}]</a></sup>
+                ))}
+              </p>
+            ))}
+          </section>
+        ) : (
+          <p>Уређивачки текст је у припреми.</p>
+        )}
+      </article>
 
-  <section class="place-detail-body section">
-    <div class="shell place-detail-layout">
-      <aside class="place-facts" aria-labelledby="place-facts-title">
-        <p class="eyebrow" id="place-facts-title">Основни подаци</p>
-        <dl>
-          <div><dt>Тип</dt><dd>{place.typeLabel}</dd></div>
-          <div><dt>Мјесто</dt><dd>{location}</dd></div>
-          <div><dt>Адреса</dt><dd>{place.address}</dd></div>
-          <div><dt>Црквена припадност</dt><dd>{place.ecclesiasticalJurisdiction}</dd></div>
-        </dl>
-        <p class="fact-qualification">Подаци су у радном статусу и захтијевају стручну провјеру прије јавне објаве.</p>
-      </aside>
+      <PlaceDetailGallery place={place} />
+      <PlacePracticalPanel place={place} />
 
-      <article class="place-narrative prose" aria-label={`Историја и идентитет — ${place.name}`}>
-        {place.narrativeSections.map((section) => (
-          <section aria-labelledby={`narrative-${section.id}`}>
+      <div class="place-profile-cards">
+        {remainingNarrativeSections.map((section) => (
+          <section class="place-editorial-card prose" aria-labelledby={`narrative-${section.id}`}>
             <h2 id={`narrative-${section.id}`}>{section.title}</h2>
             {section.paragraphs.map((paragraph) => (
               <p>
@@ -68,46 +103,28 @@ const location = [place.settlement, place.municipality].filter(Boolean).join(", 
             ))}
           </section>
         ))}
-      </article>
-    </div>
-  </section>
 
-  {place.latitude !== undefined && place.longitude !== undefined ? (
-  <section class="place-location-band" aria-labelledby="place-location-title">
-    <div class="shell place-location-band__grid">
-      <div>
-        <p class="eyebrow">Положај</p>
-        <h2 id="place-location-title">{place.placeType === "cathedral" ? "Положај храма" : "Положај светиње"}</h2>
-        <p>{place.placeType === "cathedral" ? "Координате означавају центар храмовног комплекса, а не тачан главни улаз." : "Координате означавају центроид комплекса, а не тачан пјешачки улаз."}</p>
+        <section class="place-editorial-card place-arrival-card" aria-labelledby="place-arrival-title">
+          <h2 id="place-arrival-title">Како стићи</h2>
+          {place.address && <p><strong>Адреса:</strong> {place.address}</p>}
+          <p>Локација је означена на главној карти. Прије посјете провјерите приступ и услове на терену.</p>
+          <a class="place-inline-link" href="/#mapa">Прикажи на главној карти <span aria-hidden="true">→</span></a>
+        </section>
       </div>
-      <div class="coordinate-block">
-        <span>{place.latitude?.toFixed(5)}, {place.longitude?.toFixed(5)}</span>
-        <small>EPSG:4326 · тачност: центроид комплекса</small>
-        <a class="button-link" href="/#mapa">Прикажи на главној карти</a>
-      </div>
-    </div>
-  </section>
-  ) : (
-    <section class="place-location-band" aria-labelledby="place-location-title">
-      <div class="shell place-location-band__grid">
-        <div>
-          <p class="eyebrow">Положај</p>
-          <h2 id="place-location-title">Географска провјера у току</h2>
-          <p>Тачна локација на мапи биће додата након географске провјере.</p>
+
+      <PlaceRelatedShelf currentPlace={place} relatedPlaces={relatedPlaces} />
+
+      <section class="place-profile-sources" aria-labelledby="place-sources-title">
+        <div class="place-section-heading">
+          <p class="eyebrow">Траг извора</p>
+          <h2 id="place-sources-title">Извори и напомене</h2>
         </div>
-      </div>
-    </section>
-  )}
-
-  <section class="section place-sources" aria-labelledby="place-sources-title">
-    <div class="shell narrow">
-      <p class="eyebrow">Траг извора</p>
-      <h2 id="place-sources-title">Регистровани извори</h2>
-      <ol>
-        {place.sources.map((source) => (
-          <li id={`source-${source.id}`}><span>{source.title}</span><code>{source.id}</code></li>
-        ))}
-      </ol>
+        <ol>
+          {place.sources.map((source) => (
+            <li id={`source-${source.id}`}><span>{source.title}</span><code>{source.id}</code></li>
+          ))}
+        </ol>
+      </section>
     </div>
   </section>
 </BaseLayout>

@@ -1,0 +1,108 @@
+---
+import InterfaceIcon from "../InterfaceIcon.astro";
+import type { VisiblePlace } from "../../lib/content/publication";
+import { categoryForPlaceType } from "../../lib/place-filters";
+
+interface Props {
+  place: VisiblePlace;
+}
+
+const { place } = Astro.props;
+const category = categoryForPlaceType(place.placeType);
+const breadcrumb = category === "monasteries"
+  ? { href: "/manastiri/", label: "Манастири" }
+  : category === "churches"
+    ? { href: "/crkve/", label: "Цркве" }
+    : category === "holy-places"
+      ? { href: "/sveta-mjesta/", label: "Света мјеста" }
+      : { href: "/svetinje/", label: "Светиње" };
+const location = place.settlement ?? place.municipality;
+const accuracyLabels: Record<string, string> = {
+  "complex-centroid": "Центар комплекса",
+};
+const accuracyLabel = place.coordinateAccuracy
+  ? accuracyLabels[place.coordinateAccuracy] ?? place.coordinateAccuracy
+  : undefined;
+---
+
+<header class="place-profile-hero" data-place-id={place.id} data-place-detail-actions>
+  {place.previewImageSrc ? (
+    <img
+      class="place-profile-hero__image"
+      src={place.previewImageSrc}
+      alt={place.previewImageAlt ?? place.name}
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
+    />
+  ) : (
+    <div class="place-profile-hero__fallback" aria-hidden="true"><span></span></div>
+  )}
+  <div class="place-profile-hero__overlay" aria-hidden="true"></div>
+
+  <div class="shell place-profile-hero__content">
+    <nav class="place-profile-breadcrumbs" aria-label="Путања странице">
+      <a href="/">Почетна</a><span aria-hidden="true">›</span>
+      <a href={breadcrumb.href}>{breadcrumb.label}</a><span aria-hidden="true">›</span>
+      <span aria-current="page">{place.name}</span>
+    </nav>
+
+    <div class="place-profile-hero__copy">
+      <h1>{place.name}</h1>
+      <p>{place.summary}</p>
+      <ul class="place-profile-chips" aria-label="Основни подаци">
+        {location && <li><InterfaceIcon name="place" size={16} />{location}</li>}
+        <li><InterfaceIcon name={category === "monasteries" ? "monastery" : category === "churches" ? "church" : "place"} size={16} />{place.typeLabel}</li>
+        {place.preview && <li class="place-profile-chip--status"><i aria-hidden="true"></i>Радни приказ</li>}
+        {accuracyLabel && <li><InterfaceIcon name="target" size={16} />{accuracyLabel}</li>}
+      </ul>
+    </div>
+
+    <div class="place-profile-actions" aria-label="Радње за посјету">
+      <button type="button" class="place-profile-action place-profile-action--primary" data-place-detail-action="plan">
+        <InterfaceIcon name="info" size={18} /><span>Планирај посјету</span>
+      </button>
+      <button type="button" class="place-profile-action" data-place-detail-action="route">
+        <InterfaceIcon name="route" size={18} /><span>Изгради руту</span>
+      </button>
+      <button type="button" class="place-profile-action" data-place-detail-action="save">
+        <InterfaceIcon name="heart" size={18} /><span>Сачувај</span>
+      </button>
+    </div>
+
+    <div class="place-profile-action-status" role="status" aria-live="polite" hidden>
+      <span data-place-detail-action-message></span>
+      <a href="/#mapa" data-place-detail-map-link hidden>Отвори главну карту</a>
+    </div>
+  </div>
+</header>
+
+<script>
+  const initialisePlaceActions = () => {
+    document.querySelectorAll<HTMLElement>("[data-place-detail-actions]").forEach((root) => {
+      if (root.dataset.actionsInitialised === "true") return;
+      root.dataset.actionsInitialised = "true";
+      const status = root.querySelector<HTMLElement>(".place-profile-action-status");
+      const message = root.querySelector<HTMLElement>("[data-place-detail-action-message]");
+      const mapLink = root.querySelector<HTMLElement>("[data-place-detail-map-link]");
+      const messages: Record<string, string> = {
+        plan: "Функција планирања посјете је у припреми.",
+        route: "Израда персонализоване руте је у припреми.",
+        save: "Чување омиљених светиња је у припреми.",
+      };
+
+      root.querySelectorAll<HTMLButtonElement>("[data-place-detail-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const action = button.dataset.placeDetailAction ?? "";
+          if (!status || !message || !messages[action]) return;
+          message.textContent = messages[action];
+          if (mapLink) mapLink.hidden = action !== "route";
+          status.hidden = false;
+        });
+      });
+    });
+  };
+
+  initialisePlaceActions();
+  document.addEventListener("astro:page-load", initialisePlaceActions);
+</script>

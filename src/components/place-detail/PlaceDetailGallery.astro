@@ -1,0 +1,34 @@
+---
+import type { VisiblePlace } from "../../lib/content/publication";
+
+interface Props {
+  place: VisiblePlace;
+}
+
+const { place } = Astro.props;
+const placeholderSlots = [1, 2, 3, 4] as const;
+---
+
+<section class="place-detail-gallery" aria-labelledby="place-gallery-title" data-testid="place-detail-gallery">
+  <div class="place-section-heading">
+    <p class="eyebrow">Ауторски медији</p>
+    <h2 id="place-gallery-title">Фотографије</h2>
+  </div>
+  <div class="place-detail-gallery__grid">
+    {place.previewImageSrc ? (
+      <figure class="place-detail-gallery__main">
+        <img src={place.previewImageSrc} alt={place.previewImageAlt ?? place.name} loading="lazy" decoding="async" />
+      </figure>
+    ) : (
+      <div class="place-detail-gallery__main place-detail-gallery__placeholder">
+        <span aria-hidden="true"></span><p>Ауторска фотографија биће додата</p>
+      </div>
+    )}
+    {placeholderSlots.map((slot) => (
+      <div class="place-detail-gallery__placeholder" data-gallery-slot={slot}>
+        <span aria-hidden="true"></span>
+        <p>{slot === 4 ? "Галерија у припреми" : "Још фотографија биће додато"}</p>
+      </div>
+    ))}
+  </div>
+</section>

@@ -100,6 +100,35 @@ if (editorialPreview) {
     podgorica: "/images/places/saborni_hram_podgorica.jpg",
     bar: "/images/places/saborni_hram_bar.jpg",
   };
+  const detailCases = [
+    { page: podmaine, id: "podmaine", image: previewImages.podmaine, latitude: "42.29799", longitude: "18.84452", categoryHref: "/manastiri/" },
+    { page: cathedral, id: "saborni-hram-podgorica", image: previewImages.podgorica, latitude: "42.44572787124205", longitude: "19.248255050565547", categoryHref: "/crkve/" },
+    { page: dajbabe, id: "dajbabe", image: previewImages.dajbabe, latitude: "42.40364", longitude: "19.23226", categoryHref: "/manastiri/" },
+    { page: barCathedral, id: "saborni-hram-bar", image: previewImages.bar, latitude: "42.10145", longitude: "19.09394", categoryHref: "/crkve/" },
+  ];
+  for (const detailCase of detailCases) {
+    const html = detailCase.page?.html ?? "";
+    const heroPattern = new RegExp(`class="place-profile-hero"[^>]*data-place-id="${detailCase.id}"[\\s\\S]*?class="place-profile-hero__image"[^>]*src="${detailCase.image}"`);
+    const breadcrumbPattern = new RegExp(`class="place-profile-breadcrumbs"[\\s\\S]*?href="${detailCase.categoryHref}"`);
+    if (!heroPattern.test(html) || !breadcrumbPattern.test(html)) {
+      failures.push(`${detailCase.id} detail page is missing its data-driven image hero or category breadcrumb`);
+    }
+    if (!html.includes('data-testid="place-detail-gallery"') || (html.match(/data-gallery-slot=/g) ?? []).length !== 4) {
+      failures.push(`${detailCase.id} detail page must contain one real gallery image and four honest preparation slots`);
+    }
+    if (!html.includes("Практичне информације") || !html.includes(`data-latitude="${detailCase.latitude}"`) || !html.includes(`data-longitude="${detailCase.longitude}"`)) {
+      failures.push(`${detailCase.id} detail page is missing its repository-backed practical panel or mini-map coordinates`);
+    }
+    if (!html.includes('data-testid="place-related-shelf"') || (html.match(/data-related-place=/g) ?? []).length !== 3 || (html.match(/data-related-placeholder/g) ?? []).length !== 1) {
+      failures.push(`${detailCase.id} detail page must contain three other preview records and one honest related placeholder`);
+    }
+    if (html.includes(`data-related-place="${detailCase.id}"`)) {
+      failures.push(`${detailCase.id} detail page must exclude itself from related places`);
+    }
+    if (!html.includes("Извори и напомене") || !html.includes('id="source-')) {
+      failures.push(`${detailCase.id} detail page must preserve its source trail`);
+    }
+  }
   if (![previewImages.podmaine, previewImages.dajbabe, previewImages.podgorica, previewImages.bar].every((image) => homepage?.html.includes(image) && catalogue?.html.includes(image))) {
     failures.push("homepage and general catalogue must include each matching preview image");
   }
@@ -155,21 +184,24 @@ if (editorialPreview) {
   if (!holyPlaces?.html.includes('href="/sveta-mjesta/" aria-current="page"') || holyPlaces.html.includes('href="/manastiri/" aria-current="page"') || holyPlaces.html.includes('href="/crkve/" aria-current="page"')) {
     failures.push("the holy-places page must activate only its navigation link");
   }
-  if (!podmaine?.html.includes("Радни приказ") || !podmaine.html.includes("Ауторска фотографија биће додата")) {
-    failures.push("Podmaine detail page is missing its preview or honest media notice");
+  if (!podmaine?.html.includes("Радни приказ") || !podmaine.html.includes(previewImages.podmaine)) {
+    failures.push("Podmaine detail page is missing its preview state or approved image");
   }
-  if (!cathedral?.html.includes("Положај храма") || !cathedral.html.includes("Координате означавају центар храмовног комплекса, а не тачан главни улаз.")) {
+  if (!cathedral?.html.includes("Координате означавају центар храмовног комплекса, а не тачан главни улаз.")) {
     failures.push("cathedral detail page is missing its approved location wording");
   }
-  if (!dajbabe?.html.includes("Радни приказ") || !dajbabe.html.includes("Ауторска фотографија биће додата")) {
-    failures.push("Dajbabe detail page is missing its preview or honest media notice");
+  if (!dajbabe?.html.includes("Радни приказ") || !dajbabe.html.includes(previewImages.dajbabe)) {
+    failures.push("Dajbabe detail page is missing its preview state or approved image");
   }
-  if (!barCathedral?.html.includes("Положај храма") || !barCathedral.html.includes("Координате на мапи означавају радни центар храмовног комплекса") || !barCathedral.html.includes("Ауторска фотографија биће додата")) {
-    failures.push("Bar cathedral detail page is missing its preview, location, or honest media notice");
+  if (!barCathedral?.html.includes("Координате на мапи означавају радни центар храмовног комплекса") || !barCathedral.html.includes(previewImages.bar)) {
+    failures.push("Bar cathedral detail page is missing its preview, location, or approved image");
   }
   for (const page of pages) {
     if (/rating|>\s*Оцјена\s*</i.test(page.html) || /033\/459-084|manastirmaine@gmail\.com/i.test(page.html)) {
       failures.push(`${page.relative} contains prohibited practical or commercial preview data`);
+    }
+    if (/180\s*m|08:00|16:00|18:00|Дјелимично активан|XVI вијек|Манастир Прасквица|Црква Св\. Тројице|Манастир Стањевићи|Манастир Дуљево/i.test(page.html)) {
+      failures.push(`${page.relative} contains unsupported reference-screenshot content`);
     }
   }
 } else {

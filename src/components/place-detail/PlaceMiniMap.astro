@@ -1,0 +1,108 @@
+---
+interface Props {
+  latitude: number;
+  longitude: number;
+  name: string;
+  placeType: string;
+}
+
+const { latitude, longitude, name, placeType } = Astro.props;
+const markerSrc = placeType === "monastery"
+  ? "/images/map/pin-monastery.png"
+  : ["church", "chapel", "cathedral"].includes(placeType)
+    ? "/images/map/pin-church.png"
+    : undefined;
+---
+
+<section
+  class="place-mini-map"
+  aria-label={`Мала карта положаја — ${name}`}
+  data-place-mini-map
+  data-latitude={latitude}
+  data-longitude={longitude}
+  data-place-name={name}
+  data-marker-src={markerSrc}
+  data-map-state="fallback"
+>
+  <div class="place-mini-map__viewport" data-place-mini-map-renderer hidden aria-hidden="true">
+    <div class="place-mini-map__canvas" data-place-mini-map-canvas></div>
+    <div class="place-mini-map__attribution" aria-label="Извори картографских података">
+      <a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener noreferrer">© MapTiler</a>
+      <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a>
+    </div>
+  </div>
+  <div class="place-mini-map__fallback" data-place-mini-map-fallback>
+    <span aria-hidden="true"></span>
+    <p>{latitude}, {longitude}</p>
+  </div>
+  <a class="place-mini-map__link" href="/#mapa">Отвори на главној карти <span aria-hidden="true">→</span></a>
+</section>
+
+<script>
+  import maplibregl from "maplibre-gl";
+  import "maplibre-gl/dist/maplibre-gl.css";
+  import type { Map as MapLibreMap } from "maplibre-gl";
+
+  const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY?.trim();
+  const MAP_STYLE_ID = "019fc7d8-717c-701d-9ca5-a53d9438d3ce";
+
+  const initialisePlaceMiniMaps = () => {
+    document.querySelectorAll<HTMLElement>("[data-place-mini-map]").forEach((root) => {
+      if (root.dataset.mapInitialised === "true") return;
+      root.dataset.mapInitialised = "true";
+      const latitude = Number(root.dataset.latitude);
+      const longitude = Number(root.dataset.longitude);
+      const renderer = root.querySelector<HTMLElement>("[data-place-mini-map-renderer]");
+      const fallback = root.querySelector<HTMLElement>("[data-place-mini-map-fallback]");
+      const container = root.querySelector<HTMLElement>("[data-place-mini-map-canvas]");
+      if (!MAPTILER_KEY || !renderer || !container || !Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+
+      let map: MapLibreMap;
+      try {
+        map = new maplibregl.Map({
+          container,
+          style: `https://api.maptiler.com/maps/${MAP_STYLE_ID}/style.json?key=${encodeURIComponent(MAPTILER_KEY)}`,
+          center: [longitude, latitude],
+          zoom: 13.5,
+          interactive: false,
+          attributionControl: false,
+          dragRotate: false,
+          pitchWithRotate: false,
+          renderWorldCopies: false,
+          fadeDuration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 200,
+        });
+      } catch {
+        return;
+      }
+
+      const marker = document.createElement("div");
+      marker.className = "place-mini-map__marker";
+      const markerSrc = root.dataset.markerSrc;
+      if (markerSrc) {
+        const image = document.createElement("img");
+        image.src = markerSrc;
+        image.alt = "";
+        image.width = 40;
+        image.height = 56;
+        image.setAttribute("aria-hidden", "true");
+        marker.append(image);
+      } else {
+        marker.append(document.createElement("span"));
+      }
+      new maplibregl.Marker({ element: marker, anchor: "bottom" }).setLngLat([longitude, latitude]).addTo(map);
+
+      map.once("load", () => {
+        renderer.hidden = false;
+        renderer.setAttribute("aria-hidden", "false");
+        if (fallback) fallback.hidden = true;
+        root.dataset.mapState = "ready";
+        map.resize();
+      });
+
+      document.addEventListener("astro:before-swap", () => map.remove(), { once: true });
+    });
+  };
+
+  initialisePlaceMiniMaps();
+  document.addEventListener("astro:page-load", initialisePlaceMiniMaps);
+</script>

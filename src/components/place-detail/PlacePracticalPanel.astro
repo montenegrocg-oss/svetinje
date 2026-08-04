@@ -1,0 +1,88 @@
+---
+import InterfaceIcon from "../InterfaceIcon.astro";
+import type { VisiblePlace } from "../../lib/content/publication";
+import PlaceMiniMap from "./PlaceMiniMap.astro";
+
+interface Props {
+  place: VisiblePlace;
+}
+
+const { place } = Astro.props;
+const location = [place.settlement, place.municipality].filter(Boolean).join(" · ");
+const hasCoordinates = place.latitude !== undefined && place.longitude !== undefined;
+const coordinateText = hasCoordinates ? `${place.latitude}, ${place.longitude}` : undefined;
+const accuracyLabels: Record<string, string> = {
+  "complex-centroid": "Центар комплекса",
+};
+const typeIcon = place.placeType === "monastery"
+  ? "monastery" as const
+  : ["church", "chapel", "cathedral"].includes(place.placeType)
+    ? "church" as const
+    : "place" as const;
+const practicalRows = [
+  { label: "Локација", value: location, icon: "place" as const },
+  { label: "Адреса", value: place.address, icon: "info" as const },
+  { label: "Тип", value: place.typeLabel, icon: typeIcon },
+  { label: "Црквена припадност", value: place.ecclesiasticalJurisdiction, icon: "church" as const },
+  { label: "Тачност положаја", value: place.coordinateAccuracy ? accuracyLabels[place.coordinateAccuracy] ?? place.coordinateAccuracy : undefined, icon: "target" as const },
+  { label: "Статус записа", value: place.preview ? "Радни приказ" : undefined, icon: "info" as const },
+].filter((row) => Boolean(row.value));
+const coordinateQualification = place.placeType === "cathedral"
+  ? "Координате означавају центар храмовног комплекса, а не тачан главни улаз."
+  : "Координате означавају центроид комплекса, а не тачан пјешачки улаз.";
+---
+
+<aside class="place-practical-panel" aria-labelledby="place-practical-title" data-coordinate-copy-root>
+  <h2 id="place-practical-title">Практичне информације</h2>
+  <dl class="place-practical-list">
+    {practicalRows.map((row) => (
+      <div>
+        <dt><InterfaceIcon name={row.icon} size={17} />{row.label}</dt>
+        <dd>{row.value}</dd>
+      </div>
+    ))}
+    {coordinateText && (
+      <div class="place-practical-list__coordinates">
+        <dt><InterfaceIcon name="target" size={17} />Координате</dt>
+        <dd>
+          <span>{coordinateText}</span>
+          <button type="button" data-copy-coordinates={coordinateText} aria-label="Копирај координате"><span aria-hidden="true">⧉</span></button>
+        </dd>
+      </div>
+    )}
+  </dl>
+
+  {coordinateText && <p class="place-practical-panel__coordinate-note">{coordinateQualification}</p>}
+  <details class="place-practical-panel__disclosure">
+    <summary>Напомена о подацима</summary>
+    <p>Додатне практичне информације су у припреми. Подаци у радном приказу захтијевају уређивачку провјеру прије јавне објаве.</p>
+  </details>
+  <p class="place-practical-panel__copy-status" role="status" aria-live="polite" data-coordinate-copy-status></p>
+
+  {hasCoordinates && (
+    <PlaceMiniMap latitude={place.latitude!} longitude={place.longitude!} name={place.name} placeType={place.placeType} />
+  )}
+</aside>
+
+<script>
+  const initialiseCoordinateCopy = () => {
+    document.querySelectorAll<HTMLElement>("[data-coordinate-copy-root]").forEach((root) => {
+      if (root.dataset.copyInitialised === "true") return;
+      root.dataset.copyInitialised = "true";
+      const button = root.querySelector<HTMLButtonElement>("[data-copy-coordinates]");
+      const status = root.querySelector<HTMLElement>("[data-coordinate-copy-status]");
+      button?.addEventListener("click", async () => {
+        try {
+          if (!navigator.clipboard) throw new Error("Clipboard unavailable");
+          await navigator.clipboard.writeText(button.dataset.copyCoordinates ?? "");
+          if (status) status.textContent = "Координате су копиране.";
+        } catch {
+          if (status) status.textContent = "Координате није могуће копирати.";
+        }
+      });
+    });
+  };
+
+  initialiseCoordinateCopy();
+  document.addEventListener("astro:page-load", initialiseCoordinateCopy);
+</script>
