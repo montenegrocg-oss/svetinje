@@ -144,7 +144,7 @@ test("the map accepts only server-selected marker data and adds no route geometr
   assert.doesNotMatch(mapSource, /42\.29799|18\.84452|Манастир Подмаине/iu);
 });
 
-test("marker assets resolve by place type without creating a church marker", async () => {
+test("cathedral markers reuse the existing blue church pin", async () => {
   const [mapCanvas, styles] = await Promise.all([
     source("src/components/MapCanvas.astro"),
     source("src/styles/global.css"),
@@ -152,7 +152,7 @@ test("marker assets resolve by place type without creating a church marker", asy
 
   assert.match(mapCanvas, /monastery: \{ src: "\/images\/map\/pin-monastery\.png", width: 362, height: 512 \}/);
   assert.match(mapCanvas, /church: \{ src: "\/images\/map\/pin-church\.png", width: 342, height: 512 \}/);
-  assert.match(mapCanvas, /const resolveMarkerAsset = \(placeType: string\) => MARKER_ASSETS\[placeType\]/);
+  assert.match(mapCanvas, /placeType === "cathedral" \? MARKER_ASSETS\.church : MARKER_ASSETS\[placeType\]/);
   assert.match(mapCanvas, /markerImage\.src = markerAsset\.src/);
   assert.match(mapCanvas, /markerImage\.alt = ""/);
   assert.match(mapCanvas, /holy-place-marker__fallback/);

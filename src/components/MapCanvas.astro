@@ -150,7 +150,8 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     church: { src: "/images/map/pin-church.png", width: 342, height: 512 },
   };
 
-  const resolveMarkerAsset = (placeType: string) => MARKER_ASSETS[placeType];
+  const resolveMarkerAsset = (placeType: string) =>
+    placeType === "cathedral" ? MARKER_ASSETS.church : MARKER_ASSETS[placeType];
 
   const getInitialPadding = (width: number): PaddingOptions => {
     if (width >= 1088) return { top: 78, right: 28, bottom: 30, left: 292 };

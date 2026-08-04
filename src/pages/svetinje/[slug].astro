@@ -77,8 +77,8 @@ const location = [place.settlement, place.municipality].filter(Boolean).join(", 
     <div class="shell place-location-band__grid">
       <div>
         <p class="eyebrow">Положај</p>
-        <h2 id="place-location-title">Положај светиње</h2>
-        <p>Координате означавају центроид комплекса, а не тачан пјешачки улаз.</p>
+        <h2 id="place-location-title">{place.placeType === "cathedral" ? "Положај храма" : "Положај светиње"}</h2>
+        <p>{place.placeType === "cathedral" ? "Координате означавају центар храмовног комплекса, а не тачан главни улаз." : "Координате означавају центроид комплекса, а не тачан пјешачки улаз."}</p>
       </div>
       <div class="coordinate-block">
         <span>{place.latitude?.toFixed(5)}, {place.longitude?.toFixed(5)}</span>

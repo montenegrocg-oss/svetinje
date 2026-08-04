@@ -39,11 +39,14 @@ if (editorialPreview) {
   if (!homepage?.html.includes('"latitude":42.29799') || !homepage.html.includes('"longitude":18.84452')) {
     failures.push("homepage is missing the allowlisted Podmaine marker coordinates");
   }
-  if ((homepage?.html.match(/"placeType":"monastery"/g) ?? []).length !== 1 || homepage?.html.includes('"placeType":"cathedral"')) {
-    failures.push("homepage marker data must contain only the allowlisted Podmaine monastery marker");
+  if (!homepage?.html.includes('"latitude":42.44572787124205') || !homepage.html.includes('"longitude":19.248255050565547')) {
+    failures.push("homepage is missing the allowlisted cathedral marker coordinates");
   }
-  if (!homepage?.html.includes('"category":"monasteries"') || !homepage.html.includes('data-place-category="monasteries"')) {
-    failures.push("homepage preview must provide the shared monastery category to its marker and card");
+  if ((homepage?.html.match(/"placeType":"monastery"/g) ?? []).length !== 1 || (homepage?.html.match(/"placeType":"cathedral"/g) ?? []).length !== 1) {
+    failures.push("homepage marker data must contain exactly one monastery and one cathedral marker");
+  }
+  if (!homepage?.html.includes('"category":"monasteries"') || !homepage.html.includes('data-place-category="monasteries"') || !homepage.html.includes('"category":"churches"') || !homepage.html.includes('data-place-category="churches"')) {
+    failures.push("homepage preview must provide the shared monastery and church categories to markers and cards");
   }
   if (
     !homepage?.html.includes("Манастир Подмаине") ||
@@ -56,8 +59,8 @@ if (editorialPreview) {
   if (!podmaine?.html.includes("Радни приказ") || !podmaine.html.includes("Ауторска фотографија биће додата")) {
     failures.push("Podmaine detail page is missing its preview or honest media notice");
   }
-  if (!cathedral?.html.includes("Тачна локација на мапи биће додата након географске провјере.")) {
-    failures.push("cathedral detail page must disclose its missing geographic verification");
+  if (!cathedral?.html.includes("Положај храма") || !cathedral.html.includes("Координате означавају центар храмовног комплекса, а не тачан главни улаз.")) {
+    failures.push("cathedral detail page is missing its approved location wording");
   }
   for (const page of pages) {
     if (/rating|>\s*Оцјена\s*</i.test(page.html) || /радно вријеме|033\/459-084|manastirmaine@gmail\.com/i.test(page.html)) {

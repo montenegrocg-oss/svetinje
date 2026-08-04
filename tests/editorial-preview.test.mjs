@@ -66,8 +66,9 @@ test("editorial preview returns the two allowlisted research dossiers", async ()
   assert.equal(cathedral.slug, "saborni-hram-hristovog-vaskrsenja-podgorica");
   assert.equal(cathedral.placeType, "cathedral");
   assert.equal(cathedral.typeLabel, "Саборни храм");
-  assert.equal(cathedral.latitude, undefined);
-  assert.equal(cathedral.longitude, undefined);
+  assert.equal(cathedral.latitude, 42.44572787124205);
+  assert.equal(cathedral.longitude, 19.248255050565547);
+  assert.equal(cathedral.coordinateAccuracy, "complex-centroid");
   assert.match(cathedral.searchText, /Предраг Ристић/);
   assert.match(cathedral.searchText, /Храм Васкрсења/);
   assert.ok(cathedral.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length > 0)));
