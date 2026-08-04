@@ -202,9 +202,9 @@ test("one accessible marker preview supports hover, focus, pinning, filtering, a
   assert.match(publication, /media\.editorial_status === "published"[\s\S]*?\["media-rights", "publishing"\]/);
   assert.match(styles, /\.map-place-preview\s*\{[\s\S]*?width: min\(15rem, calc\(100vw - 2rem\)\)/);
   assert.match(styles, /\.holy-place-popup \.maplibregl-popup-content\s*\{[\s\S]*?padding: 0 !important;[\s\S]*?background: var\(--paper\) !important;/);
-  assert.match(styles, /\.map-place-preview\s*\{[\s\S]*?max-width: 100%;[\s\S]*?box-sizing: border-box;[\s\S]*?display: block;[\s\S]*?margin: 0;[\s\S]*?padding: 14px 20px 14px 20px;/);
+  assert.match(styles, /\.map-place-preview\s*\{[\s\S]*?max-width: 100%;[\s\S]*?box-sizing: border-box;[\s\S]*?display: block;[\s\S]*?margin: 0;[\s\S]*?padding: 14px 20px 0 20px;/);
   assert.match(styles, /\.map-place-preview__media\s*\{[\s\S]*?width: 100%;[\s\S]*?max-width: 100%;[\s\S]*?box-sizing: border-box;[\s\S]*?margin: 0;/);
-  assert.match(styles, /\.map-place-preview__body\s*\{[\s\S]*?padding: 14px 0 16px;/);
+  assert.match(styles, /\.map-place-preview__body\s*\{[\s\S]*?padding: 14px 0 14px;/);
   assert.match(styles, /@media \(max-width: 47\.99rem\)[\s\S]*?\.map-place-preview\s*\{[\s\S]*?padding: 10px 10px 0;[\s\S]*?\.map-place-preview__media\s*\{[\s\S]*?min-height: 5\.75rem;[\s\S]*?\.map-place-preview__image\s*\{[\s\S]*?height: 5\.75rem;[\s\S]*?\.map-place-preview__body\s*\{[\s\S]*?padding: 10px 0 13px;/);
   assert.match(styles, /\.map-place-preview__type\s*\{[\s\S]*?display: none;/);
   assert.match(styles, /\.map-place-preview__link:focus-visible/);
