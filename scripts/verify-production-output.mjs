@@ -60,6 +60,15 @@ if (editorialPreview) {
   if ((homepage?.html.match(/data-place-card=/g) ?? []).length !== 4) {
     failures.push("homepage preview must contain exactly four place cards");
   }
+  if ((homepage?.html.match(/data-testid="explorer-continuation-placeholder"/g) ?? []).length !== 4) {
+    failures.push("homepage preview must contain exactly four neutral continuation placeholders");
+  }
+  for (const slot of ["05", "06", "07", "08"]) {
+    if (!homepage?.html.includes(`data-continuation-slot="${slot}"`)) failures.push(`homepage preview is missing continuation slot ${slot}`);
+  }
+  if (/data-continuation-slot="00[5-8]"/.test(homepage?.html ?? "")) {
+    failures.push("homepage preview continuation slots must use two-digit numbering");
+  }
   if ((homepage?.html.match(/data-recommended-place=/g) ?? []).length !== 2) {
     failures.push("homepage preview must contain exactly two recommended place cards");
   }
@@ -180,6 +189,12 @@ if (editorialPreview) {
     failures.push("production generated an editorial-preview route");
   }
   const homepage = pages.find((page) => page.relative === "index.html");
+  if ((homepage?.html.match(/data-testid="explorer-continuation-placeholder"/g) ?? []).length !== 4) {
+    failures.push("production homepage must contain exactly four neutral continuation placeholders");
+  }
+  for (const slot of ["05", "06", "07", "08"]) {
+    if (!homepage?.html.includes(`data-continuation-slot="${slot}"`)) failures.push(`production homepage is missing continuation slot ${slot}`);
+  }
   if ((homepage?.html.match(/data-recommended-place=/g) ?? []).length !== 0 || (homepage?.html.match(/data-testid="recommended-placeholder"/g) ?? []).length !== 10) {
     failures.push("production recommendations must retain ten neutral placeholders and no research records");
   }

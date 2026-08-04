@@ -1,0 +1,31 @@
+---
+const PLACEHOLDER_SLOTS = [5, 6, 7, 8] as const;
+const formatSlot = (slot: number) => String(slot).padStart(2, "0");
+---
+
+<section
+  class="explorer-continuation map-explorer__continuation"
+  aria-label="Будући записи светиња"
+  data-testid="explorer-continuation"
+>
+  {PLACEHOLDER_SLOTS.map((slot) => (
+    <article
+      class="explorer-continuation__placeholder"
+      data-testid="explorer-continuation-placeholder"
+      data-continuation-slot={formatSlot(slot)}
+    >
+      <div class="explorer-continuation__media" aria-hidden="true">
+        <span></span>
+        <i></i>
+        <b>{formatSlot(slot)}</b>
+      </div>
+      <div class="explorer-continuation__topline">
+        <p>СВЕТИЊА</p>
+        <span>У ПРИПРЕМИ</span>
+      </div>
+      <h3>Запис у припреми</h3>
+      <p class="explorer-continuation__location">Локација ће бити додата</p>
+      <p class="explorer-continuation__summary">Фотографија и подаци биће додати након уређивачке провјере.</p>
+    </article>
+  ))}
+</section>

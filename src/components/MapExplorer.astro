@@ -1,5 +1,6 @@
 ---
 import ExplorerSidebar from "./ExplorerSidebar.astro";
+import ExplorerContinuation from "./ExplorerContinuation.astro";
 import MapCanvas from "./MapCanvas.astro";
 import MapControls from "./MapControls.astro";
 import PopularRoutes from "./PopularRoutes.astro";
@@ -25,6 +26,7 @@ const places = await loadVisiblePlaces();
   <ExplorerSidebar places={places} />
   <RecommendedPlaces places={places} />
   <PopularRoutes />
+  <ExplorerContinuation />
 </section>
 
 <script>
@@ -51,30 +53,28 @@ const places = await loadVisiblePlaces();
   let activeFilter = "all";
   const explorerRoot = document.querySelector<HTMLElement>("[data-testid='map-explorer']");
   const explorerSidebar = document.querySelector<HTMLElement>("[data-testid='explorer-sidebar']");
-  const mapStage = explorerRoot?.querySelector<HTMLElement>(".map-stage");
   const recommendedShelf = explorerRoot?.querySelector<HTMLElement>("[data-testid='recommended-places']");
   const routesShelf = explorerRoot?.querySelector<HTMLElement>("[data-testid='popular-routes']");
+  const continuationShelf = explorerRoot?.querySelector<HTMLElement>("[data-testid='explorer-continuation']");
 
-  const syncSidebarClearance = () => {
-    if (!explorerRoot || !explorerSidebar || !mapStage) return;
+  const syncContinuationHeight = () => {
+    if (!explorerRoot || !explorerSidebar || !continuationShelf) return;
     if (!window.matchMedia("(min-width: 48rem)").matches) {
-      explorerRoot.style.removeProperty("--explorer-bottom-clearance");
+      explorerRoot.style.removeProperty("--explorer-continuation-height");
       return;
     }
 
     const sidebarBottom = explorerSidebar.getBoundingClientRect().bottom;
-    const contentBottom = routesShelf?.getBoundingClientRect().bottom
-      ?? recommendedShelf?.getBoundingClientRect().bottom
-      ?? mapStage.getBoundingClientRect().bottom;
-    const clearance = Math.max(0, Math.ceil(sidebarBottom + 24 - contentBottom));
-    explorerRoot.style.setProperty("--explorer-bottom-clearance", `${clearance}px`);
+    const continuationTop = continuationShelf.getBoundingClientRect().top;
+    const targetHeight = Math.max(0, Math.ceil(sidebarBottom - continuationTop));
+    explorerRoot.style.setProperty("--explorer-continuation-height", `${targetHeight}px`);
   };
 
-  const sidebarResizeObserver = explorerSidebar ? new ResizeObserver(syncSidebarClearance) : null;
-  if (explorerSidebar) sidebarResizeObserver?.observe(explorerSidebar);
-  if (recommendedShelf) sidebarResizeObserver?.observe(recommendedShelf);
-  if (routesShelf) sidebarResizeObserver?.observe(routesShelf);
-  window.addEventListener("resize", syncSidebarClearance);
+  const continuationResizeObserver = explorerSidebar ? new ResizeObserver(syncContinuationHeight) : null;
+  if (explorerSidebar) continuationResizeObserver?.observe(explorerSidebar);
+  if (recommendedShelf) continuationResizeObserver?.observe(recommendedShelf);
+  if (routesShelf) continuationResizeObserver?.observe(routesShelf);
+  window.addEventListener("resize", syncContinuationHeight);
 
   const singularLabels: Record<string, string> = {
     monasteries: "манастир",
@@ -201,12 +201,12 @@ const places = await loadVisiblePlaces();
 
   window.addEventListener("svetinje:place-selection-cleared", handleClearedSelection);
   applyExplorerState();
-  syncSidebarClearance();
+  syncContinuationHeight();
 
   document.addEventListener("astro:before-swap", () => {
-    sidebarResizeObserver?.disconnect();
-    window.removeEventListener("resize", syncSidebarClearance);
-    explorerRoot?.style.removeProperty("--explorer-bottom-clearance");
+    continuationResizeObserver?.disconnect();
+    window.removeEventListener("resize", syncContinuationHeight);
+    explorerRoot?.style.removeProperty("--explorer-continuation-height");
     window.removeEventListener("svetinje:place-select", handlePlaceSelection);
     window.removeEventListener("svetinje:place-selection-cleared", handleClearedSelection);
   }, { once: true });
