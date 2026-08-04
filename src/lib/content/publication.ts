@@ -1,8 +1,8 @@
-import { readFile, readdir } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { parseDocument } from "yaml";
 
-type ReviewRole = "publishing" | "factual" | "ecclesiastical" | "sr-language";
+type ReviewRole = "publishing" | "factual" | "ecclesiastical" | "sr-language" | "media-rights";
 
 interface Approval {
   role: string;
@@ -75,6 +75,27 @@ interface SourceRecord {
   approvals: Approval[];
 }
 
+interface MediaRecord {
+  id: string;
+  editorial_status: string;
+  media_type: string;
+  object_key?: string;
+  creator?: string;
+  copyright_owner?: string;
+  rights_basis?: string;
+  credit_line?: string;
+  allowed_uses?: string[];
+  publication_safety?: string;
+  related_place_ids: string[];
+  localized_text?: Record<string, {
+    alt_text?: string;
+    decorative?: boolean;
+    translation_status?: string;
+    approvals?: Approval[];
+  }>;
+  approvals: Approval[];
+}
+
 export interface PublishablePlace {
   id: string;
   slug: string;
@@ -103,6 +124,8 @@ export interface VisiblePlace extends PublishablePlace {
   longitude?: number;
   coordinateAccuracy?: string;
   ecclesiasticalJurisdiction?: string;
+  previewImageSrc?: string;
+  previewImageAlt?: string;
   preview: boolean;
   previewStatus?: string;
   narrativeSections: NarrativeSection[];
@@ -218,20 +241,79 @@ async function loadRecords(root: string): Promise<{
   places: PlaceRecord[];
   narratives: NarrativeRecord[];
   sources: SourceRecord[];
+  media: MediaRecord[];
 }> {
   const contentRoot = path.join(root, "content");
-  const [placeFiles, narrativeFiles, sourceFiles] = await Promise.all([
+  const [placeFiles, narrativeFiles, sourceFiles, mediaFiles] = await Promise.all([
     filesIn(path.join(contentRoot, "places"), (file) => path.basename(file) === "place.yaml"),
     filesIn(path.join(contentRoot, "places"), (file) => file.endsWith(`${path.sep}narratives${path.sep}sr.md`)),
     filesIn(path.join(contentRoot, "sources"), (file) => file.endsWith(".yaml")),
+    filesIn(path.join(contentRoot, "media"), (file) => file.endsWith(".yaml")),
   ]);
 
-  const [places, narratives, sources] = await Promise.all([
+  const [places, narratives, sources, media] = await Promise.all([
     Promise.all(placeFiles.map(async (file) => (await readYamlObject(file)) as unknown as PlaceRecord)),
     Promise.all(narrativeFiles.map(readNarrative)),
     Promise.all(sourceFiles.map(async (file) => (await readYamlObject(file)) as unknown as SourceRecord)),
+    Promise.all(mediaFiles.map(async (file) => (await readYamlObject(file)) as unknown as MediaRecord)),
   ]);
-  return { places, narratives, sources };
+  return { places, narratives, sources, media };
+}
+
+function mediaRightsMetadataIsComplete(media: MediaRecord): boolean {
+  return (
+    typeof media.creator === "string" &&
+    typeof media.copyright_owner === "string" &&
+    typeof media.rights_basis === "string" &&
+    typeof media.credit_line === "string" &&
+    media.allowed_uses?.includes("web-display") === true &&
+    media.publication_safety === "public"
+  );
+}
+
+async function localMediaSrc(root: string, objectKey: string | undefined): Promise<string | undefined> {
+  if (!objectKey) return undefined;
+  const normalized = objectKey.replaceAll("\\", "/");
+  if (!normalized.startsWith("public/") || normalized.includes("../")) return undefined;
+  const publicRoot = path.resolve(root, "public");
+  const absolute = path.resolve(root, ...normalized.split("/"));
+  const relative = path.relative(publicRoot, absolute);
+  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) return undefined;
+  try {
+    await access(absolute);
+  } catch {
+    return undefined;
+  }
+  return `/${normalized.slice("public/".length)}`;
+}
+
+async function previewMediaForPlace(
+  root: string,
+  placeId: string,
+  placeName: string,
+  mediaRecords: MediaRecord[],
+  mode: "production" | "editorial-preview",
+  policy: PublicationPolicy,
+): Promise<Pick<VisiblePlace, "previewImageSrc" | "previewImageAlt">> {
+  for (const media of mediaRecords) {
+    const statusAllowed = mode === "production"
+      ? media.editorial_status === "published" && hasRequiredApprovals(media.approvals, ["media-rights", "publishing"], policy)
+      : ["approved", "published"].includes(media.editorial_status);
+    const localized = media.localized_text?.sr;
+    if (
+      !statusAllowed ||
+      media.media_type !== "image" ||
+      !media.related_place_ids.includes(placeId) ||
+      !mediaRightsMetadataIsComplete(media) ||
+      !localized ||
+      (typeof localized.alt_text !== "string" && localized.decorative !== true)
+    ) {
+      continue;
+    }
+    const src = await localMediaSrc(root, media.object_key);
+    if (src) return { previewImageSrc: src, previewImageAlt: placeName };
+  }
+  return {};
 }
 
 export async function loadPublishablePlaces(root = process.cwd()): Promise<PublishablePlace[]> {
@@ -368,7 +450,7 @@ export function isEditorialPreviewBuild(): boolean {
 }
 
 export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<VisiblePlace[]> {
-  const { places, narratives, sources } = await loadRecords(root);
+  const [{ places, narratives, sources, media }, policy] = await Promise.all([loadRecords(root), loadPolicy(root)]);
   const placeById = new Map(places.map((place) => [place.id, place]));
   const narrativeByPlace = new Map(
     narratives.filter((narrative) => narrative.locale === "sr").map((narrative) => [narrative.place_id, narrative]),
@@ -376,7 +458,7 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
   const sourceById = new Map(sources.map((source) => [source.id, source]));
   const allowlist = await loadPreviewAllowlist(root, new Set(placeById.keys()));
 
-  return allowlist.map((id) => {
+  return Promise.all(allowlist.map(async (id) => {
     const place = placeById.get(id);
     const narrative = narrativeByPlace.get(id);
     assertPreviewField(place, `missing place record for ${id}`);
@@ -424,6 +506,7 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
     const longitude = coordinates?.longitude;
     const coordinateAccuracy = coordinates?.accuracy;
     const ecclesiasticalJurisdiction = place.ecclesiastical.jurisdiction.value;
+    const previewMedia = await previewMediaForPlace(root, place.id, narrative.preferred_name, media, "editorial-preview", policy);
     return {
       id: place.id,
       slug: narrative.slug,
@@ -438,6 +521,7 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       ...(longitude !== undefined ? { longitude } : {}),
       ...(coordinateAccuracy !== undefined ? { coordinateAccuracy } : {}),
       ecclesiasticalJurisdiction,
+      ...previewMedia,
       preview: true,
       previewStatus: place.editorial_status,
       narrativeSections,
@@ -452,7 +536,7 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
         settlement,
       ].join(" "),
     };
-  });
+  }));
 }
 
 export async function loadVisiblePlaces(
@@ -462,15 +546,17 @@ export async function loadVisiblePlaces(
   const editorialPreview = options.editorialPreview ?? isEditorialPreviewBuild();
   if (!editorialPreview) {
     const publicPlaces = await loadPublishablePlaces(root);
-    return publicPlaces.map((place) => ({
+    const [{ media }, policy] = await Promise.all([loadRecords(root), loadPolicy(root)]);
+    return Promise.all(publicPlaces.map(async (place) => ({
       ...place,
       typeLabel: placeTypeLabel(place.placeType),
+      ...(await previewMediaForPlace(root, place.id, place.name, media, "production", policy)),
       preview: false,
       narrativeSections: [],
       sourceIds: [],
       sources: [],
       searchText: [place.name, place.summary].join(" "),
-    }));
+    })));
   }
 
   const [publicPlaces, previewPlaces] = await Promise.all([

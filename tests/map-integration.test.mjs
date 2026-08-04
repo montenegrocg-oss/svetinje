@@ -163,6 +163,42 @@ test("cathedral markers reuse the existing blue church pin", async () => {
   assert.match(styles, /\.holy-place-marker:focus-visible\s*\{[\s\S]*?outline: 3px solid/);
 });
 
+test("one accessible marker preview supports hover, focus, pinning, filtering, and approved local media", async () => {
+  const [mapCanvas, publication, styles] = await Promise.all([
+    source("src/components/MapCanvas.astro"),
+    source("src/lib/content/publication.ts"),
+    source("src/styles/global.css"),
+  ]);
+
+  assert.equal((mapCanvas.match(/new maplibregl\.Popup/g) ?? []).length, 1);
+  assert.match(mapCanvas, /closeButton: false,[\s\S]*?closeOnClick: false,[\s\S]*?maxWidth: "240px"/);
+  assert.match(mapCanvas, /\.setDOMContent\(card\)/);
+  assert.doesNotMatch(mapCanvas, /(?:previewPopup|map-place-preview)[\s\S]{0,160}innerHTML/);
+  assert.match(mapCanvas, /button\.addEventListener\("pointerenter", \(\) => openPreview\(place, button, false\)\)/);
+  assert.match(mapCanvas, /button\.addEventListener\("focus", \(\) => openPreview\(place, button, false\)\)/);
+  assert.match(mapCanvas, /button\.addEventListener\("click", \(\) => \{[\s\S]*?openPreview\(place, button, true\)/);
+  assert.match(mapCanvas, /card\.addEventListener\("pointerenter", clearPreviewCloseTimer\)/);
+  assert.match(mapCanvas, /window\.setTimeout\(closePreview, 200\)/);
+  assert.match(mapCanvas, /event\.key !== "Escape"/);
+  assert.match(mapCanvas, /document\.addEventListener\("pointerdown", handleOutsidePreviewPointer\)/);
+  assert.match(mapCanvas, /button\.setAttribute\("aria-expanded", "true"\)/);
+  assert.match(mapCanvas, /button\.setAttribute\("aria-controls", card\.id\)/);
+  assert.match(mapCanvas, /if \(activePreview\?\.place\.id === id\) closePreview\(\)/);
+  assert.match(mapCanvas, /link\.href = `\/svetinje\/\$\{encodeURIComponent\(place\.slug\)\}\/`/);
+  assert.match(mapCanvas, /notice\.textContent = "Ауторска фотографија биће додата"/);
+  assert.match(mapCanvas, /image\.alt = place\.previewImageAlt \?\? place\.name/);
+
+  assert.match(publication, /previewImageSrc\?: string/);
+  assert.match(publication, /media\.related_place_ids\.includes\(placeId\)/);
+  assert.match(publication, /media\.allowed_uses\?\.includes\("web-display"\)/);
+  assert.match(publication, /\["approved", "published"\]\.includes\(media\.editorial_status\)/);
+  assert.match(publication, /normalized\.startsWith\("public\/"\)/);
+  assert.match(publication, /await access\(absolute\)/);
+  assert.match(publication, /media\.editorial_status === "published"[\s\S]*?\["media-rights", "publishing"\]/);
+  assert.match(styles, /\.map-place-preview\s*\{[\s\S]*?width: min\(15rem, calc\(100vw - 2rem\)\)/);
+  assert.match(styles, /\.map-place-preview__link:focus-visible/);
+});
+
 test("only Cloudflare site build steps receive the MapTiler secret", async () => {
   const [deployText, previewText, validationText] = await Promise.all([
     source(".github/workflows/deploy-cloudflare.yml"),
