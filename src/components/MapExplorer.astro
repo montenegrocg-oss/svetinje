@@ -53,24 +53,27 @@ const places = await loadVisiblePlaces();
   const explorerSidebar = document.querySelector<HTMLElement>("[data-testid='explorer-sidebar']");
   const mapStage = explorerRoot?.querySelector<HTMLElement>(".map-stage");
   const recommendedShelf = explorerRoot?.querySelector<HTMLElement>("[data-testid='recommended-places']");
+  const routesShelf = explorerRoot?.querySelector<HTMLElement>("[data-testid='popular-routes']");
 
   const syncSidebarClearance = () => {
     if (!explorerRoot || !explorerSidebar || !mapStage) return;
     if (!window.matchMedia("(min-width: 48rem)").matches) {
-      explorerRoot.style.removeProperty("--explorer-sidebar-clearance");
+      explorerRoot.style.removeProperty("--explorer-bottom-clearance");
       return;
     }
 
     const sidebarBottom = explorerSidebar.getBoundingClientRect().bottom;
-    const mapBottom = mapStage.getBoundingClientRect().bottom;
-    const recommendedTop = recommendedShelf?.getBoundingClientRect().top ?? mapBottom;
-    const clearance = Math.max(0, Math.ceil(sidebarBottom + 24 - recommendedTop));
-    explorerRoot.style.setProperty("--explorer-sidebar-clearance", `${clearance}px`);
+    const contentBottom = routesShelf?.getBoundingClientRect().bottom
+      ?? recommendedShelf?.getBoundingClientRect().bottom
+      ?? mapStage.getBoundingClientRect().bottom;
+    const clearance = Math.max(0, Math.ceil(sidebarBottom + 24 - contentBottom));
+    explorerRoot.style.setProperty("--explorer-bottom-clearance", `${clearance}px`);
   };
 
   const sidebarResizeObserver = explorerSidebar ? new ResizeObserver(syncSidebarClearance) : null;
   if (explorerSidebar) sidebarResizeObserver?.observe(explorerSidebar);
   if (recommendedShelf) sidebarResizeObserver?.observe(recommendedShelf);
+  if (routesShelf) sidebarResizeObserver?.observe(routesShelf);
   window.addEventListener("resize", syncSidebarClearance);
 
   const singularLabels: Record<string, string> = {
@@ -203,7 +206,7 @@ const places = await loadVisiblePlaces();
   document.addEventListener("astro:before-swap", () => {
     sidebarResizeObserver?.disconnect();
     window.removeEventListener("resize", syncSidebarClearance);
-    explorerRoot?.style.removeProperty("--explorer-sidebar-clearance");
+    explorerRoot?.style.removeProperty("--explorer-bottom-clearance");
     window.removeEventListener("svetinje:place-select", handlePlaceSelection);
     window.removeEventListener("svetinje:place-selection-cleared", handleClearedSelection);
   }, { once: true });

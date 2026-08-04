@@ -141,6 +141,7 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.doesNotMatch(recommended, /saborni-hram-bar|Саборни храм Светог Јована Владимира/);
   assert.match(routes, /Популарне руте/);
   assert.match(routes, /class="popular-routes map-explorer__routes"/);
+  assert.match(routes, /data-testid="popular-routes"/);
   assert.match(routes, /class="popular-routes__inner"/);
   assert.doesNotMatch(routes, /class="shell popular-routes__inner"/);
 });

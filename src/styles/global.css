@@ -2230,6 +2230,8 @@
     .map-explorer {
       --explorer-panel-left: max(1.5rem, calc((100vw - 94rem) / 2));
       --explorer-panel-width: 26.5rem;
+
+      padding-bottom: var(--explorer-bottom-clearance, 0px);
     }
 
     .header-inner {
@@ -2342,7 +2344,6 @@
     }
 
     .map-explorer__recommended {
-      min-height: var(--explorer-sidebar-clearance, 0px);
       padding-block: 1.5rem;
       border-bottom: 0;
     }
