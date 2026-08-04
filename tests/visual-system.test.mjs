@@ -79,14 +79,25 @@ test("unavailable locales remain visibly unavailable rather than becoming links"
 test("the homepage is composed from reusable map-explorer components", async () => {
   const homepage = await source("src/pages/index.astro");
   assert.match(homepage, /import MapExplorer/);
+  assert.match(homepage, /import PopularRoutes/);
   assert.match(homepage, /<MapExplorer \/>/);
-  assert.match(homepage, /<HomepagePreviews \/>/);
+  assert.match(homepage, /<PopularRoutes \/>/);
+  assert.doesNotMatch(homepage, /HomepagePreviews/);
 
-  const explorer = await source("src/components/MapExplorer.astro");
+  const [explorer, recommended, routes] = await Promise.all([
+    source("src/components/MapExplorer.astro"),
+    source("src/components/RecommendedPlaces.astro"),
+    source("src/components/PopularRoutes.astro"),
+  ]);
   assert.match(explorer, /<MapCanvas places=\{places\} \/>/);
   assert.match(explorer, /<MapControls \/>/);
   assert.match(explorer, /<ExplorerSidebar places=\{places\} \/>/);
+  assert.match(explorer, /<RecommendedPlaces \/>/);
   assert.match(explorer, /data-testid="map-explorer"/);
+  assert.match(recommended, /Препоручене светиње/);
+  assert.match(recommended, /data-testid="recommended-places"/);
+  assert.match(routes, /Популарне руте/);
+  assert.match(routes, /class="popular-routes"/);
 });
 
 test("map controls, search, and filters expose accessible states and honest feedback", async () => {
@@ -114,7 +125,8 @@ test("the required Serbian interface labels are present", async () => {
     source("src/components/MapExplorer.astro"),
     source("src/components/MapControls.astro"),
     source("src/components/FilterChips.astro"),
-    source("src/components/HomepagePreviews.astro"),
+    source("src/components/RecommendedPlaces.astro"),
+    source("src/components/PopularRoutes.astro"),
   ]);
   const content = files.join("\n");
   for (const label of [

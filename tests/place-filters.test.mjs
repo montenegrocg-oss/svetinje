@@ -49,7 +49,9 @@ test("the explorer keeps one shared filter state across cards, controls, and map
   assert.match(explorer, /new CustomEvent\("svetinje:filter-change"/);
   assert.match(explorer, /new CustomEvent\("svetinje:place-visibility-change"/);
   assert.match(explorer, /new ResizeObserver\(syncSidebarClearance\)/);
-  assert.match(explorer, /sidebarBottom \+ 24 - mapBottom/);
+  assert.match(explorer, /sidebarBottom \+ 24 - recommendedTop/);
+  assert.match(explorer, /\[data-testid='recommended-places'\]/);
+  assert.match(explorer, /sidebarResizeObserver\?\.observe\(recommendedShelf\)/);
   assert.match(explorer, /--explorer-sidebar-clearance/);
   assert.match(explorer, /sidebarResizeObserver\?\.disconnect\(\)/);
   assert.match(mapCanvas, /window\.addEventListener\("svetinje:filter-change", handleFilterChange\)/);
@@ -76,5 +78,5 @@ test("filtering has accessible no-result feedback and lifecycle cleanup", async 
   assert.match(explorer, /document\.addEventListener\("astro:before-swap"/);
   assert.match(explorer, /window\.removeEventListener\("svetinje:place-select", handlePlaceSelection\)/);
   assert.match(styles, /\.explorer-no-results\s*\{/);
-  assert.match(styles, /padding-bottom: var\(--explorer-sidebar-clearance, 0px\)/);
+  assert.match(styles, /min-height: var\(--explorer-sidebar-clearance, 0px\)/);
 });

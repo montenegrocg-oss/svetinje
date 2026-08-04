@@ -1,0 +1,23 @@
+---
+import InterfaceIcon from "./InterfaceIcon.astro";
+---
+
+<section class="popular-routes" id="rute" aria-labelledby="routes-title">
+  <div class="shell popular-routes__inner">
+    <header class="shelf-heading">
+      <h2 id="routes-title">Популарне руте</h2>
+      <span aria-disabled="true">Прикажи све</span>
+    </header>
+    <article class="route-placeholder">
+      <div class="route-placeholder__visual" aria-hidden="true">
+        <span></span><i></i><i></i><i></i>
+      </div>
+      <div>
+        <p class="placeholder-label">У припреми</p>
+        <h3>Поклоничке руте су у припреми.</h3>
+        <p>Путање ће бити приказане тек након провјере свих укључених мјеста и практичних података.</p>
+      </div>
+      <InterfaceIcon name="route" size={22} />
+    </article>
+  </div>
+</section>

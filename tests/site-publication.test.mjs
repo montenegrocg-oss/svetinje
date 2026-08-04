@@ -60,7 +60,8 @@ test("the map-first homepage contains no research dossier or fictional sacred-pl
     "src/components/MapCanvas.astro",
     "src/components/ExplorerSidebar.astro",
     "src/components/EmptyCatalogueState.astro",
-    "src/components/HomepagePreviews.astro",
+    "src/components/RecommendedPlaces.astro",
+    "src/components/PopularRoutes.astro",
   ];
   const homepageSource = (await Promise.all(
     files.map((file) => readFile(path.join(PROJECT_ROOT, file), "utf8")),

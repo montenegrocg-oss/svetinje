@@ -2,6 +2,7 @@
 import ExplorerSidebar from "./ExplorerSidebar.astro";
 import MapCanvas from "./MapCanvas.astro";
 import MapControls from "./MapControls.astro";
+import RecommendedPlaces from "./RecommendedPlaces.astro";
 import { loadVisiblePlaces } from "../lib/content/publication";
 
 const places = await loadVisiblePlaces();
@@ -21,6 +22,7 @@ const places = await loadVisiblePlaces();
   </div>
 
   <ExplorerSidebar places={places} />
+  <RecommendedPlaces />
 </section>
 
 <script>
@@ -48,6 +50,7 @@ const places = await loadVisiblePlaces();
   const explorerRoot = document.querySelector<HTMLElement>("[data-testid='map-explorer']");
   const explorerSidebar = document.querySelector<HTMLElement>("[data-testid='explorer-sidebar']");
   const mapStage = explorerRoot?.querySelector<HTMLElement>(".map-stage");
+  const recommendedShelf = explorerRoot?.querySelector<HTMLElement>("[data-testid='recommended-places']");
 
   const syncSidebarClearance = () => {
     if (!explorerRoot || !explorerSidebar || !mapStage) return;
@@ -58,12 +61,14 @@ const places = await loadVisiblePlaces();
 
     const sidebarBottom = explorerSidebar.getBoundingClientRect().bottom;
     const mapBottom = mapStage.getBoundingClientRect().bottom;
-    const clearance = Math.max(0, Math.ceil(sidebarBottom + 24 - mapBottom));
+    const recommendedTop = recommendedShelf?.getBoundingClientRect().top ?? mapBottom;
+    const clearance = Math.max(0, Math.ceil(sidebarBottom + 24 - recommendedTop));
     explorerRoot.style.setProperty("--explorer-sidebar-clearance", `${clearance}px`);
   };
 
   const sidebarResizeObserver = explorerSidebar ? new ResizeObserver(syncSidebarClearance) : null;
   if (explorerSidebar) sidebarResizeObserver?.observe(explorerSidebar);
+  if (recommendedShelf) sidebarResizeObserver?.observe(recommendedShelf);
   window.addEventListener("resize", syncSidebarClearance);
 
   const singularLabels: Record<string, string> = {

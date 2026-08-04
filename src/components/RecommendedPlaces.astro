@@ -1,0 +1,20 @@
+---
+---
+
+<section class="recommended-shelf map-explorer__recommended" aria-labelledby="recommended-title" data-testid="recommended-places">
+  <header class="shelf-heading">
+    <h2 id="recommended-title">Препоручене светиње</h2>
+    <a href="/svetinje/">Прикажи све</a>
+  </header>
+  <div class="place-previews" role="list" aria-label="Будући провјерени записи">
+    {Array.from({ length: 5 }).map((_, index) => (
+      <article class="place-preview" role="listitem">
+        <div class="place-preview__media" aria-hidden="true">
+          <span></span><i></i><b>0{index + 1}</b>
+        </div>
+        <p>Провјерени запис у припреми</p>
+        <small>Фотографија након провјере права</small>
+      </article>
+    ))}
+  </div>
+</section>
