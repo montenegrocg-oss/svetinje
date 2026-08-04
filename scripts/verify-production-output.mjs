@@ -2,20 +2,25 @@
 
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
-import { loadExcludedNarrativeMarkers, loadVisiblePlaces } from "../src/lib/content/publication.ts";
+import { loadExcludedContentMarkers } from "../src/lib/content/publication.ts";
+import {
+  CATEGORY_HTML_ROUTES,
+  createOutputExpectations,
+} from "./lib/output-expectations.mjs";
 
 const HISTORY_SECTION_IDS = new Set([
-  "history",
-  "discovery",
-  "foundation",
-  "consecration",
-  "saint-simeon",
-  "relics",
-  "canonization",
+  "history", "discovery", "foundation", "consecration", "saint-simeon", "relics", "canonization",
 ]);
 const ARRIVAL_SECTION_IDS = new Set(["location"]);
 const PRACTICAL_SECTION_IDS = new Set(["services", "visitor-information", "verification-notes"]);
 const FIXED_DETAIL_HEADINGS = ["О светињи", "Историја", "Како стићи", "Практичне информације"];
+const RECOMMENDED_PLACE_IDS = ["saborni-hram-podgorica", "dajbabe"];
+const TOTAL_RECOMMENDATION_SLOTS = 10;
+const EMPTY_STATES = {
+  monasteries: "Још нема манастира спремних за јавно објављивање.",
+  churches: "Још нема храмова спремних за јавно објављивање.",
+  "holy-places": "Још нема светих мјеста спремних за јавно објављивање.",
+};
 
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const countMatches = (text, pattern) => text.match(pattern)?.length ?? 0;
@@ -42,318 +47,261 @@ async function htmlFiles(directory) {
   return files;
 }
 
+function elementContaining(html, tag, marker) {
+  const markerIndex = html.indexOf(marker);
+  if (markerIndex < 0) return "";
+  const start = html.lastIndexOf(`<${tag}`, markerIndex);
+  const end = html.indexOf(`</${tag}>`, markerIndex);
+  return start < 0 || end < 0 ? "" : html.slice(start, end + tag.length + 3);
+}
+
+function parseMarkerPayload(homepageHtml, failures) {
+  const match = homepageHtml.match(/<script[^>]*data-map-place-data[^>]*>([\s\S]*?)<\/script>/);
+  if (!match) {
+    failures.push("homepage is missing its map marker payload");
+    return [];
+  }
+  try {
+    const payload = JSON.parse(match[1]);
+    if (!Array.isArray(payload)) throw new Error("payload is not an array");
+    return payload;
+  } catch (error) {
+    failures.push(`homepage map marker payload is invalid JSON: ${error instanceof Error ? error.message : String(error)}`);
+    return [];
+  }
+}
+
+function verifyCards(page, expectedPlaces, allPlaces, label, failures) {
+  const html = page?.html ?? "";
+  if (!page) {
+    failures.push(`${label} page is missing`);
+    return;
+  }
+  const count = countMatches(html, /data-place-card=/g);
+  if (count !== expectedPlaces.length) failures.push(`${label} must contain ${expectedPlaces.length} data-driven place card(s), found ${count}`);
+  const expectedIds = new Set(expectedPlaces.map((place) => place.id));
+  for (const place of allPlaces) {
+    const card = elementContaining(html, "article", `data-place-card="${place.id}"`);
+    if (!expectedIds.has(place.id)) {
+      if (card) failures.push(`${label} contains place ${place.id} from another category`);
+      continue;
+    }
+    if (!card) {
+      failures.push(`${label} is missing the place card for ${place.id}`);
+      continue;
+    }
+    if (!card.includes(place.name) || !card.includes(`href="/svetinje/${place.slug}/"`)) {
+      failures.push(`${label} card for ${place.id} does not match its loaded name or slug`);
+    }
+    if (place.previewImageSrc && !card.includes(`src="${place.previewImageSrc}"`)) {
+      failures.push(`${label} card for ${place.id} is missing its eligible preview image`);
+    }
+  }
+}
+
+function verifyNarrative(detail, place, failures) {
+  const html = detail.html;
+  for (const heading of FIXED_DETAIL_HEADINGS) {
+    const headingPattern = new RegExp(`<h[23][^>]*>${escapeRegExp(heading)}</h[23]>`, "g");
+    if (countMatches(html, headingPattern) !== 1) failures.push(`${place.id} detail page must contain exactly one ${heading} heading`);
+  }
+
+  const blockBoundaries = {
+    about: [html.indexOf('id="place-about-title"'), html.indexOf('data-testid="place-detail-gallery"')],
+    practical: [html.indexOf('class="place-practical-panel"'), html.indexOf('class="place-profile-cards"')],
+    history: [html.indexOf('id="place-history-title"'), html.indexOf('id="place-arrival-title"')],
+    arrival: [html.indexOf('id="place-arrival-title"'), html.indexOf('data-testid="place-related-shelf"')],
+  };
+  if (Object.values(blockBoundaries).some(([start, end]) => start < 0 || end < 0 || start >= end)) {
+    failures.push(`${place.id} detail page is missing a stable four-block narrative boundary`);
+    return;
+  }
+
+  const pageText = htmlToPlainText(html);
+  const lastSectionIndexByGroup = { about: -1, history: -1, arrival: -1, practical: -1 };
+  const expectedCitationCounts = new Map();
+  for (const section of place.narrativeSections) {
+    const marker = `data-narrative-source-section="${section.id}"`;
+    if (countMatches(html, new RegExp(escapeRegExp(marker), "g")) !== 1) {
+      failures.push(`${place.id} narrative section ${section.id} must be rendered exactly once`);
+      continue;
+    }
+    const group = HISTORY_SECTION_IDS.has(section.id)
+      ? "history"
+      : ARRIVAL_SECTION_IDS.has(section.id)
+        ? "arrival"
+        : PRACTICAL_SECTION_IDS.has(section.id)
+          ? "practical"
+          : "about";
+    const markerIndex = html.indexOf(marker);
+    const [start, end] = blockBoundaries[group];
+    if (markerIndex < start || markerIndex >= end) failures.push(`${place.id} narrative section ${section.id} is outside its ${group} block`);
+    if (markerIndex <= lastSectionIndexByGroup[group]) failures.push(`${place.id} narrative section ${section.id} is outside its original ${group} order`);
+    lastSectionIndexByGroup[group] = markerIndex;
+    for (const paragraph of section.paragraphs) {
+      const paragraphText = paragraph.text.replace(/\s+/g, " ").trim();
+      if (!pageText.includes(paragraphText)) failures.push(`${place.id} is missing narrative text from section ${section.id}`);
+      for (const sourceId of paragraph.sourceIds) {
+        expectedCitationCounts.set(sourceId, (expectedCitationCounts.get(sourceId) ?? 0) + 1);
+      }
+    }
+    if (!FIXED_DETAIL_HEADINGS.includes(section.title)) {
+      const originalHeadingPattern = new RegExp(`<h[23][^>]*>${escapeRegExp(section.title)}</h[23]>`, "g");
+      if (countMatches(html, originalHeadingPattern) !== 0) failures.push(`${place.id} exposes original narrative heading ${section.title}`);
+    }
+  }
+  for (const [sourceId, expectedCount] of expectedCitationCounts) {
+    const citationPattern = new RegExp(`href="#source-${escapeRegExp(sourceId)}"`, "g");
+    if (countMatches(html, citationPattern) !== expectedCount) failures.push(`${place.id} must preserve all ${expectedCount} citation link(s) for ${sourceId}`);
+  }
+}
+
+function verifyDetail(detailCase, model, pagesByRoute, failures) {
+  const { place, route, categoryHref, hasCoordinates } = detailCase;
+  const detail = pagesByRoute.get(route);
+  if (!detail) {
+    failures.push(`missing data-driven detail route ${route}`);
+    return;
+  }
+  const html = detail.html;
+  if (!html.includes(`data-place-id="${place.id}"`) || !html.includes(place.name)) {
+    failures.push(`${place.id} detail page does not match its loaded ID or name`);
+  }
+  const breadcrumbs = elementContaining(html, "nav", 'class="place-profile-breadcrumbs"');
+  if (!breadcrumbs.includes(`href="${categoryHref}"`)) failures.push(`${place.id} detail page has the wrong category breadcrumb`);
+
+  const hero = elementContaining(html, "header", `data-place-id="${place.id}"`);
+  const gallery = elementContaining(html, "section", 'data-testid="place-detail-gallery"');
+  if (place.previewImageSrc) {
+    if (!hero.includes(`src="${place.previewImageSrc}"`)) failures.push(`${place.id} detail hero is missing its eligible image`);
+    if (!gallery.includes(`src="${place.previewImageSrc}"`)) failures.push(`${place.id} detail gallery is missing its eligible image`);
+  } else {
+    if (!hero.includes("place-profile-hero__fallback")) failures.push(`${place.id} detail hero is missing its honest media fallback`);
+    if (!gallery.includes("Ауторска фотографија биће додата")) failures.push(`${place.id} detail gallery is missing its honest media fallback`);
+  }
+  if (!gallery || countMatches(gallery, /data-gallery-slot=/g) !== 4) failures.push(`${place.id} detail gallery must retain four honest preparation slots`);
+
+  if (!html.includes("Практичне информације")) failures.push(`${place.id} detail page is missing its repository-backed practical panel`);
+  if (hasCoordinates && (!html.includes(`data-latitude="${place.latitude}"`) || !html.includes(`data-longitude="${place.longitude}"`))) {
+    failures.push(`${place.id} detail page is missing its loaded mini-map coordinates`);
+  }
+
+  const related = elementContaining(html, "section", 'data-testid="place-related-shelf"');
+  if (!related) failures.push(`${place.id} detail page is missing its related-place shelf`);
+  if (countMatches(related, /data-related-place=/g) !== model.expectedRealRelatedCount) {
+    failures.push(`${place.id} detail page must contain ${model.expectedRealRelatedCount} real related place(s)`);
+  }
+  if (countMatches(related, /data-related-placeholder/g) !== model.expectedRelatedPlaceholderCount) {
+    failures.push(`${place.id} detail page must contain ${model.expectedRelatedPlaceholderCount} related placeholder(s)`);
+  }
+  if (related.includes(`data-related-place="${place.id}"`)) failures.push(`${place.id} detail page must exclude itself from related places`);
+  if (!html.includes("Извори и напомене") || !html.includes('id="source-')) failures.push(`${place.id} detail page must preserve its source trail`);
+  verifyNarrative(detail, place, failures);
+}
+
+function verifyFixedHomepageContracts(homepageHtml, model, failures) {
+  if (countMatches(homepageHtml, /data-testid="explorer-continuation-placeholder"/g) !== 4) failures.push("homepage must contain exactly four neutral continuation placeholders");
+  for (const slot of ["05", "06", "07", "08"]) {
+    if (!homepageHtml.includes(`data-continuation-slot="${slot}"`)) failures.push(`homepage is missing continuation slot ${slot}`);
+  }
+  if (/data-continuation-slot="00[5-8]"/.test(homepageHtml)) failures.push("homepage continuation slots must use two-digit numbering");
+
+  const visibleRecommendations = RECOMMENDED_PLACE_IDS.flatMap((id) => {
+    const place = model.placesById.get(id);
+    return place ? [place] : [];
+  });
+  const realCount = countMatches(homepageHtml, /data-recommended-place=/g);
+  const placeholderCount = countMatches(homepageHtml, /data-testid="recommended-placeholder"/g);
+  if (realCount !== visibleRecommendations.length || placeholderCount !== TOTAL_RECOMMENDATION_SLOTS - visibleRecommendations.length) {
+    failures.push("homepage recommendations do not preserve the intentional visible-ID selection and ten-slot contract");
+  }
+  if (realCount + placeholderCount !== TOTAL_RECOMMENDATION_SLOTS) failures.push("homepage recommendations must contain exactly ten total slots");
+  for (const place of visibleRecommendations) {
+    const card = elementContaining(homepageHtml, "article", `data-recommended-place="${place.id}"`);
+    if (!card.includes(`href="/svetinje/${place.slug}/"`)) failures.push(`recommended place ${place.id} has the wrong detail route`);
+    if (place.previewImageSrc && !card.includes(`src="${place.previewImageSrc}"`)) failures.push(`recommended place ${place.id} is missing its eligible image`);
+  }
+  const recommendationIds = [...homepageHtml.matchAll(/data-recommended-place="([^"]+)"/g)].map((match) => match[1]);
+  if (recommendationIds.some((id) => !RECOMMENDED_PLACE_IDS.includes(id))) failures.push("homepage recommends a place outside the intentional recommendation list");
+  if (homepageHtml.includes("<b>010</b>")) failures.push("homepage must never format recommendation slot 10 as 010");
+}
+
 const root = process.cwd();
 const editorialPreview = process.env.EDITORIAL_PREVIEW === "true";
-const files = await htmlFiles(path.join(root, "dist"));
+const distRoot = path.join(root, "dist");
+const files = await htmlFiles(distRoot);
 const pages = await Promise.all(files.map(async (file) => ({
   file,
-  relative: path.relative(path.join(root, "dist"), file).replaceAll("\\", "/"),
+  relative: path.relative(distRoot, file).replaceAll("\\", "/"),
   html: await readFile(file, "utf8"),
 })));
+const pagesByRoute = new Map(pages.map((page) => [page.relative, page]));
 const failures = [];
+const model = await createOutputExpectations(root, { editorialPreview });
 
-if (editorialPreview) {
-  const visiblePlaces = await loadVisiblePlaces(root, { editorialPreview: true });
-  const homepage = pages.find((page) => page.relative === "index.html");
-  const catalogue = pages.find((page) => page.relative === "svetinje/index.html");
-  const monasteries = pages.find((page) => page.relative === "manastiri/index.html");
-  const churches = pages.find((page) => page.relative === "crkve/index.html");
-  const holyPlaces = pages.find((page) => page.relative === "sveta-mjesta/index.html");
-  const podmaine = pages.find((page) => page.relative === "svetinje/manastir-podmaine/index.html");
-  const cathedral = pages.find((page) => page.relative === "svetinje/saborni-hram-hristovog-vaskrsenja-podgorica/index.html");
-  const dajbabe = pages.find((page) => page.relative === "svetinje/manastir-dajbabe/index.html");
-  const barCathedral = pages.find((page) => page.relative === "svetinje/saborni-hram-svetog-jovana-vladimira-bar/index.html");
-  if (files.length !== 11) failures.push("editorial preview must generate exactly 11 HTML pages");
-  if (!homepage || !catalogue || !monasteries || !churches || !holyPlaces || !podmaine || !cathedral || !dajbabe || !barCathedral) failures.push("editorial preview must generate the homepage, catalogue, category pages, and all allowlisted detail pages");
-  for (const page of pages) {
-    if (!page.html.includes('<meta name="robots" content="noindex,nofollow,noarchive">')) {
-      failures.push(`${page.relative} is missing editorial-preview noindex metadata`);
-    }
-  }
-  if (!homepage?.html.includes('"latitude":42.29799') || !homepage.html.includes('"longitude":18.84452')) {
-    failures.push("homepage is missing the allowlisted Podmaine marker coordinates");
-  }
-  if (!homepage?.html.includes('"latitude":42.44572787124205') || !homepage.html.includes('"longitude":19.248255050565547')) {
-    failures.push("homepage is missing the allowlisted cathedral marker coordinates");
-  }
-  if (!homepage?.html.includes('"latitude":42.40364') || !homepage.html.includes('"longitude":19.23226')) {
-    failures.push("homepage is missing the allowlisted Dajbabe marker coordinates");
-  }
-  if (!homepage?.html.includes('"latitude":42.10145') || !homepage.html.includes('"longitude":19.09394')) {
-    failures.push("homepage is missing the allowlisted Bar cathedral marker coordinates");
-  }
-  if ((homepage?.html.match(/"placeType":"monastery"/g) ?? []).length !== 2 || (homepage?.html.match(/"placeType":"cathedral"/g) ?? []).length !== 2) {
-    failures.push("homepage marker data must contain two monasteries and two cathedral markers");
-  }
-  if ((homepage?.html.match(/data-place-card=/g) ?? []).length !== 4) {
-    failures.push("homepage preview must contain exactly four place cards");
-  }
-  if ((homepage?.html.match(/data-testid="explorer-continuation-placeholder"/g) ?? []).length !== 4) {
-    failures.push("homepage preview must contain exactly four neutral continuation placeholders");
-  }
-  for (const slot of ["05", "06", "07", "08"]) {
-    if (!homepage?.html.includes(`data-continuation-slot="${slot}"`)) failures.push(`homepage preview is missing continuation slot ${slot}`);
-  }
-  if (/data-continuation-slot="00[5-8]"/.test(homepage?.html ?? "")) {
-    failures.push("homepage preview continuation slots must use two-digit numbering");
-  }
-  if ((homepage?.html.match(/data-recommended-place=/g) ?? []).length !== 2) {
-    failures.push("homepage preview must contain exactly two recommended place cards");
-  }
-  if ((homepage?.html.match(/data-testid="recommended-placeholder"/g) ?? []).length !== 8) {
-    failures.push("homepage preview must retain exactly eight neutral recommendation placeholders");
-  }
-  if ((homepage?.html.match(/data-recommended-place=|data-testid="recommended-placeholder"/g) ?? []).length !== 10) {
-    failures.push("homepage preview recommendations must contain exactly ten total slots");
-  }
-  for (const slot of ["03", "04", "05", "06", "07", "08", "09", "10"]) {
-    if (!homepage?.html.includes(`<b>${slot}</b>`)) failures.push(`homepage preview is missing recommendation slot ${slot}`);
-  }
-  if (homepage?.html.includes("<b>010</b>")) {
-    failures.push("homepage preview must never format recommendation slot 10 as 010");
-  }
-  if (
-    !homepage?.html.includes('data-recommended-place="saborni-hram-podgorica"') ||
-    !homepage.html.includes('href="/svetinje/saborni-hram-hristovog-vaskrsenja-podgorica/"') ||
-    !homepage.html.includes('data-recommended-place="dajbabe"') ||
-    !homepage.html.includes('href="/svetinje/manastir-dajbabe/"') ||
-    homepage.html.includes('data-recommended-place="podmaine"') ||
-    homepage.html.includes('data-recommended-place="saborni-hram-bar"')
-  ) {
-    failures.push("homepage recommendations must contain the Podgorica cathedral and Dajbabe, never Podmaine or the Bar cathedral");
-  }
-  const previewImages = {
-    podmaine: "/images/places/manastir_podmaine.jpg",
-    dajbabe: "/images/places/manastir_dajbabe.jpg",
-    podgorica: "/images/places/saborni_hram_podgorica.jpg",
-    bar: "/images/places/saborni_hram_bar.jpg",
-  };
-  const detailCases = [
-    { page: podmaine, id: "podmaine", image: previewImages.podmaine, latitude: "42.29799", longitude: "18.84452", categoryHref: "/manastiri/" },
-    { page: cathedral, id: "saborni-hram-podgorica", image: previewImages.podgorica, latitude: "42.44572787124205", longitude: "19.248255050565547", categoryHref: "/crkve/" },
-    { page: dajbabe, id: "dajbabe", image: previewImages.dajbabe, latitude: "42.40364", longitude: "19.23226", categoryHref: "/manastiri/" },
-    { page: barCathedral, id: "saborni-hram-bar", image: previewImages.bar, latitude: "42.10145", longitude: "19.09394", categoryHref: "/crkve/" },
-  ];
-  for (const detailCase of detailCases) {
-    const html = detailCase.page?.html ?? "";
-    const place = visiblePlaces.find((candidate) => candidate.id === detailCase.id);
-    const heroPattern = new RegExp(`class="place-profile-hero"[^>]*data-place-id="${detailCase.id}"[\\s\\S]*?class="place-profile-hero__image"[^>]*src="${detailCase.image}"`);
-    const breadcrumbPattern = new RegExp(`class="place-profile-breadcrumbs"[\\s\\S]*?href="${detailCase.categoryHref}"`);
-    if (!heroPattern.test(html) || !breadcrumbPattern.test(html)) {
-      failures.push(`${detailCase.id} detail page is missing its data-driven image hero or category breadcrumb`);
-    }
-    if (!html.includes('data-testid="place-detail-gallery"') || (html.match(/data-gallery-slot=/g) ?? []).length !== 4) {
-      failures.push(`${detailCase.id} detail page must contain one real gallery image and four honest preparation slots`);
-    }
-    if (!html.includes("Практичне информације") || !html.includes(`data-latitude="${detailCase.latitude}"`) || !html.includes(`data-longitude="${detailCase.longitude}"`)) {
-      failures.push(`${detailCase.id} detail page is missing its repository-backed practical panel or mini-map coordinates`);
-    }
-    if (!html.includes('data-testid="place-related-shelf"') || (html.match(/data-related-place=/g) ?? []).length !== 3 || (html.match(/data-related-placeholder/g) ?? []).length !== 1) {
-      failures.push(`${detailCase.id} detail page must contain three other preview records and one honest related placeholder`);
-    }
-    if (html.includes(`data-related-place="${detailCase.id}"`)) {
-      failures.push(`${detailCase.id} detail page must exclude itself from related places`);
-    }
-    if (!html.includes("Извори и напомене") || !html.includes('id="source-')) {
-      failures.push(`${detailCase.id} detail page must preserve its source trail`);
-    }
-    if (!place) {
-      failures.push(`${detailCase.id} is missing from the editorial preview loader`);
-      continue;
-    }
+if (files.length !== model.expectedPageCount) failures.push(`${editorialPreview ? "editorial preview" : "production"} must generate ${model.expectedPageCount} data-derived HTML page(s), found ${files.length}`);
+for (const route of model.allExpectedRoutes) {
+  if (!pagesByRoute.has(route)) failures.push(`expected output route is missing: ${route}`);
+}
+for (const page of pages) {
+  if (!model.allExpectedRoutes.includes(page.relative)) failures.push(`unexpected output route was generated: ${page.relative}`);
+  if (editorialPreview && !page.html.includes('<meta name="robots" content="noindex,nofollow,noarchive">')) failures.push(`${page.relative} is missing editorial-preview noindex metadata`);
+}
 
-    for (const heading of FIXED_DETAIL_HEADINGS) {
-      const headingPattern = new RegExp(`<h[23][^>]*>${escapeRegExp(heading)}</h[23]>`, "g");
-      if (countMatches(html, headingPattern) !== 1) {
-        failures.push(`${detailCase.id} detail page must contain exactly one ${heading} heading`);
-      }
-    }
+const homepage = pagesByRoute.get("index.html");
+const catalogue = pagesByRoute.get("svetinje/index.html");
+const homepageHtml = homepage?.html ?? "";
+verifyFixedHomepageContracts(homepageHtml, model, failures);
+verifyCards(homepage, model.places, model.places, "homepage explorer", failures);
+verifyCards(catalogue, model.places, model.places, "general catalogue", failures);
 
-    const blockBoundaries = {
-      about: [html.indexOf('id="place-about-title"'), html.indexOf('data-testid="place-detail-gallery"')],
-      practical: [html.indexOf('class="place-practical-panel"'), html.indexOf('class="place-profile-cards"')],
-      history: [html.indexOf('id="place-history-title"'), html.indexOf('id="place-arrival-title"')],
-      arrival: [html.indexOf('id="place-arrival-title"'), html.indexOf('data-testid="place-related-shelf"')],
-    };
-    if (Object.values(blockBoundaries).some(([start, end]) => start < 0 || end < 0 || start >= end)) {
-      failures.push(`${detailCase.id} detail page is missing a stable four-block narrative boundary`);
-      continue;
-    }
+for (const [category, route] of Object.entries(CATEGORY_HTML_ROUTES)) {
+  const page = pagesByRoute.get(route);
+  const members = model.categoryMembership[category];
+  verifyCards(page, members, model.places, `${category} catalogue`, failures);
+  if (members.length === 0 && !page?.html.includes(EMPTY_STATES[category])) failures.push(`${category} catalogue is missing its protected empty state`);
+  if (members.length > 0 && page?.html.includes(EMPTY_STATES[category])) failures.push(`${category} catalogue incorrectly renders its empty state`);
+}
 
-    const pageText = htmlToPlainText(html);
-    const lastSectionIndexByGroup = { about: -1, history: -1, arrival: -1, practical: -1 };
-    const expectedCitationCounts = new Map();
-    for (const section of place.narrativeSections) {
-      const marker = `data-narrative-source-section="${section.id}"`;
-      if (countMatches(html, new RegExp(escapeRegExp(marker), "g")) !== 1) {
-        failures.push(`${detailCase.id} narrative section ${section.id} must be rendered exactly once`);
-        continue;
-      }
-      const group = HISTORY_SECTION_IDS.has(section.id)
-        ? "history"
-        : ARRIVAL_SECTION_IDS.has(section.id)
-          ? "arrival"
-          : PRACTICAL_SECTION_IDS.has(section.id)
-            ? "practical"
-            : "about";
-      const markerIndex = html.indexOf(marker);
-      const [start, end] = blockBoundaries[group];
-      if (markerIndex < start || markerIndex >= end) {
-        failures.push(`${detailCase.id} narrative section ${section.id} is outside its ${group} block`);
-      }
-      if (markerIndex <= lastSectionIndexByGroup[group]) {
-        failures.push(`${detailCase.id} narrative section ${section.id} is outside its original ${group} order`);
-      }
-      lastSectionIndexByGroup[group] = markerIndex;
-      for (const paragraph of section.paragraphs) {
-        const paragraphText = paragraph.text.replace(/\s+/g, " ").trim();
-        if (!pageText.includes(paragraphText)) {
-          failures.push(`${detailCase.id} is missing narrative text from section ${section.id}`);
-        }
-        for (const sourceId of paragraph.sourceIds) {
-          expectedCitationCounts.set(sourceId, (expectedCitationCounts.get(sourceId) ?? 0) + 1);
-        }
-      }
-      if (!FIXED_DETAIL_HEADINGS.includes(section.title)) {
-        const originalHeadingPattern = new RegExp(`<h[23][^>]*>${escapeRegExp(section.title)}</h[23]>`, "g");
-        if (countMatches(html, originalHeadingPattern) !== 0) {
-          failures.push(`${detailCase.id} exposes original narrative heading ${section.title}`);
-        }
-      }
+const markerPayload = parseMarkerPayload(homepageHtml, failures);
+if (markerPayload.length !== model.markerPlaces.length) failures.push(`homepage marker payload must contain ${model.markerPlaces.length} place(s), found ${markerPayload.length}`);
+const markerById = new Map(markerPayload.map((marker) => [marker.id, marker]));
+for (const detailCase of model.detailRoutes) {
+  const { place, category, hasCoordinates } = detailCase;
+  const marker = markerById.get(place.id);
+  if (hasCoordinates) {
+    if (!marker) failures.push(`homepage marker payload is missing ${place.id}`);
+    else if (
+      marker.slug !== place.slug ||
+      marker.placeType !== place.placeType ||
+      marker.category !== category ||
+      marker.latitude !== place.latitude ||
+      marker.longitude !== place.longitude
+    ) failures.push(`homepage marker payload for ${place.id} does not match the loaded record`);
+    if (place.previewImageSrc && marker?.previewImageSrc !== place.previewImageSrc) failures.push(`homepage marker popup data for ${place.id} is missing its eligible image`);
+    if (!place.previewImageSrc && marker?.previewImageSrc) failures.push(`homepage marker popup data invents an image for ${place.id}`);
+  } else if (marker) failures.push(`homepage marker payload must not require coordinates for ${place.id}`);
+  verifyDetail(detailCase, model, pagesByRoute, failures);
+}
+
+for (const page of pages) {
+  if (/rating|>\s*Оцјена\s*</i.test(page.html) || /033\/459-084|manastirmaine@gmail\.com/i.test(page.html)) failures.push(`${page.relative} contains prohibited practical or commercial preview data`);
+  if (/180\s*m|08:00|16:00|18:00|Дјелимично активан|XVI вијек|Манастир Прасквица|Црква Св\. Тројице|Манастир Стањевићи|Манастир Дуљево/i.test(page.html)) failures.push(`${page.relative} contains unsupported reference-screenshot content`);
+}
+
+if (!editorialPreview) {
+  const excludedContent = await loadExcludedContentMarkers(root);
+  for (const marker of excludedContent) {
+    if (marker.slug) {
+      const route = `svetinje/${marker.slug}/index.html`;
+      if (pagesByRoute.has(route)) failures.push(`production generated excluded editorial-preview route ${route}`);
     }
-    for (const [sourceId, expectedCount] of expectedCitationCounts) {
-      const citationPattern = new RegExp(`href="#source-${escapeRegExp(sourceId)}"`, "g");
-      if (countMatches(html, citationPattern) !== expectedCount) {
-        failures.push(`${detailCase.id} must preserve all ${expectedCount} citation link(s) for ${sourceId}`);
-      }
+    const excludedValues = [marker.placeId, marker.slug, marker.preferredName, marker.previewImageSrc];
+    if (Number.isFinite(marker.latitude)) excludedValues.push(String(marker.latitude));
+    if (Number.isFinite(marker.longitude)) excludedValues.push(String(marker.longitude));
+    for (const value of excludedValues.filter((candidate) => typeof candidate === "string" && candidate.length >= 4)) {
+      if (pages.some((page) => page.html.includes(value))) failures.push(`production contains excluded research value ${value}`);
     }
-  }
-  if (![previewImages.podmaine, previewImages.dajbabe, previewImages.podgorica, previewImages.bar].every((image) => homepage?.html.includes(image) && catalogue?.html.includes(image))) {
-    failures.push("homepage and general catalogue must include each matching preview image");
-  }
-  if (![previewImages.podmaine, previewImages.dajbabe].every((image) => monasteries?.html.includes(image)) || [previewImages.podgorica, previewImages.bar].some((image) => monasteries?.html.includes(image))) {
-    failures.push("the monasteries catalogue must include only the two monastery images");
-  }
-  if (![previewImages.podgorica, previewImages.bar].every((image) => churches?.html.includes(image)) || [previewImages.podmaine, previewImages.dajbabe].some((image) => churches?.html.includes(image))) {
-    failures.push("the churches catalogue must include only the two cathedral images");
-  }
-  const recommendationHasImage = (id, image) => new RegExp(`data-recommended-place="${id}"[\\s\\S]*?src="${image}"`).test(homepage?.html ?? "");
-  if (!recommendationHasImage("saborni-hram-podgorica", previewImages.podgorica) || !recommendationHasImage("dajbabe", previewImages.dajbabe)) {
-    failures.push("homepage recommendations must render the matching Podgorica cathedral and Dajbabe images");
-  }
-  if ((homepage?.html.match(/"category":"monasteries"/g) ?? []).length !== 2 || (homepage?.html.match(/data-place-category="monasteries"/g) ?? []).length !== 2 || (homepage?.html.match(/"category":"churches"/g) ?? []).length !== 2 || (homepage?.html.match(/data-place-category="churches"/g) ?? []).length !== 2) {
-    failures.push("homepage preview must provide the shared monastery and church categories to markers and cards");
-  }
-  if (
-    !homepage?.html.includes("Манастир Подмаине") ||
-    !homepage.html.includes("Манастир Дајбабе") ||
-    !homepage.html.includes("Саборни храм Христовог Васкрсења") ||
-    !homepage.html.includes("Саборни храм Светог Јована Владимира") ||
-    !catalogue?.html.includes("Манастир Подмаине") ||
-    !catalogue.html.includes("Манастир Дајбабе") ||
-    !catalogue.html.includes("Саборни храм Христовог Васкрсења") ||
-    !catalogue.html.includes("Саборни храм Светог Јована Владимира")
-  ) {
-    failures.push("all preview cards are required on the homepage and catalogue");
-  }
-  if (!monasteries?.html.includes("Манастир Подмаине") || !monasteries.html.includes("Манастир Дајбабе") || monasteries.html.includes("Саборни храм Христовог Васкрсења") || monasteries.html.includes("Саборни храм Светог Јована Владимира")) {
-    failures.push("the monasteries catalogue must contain Podmaine and Dajbabe only");
-  }
-  if ((monasteries?.html.match(/data-place-card=/g) ?? []).length !== 2) {
-    failures.push("the monasteries catalogue must contain exactly two preview cards");
-  }
-  if (!churches?.html.includes("Саборни храм Христовог Васкрсења") || !churches.html.includes("Саборни храм Светог Јована Владимира") || churches.html.includes("Манастир Подмаине") || churches.html.includes("Манастир Дајбабе")) {
-    failures.push("the churches catalogue must contain both cathedrals only");
-  }
-  if ((churches?.html.match(/data-place-card=/g) ?? []).length !== 2) {
-    failures.push("the churches catalogue must contain exactly two preview cards");
-  }
-  if ((catalogue?.html.match(/data-place-card=/g) ?? []).length !== 4) {
-    failures.push("the general catalogue must contain exactly four preview cards");
-  }
-  if ((holyPlaces?.html.match(/data-place-card=/g) ?? []).length !== 0 || !holyPlaces?.html.includes("Још нема светих мјеста спремних за јавно објављивање.")) {
-    failures.push("the holy-places catalogue must retain its protected empty state");
-  }
-  if (!monasteries?.html.includes('href="/manastiri/" aria-current="page"') || monasteries.html.includes('href="/crkve/" aria-current="page"')) {
-    failures.push("the monasteries page must activate only its navigation link");
-  }
-  if (!churches?.html.includes('href="/crkve/" aria-current="page"') || churches.html.includes('href="/manastiri/" aria-current="page"')) {
-    failures.push("the churches page must activate only its navigation link");
-  }
-  if (!holyPlaces?.html.includes('href="/sveta-mjesta/" aria-current="page"') || holyPlaces.html.includes('href="/manastiri/" aria-current="page"') || holyPlaces.html.includes('href="/crkve/" aria-current="page"')) {
-    failures.push("the holy-places page must activate only its navigation link");
-  }
-  if (!podmaine?.html.includes("Радни приказ") || !podmaine.html.includes(previewImages.podmaine)) {
-    failures.push("Podmaine detail page is missing its preview state or approved image");
-  }
-  if (!cathedral?.html.includes("Координате означавају центар храмовног комплекса, а не тачан главни улаз.")) {
-    failures.push("cathedral detail page is missing its approved location wording");
-  }
-  if (!dajbabe?.html.includes("Радни приказ") || !dajbabe.html.includes(previewImages.dajbabe)) {
-    failures.push("Dajbabe detail page is missing its preview state or approved image");
-  }
-  if (!barCathedral?.html.includes("Координате на мапи означавају радни центар храмовног комплекса") || !barCathedral.html.includes(previewImages.bar)) {
-    failures.push("Bar cathedral detail page is missing its preview, location, or approved image");
-  }
-  for (const page of pages) {
-    if (/rating|>\s*Оцјена\s*</i.test(page.html) || /033\/459-084|manastirmaine@gmail\.com/i.test(page.html)) {
-      failures.push(`${page.relative} contains prohibited practical or commercial preview data`);
-    }
-    if (/180\s*m|08:00|16:00|18:00|Дјелимично активан|XVI вијек|Манастир Прасквица|Црква Св\. Тројице|Манастир Стањевићи|Манастир Дуљево/i.test(page.html)) {
-      failures.push(`${page.relative} contains unsupported reference-screenshot content`);
-    }
-  }
-} else {
-  if (files.length !== 7) failures.push("production must generate exactly 7 HTML pages");
-  const excluded = await loadExcludedNarrativeMarkers(root);
-  for (const marker of excluded) {
-    const values = [marker.placeId, marker.slug, marker.preferredName].filter(
-      (value) => typeof value === "string" && value.length >= 4,
-    );
-    for (const page of pages) {
-      for (const value of values) {
-        if (page.html.includes(value)) failures.push(`${page.relative} contains excluded marker ${value}`);
-      }
-    }
-  }
-  if (pages.some((page) => ["svetinje/manastir-podmaine/index.html", "svetinje/saborni-hram-hristovog-vaskrsenja-podgorica/index.html", "svetinje/manastir-dajbabe/index.html", "svetinje/saborni-hram-svetog-jovana-vladimira-bar/index.html"].includes(page.relative))) {
-    failures.push("production generated an editorial-preview route");
-  }
-  const homepage = pages.find((page) => page.relative === "index.html");
-  if ((homepage?.html.match(/data-testid="explorer-continuation-placeholder"/g) ?? []).length !== 4) {
-    failures.push("production homepage must contain exactly four neutral continuation placeholders");
-  }
-  for (const slot of ["05", "06", "07", "08"]) {
-    if (!homepage?.html.includes(`data-continuation-slot="${slot}"`)) failures.push(`production homepage is missing continuation slot ${slot}`);
-  }
-  if ((homepage?.html.match(/data-recommended-place=/g) ?? []).length !== 0 || (homepage?.html.match(/data-testid="recommended-placeholder"/g) ?? []).length !== 10) {
-    failures.push("production recommendations must retain ten neutral placeholders and no research records");
-  }
-  if ((homepage?.html.match(/data-recommended-place=|data-testid="recommended-placeholder"/g) ?? []).length !== 10 || !homepage?.html.includes("<b>10</b>") || homepage.html.includes("<b>010</b>")) {
-    failures.push("production recommendations must contain ten correctly numbered neutral slots");
-  }
-  for (const image of [
-    "/images/places/manastir_podmaine.jpg",
-    "/images/places/manastir_dajbabe.jpg",
-    "/images/places/saborni_hram_podgorica.jpg",
-    "/images/places/saborni_hram_bar.jpg",
-  ]) {
-    if (pages.some((page) => page.html.includes(image))) failures.push(`production contains excluded research image ${image}`);
-  }
-  for (const value of ["saborni-hram-bar", "saborni-hram-svetog-jovana-vladimira-bar", "Саборни храм Светог Јована Владимира", "42.10145", "19.09394"]) {
-    if (pages.some((page) => page.html.includes(value))) failures.push(`production contains excluded Bar cathedral value ${value}`);
-  }
-  const monasteries = pages.find((page) => page.relative === "manastiri/index.html");
-  const churches = pages.find((page) => page.relative === "crkve/index.html");
-  const holyPlaces = pages.find((page) => page.relative === "sveta-mjesta/index.html");
-  if (!monasteries?.html.includes("Још нема манастира спремних за јавно објављивање.")) {
-    failures.push("production monasteries page is missing its protected empty state");
-  }
-  if (!churches?.html.includes("Још нема храмова спремних за јавно објављивање.")) {
-    failures.push("production churches page is missing its protected empty state");
-  }
-  if (!holyPlaces?.html.includes("Још нема светих мјеста спремних за јавно објављивање.") || (holyPlaces.html.match(/data-place-card=/g) ?? []).length !== 0) {
-    failures.push("production holy-places page is missing its protected empty state");
   }
 }
 
@@ -362,8 +310,8 @@ if (failures.length > 0) {
   console.error(failures.join("\n"));
   process.exitCode = 1;
 } else if (editorialPreview) {
-  console.log("Editorial preview output check passed: " + files.length + " HTML page(s), 4 allowlisted places, noindex enforced.");
+  console.log(`Editorial preview output check passed: ${files.length} HTML page(s), ${model.places.length} allowlisted place(s), noindex enforced.`);
 } else {
-  const excluded = await loadExcludedNarrativeMarkers(root);
-  console.log(`Production output check passed: ${files.length} HTML page(s), ${excluded.length} excluded narrative(s), 0 leaks.`);
+  const excluded = await loadExcludedContentMarkers(root);
+  console.log(`Production output check passed: ${files.length} HTML page(s), ${model.places.length} visible place(s), ${excluded.length} excluded narrative(s), 0 leaks.`);
 }

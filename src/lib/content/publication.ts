@@ -140,6 +140,12 @@ export interface ExcludedNarrativeMarker {
   preferredName?: string;
 }
 
+export interface ExcludedContentMarker extends ExcludedNarrativeMarker {
+  latitude?: number;
+  longitude?: number;
+  previewImageSrc?: string;
+}
+
 interface VisiblePlaceOptions {
   editorialPreview?: boolean;
 }
@@ -575,17 +581,45 @@ export async function loadVisiblePlaces(
 export async function loadExcludedNarrativeMarkers(
   root = process.cwd(),
 ): Promise<ExcludedNarrativeMarker[]> {
-  const visibleIds = new Set((await loadVisiblePlaces(root)).map((place) => place.id));
-  const narrativeFiles = await filesIn(
-    path.join(root, "content", "places"),
-    (file) => file.endsWith(`${path.sep}narratives${path.sep}sr.md`),
+  return (await loadExcludedContentMarkers(root)).map(({ placeId, slug, preferredName }) => ({
+    placeId,
+    ...(slug ? { slug } : {}),
+    ...(preferredName ? { preferredName } : {}),
+  }));
+}
+
+export async function loadExcludedContentMarkers(
+  root = process.cwd(),
+): Promise<ExcludedContentMarker[]> {
+  const [visiblePlaces, records, policy] = await Promise.all([
+    loadVisiblePlaces(root, { editorialPreview: false }),
+    loadRecords(root),
+    loadPolicy(root),
+  ]);
+  const visibleIds = new Set(visiblePlaces.map((place) => place.id));
+  const narrativeByPlace = new Map(
+    records.narratives.filter((narrative) => narrative.locale === "sr").map((narrative) => [narrative.place_id, narrative]),
   );
-  const narratives = await Promise.all(narrativeFiles.map(readNarrative));
-  return narratives
-    .filter((narrative) => !visibleIds.has(narrative.place_id))
-    .map((narrative) => ({
-      placeId: narrative.place_id,
-      ...(narrative.slug ? { slug: narrative.slug } : {}),
-      ...(narrative.preferred_name ? { preferredName: narrative.preferred_name } : {}),
-    }));
+
+  return Promise.all(records.places.filter((place) => !visibleIds.has(place.id)).map(async (place) => {
+    const narrative = narrativeByPlace.get(place.id);
+    const latitude = place.location?.coordinates?.latitude;
+    const longitude = place.location?.coordinates?.longitude;
+    const previewMedia = await previewMediaForPlace(
+      root,
+      place.id,
+      narrative?.preferred_name ?? place.id,
+      records.media,
+      "editorial-preview",
+      policy,
+    );
+    return {
+      placeId: place.id,
+      ...(narrative?.slug ? { slug: narrative.slug } : {}),
+      ...(narrative?.preferred_name ? { preferredName: narrative.preferred_name } : {}),
+      ...(typeof latitude === "number" && Number.isFinite(latitude) ? { latitude } : {}),
+      ...(typeof longitude === "number" && Number.isFinite(longitude) ? { longitude } : {}),
+      ...(previewMedia.previewImageSrc ? { previewImageSrc: previewMedia.previewImageSrc } : {}),
+    };
+  }));
 }

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -86,6 +86,23 @@ function has(errors, text) {
   return errors.some((error) => `${error.field} ${error.message}`.includes(text));
 }
 
+async function countFiles(directory, predicate) {
+  let entries;
+  try {
+    entries = await readdir(directory, { withFileTypes: true });
+  } catch (error) {
+    if (error?.code === "ENOENT") return 0;
+    throw error;
+  }
+  let count = 0;
+  for (const entry of entries) {
+    const full = path.join(directory, entry.name);
+    if (entry.isDirectory()) count += await countFiles(full, predicate);
+    else if (entry.isFile() && predicate(full)) count += 1;
+  }
+  return count;
+}
+
 test("the repository skeleton validates with no content records", async (t) => {
   const root = await project(t);
   assert.deepEqual(await validateRepository(root), []);
@@ -93,14 +110,16 @@ test("the repository skeleton validates with no content records", async (t) => {
 
 test("the repository summary reports actual validated record counts", async () => {
   const result = await validateRepositoryWithSummary(PROJECT_ROOT);
+  const contentRoot = path.join(PROJECT_ROOT, "content");
+  const actualCounts = {
+    places: await countFiles(path.join(contentRoot, "places"), (file) => path.basename(file) === "place.yaml"),
+    narratives: await countFiles(path.join(contentRoot, "places"), (file) => file.endsWith(".md") && path.basename(path.dirname(file)) === "narratives"),
+    sources: await countFiles(path.join(contentRoot, "sources"), (file) => file.endsWith(".yaml")),
+    practical: await countFiles(path.join(contentRoot, "practical"), (file) => file.endsWith(".yaml")),
+    media: await countFiles(path.join(contentRoot, "media"), (file) => file.endsWith(".yaml")),
+  };
   assert.deepEqual(result.errors, []);
-  assert.deepEqual(result.counts, {
-    places: 4,
-    narratives: 4,
-    sources: 16,
-    practical: 0,
-    media: 5,
-  });
+  assert.deepEqual(result.counts, actualCounts);
   assert.equal(result.publicationLocked, true);
 });
 

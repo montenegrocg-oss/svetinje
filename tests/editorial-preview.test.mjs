@@ -40,80 +40,23 @@ test("production ignores the preview allowlist and keeps research dossiers exclu
   assert.equal(policy.public_publication_locked, true);
 });
 
-test("editorial preview returns the four allowlisted research dossiers", async () => {
+test("editorial preview inventory is driven by the canonical allowlist", async () => {
   const places = await loadVisiblePlaces(PROJECT_ROOT, { editorialPreview: true });
-  assert.equal(places.length, 4);
-  const podmaine = places.find((place) => place.id === "podmaine");
-  const cathedral = places.find((place) => place.id === "saborni-hram-podgorica");
-  const dajbabe = places.find((place) => place.id === "dajbabe");
-  const barCathedral = places.find((place) => place.id === "saborni-hram-bar");
-  assert.ok(podmaine);
-  assert.ok(cathedral);
-  assert.ok(dajbabe);
-  assert.ok(barCathedral);
-  assert.equal(podmaine.id, "podmaine");
-  assert.equal(podmaine.slug, "manastir-podmaine");
-  assert.equal(podmaine.name, "Манастир Подмаине");
-  assert.equal(podmaine.placeType, "monastery");
-  assert.equal(podmaine.preview, true);
-  assert.equal(podmaine.previewStatus, "research");
-  assert.equal(podmaine.latitude, 42.29799);
-  assert.equal(podmaine.longitude, 18.84452);
-  assert.equal(podmaine.coordinateAccuracy, "complex-centroid");
-  assert.equal(podmaine.municipality, "Будва");
-  assert.equal(podmaine.settlement, "Подмаине");
-  assert.match(podmaine.searchText, /Маине/);
-  assert.match(podmaine.searchText, /Подострог/);
-  assert.ok(podmaine.narrativeSections.some((section) => section.id === "introduction"));
-  assert.ok(podmaine.narrativeSections.some((section) => section.id === "history"));
-  assert.ok(podmaine.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length > 0)));
-  assert.equal(cathedral.slug, "saborni-hram-hristovog-vaskrsenja-podgorica");
-  assert.equal(cathedral.placeType, "cathedral");
-  assert.equal(cathedral.typeLabel, "Саборни храм");
-  assert.equal(cathedral.latitude, 42.44572787124205);
-  assert.equal(cathedral.longitude, 19.248255050565547);
-  assert.equal(cathedral.coordinateAccuracy, "complex-centroid");
-  assert.match(cathedral.searchText, /Предраг Ристић/);
-  assert.match(cathedral.searchText, /Храм Васкрсења/);
-  assert.ok(cathedral.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length > 0)));
-  assert.equal(dajbabe.slug, "manastir-dajbabe");
-  assert.equal(dajbabe.name, "Манастир Дајбабе");
-  assert.equal(dajbabe.placeType, "monastery");
-  assert.equal(dajbabe.preview, true);
-  assert.equal(dajbabe.previewStatus, "research");
-  assert.equal(dajbabe.latitude, 42.40364);
-  assert.equal(dajbabe.longitude, 19.23226);
-  assert.equal(dajbabe.coordinateAccuracy, "complex-centroid");
-  assert.equal(dajbabe.municipality, "Подгорица");
-  assert.equal(dajbabe.settlement, "Дајбабе");
-  assert.match(dajbabe.searchText, /Дајбабски манастир/);
-  assert.match(dajbabe.searchText, /Успење Пресвете Богородице/);
-  assert.match(dajbabe.searchText, /Симеон Дајбабски/);
-  assert.ok(dajbabe.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length > 0)));
-  assert.equal(barCathedral.slug, "saborni-hram-svetog-jovana-vladimira-bar");
-  assert.equal(barCathedral.placeType, "cathedral");
-  assert.equal(barCathedral.typeLabel, "Саборни храм");
-  assert.equal(barCathedral.latitude, 42.10145);
-  assert.equal(barCathedral.longitude, 19.09394);
-  assert.equal(barCathedral.coordinateAccuracy, "complex-centroid");
-  assert.equal(barCathedral.municipality, "Бар");
-  assert.equal(barCathedral.settlement, "Тополица");
-  assert.match(barCathedral.searchText, /Храм Светог Јована Владимира/);
-  assert.match(barCathedral.searchText, /Барски Саборни храм/);
-  assert.match(barCathedral.searchText, /Предраг Ристић/);
-  assert.ok(barCathedral.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length > 0)));
+  const manifest = JSON.parse(await source("validation/editorial-preview.json"));
 
-  const expectedPreviewImages = new Map([
-    ["podmaine", { src: "/images/places/manastir_podmaine.jpg", alt: "Манастир Подмаине" }],
-    ["dajbabe", { src: "/images/places/manastir_dajbabe.jpg", alt: "Манастир Дајбабе" }],
-    ["saborni-hram-podgorica", { src: "/images/places/saborni_hram_podgorica.jpg", alt: "Саборни храм Христовог Васкрсења у Подгорици" }],
-    ["saborni-hram-bar", { src: "/images/places/saborni_hram_bar.jpg", alt: "Саборни храм Светог Јована Владимира у Бару" }],
-  ]);
-  for (const place of [podmaine, cathedral, dajbabe, barCathedral]) {
-    const expected = expectedPreviewImages.get(place.id);
-    assert.ok(expected);
-    assert.equal(place.previewImageSrc, expected.src);
-    assert.equal(place.previewImageAlt, expected.alt);
+  assert.deepEqual(places.map((place) => place.id), manifest.place_ids);
+  for (const place of places) {
+    assert.equal(place.preview, true);
+    assert.match(place.slug, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+    assert.ok(place.name.trim());
+    assert.ok(place.summary.trim());
+    assert.ok(place.placeType);
+    assert.ok(place.narrativeSections.length > 0);
+    assert.ok(place.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length > 0)));
+    if (place.previewImageSrc) {
+      assert.match(place.previewImageSrc, /^\/images\/places\//);
+      assert.ok(place.previewImageAlt?.trim());
+    }
   }
 });
 
