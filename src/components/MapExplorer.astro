@@ -45,6 +45,26 @@ const places = await loadVisiblePlaces();
   const filterButtons = [...document.querySelectorAll<HTMLButtonElement>("button[data-filter]")];
   const filterIds = new Set(["all", "monasteries", "churches", "holy-places", "routes"]);
   let activeFilter = "all";
+  const explorerRoot = document.querySelector<HTMLElement>("[data-testid='map-explorer']");
+  const explorerSidebar = document.querySelector<HTMLElement>("[data-testid='explorer-sidebar']");
+  const mapStage = explorerRoot?.querySelector<HTMLElement>(".map-stage");
+
+  const syncSidebarClearance = () => {
+    if (!explorerRoot || !explorerSidebar || !mapStage) return;
+    if (!window.matchMedia("(min-width: 48rem)").matches) {
+      explorerRoot.style.removeProperty("--explorer-sidebar-clearance");
+      return;
+    }
+
+    const sidebarBottom = explorerSidebar.getBoundingClientRect().bottom;
+    const mapBottom = mapStage.getBoundingClientRect().bottom;
+    const clearance = Math.max(0, Math.ceil(sidebarBottom + 24 - mapBottom));
+    explorerRoot.style.setProperty("--explorer-sidebar-clearance", `${clearance}px`);
+  };
+
+  const sidebarResizeObserver = explorerSidebar ? new ResizeObserver(syncSidebarClearance) : null;
+  if (explorerSidebar) sidebarResizeObserver?.observe(explorerSidebar);
+  window.addEventListener("resize", syncSidebarClearance);
 
   const singularLabels: Record<string, string> = {
     monasteries: "манастир",
@@ -171,8 +191,12 @@ const places = await loadVisiblePlaces();
 
   window.addEventListener("svetinje:place-selection-cleared", handleClearedSelection);
   applyExplorerState();
+  syncSidebarClearance();
 
   document.addEventListener("astro:before-swap", () => {
+    sidebarResizeObserver?.disconnect();
+    window.removeEventListener("resize", syncSidebarClearance);
+    explorerRoot?.style.removeProperty("--explorer-sidebar-clearance");
     window.removeEventListener("svetinje:place-select", handlePlaceSelection);
     window.removeEventListener("svetinje:place-selection-cleared", handleClearedSelection);
   }, { once: true });

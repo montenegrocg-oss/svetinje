@@ -550,6 +550,7 @@
 @layer explorer {
   .map-explorer {
     position: relative;
+    padding-bottom: var(--explorer-sidebar-clearance, 0px);
     background: var(--stone-100);
     isolation: isolate;
   }
@@ -1265,31 +1266,6 @@
   .project-intro__grid {
     display: grid;
     gap: 1.5rem;
-  }
-
-  .project-intro__media {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-panel);
-  }
-
-  .project-intro__media img {
-    width: 100%;
-    aspect-ratio: 16 / 10;
-    object-fit: cover;
-    object-position: 50% 48%;
-  }
-
-  .project-intro__media figcaption {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    padding: 0.55rem 0.75rem;
-    color: rgba(255, 255, 255, 0.9);
-    background: rgba(10, 41, 68, 0.76);
-    font-size: 0.68rem;
   }
 
   .project-intro__copy {
@@ -2009,12 +1985,12 @@
     }
 
     .project-intro__grid {
-      grid-template-columns: minmax(18rem, 0.8fr) minmax(0, 1.2fr);
+      grid-template-columns: minmax(0, 1.2fr) minmax(16rem, 0.8fr);
       align-items: center;
     }
 
     .trust-note {
-      grid-column: 1 / -1;
+      grid-column: auto;
     }
 
     .footer-grid {
@@ -2128,7 +2104,7 @@
     }
 
     .project-intro__grid {
-      grid-template-columns: minmax(20rem, 0.85fr) minmax(20rem, 1.05fr) minmax(16rem, 0.65fr);
+      grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
       gap: clamp(1.5rem, 3vw, 3rem);
     }
 

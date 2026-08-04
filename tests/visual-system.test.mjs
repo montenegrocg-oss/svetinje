@@ -148,14 +148,15 @@ test("the visual system includes required breakpoints, touch targets, and reduce
   assert.match(css, /@layer reset, tokens, base, components, explorer, homepage, pages, editorial-preview, responsive;/);
 });
 
-test("the authorized homepage photograph keeps reserved responsive dimensions", async () => {
+test("the homepage introduction has no main photograph or empty media column", async () => {
   const homepage = await source("src/pages/index.astro");
-  assert.match(homepage, /src="\/images\/home\/hero\.webp"/);
-  assert.match(homepage, /srcset="\/images\/home\/hero\.webp 2400w"/);
-  assert.match(homepage, /width="2400"/);
-  assert.match(homepage, /height="1425"/);
-  assert.match(homepage, /alt="Поглед из ваздуха на православни храм/);
-  assert.match(homepage, /loading="lazy"/);
+  const styles = await source("src/styles/global.css");
+  assert.doesNotMatch(homepage, /\/images\/home\/hero\.webp/);
+  assert.doesNotMatch(homepage, /project-intro__media/);
+  assert.match(homepage, /О водичу/);
+  assert.match(homepage, /Уређивачко повјерење/);
+  assert.doesNotMatch(styles, /\.project-intro__media/);
+  assert.match(styles, /grid-template-columns: minmax\(0, 1\.2fr\) minmax\(16rem, 0\.8fr\)/);
 });
 
 test("the homepage photograph matches its media record and size budget", async () => {
