@@ -98,9 +98,8 @@ test("unavailable locales remain visibly unavailable rather than becoming links"
 test("the homepage is composed from reusable map-explorer components", async () => {
   const homepage = await source("src/pages/index.astro");
   assert.match(homepage, /import MapExplorer/);
-  assert.match(homepage, /import PopularRoutes/);
   assert.match(homepage, /<MapExplorer \/>/);
-  assert.match(homepage, /<PopularRoutes \/>/);
+  assert.doesNotMatch(homepage, /PopularRoutes/);
   assert.doesNotMatch(homepage, /HomepagePreviews/);
 
   const [explorer, recommended, routes] = await Promise.all([
@@ -112,11 +111,20 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(explorer, /<MapControls \/>/);
   assert.match(explorer, /<ExplorerSidebar places=\{places\} \/>/);
   assert.match(explorer, /<RecommendedPlaces places=\{places\} \/>/);
+  assert.match(explorer, /import PopularRoutes from "\.\/PopularRoutes\.astro"/);
+  assert.match(explorer, /<PopularRoutes \/>/);
+  assert.ok(
+    explorer.indexOf("<RecommendedPlaces places={places} />") < explorer.indexOf("<PopularRoutes />"),
+    "recommendations must appear before popular routes inside MapExplorer",
+  );
   assert.match(explorer, /data-testid="map-explorer"/);
   assert.match(recommended, /Препоручене светиње/);
   assert.match(recommended, /data-testid="recommended-places"/);
+  assert.match(recommended, /const TOTAL_RECOMMENDATION_SLOTS = 10/);
   assert.match(recommended, /RECOMMENDED_PLACE_IDS = \["saborni-hram-podgorica", "dajbabe"\]/);
   assert.match(recommended, /places\.find\(\(candidate\) => candidate\.id === id\)/);
+  assert.match(recommended, /TOTAL_RECOMMENDATION_SLOTS - recommendations\.length/);
+  assert.match(recommended, /String\(number\)\.padStart\(2, "0"\)/);
   assert.match(recommended, /href=\{`\/svetinje\/\$\{place\.slug\}\/`\}/);
   assert.match(recommended, /data-testid="recommended-place-card"/);
   assert.match(recommended, /data-testid="recommended-placeholder"/);
@@ -132,7 +140,9 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.doesNotMatch(recommended, /podmaine|hero\.webp|https?:\/\//i);
   assert.doesNotMatch(recommended, /saborni-hram-bar|Саборни храм Светог Јована Владимира/);
   assert.match(routes, /Популарне руте/);
-  assert.match(routes, /class="popular-routes"/);
+  assert.match(routes, /class="popular-routes map-explorer__routes"/);
+  assert.match(routes, /class="popular-routes__inner"/);
+  assert.doesNotMatch(routes, /class="shell popular-routes__inner"/);
 });
 
 test("catalogue pages share the established category mapping instead of duplicating it", async () => {

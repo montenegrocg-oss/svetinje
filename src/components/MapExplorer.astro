@@ -2,6 +2,7 @@
 import ExplorerSidebar from "./ExplorerSidebar.astro";
 import MapCanvas from "./MapCanvas.astro";
 import MapControls from "./MapControls.astro";
+import PopularRoutes from "./PopularRoutes.astro";
 import RecommendedPlaces from "./RecommendedPlaces.astro";
 import { loadVisiblePlaces } from "../lib/content/publication";
 
@@ -23,6 +24,7 @@ const places = await loadVisiblePlaces();
 
   <ExplorerSidebar places={places} />
   <RecommendedPlaces places={places} />
+  <PopularRoutes />
 </section>
 
 <script>

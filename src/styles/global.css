@@ -1067,6 +1067,7 @@
   }
 
   .popular-routes__inner {
+    width: 100%;
     padding-block: 1.1rem 1.25rem;
   }
 
@@ -1160,18 +1161,17 @@
   }
 
   .place-previews {
-    display: flex;
-    gap: 0.75rem;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(9rem, 1fr));
+    gap: 0.9rem 0.75rem;
     padding-bottom: 0.2rem;
     overflow-x: auto;
     scrollbar-width: none;
-    scroll-snap-type: x proximity;
   }
 
   .place-preview {
-    min-width: 9rem;
-    flex: 1 0 9rem;
-    scroll-snap-align: start;
+    min-width: 0;
+    flex: none;
   }
 
   .place-preview__media {
@@ -1342,11 +1342,20 @@
     text-underline-offset: 0.2em;
   }
 
-  .map-explorer__recommended {
+  .map-explorer__recommended,
+  .map-explorer__routes {
     min-width: 0;
-    padding: 1.25rem 1rem;
     border-bottom: 1px solid var(--line);
     background: var(--paper);
+  }
+
+  .map-explorer__recommended {
+    padding: 1.25rem 1rem;
+  }
+
+  .map-explorer__routes {
+    margin-top: 1rem;
+    padding-inline: 1rem;
   }
 
   .project-intro {
@@ -2326,9 +2335,13 @@
       min-height: 4.2rem;
     }
 
-    .map-explorer__recommended {
+    .map-explorer__recommended,
+    .map-explorer__routes {
       margin-right: var(--explorer-panel-left);
       margin-left: calc(var(--explorer-panel-left) + var(--explorer-panel-width) + 1.5rem);
+    }
+
+    .map-explorer__recommended {
       min-height: var(--explorer-sidebar-clearance, 0px);
       padding-block: 1.5rem;
       border-bottom: 0;
@@ -2448,11 +2461,6 @@
 
     .popular-routes__inner {
       padding-block: 1.15rem 1.35rem;
-    }
-
-    .place-preview {
-      min-width: 0;
-      flex-basis: 0;
     }
 
     .project-intro__grid {

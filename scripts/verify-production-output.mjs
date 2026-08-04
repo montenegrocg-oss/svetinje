@@ -63,8 +63,17 @@ if (editorialPreview) {
   if ((homepage?.html.match(/data-recommended-place=/g) ?? []).length !== 2) {
     failures.push("homepage preview must contain exactly two recommended place cards");
   }
-  if ((homepage?.html.match(/data-testid="recommended-placeholder"/g) ?? []).length !== 3) {
-    failures.push("homepage preview must retain exactly three neutral recommendation placeholders");
+  if ((homepage?.html.match(/data-testid="recommended-placeholder"/g) ?? []).length !== 8) {
+    failures.push("homepage preview must retain exactly eight neutral recommendation placeholders");
+  }
+  if ((homepage?.html.match(/data-recommended-place=|data-testid="recommended-placeholder"/g) ?? []).length !== 10) {
+    failures.push("homepage preview recommendations must contain exactly ten total slots");
+  }
+  for (const slot of ["03", "04", "05", "06", "07", "08", "09", "10"]) {
+    if (!homepage?.html.includes(`<b>${slot}</b>`)) failures.push(`homepage preview is missing recommendation slot ${slot}`);
+  }
+  if (homepage?.html.includes("<b>010</b>")) {
+    failures.push("homepage preview must never format recommendation slot 10 as 010");
   }
   if (
     !homepage?.html.includes('data-recommended-place="saborni-hram-podgorica"') ||
@@ -171,8 +180,11 @@ if (editorialPreview) {
     failures.push("production generated an editorial-preview route");
   }
   const homepage = pages.find((page) => page.relative === "index.html");
-  if ((homepage?.html.match(/data-recommended-place=/g) ?? []).length !== 0 || (homepage?.html.match(/data-testid="recommended-placeholder"/g) ?? []).length !== 5) {
-    failures.push("production recommendations must retain five neutral placeholders and no research records");
+  if ((homepage?.html.match(/data-recommended-place=/g) ?? []).length !== 0 || (homepage?.html.match(/data-testid="recommended-placeholder"/g) ?? []).length !== 10) {
+    failures.push("production recommendations must retain ten neutral placeholders and no research records");
+  }
+  if ((homepage?.html.match(/data-recommended-place=|data-testid="recommended-placeholder"/g) ?? []).length !== 10 || !homepage?.html.includes("<b>10</b>") || homepage.html.includes("<b>010</b>")) {
+    failures.push("production recommendations must contain ten correctly numbered neutral slots");
   }
   for (const image of [
     "/images/places/manastir_podmaine.jpg",
