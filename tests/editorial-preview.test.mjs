@@ -40,15 +40,17 @@ test("production ignores the preview allowlist and keeps research dossiers exclu
   assert.equal(policy.public_publication_locked, true);
 });
 
-test("editorial preview returns the three allowlisted research dossiers", async () => {
+test("editorial preview returns the four allowlisted research dossiers", async () => {
   const places = await loadVisiblePlaces(PROJECT_ROOT, { editorialPreview: true });
-  assert.equal(places.length, 3);
+  assert.equal(places.length, 4);
   const podmaine = places.find((place) => place.id === "podmaine");
   const cathedral = places.find((place) => place.id === "saborni-hram-podgorica");
   const dajbabe = places.find((place) => place.id === "dajbabe");
+  const barCathedral = places.find((place) => place.id === "saborni-hram-bar");
   assert.ok(podmaine);
   assert.ok(cathedral);
   assert.ok(dajbabe);
+  assert.ok(barCathedral);
   assert.equal(podmaine.id, "podmaine");
   assert.equal(podmaine.slug, "manastir-podmaine");
   assert.equal(podmaine.name, "Манастир Подмаине");
@@ -88,6 +90,18 @@ test("editorial preview returns the three allowlisted research dossiers", async 
   assert.match(dajbabe.searchText, /Успење Пресвете Богородице/);
   assert.match(dajbabe.searchText, /Симеон Дајбабски/);
   assert.ok(dajbabe.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length > 0)));
+  assert.equal(barCathedral.slug, "saborni-hram-svetog-jovana-vladimira-bar");
+  assert.equal(barCathedral.placeType, "cathedral");
+  assert.equal(barCathedral.typeLabel, "Саборни храм");
+  assert.equal(barCathedral.latitude, 42.10145);
+  assert.equal(barCathedral.longitude, 19.09394);
+  assert.equal(barCathedral.coordinateAccuracy, "complex-centroid");
+  assert.equal(barCathedral.municipality, "Бар");
+  assert.equal(barCathedral.settlement, "Тополица");
+  assert.match(barCathedral.searchText, /Храм Светог Јована Владимира/);
+  assert.match(barCathedral.searchText, /Барски Саборни храм/);
+  assert.match(barCathedral.searchText, /Предраг Ристић/);
+  assert.ok(barCathedral.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length > 0)));
 });
 
 test("preview allowlist rejects duplicates and unknown place IDs", async (t) => {
@@ -153,6 +167,31 @@ test("Dajbabe remains research-only, sourced, and public-safe", async () => {
   assert.match(narrative, /## Канонизација и празник \{#canonization\}/);
   assert.match(narrative, /## Положај манастира \{#location\}/);
   assert.doesNotMatch(narrative, /радно вријеме|телефон|електронск[а-я]+ пошта|паркинг/i);
+});
+
+test("Bar cathedral remains research-only, sourced, and public-safe", async () => {
+  const [placeText, narrative, sourceText] = await Promise.all([
+    source("content/places/saborni-hram-bar/place.yaml"),
+    source("content/places/saborni-hram-bar/narratives/sr.md"),
+    source("content/sources/hrambar-o-hramu.yaml"),
+  ]);
+  const place = parse(placeText);
+  const sourceRecord = parse(sourceText);
+
+  assert.equal(place.id, "saborni-hram-bar");
+  assert.equal(place.editorial_status, "research");
+  assert.equal(place.place_type.value, "cathedral");
+  assert.deepEqual(place.approvals, []);
+  assert.equal(place.location.coordinates.latitude, 42.10145);
+  assert.equal(place.location.coordinates.longitude, 19.09394);
+  assert.equal(place.location.coordinates.accuracy, "complex-centroid");
+  assert.equal(place.location.coordinates.publication_safety, "public");
+  assert.match(place.location.coordinates.verification.qualification, /радни центар храмовног комплекса/);
+  assert.equal(sourceRecord.source_type, "official-church");
+  assert.match(narrative, /slug: saborni-hram-svetog-jovana-vladimira-bar/);
+  assert.match(narrative, /## Пут до изградње храма \{#history\}/);
+  assert.match(narrative, /несагласност извора око 2002\. и 2006\. године/);
+  assert.match(narrative, /Координате на мапи означавају радни центар храмовног комплекса/);
 });
 
 test("preview UI is allowlist-driven, noindex, and free of prohibited data", async () => {

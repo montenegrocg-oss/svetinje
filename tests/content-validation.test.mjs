@@ -95,9 +95,9 @@ test("the repository summary reports actual validated record counts", async () =
   const result = await validateRepositoryWithSummary(PROJECT_ROOT);
   assert.deepEqual(result.errors, []);
   assert.deepEqual(result.counts, {
-    places: 3,
-    narratives: 3,
-    sources: 9,
+    places: 4,
+    narratives: 4,
+    sources: 16,
     practical: 0,
     media: 1,
   });
