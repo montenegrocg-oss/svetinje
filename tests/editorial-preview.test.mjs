@@ -31,7 +31,7 @@ async function previewProject(t) {
   return root;
 }
 
-test("production ignores the preview allowlist and keeps Podmaine excluded", async (t) => {
+test("production ignores the preview allowlist and keeps research dossiers excluded", async (t) => {
   const root = await previewProject(t);
   await writeFile(path.join(root, "validation", "editorial-preview.json"), "not valid JSON", "utf8");
   assert.deepEqual(await loadVisiblePlaces(root, { editorialPreview: false }), []);
@@ -40,13 +40,15 @@ test("production ignores the preview allowlist and keeps Podmaine excluded", asy
   assert.equal(policy.public_publication_locked, true);
 });
 
-test("editorial preview returns the two allowlisted research dossiers", async () => {
+test("editorial preview returns the three allowlisted research dossiers", async () => {
   const places = await loadVisiblePlaces(PROJECT_ROOT, { editorialPreview: true });
-  assert.equal(places.length, 2);
+  assert.equal(places.length, 3);
   const podmaine = places.find((place) => place.id === "podmaine");
   const cathedral = places.find((place) => place.id === "saborni-hram-podgorica");
+  const dajbabe = places.find((place) => place.id === "dajbabe");
   assert.ok(podmaine);
   assert.ok(cathedral);
+  assert.ok(dajbabe);
   assert.equal(podmaine.id, "podmaine");
   assert.equal(podmaine.slug, "manastir-podmaine");
   assert.equal(podmaine.name, "Манастир Подмаине");
@@ -72,6 +74,20 @@ test("editorial preview returns the two allowlisted research dossiers", async ()
   assert.match(cathedral.searchText, /Предраг Ристић/);
   assert.match(cathedral.searchText, /Храм Васкрсења/);
   assert.ok(cathedral.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length > 0)));
+  assert.equal(dajbabe.slug, "manastir-dajbabe");
+  assert.equal(dajbabe.name, "Манастир Дајбабе");
+  assert.equal(dajbabe.placeType, "monastery");
+  assert.equal(dajbabe.preview, true);
+  assert.equal(dajbabe.previewStatus, "research");
+  assert.equal(dajbabe.latitude, 42.40364);
+  assert.equal(dajbabe.longitude, 19.23226);
+  assert.equal(dajbabe.coordinateAccuracy, "complex-centroid");
+  assert.equal(dajbabe.municipality, "Подгорица");
+  assert.equal(dajbabe.settlement, "Дајбабе");
+  assert.match(dajbabe.searchText, /Дајбабски манастир/);
+  assert.match(dajbabe.searchText, /Успење Пресвете Богородице/);
+  assert.match(dajbabe.searchText, /Симеон Дајбабски/);
+  assert.ok(dajbabe.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length > 0)));
 });
 
 test("preview allowlist rejects duplicates and unknown place IDs", async (t) => {
@@ -110,6 +126,33 @@ test("Podmaine content remains research-only, sourced, and public-safe", async (
   assert.equal(osm.source_type, "other-approved");
   assert.match(narrative, /summary: Манастир Подмаине је православни манастир/);
   assert.equal(policy.public_publication_locked, true);
+});
+
+test("Dajbabe remains research-only, sourced, and public-safe", async () => {
+  const [placeText, narrative, osmText] = await Promise.all([
+    source("content/places/dajbabe/place.yaml"),
+    source("content/places/dajbabe/narratives/sr.md"),
+    source("content/sources/openstreetmap-dajbabe-way-1351594167.yaml"),
+  ]);
+  const place = parse(placeText);
+  const osm = parse(osmText);
+
+  assert.equal(place.id, "dajbabe");
+  assert.equal(place.editorial_status, "research");
+  assert.equal(place.place_type.value, "monastery");
+  assert.deepEqual(place.approvals, []);
+  assert.equal(place.location.coordinates.latitude, 42.40364);
+  assert.equal(place.location.coordinates.longitude, 19.23226);
+  assert.equal(place.location.coordinates.accuracy, "complex-centroid");
+  assert.equal(place.location.coordinates.publication_safety, "public");
+  assert.match(place.location.coordinates.verification.qualification, /радни центар манастирског комплекса/);
+  assert.equal(osm.url, "https://www.openstreetmap.org/way/1351594167");
+  assert.equal(osm.source_type, "other-approved");
+  assert.match(narrative, /summary: Пећински манастир Успења Пресвете Богородице/);
+  assert.match(narrative, /## Чудесно откриће светиње \{#discovery\}/);
+  assert.match(narrative, /## Канонизација и празник \{#canonization\}/);
+  assert.match(narrative, /## Положај манастира \{#location\}/);
+  assert.doesNotMatch(narrative, /радно вријеме|телефон|електронск[а-я]+ пошта|паркинг/i);
 });
 
 test("preview UI is allowlist-driven, noindex, and free of prohibited data", async () => {

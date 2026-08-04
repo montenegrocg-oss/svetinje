@@ -14,11 +14,13 @@ test("research dossiers are excluded from production page data", async () => {
   const places = await loadPublishablePlaces(PROJECT_ROOT);
   assert.equal(places.some((place) => place.id === "podmaine"), false);
   assert.equal(places.some((place) => place.id === "saborni-hram-podgorica"), false);
+  assert.equal(places.some((place) => place.id === "dajbabe"), false);
   assert.deepEqual(places, []);
 
   const excluded = await loadExcludedNarrativeMarkers(PROJECT_ROOT);
   assert.ok(excluded.some((marker) => marker.placeId === "podmaine"));
   assert.ok(excluded.some((marker) => marker.placeId === "saborni-hram-podgorica"));
+  assert.ok(excluded.some((marker) => marker.placeId === "dajbabe"));
 });
 
 test("research status excludes Podmaine independently of the repository publication lock", async () => {

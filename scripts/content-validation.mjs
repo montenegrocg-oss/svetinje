@@ -28,6 +28,14 @@ const ALLOWED_SECTION_KEYS = new Set([
   "verification-notes",
   "practical-context",
   "accessibility-context",
+  "discovery",
+  "foundation",
+  "saint-simeon",
+  "relics",
+  "canonization",
+  "feasts",
+  "spiritual-life",
+  "location",
 ]);
 
 const ENTITY_PATHS = [
