@@ -55,6 +55,21 @@ if (editorialPreview) {
   if ((homepage?.html.match(/data-place-card=/g) ?? []).length !== 3) {
     failures.push("homepage preview must contain exactly three place cards");
   }
+  if ((homepage?.html.match(/data-recommended-place=/g) ?? []).length !== 2) {
+    failures.push("homepage preview must contain exactly two recommended place cards");
+  }
+  if ((homepage?.html.match(/data-testid="recommended-placeholder"/g) ?? []).length !== 3) {
+    failures.push("homepage preview must retain exactly three neutral recommendation placeholders");
+  }
+  if (
+    !homepage?.html.includes('data-recommended-place="saborni-hram-podgorica"') ||
+    !homepage.html.includes('href="/svetinje/saborni-hram-hristovog-vaskrsenja-podgorica/"') ||
+    !homepage.html.includes('data-recommended-place="dajbabe"') ||
+    !homepage.html.includes('href="/svetinje/manastir-dajbabe/"') ||
+    homepage.html.includes('data-recommended-place="podmaine"')
+  ) {
+    failures.push("homepage recommendations must contain the cathedral and Dajbabe, never Podmaine");
+  }
   if ((homepage?.html.match(/"category":"monasteries"/g) ?? []).length !== 2 || (homepage?.html.match(/data-place-category="monasteries"/g) ?? []).length !== 2 || (homepage?.html.match(/"category":"churches"/g) ?? []).length !== 1 || (homepage?.html.match(/data-place-category="churches"/g) ?? []).length !== 1) {
     failures.push("homepage preview must provide the shared monastery and church categories to markers and cards");
   }
@@ -118,6 +133,10 @@ if (editorialPreview) {
   }
   if (pages.some((page) => ["svetinje/manastir-podmaine/index.html", "svetinje/saborni-hram-hristovog-vaskrsenja-podgorica/index.html", "svetinje/manastir-dajbabe/index.html"].includes(page.relative))) {
     failures.push("production generated an editorial-preview route");
+  }
+  const homepage = pages.find((page) => page.relative === "index.html");
+  if ((homepage?.html.match(/data-recommended-place=/g) ?? []).length !== 0 || (homepage?.html.match(/data-testid="recommended-placeholder"/g) ?? []).length !== 5) {
+    failures.push("production recommendations must retain five neutral placeholders and no research records");
   }
   const monasteries = pages.find((page) => page.relative === "manastiri/index.html");
   const churches = pages.find((page) => page.relative === "crkve/index.html");

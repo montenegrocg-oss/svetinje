@@ -1,4 +1,17 @@
 ---
+import type { VisiblePlace } from "../lib/content/publication";
+
+interface Props {
+  places: VisiblePlace[];
+}
+
+const { places } = Astro.props;
+const RECOMMENDED_PLACE_IDS = ["saborni-hram-podgorica", "dajbabe"] as const;
+const recommendations = RECOMMENDED_PLACE_IDS.flatMap((id) => {
+  const place = places.find((candidate) => candidate.id === id);
+  return place ? [place] : [];
+});
+const placeholderCount = 5 - recommendations.length;
 ---
 
 <section class="recommended-shelf map-explorer__recommended" aria-labelledby="recommended-title" data-testid="recommended-places">
@@ -6,11 +19,34 @@
     <h2 id="recommended-title">Препоручене светиње</h2>
     <a href="/svetinje/">Прикажи све</a>
   </header>
-  <div class="place-previews" role="list" aria-label="Будући провјерени записи">
-    {Array.from({ length: 5 }).map((_, index) => (
-      <article class="place-preview" role="listitem">
+  <div class="place-previews" role="list" aria-label="Препоручени и будући провјерени записи">
+    {recommendations.map((place) => {
+      const location = [place.municipality, place.settlement].filter(Boolean).join(" · ");
+
+      return (
+        <article class="place-preview place-preview--record" role="listitem" data-testid="recommended-place-card" data-recommended-place={place.id}>
+          <a class="place-preview__record-link" href={`/svetinje/${place.slug}/`}>
+            <div class="place-preview__media" aria-hidden="true">
+              <span></span><i></i>
+            </div>
+            <div class="place-preview__record-body">
+              <div class="place-preview__record-meta">
+                <p>{place.typeLabel}</p>
+                <span>Радни приказ</span>
+              </div>
+              <h3>{place.name}</h3>
+              {location && <small>{location}</small>}
+            </div>
+            <span class="place-preview__record-action">Отвори страницу <span aria-hidden="true">→</span></span>
+          </a>
+        </article>
+      );
+    })}
+
+    {Array.from({ length: placeholderCount }).map((_, index) => (
+      <article class="place-preview place-preview--placeholder" role="listitem" data-testid="recommended-placeholder">
         <div class="place-preview__media" aria-hidden="true">
-          <span></span><i></i><b>0{index + 1}</b>
+          <span></span><i></i><b>0{recommendations.length + index + 1}</b>
         </div>
         <p>Провјерени запис у припреми</p>
         <small>Фотографија након провјере права</small>

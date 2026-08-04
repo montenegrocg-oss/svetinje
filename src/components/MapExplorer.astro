@@ -22,7 +22,7 @@ const places = await loadVisiblePlaces();
   </div>
 
   <ExplorerSidebar places={places} />
-  <RecommendedPlaces />
+  <RecommendedPlaces places={places} />
 </section>
 
 <script>
