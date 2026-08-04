@@ -67,6 +67,10 @@ test("desktop and mobile navigation expose the required Serbian guide sections",
   assert.match(header, /aria-label="Отвори главни мени"/);
   assert.match(header, /Омиљене светиње — 0/);
   assert.match(header, /aria-label="Претрага светиња"/);
+  assert.match(header, /\{ href: "\/manastiri\/", label: "Манастири" \}/);
+  assert.match(header, /\{ href: "\/crkve\/", label: "Цркве" \}/);
+  assert.doesNotMatch(header, /\{ href: "\/svetinje\/", label: "Манастири" \}/);
+  assert.doesNotMatch(header, /\{ href: "\/svetinje\/", label: "Цркве" \}/);
 });
 
 test("unavailable locales remain visibly unavailable rather than becoming links", async () => {
@@ -98,6 +102,27 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(recommended, /data-testid="recommended-places"/);
   assert.match(routes, /Популарне руте/);
   assert.match(routes, /class="popular-routes"/);
+});
+
+test("catalogue pages share the established category mapping instead of duplicating it", async () => {
+  const [catalogue, monasteries, churches, general, filters] = await Promise.all([
+    source("src/components/CategoryCatalogue.astro"),
+    source("src/pages/manastiri/index.astro"),
+    source("src/pages/crkve/index.astro"),
+    source("src/pages/svetinje/index.astro"),
+    source("src/lib/place-filters.ts"),
+  ]);
+
+  assert.match(catalogue, /categoryForPlaceType\(place\.placeType\) === category/);
+  assert.match(catalogue, /loadVisiblePlaces/);
+  assert.match(catalogue, /<PlaceCard place=\{place\} variant="catalogue" \/>/);
+  assert.match(monasteries, /category="monasteries"/);
+  assert.match(churches, /category="churches"/);
+  assert.doesNotMatch(general, /category=/);
+  assert.match(filters, /skete: "monasteries"/);
+  assert.match(filters, /hermitage: "monasteries"/);
+  assert.match(filters, /chapel: "churches"/);
+  assert.match(filters, /cathedral: "churches"/);
 });
 
 test("map controls, search, and filters expose accessible states and honest feedback", async () => {

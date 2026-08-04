@@ -28,9 +28,11 @@ const failures = [];
 if (editorialPreview) {
   const homepage = pages.find((page) => page.relative === "index.html");
   const catalogue = pages.find((page) => page.relative === "svetinje/index.html");
+  const monasteries = pages.find((page) => page.relative === "manastiri/index.html");
+  const churches = pages.find((page) => page.relative === "crkve/index.html");
   const podmaine = pages.find((page) => page.relative === "svetinje/manastir-podmaine/index.html");
   const cathedral = pages.find((page) => page.relative === "svetinje/saborni-hram-hristovog-vaskrsenja-podgorica/index.html");
-  if (!homepage || !catalogue || !podmaine || !cathedral) failures.push("editorial preview must generate the homepage, catalogue, and both allowlisted detail pages");
+  if (!homepage || !catalogue || !monasteries || !churches || !podmaine || !cathedral) failures.push("editorial preview must generate the homepage, catalogue, category pages, and both allowlisted detail pages");
   for (const page of pages) {
     if (!page.html.includes('<meta name="robots" content="noindex,nofollow,noarchive">')) {
       failures.push(`${page.relative} is missing editorial-preview noindex metadata`);
@@ -55,6 +57,18 @@ if (editorialPreview) {
     !catalogue.html.includes("Саборни храм Христовог Васкрсења")
   ) {
     failures.push("both preview cards are required on the homepage and catalogue");
+  }
+  if (!monasteries?.html.includes("Манастир Подмаине") || monasteries.html.includes("Саборни храм Христовог Васкрсења")) {
+    failures.push("the monasteries catalogue must contain Podmaine only");
+  }
+  if (!churches?.html.includes("Саборни храм Христовог Васкрсења") || churches.html.includes("Манастир Подмаине")) {
+    failures.push("the churches catalogue must contain the cathedral only");
+  }
+  if (!monasteries?.html.includes('href="/manastiri/" aria-current="page"') || monasteries.html.includes('href="/crkve/" aria-current="page"')) {
+    failures.push("the monasteries page must activate only its navigation link");
+  }
+  if (!churches?.html.includes('href="/crkve/" aria-current="page"') || churches.html.includes('href="/manastiri/" aria-current="page"')) {
+    failures.push("the churches page must activate only its navigation link");
   }
   if (!podmaine?.html.includes("Радни приказ") || !podmaine.html.includes("Ауторска фотографија биће додата")) {
     failures.push("Podmaine detail page is missing its preview or honest media notice");
@@ -81,6 +95,14 @@ if (editorialPreview) {
   }
   if (pages.some((page) => ["svetinje/manastir-podmaine/index.html", "svetinje/saborni-hram-hristovog-vaskrsenja-podgorica/index.html"].includes(page.relative))) {
     failures.push("production generated an editorial-preview route");
+  }
+  const monasteries = pages.find((page) => page.relative === "manastiri/index.html");
+  const churches = pages.find((page) => page.relative === "crkve/index.html");
+  if (!monasteries?.html.includes("Још нема манастира спремних за јавно објављивање.")) {
+    failures.push("production monasteries page is missing its protected empty state");
+  }
+  if (!churches?.html.includes("Још нема храмова спремних за јавно објављивање.")) {
+    failures.push("production churches page is missing its protected empty state");
   }
 }
 

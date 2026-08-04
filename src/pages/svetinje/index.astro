@@ -1,10 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import PlaceCard from "../../components/PlaceCard.astro";
-import { isEditorialPreviewBuild, loadVisiblePlaces } from "../../lib/content/publication";
-
-const places = await loadVisiblePlaces();
-const editorialPreview = isEditorialPreviewBuild();
+import CategoryCatalogue from "../../components/CategoryCatalogue.astro";
 ---
 
 <BaseLayout
@@ -12,35 +8,10 @@ const editorialPreview = isEditorialPreviewBuild();
   description="Каталог провјерених православних светиња Црне Горе."
   canonicalPath="/svetinje/"
 >
-  <header class="page-hero compact">
-    <div class="shell narrow">
-      <p class="eyebrow">Каталог</p>
-      <h1>Светиње</h1>
-      {editorialPreview ? (
-        <p>Приказују се записи које власник пројекта тренутно прегледа.</p>
-      ) : (
-        <p>Овдје ће бити приказани само записи који су прошли све обавезне стручне, црквене, језичке и издавачке провјере.</p>
-      )}
-    </div>
-  </header>
-
-  <section class="section catalogue-section">
-    <div class="shell">
-      {places.length === 0 ? (
-        <div class="empty-state" role="status">
-          <span class="empty-ornament" aria-hidden="true"></span>
-          <p class="eyebrow">Каталог је у припреми</p>
-          <h2>Још нема садржаја спремног за јавно објављивање.</h2>
-          <p>Истраживачки и радни записи намјерно нису видљиви на овој страници.</p>
-          <a class="text-link" href="/izvori/">Прочитај уређивачку политику <span aria-hidden="true">→</span></a>
-        </div>
-      ) : (
-        <ul class="catalogue-grid editorial-catalogue" aria-label="Светиње у радном приказу">
-          {places.map((place) => (
-            <li><PlaceCard place={place} variant="catalogue" /></li>
-          ))}
-        </ul>
-      )}
-    </div>
-  </section>
+  <CategoryCatalogue
+    heading="Светиње"
+    description="Овдје ће бити приказани само записи који су прошли све обавезне стручне, црквене, језичке и издавачке провјере."
+    previewDescription="Приказују се записи које власник пројекта тренутно прегледа."
+    emptyHeading="Још нема садржаја спремног за јавно објављивање."
+  />
 </BaseLayout>
