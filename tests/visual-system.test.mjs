@@ -161,6 +161,16 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(continuation, /data-continuation-slot=\{formatSlot\(slot\)\}/);
 });
 
+test("the map loading surface is neutral and cannot reveal the decorative fallback", async () => {
+  const styles = await source("src/styles/global.css");
+
+  assert.match(styles, /\.map-loading-surface\s*\{[\s\S]*?position: absolute;[\s\S]*?inset: 0;[\s\S]*?background:/);
+  assert.match(styles, /\.map-canvas\[data-map-state="loading"\] \.map-fallback,[\s\S]*?\.map-canvas\[data-map-state="ready"\] \.map-fallback/);
+  assert.match(styles, /\.map-canvas\[data-map-state="ready"\] \.map-loading-surface/);
+  assert.match(styles, /\.map-canvas\[data-map-state="fallback"\] \.map-renderer,[\s\S]*?\.map-canvas\[data-map-state="fallback"\] \.map-loading-surface/);
+  assert.doesNotMatch(styles, /map-loading-surface[\s\S]{0,180}animation:/);
+});
+
 test("catalogue pages share the established category mapping instead of duplicating it", async () => {
   const [catalogue, monasteries, churches, holyPlaces, general, filters] = await Promise.all([
     source("src/components/CategoryCatalogue.astro"),

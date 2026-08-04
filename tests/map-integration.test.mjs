@@ -41,15 +41,19 @@ test("MapTiler configuration uses only the approved public environment variable"
   assert.doesNotMatch(mapCanvas, /style\.json\?key=[A-Za-z0-9_-]{8,}/);
 });
 
-test("the homepage keeps a safe no-key fallback", async () => {
+test("the homepage renders a safe no-key fallback and a key-backed loading state", async () => {
   const mapCanvas = await source("src/components/MapCanvas.astro");
 
-  assert.match(mapCanvas, /class="map-fallback"[\s\S]*?aria-hidden="false"/);
-  assert.match(mapCanvas, /class="map-renderer"[\s\S]*?hidden[\s\S]*?aria-hidden="true"/);
+  assert.match(mapCanvas, /const hasMapTilerKey = Boolean\(import\.meta\.env\.PUBLIC_MAPTILER_KEY\?\.trim\(\)\);/);
+  assert.match(mapCanvas, /data-map-state=\{hasMapTilerKey \? "loading" : "fallback"\}/);
+  assert.match(mapCanvas, /class="map-fallback"[\s\S]*?hidden=\{hasMapTilerKey\}[\s\S]*?aria-hidden=\{hasMapTilerKey \? "true" : "false"\}/);
+  assert.match(mapCanvas, /class="map-renderer"[\s\S]*?hidden=\{!hasMapTilerKey\}[\s\S]*?aria-hidden=\{hasMapTilerKey \? "false" : "true"\}/);
+  assert.match(mapCanvas, /class="map-loading-surface"[\s\S]*?data-map-loading-status[\s\S]*?Учитавање карте/);
+  assert.match(mapCanvas, /data-map-fallback-notice[\s\S]*?hidden=\{hasMapTilerKey\}/);
   assert.match(mapCanvas, /if \(!MAPTILER_KEY \|\| !mapContainer \|\| !renderer\)/);
   assert.match(mapCanvas, /const showFallback = \(\) => \{/);
+  assert.match(mapCanvas, /root\.dataset\.mapState = "fallback"/);
   assert.match(mapCanvas, /if \(fallbackNotice\) fallbackNotice\.hidden = false/);
-  assert.doesNotMatch(mapCanvas, /mapTilerAvailable/);
 });
 
 test("the map structure contains an interactive container and explicit attribution", async () => {
@@ -77,7 +81,7 @@ test("custom controls use the requested responsive Montenegro view without geolo
   assert.match(mapCanvas, /return \{ top: 62, right: 14, bottom: 26, left: 14 \};/);
   assert.match(mapCanvas, /center: \[19\.25, 42\.7\]/);
   assert.match(mapCanvas, /zoom: 6/);
-  assert.match(mapCanvas, /map\.once\("load", \(\) => \{[\s\S]*?fitMontenegro\(false\)/);
+  assert.match(mapCanvas, /const showReadyMap = \(\) => \{[\s\S]*?fitMontenegro\(false\)/);
   assert.match(mapCanvas, /const resetView = \(\) => \{[\s\S]*?fitMontenegro\(true\);/);
   assert.match(mapCanvas, /map\.zoomIn/);
   assert.match(mapCanvas, /map\.zoomOut/);
@@ -89,18 +93,19 @@ test("custom controls use the requested responsive Montenegro view without geolo
   assert.doesNotMatch(mapCanvas, /navigator\.geolocation|GeolocateControl|flyTo\s*\(/);
 });
 
-test("the renderer is exposed immediately after successful map construction", async () => {
+test("the renderer becomes ready only after MapLibre loads and has a bounded fallback", async () => {
   const mapCanvas = await source("src/components/MapCanvas.astro");
   const constructionIndex = mapCanvas.indexOf("map = new maplibregl.Map");
-  const exposeIndex = mapCanvas.indexOf("showInteractiveMap();");
   const loadIndex = mapCanvas.indexOf('map.once("load"');
 
   assert.notEqual(constructionIndex, -1);
-  assert.ok(exposeIndex > constructionIndex);
-  assert.ok(loadIndex > exposeIndex);
-  assert.match(mapCanvas, /const showInteractiveMap = \(\) => \{[\s\S]*?renderer\.hidden = false;[\s\S]*?fallback\.hidden = true;[\s\S]*?attribution\.hidden = false;[\s\S]*?setControlsEnabled\(true\);[\s\S]*?map\.resize\(\);/);
-  assert.doesNotMatch(mapCanvas, /data-map-state|revealMap|hasRenderableCanvas|hasUsableStyle|handleRender|readinessTimer|readinessFrame/);
-  assert.doesNotMatch(mapCanvas, /triggerRepaint|requestAnimationFrame|map\.on\("render"|map\.once\("idle"|11_000/);
+  assert.ok(loadIndex > constructionIndex);
+  assert.match(mapCanvas, /const MAP_LOAD_TIMEOUT_MS = 10_000;/);
+  assert.match(mapCanvas, /const showReadyMap = \(\) => \{[\s\S]*?root\.dataset\.mapState = "ready";[\s\S]*?renderer\.hidden = false;[\s\S]*?fallback\.hidden = true;[\s\S]*?loadingSurface\.hidden = true;[\s\S]*?attribution\.hidden = false;[\s\S]*?setControlsEnabled\(true\);[\s\S]*?map\.resize\(\);[\s\S]*?fitMontenegro\(false\);/);
+  assert.match(mapCanvas, /map\.once\("load", \(\) => \{[\s\S]*?showReadyMap\(\);[\s\S]*?\}\);[\s\S]*?mapLoadTimer = window\.setTimeout\(showFallback, MAP_LOAD_TIMEOUT_MS\);/);
+  assert.match(mapCanvas, /const clearMapLoadTimer = \(\) => \{[\s\S]*?window\.clearTimeout\(mapLoadTimer\);/);
+  assert.match(mapCanvas, /removeActiveMap = \(\) => \{[\s\S]*?clearMapLoadTimer\(\);/);
+  assert.doesNotMatch(mapCanvas, /showInteractiveMap\(\);|map\.on\("render"|map\.once\("idle"|triggerRepaint|requestAnimationFrame/);
 });
 
 test("MapLibre errors remain available through the library's built-in reporting", async () => {
@@ -111,15 +116,17 @@ test("MapLibre errors remain available through the library's built-in reporting"
   assert.doesNotMatch(mapCanvas, /__SVETINJE_MAP_DEBUG__|sourcedata|styledata|getContext\s*\(/);
 });
 
-test("CSS keeps the renderer visible and the selected layer exclusive", async () => {
+test("CSS keeps the renderer visible and gives loading, ready, and fallback explicit layers", async () => {
   const styles = await source("src/styles/global.css");
   const rendererRule = styles.match(/\.map-renderer\s*\{\s*z-index: 2;([^}]*)\}/)?.[1] ?? "";
 
   assert.match(rendererRule, /pointer-events: auto/);
   assert.doesNotMatch(rendererRule, /opacity:\s*0|pointer-events:\s*none/);
   assert.match(styles, /\.maplibre-map,\s*#montenegro-map\s*\{[\s\S]*?width: 100%;[\s\S]*?height: 100%;/);
-  assert.match(styles, /\.map-fallback\[hidden\],\s*\.map-renderer\[hidden\]\s*\{[\s\S]*?display: none;/);
-  assert.doesNotMatch(styles, /data-map-state="ready"|map-readiness/);
+  assert.match(styles, /\.map-fallback\[hidden\],[\s\S]*?\.map-renderer\[hidden\],[\s\S]*?\.map-loading-surface\[hidden\]\s*\{[\s\S]*?display: none;/);
+  assert.match(styles, /\.map-loading-surface\s*\{[\s\S]*?z-index: 3;/);
+  assert.match(styles, /\[data-map-state="loading"\][\s\S]*?\[data-map-state="ready"\][\s\S]*?\[data-map-state="fallback"\]/);
+  assert.doesNotMatch(rendererRule, /opacity:\s*0|pointer-events:\s*none/);
 });
 
 test("the map accepts only server-selected marker data and adds no route geometry", async () => {

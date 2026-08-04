@@ -7,6 +7,7 @@ interface Props {
 }
 
 const { places = [] } = Astro.props;
+const hasMapTilerKey = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
 const markerPlaces = places.flatMap((place) =>
   Number.isFinite(place.latitude) && Number.isFinite(place.longitude)
     ? [{
@@ -31,12 +32,14 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
   class="map-canvas"
   data-home-map
   data-testid="map-canvas"
+  data-map-state={hasMapTilerKey ? "loading" : "fallback"}
 >
   <div
     class="map-fallback"
     data-map-fallback
     role="img"
-    aria-hidden="false"
+    hidden={hasMapTilerKey}
+    aria-hidden={hasMapTilerKey ? "true" : "false"}
     aria-label="Стилизована картографска површина Црне Горе без ознака светиња."
   >
     <svg class="map-art" viewBox="0 0 1200 650" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
@@ -103,8 +106,8 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
   <div
     class="map-renderer"
     data-map-renderer
-    hidden
-    aria-hidden="true"
+    hidden={!hasMapTilerKey}
+    aria-hidden={hasMapTilerKey ? "false" : "true"}
   >
     <div
       id="montenegro-map"
@@ -115,10 +118,20 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     ></div>
   </div>
 
+  <div
+    class="map-loading-surface"
+    data-map-loading-surface
+    hidden={!hasMapTilerKey}
+    aria-hidden={hasMapTilerKey ? "false" : "true"}
+  >
+    <p class="map-loading-status" data-map-loading-status role="status" aria-live="polite">Учитавање карте…</p>
+  </div>
+
   <p
     class="map-fallback-notice"
     data-map-fallback-notice
     role="status"
+    hidden={hasMapTilerKey}
   >
     Интерактивна карта тренутно није доступна.
   </p>
@@ -137,6 +150,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
   import type { LngLatBoundsLike, Map as MapLibreMap, Marker as MapLibreMarker, PaddingOptions } from "maplibre-gl";
 
   const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY?.trim();
+  const MAP_LOAD_TIMEOUT_MS = 10_000;
   interface MarkerPlace {
     id: string;
     slug: string;
@@ -178,6 +192,8 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     root.dataset.mapInitialised = "true";
     const renderer = root.querySelector<HTMLElement>("[data-map-renderer]");
     const fallback = root.querySelector<HTMLElement>("[data-map-fallback]");
+    const loadingSurface = root.querySelector<HTMLElement>("[data-map-loading-surface]");
+    const loadingStatus = root.querySelector<HTMLElement>("[data-map-loading-status]");
     const fallbackNotice = root.querySelector<HTMLElement>("[data-map-fallback-notice]");
     const attribution = root.querySelector<HTMLElement>("[data-map-attribution]");
     const stage = root.closest<HTMLElement>(".map-stage");
@@ -196,11 +212,26 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       });
     };
 
+    let map: MapLibreMap | undefined;
+    let removed = false;
+    let mapLoadTimer: number | undefined;
+    let removeActiveMap = () => {};
+    const clearMapLoadTimer = () => {
+      window.clearTimeout(mapLoadTimer);
+      mapLoadTimer = undefined;
+    };
+
     const showFallback = () => {
+      clearMapLoadTimer();
+      if (map && !removed) removeActiveMap();
+      root.dataset.mapState = "fallback";
       if (renderer) renderer.hidden = true;
       if (fallback) fallback.hidden = false;
+      if (loadingSurface) loadingSurface.hidden = true;
       renderer?.setAttribute("aria-hidden", "true");
       fallback?.setAttribute("aria-hidden", "false");
+      loadingSurface?.setAttribute("aria-hidden", "true");
+      loadingStatus?.setAttribute("aria-hidden", "true");
       if (fallbackNotice) fallbackNotice.hidden = false;
       if (attribution) attribution.hidden = true;
       setControlsEnabled(false);
@@ -212,8 +243,6 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     }
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let map: MapLibreMap;
-
     try {
       map = new maplibregl.Map({
         container: mapContainer,
@@ -233,8 +262,12 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       return;
     }
 
+    if (!map) {
+      showFallback();
+      return;
+    }
+
     map.touchZoomRotate.disableRotation();
-    let removed = false;
     let visitorMovedMap = false;
     let resizeTimer: number | undefined;
     const markers: MapLibreMarker[] = [];
@@ -465,15 +498,22 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       }, 120);
     };
 
-    const showInteractiveMap = () => {
+    const showReadyMap = () => {
+      if (removed) return;
+      clearMapLoadTimer();
+      root.dataset.mapState = "ready";
       renderer.hidden = false;
       if (fallback) fallback.hidden = true;
+      if (loadingSurface) loadingSurface.hidden = true;
       renderer.setAttribute("aria-hidden", "false");
       fallback?.setAttribute("aria-hidden", "true");
+      loadingSurface?.setAttribute("aria-hidden", "true");
+      loadingStatus?.setAttribute("aria-hidden", "true");
       if (fallbackNotice) fallbackNotice.hidden = true;
       if (attribution) attribution.hidden = false;
       setControlsEnabled(true);
       map.resize();
+      fitMontenegro(false);
     };
 
     const clearSelectedMarker = (id: string) => {
@@ -523,9 +563,10 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       setMarkerVisibility(new Set(event.detail.visibleIds));
     }) as EventListener;
 
-    const removeMap = () => {
+    removeActiveMap = () => {
       if (removed) return;
       removed = true;
+      clearMapLoadTimer();
       window.clearTimeout(resizeTimer);
       closePreview();
       window.removeEventListener("resize", resizeMap);
@@ -542,7 +583,6 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       map.remove();
     };
 
-    showInteractiveMap();
     zoomInButton?.addEventListener("click", zoomIn);
     zoomOutButton?.addEventListener("click", zoomOut);
     resetButton?.addEventListener("click", resetView);
@@ -553,11 +593,13 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     document.addEventListener("pointerdown", handleOutsidePreviewPointer);
     window.addEventListener("svetinje:filter-change", handleFilterChange);
     window.addEventListener("svetinje:place-visibility-change", handlePlaceVisibilityChange);
-    document.addEventListener("astro:before-swap", removeMap, { once: true });
+    document.addEventListener("astro:before-swap", removeActiveMap, { once: true });
 
+    // Individual tile, glyph, sprite, or terrain errors can be transient; only a missing initial load reaches fallback.
     map.once("load", () => {
-      if (!removed) fitMontenegro(false);
+      showReadyMap();
     });
+    mapLoadTimer = window.setTimeout(showFallback, MAP_LOAD_TIMEOUT_MS);
   };
 
   initialiseHomepageMap();
