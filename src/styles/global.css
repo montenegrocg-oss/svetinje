@@ -1704,11 +1704,12 @@
     display: grid;
     justify-items: center;
     gap: 0.35rem;
-    padding: 14px 18px 16px;
+    padding: 14px 14px 16px;
     text-align: center;
   }
 
   .map-place-preview__type {
+    display: none;
     margin: 0;
     color: #8b672e;
     font-size: 0.64rem;
@@ -1734,6 +1735,8 @@
 
   .map-place-preview__link {
     display: inline-flex;
+    width: 100%;
+    box-sizing: border-box;
     align-items: center;
     justify-content: center;
     align-self: stretch;
@@ -1790,7 +1793,7 @@
 
     .map-place-preview__body {
       gap: 0.25rem;
-      padding: 10px 14px 13px;
+      padding: 10px 10px 13px;
     }
 
     .map-place-preview__type {
