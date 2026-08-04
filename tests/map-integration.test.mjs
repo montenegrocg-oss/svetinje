@@ -188,6 +188,10 @@ test("one accessible marker preview supports hover, focus, pinning, filtering, a
   assert.match(mapCanvas, /document\.addEventListener\("pointerdown", handleOutsidePreviewPointer\)/);
   assert.match(mapCanvas, /button\.setAttribute\("aria-expanded", "true"\)/);
   assert.match(mapCanvas, /button\.setAttribute\("aria-controls", card\.id\)/);
+  assert.match(mapCanvas, /root\.dataset\.popupOpen = "true"/);
+  assert.match(mapCanvas, /root\.removeAttribute\("data-popup-open"\)/);
+  assert.match(mapCanvas, /if \(activePreview\?\.place\.id === place\.id\) \{[\s\S]*?root\.dataset\.popupOpen = "true"/);
+  assert.match(mapCanvas, /activePreview = \{ place, button, card, pinned \};[\s\S]*?root\.dataset\.popupOpen = "true"/);
   assert.match(mapCanvas, /if \(activePreview\?\.place\.id === id\) closePreview\(\)/);
   assert.match(mapCanvas, /link\.href = `\/svetinje\/\$\{encodeURIComponent\(place\.slug\)\}\/`/);
   assert.match(mapCanvas, /notice\.textContent = "Ауторска фотографија биће додата"/);
@@ -205,6 +209,7 @@ test("one accessible marker preview supports hover, focus, pinning, filtering, a
   assert.match(styles, /\.map-place-preview\s*\{[\s\S]*?max-width: 100%;[\s\S]*?box-sizing: border-box;[\s\S]*?display: block;[\s\S]*?margin: 0;[\s\S]*?padding: 14px 20px 0 20px;/);
   assert.match(styles, /\.map-place-preview__media\s*\{[\s\S]*?width: 100%;[\s\S]*?max-width: 100%;[\s\S]*?box-sizing: border-box;[\s\S]*?margin: 0;/);
   assert.match(styles, /\.map-place-preview__body\s*\{[\s\S]*?padding: 14px 0 14px;/);
+  assert.match(styles, /@media \(max-width: 47\.99rem\)\s*\{[\s\S]*?\.map-canvas\[data-popup-open="true"\] \.map-renderer\s*\{[\s\S]*?z-index: auto;[\s\S]*?\.map-canvas\[data-popup-open="true"\] \.holy-place-popup\s*\{[\s\S]*?z-index: 40 !important;/);
   assert.match(styles, /@media \(max-width: 47\.99rem\)[\s\S]*?\.map-place-preview\s*\{[\s\S]*?padding: 10px 10px 0;[\s\S]*?\.map-place-preview__media\s*\{[\s\S]*?min-height: 5\.75rem;[\s\S]*?\.map-place-preview__image\s*\{[\s\S]*?height: 5\.75rem;[\s\S]*?\.map-place-preview__body\s*\{[\s\S]*?padding: 10px 0 13px;/);
   assert.match(styles, /\.map-place-preview__type\s*\{[\s\S]*?display: none;/);
   assert.match(styles, /\.map-place-preview__link:focus-visible/);

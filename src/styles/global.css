@@ -1771,6 +1771,14 @@
   }
 
   @media (max-width: 47.99rem) {
+    .map-canvas[data-popup-open="true"] .map-renderer {
+      z-index: auto;
+    }
+
+    .map-canvas[data-popup-open="true"] .holy-place-popup {
+      z-index: 40 !important;
+    }
+
     .map-place-preview {
       width: min(14.375rem, calc(100vw - 2rem));
       padding: 10px 10px 0;

@@ -262,6 +262,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
 
     const closePreview = () => {
       clearPreviewCloseTimer();
+      root.removeAttribute("data-popup-open");
       if (!activePreview) return;
       activePreview.button.setAttribute("aria-expanded", "false");
       activePreview.button.removeAttribute("aria-controls");
@@ -352,6 +353,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     const openPreview = (place: MarkerPlace, button: HTMLButtonElement, pinned: boolean) => {
       clearPreviewCloseTimer();
       if (activePreview?.place.id === place.id) {
+        root.dataset.popupOpen = "true";
         if (pinned) activePreview.pinned = true;
         return;
       }
@@ -364,6 +366,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
         .setDOMContent(card)
         .addTo(map);
       activePreview = { place, button, card, pinned };
+      root.dataset.popupOpen = "true";
     };
 
     const selectPlace = (id: string) => {
