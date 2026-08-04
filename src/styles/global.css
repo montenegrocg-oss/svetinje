@@ -2575,6 +2575,12 @@
     }
   }
 
+  @media (min-width: 48rem) and (max-width: 67.99rem) {
+    .map-actions {
+      right: 6.25rem;
+    }
+  }
+
   @media (min-width: 68rem) {
     .map-explorer {
       --explorer-panel-width: 27rem;

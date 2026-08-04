@@ -64,8 +64,20 @@ test("the explorer keeps one shared filter state across cards, controls, and map
   assert.match(mapCanvas, /window\.addEventListener\("svetinje:place-visibility-change", handlePlaceVisibilityChange\)/);
   assert.match(mapCanvas, /button\.hidden = !visible/);
   assert.match(filters, /id: "all"/);
+  assert.match(controls, /data-filter="all" aria-pressed="true"/);
+  assert.match(controls, /<InterfaceIcon name="grid" size=\{18\} \/><span>Све<\/span>/);
+  assert.ok(
+    controls.indexOf('data-filter="all"') < controls.indexOf('data-filter="monasteries"'),
+    "the map all filter must appear before monasteries",
+  );
   assert.match(controls, /data-filter="monasteries"/);
-  assert.doesNotMatch(controls, /data-filter="all"/);
+  assert.match(controls, /data-filter="monasteries" aria-pressed="false"/);
+  assert.match(controls, /data-filter="churches" aria-pressed="false"/);
+  assert.match(controls, /data-filter="holy-places" aria-pressed="false"/);
+  assert.match(controls, /data-filter="routes" aria-pressed="false"/);
+  const routeBuilder = controls.match(/<button[^>]*data-notice-trigger="route-notice"[^>]*>/)?.[0];
+  assert.ok(routeBuilder, "the route builder action must remain present");
+  assert.doesNotMatch(routeBuilder, /data-filter=/);
 });
 
 test("filtering has accessible no-result feedback and lifecycle cleanup", async () => {

@@ -3,6 +3,7 @@ import InterfaceIcon from "./InterfaceIcon.astro";
 ---
 
 <div class="map-actions" aria-label="Брзи избор на карти" data-filter-group="map">
+  <button type="button" class="map-action" data-filter="all" aria-pressed="true"><InterfaceIcon name="grid" size={18} /><span>Све</span></button>
   <button type="button" class="map-action" data-filter="monasteries" aria-pressed="false"><InterfaceIcon name="monastery" size={18} /><span>Манастири</span></button>
   <button type="button" class="map-action" data-filter="churches" aria-pressed="false"><InterfaceIcon name="church" size={18} /><span>Цркве</span></button>
   <button type="button" class="map-action" data-filter="holy-places" aria-pressed="false"><InterfaceIcon name="place" size={18} /><span>Света мјеста</span></button>
