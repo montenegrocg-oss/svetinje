@@ -174,10 +174,15 @@ test("one accessible marker preview supports hover, focus, pinning, filtering, a
   assert.match(mapCanvas, /closeButton: false,[\s\S]*?closeOnClick: false,[\s\S]*?maxWidth: "240px"/);
   assert.match(mapCanvas, /\.setDOMContent\(card\)/);
   assert.doesNotMatch(mapCanvas, /(?:previewPopup|map-place-preview)[\s\S]{0,160}innerHTML/);
-  assert.match(mapCanvas, /button\.addEventListener\("pointerenter", \(\) => openPreview\(place, button, false\)\)/);
+  assert.match(mapCanvas, /button\.addEventListener\("pointerenter", \(event\) => \{[\s\S]*?event\.pointerType !== "mouse"[\s\S]*?openPreview\(place, button, false\)/);
+  assert.match(mapCanvas, /button\.addEventListener\("pointerleave", \(event\) => \{[\s\S]*?event\.pointerType !== "mouse"[\s\S]*?schedulePreviewClose\(\)/);
+  assert.match(mapCanvas, /button\.addEventListener\("pointerup", \(event\) => \{[\s\S]*?event\.pointerType !== "touch" && event\.pointerType !== "pen"[\s\S]*?activatePlace\(place, button\)/);
   assert.match(mapCanvas, /button\.addEventListener\("focus", \(\) => openPreview\(place, button, false\)\)/);
-  assert.match(mapCanvas, /button\.addEventListener\("click", \(\) => \{[\s\S]*?openPreview\(place, button, true\)/);
-  assert.match(mapCanvas, /card\.addEventListener\("pointerenter", clearPreviewCloseTimer\)/);
+  assert.match(mapCanvas, /const activatePlace = \(place: MarkerPlace, button: HTMLButtonElement\) => \{[\s\S]*?selectPlace\(place\.id\);[\s\S]*?openPreview\(place, button, true\)/);
+  assert.match(mapCanvas, /button\.addEventListener\("click", \(\) => activatePlace\(place, button\)\)/);
+  assert.match(mapCanvas, /card\.addEventListener\("pointerenter", \(event\) => \{[\s\S]*?event\.pointerType !== "mouse"[\s\S]*?clearPreviewCloseTimer\(\)/);
+  assert.match(mapCanvas, /card\.addEventListener\("pointerleave", \(event\) => \{[\s\S]*?event\.pointerType !== "mouse"[\s\S]*?schedulePreviewClose\(\)/);
+  assert.match(mapCanvas, /event\.composedPath\(\)[\s\S]*?eventPath\.includes\(activePreview\.button\)[\s\S]*?eventPath\.includes\(activePreview\.card\)/);
   assert.match(mapCanvas, /window\.setTimeout\(closePreview, 200\)/);
   assert.match(mapCanvas, /event\.key !== "Escape"/);
   assert.match(mapCanvas, /document\.addEventListener\("pointerdown", handleOutsidePreviewPointer\)/);
@@ -196,6 +201,11 @@ test("one accessible marker preview supports hover, focus, pinning, filtering, a
   assert.match(publication, /await access\(absolute\)/);
   assert.match(publication, /media\.editorial_status === "published"[\s\S]*?\["media-rights", "publishing"\]/);
   assert.match(styles, /\.map-place-preview\s*\{[\s\S]*?width: min\(15rem, calc\(100vw - 2rem\)\)/);
+  assert.match(styles, /\.map-place-preview\s*\{[\s\S]*?box-sizing: border-box;[\s\S]*?padding: 14px 14px 0;/);
+  assert.match(styles, /\.map-place-preview__media\s*\{[\s\S]*?width: 100%;[\s\S]*?max-width: 100%;[\s\S]*?box-sizing: border-box;[\s\S]*?margin: 0;/);
+  assert.match(styles, /\.map-place-preview__body\s*\{[\s\S]*?padding: 14px 0 16px;/);
+  assert.match(styles, /@media \(max-width: 47\.99rem\)[\s\S]*?\.map-place-preview\s*\{[\s\S]*?padding: 10px 10px 0;[\s\S]*?\.map-place-preview__media\s*\{[\s\S]*?min-height: 5\.75rem;[\s\S]*?\.map-place-preview__image\s*\{[\s\S]*?height: 5\.75rem;[\s\S]*?\.map-place-preview__body\s*\{[\s\S]*?padding: 10px 0 13px;/);
+  assert.match(styles, /\.map-place-preview__type\s*\{[\s\S]*?display: none;/);
   assert.match(styles, /\.map-place-preview__link:focus-visible/);
 });
 

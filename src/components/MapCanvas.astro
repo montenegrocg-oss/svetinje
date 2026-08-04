@@ -333,8 +333,14 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       body.append(link);
       card.append(media, body);
 
-      card.addEventListener("pointerenter", clearPreviewCloseTimer);
-      card.addEventListener("pointerleave", schedulePreviewClose);
+      card.addEventListener("pointerenter", (event) => {
+        if (event.pointerType !== "mouse") return;
+        clearPreviewCloseTimer();
+      });
+      card.addEventListener("pointerleave", (event) => {
+        if (event.pointerType !== "mouse") return;
+        schedulePreviewClose();
+      });
       card.addEventListener("focusin", clearPreviewCloseTimer);
       card.addEventListener("focusout", (event) => {
         if (event.relatedTarget instanceof Node && card.contains(event.relatedTarget)) return;
@@ -369,6 +375,12 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       window.dispatchEvent(new CustomEvent("svetinje:place-select", { detail: { id } }));
     };
 
+    const activatePlace = (place: MarkerPlace, button: HTMLButtonElement) => {
+      clearPreviewCloseTimer();
+      selectPlace(place.id);
+      openPreview(place, button, true);
+    };
+
     markerPlaces.forEach((place) => {
       const button = document.createElement("button");
       button.type = "button";
@@ -397,17 +409,24 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
         markerFallback.append(document.createElement("i"));
         button.append(markerFallback);
       }
-      button.addEventListener("pointerenter", () => openPreview(place, button, false));
-      button.addEventListener("pointerleave", schedulePreviewClose);
+      button.addEventListener("pointerenter", (event) => {
+        if (event.pointerType !== "mouse") return;
+        openPreview(place, button, false);
+      });
+      button.addEventListener("pointerleave", (event) => {
+        if (event.pointerType !== "mouse") return;
+        schedulePreviewClose();
+      });
+      button.addEventListener("pointerup", (event) => {
+        if (event.pointerType !== "touch" && event.pointerType !== "pen") return;
+        activatePlace(place, button);
+      });
       button.addEventListener("focus", () => openPreview(place, button, false));
       button.addEventListener("focusout", (event) => {
         if (event.relatedTarget instanceof Node && activePreview?.card.contains(event.relatedTarget)) return;
         schedulePreviewClose();
       });
-      button.addEventListener("click", () => {
-        selectPlace(place.id);
-        openPreview(place, button, true);
-      });
+      button.addEventListener("click", () => activatePlace(place, button));
       markerButtons.push(button);
       markers.push(
         new maplibregl.Marker({ element: button, anchor: "bottom" })
@@ -482,8 +501,9 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     };
 
     const handleOutsidePreviewPointer = (event: PointerEvent) => {
-      if (!activePreview || !(event.target instanceof Node)) return;
-      if (activePreview.button.contains(event.target) || activePreview.card.contains(event.target)) return;
+      if (!activePreview) return;
+      const eventPath = event.composedPath();
+      if (eventPath.includes(activePreview.button) || eventPath.includes(activePreview.card)) return;
       closePreview();
     };
 
