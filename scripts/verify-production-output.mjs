@@ -119,12 +119,15 @@ function verifyNewsFeed(page, expectedItems, label, failures) {
       failures.push(`${label} is missing news ${item.id}`);
       continue;
     }
+    const timePattern = new RegExp(
+      `<time\\b[^>]*\\bdatetime="${escapeRegExp(item.publishedAt)}"[^>]*>`,
+    );
     if (
       !row.includes(`data-published-at="${item.publishedAt}"`) ||
       !row.includes(`href="${item.href}"`) ||
       !row.includes(item.title) ||
       !row.includes(item.summary) ||
-      !row.includes(`<time datetime="${item.publishedAt}"`)
+      !timePattern.test(row)
     ) {
       failures.push(`${label} news ${item.id} does not match its loaded timestamp, href, or copy`);
     }
