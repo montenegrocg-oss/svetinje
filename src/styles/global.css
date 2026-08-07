@@ -1410,6 +1410,84 @@
     margin-top: 1rem;
   }
 
+  .explorer-continuation[data-empty="true"] {
+    padding: 0;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .explorer-pagination {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin: 1rem;
+    padding: 0.65rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--paper);
+  }
+
+  .explorer-pagination[hidden],
+  .explorer-pagination button[hidden] {
+    display: none;
+  }
+
+  .explorer-pagination__pages {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+
+  .explorer-pagination button {
+    display: inline-grid;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    place-items: center;
+    padding: 0.35rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    color: var(--navy-900);
+    background: var(--white);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 800;
+  }
+
+  .explorer-pagination button:hover:not(:disabled) {
+    border-color: var(--gold);
+    color: var(--gold-deep);
+  }
+
+  .explorer-pagination button[aria-current="page"] {
+    border-color: var(--navy-900);
+    color: var(--white);
+    background: var(--navy-900);
+  }
+
+  .explorer-pagination button:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  .explorer-pagination button:disabled {
+    cursor: not-allowed;
+    opacity: 0.42;
+  }
+
+  .explorer-pagination__status {
+    flex-basis: 100%;
+    margin: 0.1rem 0 0;
+    color: var(--ink-soft);
+    font-size: 0.7rem;
+    text-align: center;
+  }
+
   .explorer-continuation__placeholder {
     display: flex;
     height: 100%;
@@ -2436,6 +2514,15 @@
     border-top: 1px solid var(--line);
   }
 
+  .explorer-results__cards {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  [data-explorer-card-pool][hidden] {
+    display: none;
+  }
+
   .news-article__body h2 {
     margin-top: 1rem;
     font-size: clamp(1.35rem, 3vw, 1.9rem);
@@ -2455,6 +2542,10 @@
   .editorial-place-card--sidebar {
     padding: 0.9rem;
     box-shadow: 0 0.3rem 1rem rgba(10, 41, 68, 0.06);
+  }
+
+  .editorial-place-card--sidebar .editorial-place-card__media--fallback {
+    display: none;
   }
 
   .editorial-place-card--catalogue {
@@ -3561,6 +3652,11 @@
     .map-explorer__continuation {
       margin-right: var(--explorer-panel-left);
       margin-left: calc(var(--explorer-panel-left) + var(--explorer-panel-width) + 1.5rem);
+    }
+
+    .map-explorer__pagination {
+      margin-right: var(--explorer-panel-left);
+      margin-left: var(--explorer-panel-left);
     }
 
     .map-explorer__continuation {

@@ -1,0 +1,52 @@
+---
+import { pageCountForPlaces } from "../lib/explorer-pagination";
+
+interface Props {
+  totalPlaces: number;
+}
+
+const { totalPlaces } = Astro.props;
+const totalPages = pageCountForPlaces(totalPlaces);
+const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
+---
+
+<nav
+  class="explorer-pagination map-explorer__pagination"
+  aria-label="Странице резултата"
+  data-explorer-pagination
+  data-total-pages={totalPages}
+  hidden={totalPages <= 1}
+>
+  <button
+    class="explorer-pagination__arrow"
+    type="button"
+    data-pagination-previous
+    aria-label="Претходна страница"
+    disabled
+  >
+    <span aria-hidden="true">←</span>
+  </button>
+  <div class="explorer-pagination__pages" data-pagination-pages>
+    {pageNumbers.map((page) => (
+      <button
+        type="button"
+        data-pagination-page={page}
+        aria-label={`Страница ${page}`}
+        aria-current={page === 1 ? "page" : undefined}
+      >
+        {page}
+      </button>
+    ))}
+  </div>
+  <button
+    class="explorer-pagination__arrow"
+    type="button"
+    data-pagination-next
+    aria-label="Сљедећа страница"
+  >
+    <span aria-hidden="true">→</span>
+  </button>
+  <p class="explorer-pagination__status" data-pagination-status aria-live="polite">
+    Страница 1 од {totalPages}
+  </p>
+</nav>

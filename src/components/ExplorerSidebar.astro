@@ -7,9 +7,10 @@ import type { VisiblePlace } from "../lib/content/publication";
 
 interface Props {
   places?: VisiblePlace[];
+  totalPlaces?: number;
 }
 
-const { places = [] } = Astro.props;
+const { places = [], totalPlaces = places.length } = Astro.props;
 ---
 
 <aside class="explorer-sidebar" id="pretraga" aria-label="Претрага и филтри каталога" data-testid="explorer-sidebar">
@@ -35,9 +36,13 @@ const { places = [] } = Astro.props;
   ) : (
     <div class="explorer-results">
       <p id="catalogue-status" class="sr-only" role="status" aria-live="polite">
-        Приказан је један запис у радном приказу.
+        Приказана су {totalPlaces} записа.
       </p>
-      {places.map((place) => <PlaceCard place={place} variant="sidebar" />)}
+      <div class="explorer-results__cards" data-explorer-primary-results>
+        {places.map((place) => (
+          <PlaceCard place={place} variant="sidebar" initialExplorerPlacement="primary" />
+        ))}
+      </div>
       <section class="explorer-no-results" data-explorer-no-results hidden role="status" aria-live="polite" aria-atomic="true">
         <p class="eyebrow">Претрага каталога</p>
         <h2 data-no-results-title></h2>

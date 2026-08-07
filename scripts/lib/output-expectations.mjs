@@ -1,6 +1,7 @@
 import { loadVisiblePlaces } from "../../src/lib/content/publication.ts";
 import { loadVisibleNews } from "../../src/lib/content/news.ts";
 import { categoryForPlaceType } from "../../src/lib/place-filters.ts";
+import { paginatePlaces, PLACES_PER_PAGE } from "../../src/lib/explorer-pagination.ts";
 
 export const STATIC_HTML_ROUTES = Object.freeze([
   "index.html",
@@ -49,12 +50,13 @@ export function createOutputModel(places, news = []) {
     };
   });
   const expectedRealRelatedCount = Math.min(4, Math.max(0, normalizedPlaces.length - 1));
-  const primaryPlaces = normalizedPlaces.slice(0, 4);
-  const continuationPlaces = normalizedPlaces.slice(4);
-  const continuationSlots = Array.from(
-    { length: Math.max(4, continuationPlaces.length) },
-    (_, index) => ({ slot: String(index + 5).padStart(2, "0"), place: continuationPlaces[index] }),
-  );
+  const initialExplorerPage = paginatePlaces(normalizedPlaces, 1);
+  const primaryPlaces = initialExplorerPage.primaryPlaces;
+  const continuationPlaces = initialExplorerPage.continuationPlaces;
+  const continuationSlots = continuationPlaces.map((place, index) => ({
+    slot: String(index + 5).padStart(2, "0"),
+    place,
+  }));
   const newsDetailRoutes = news.flatMap((item) => item.slug ? [{
     item,
     route: `novosti/${item.slug}/index.html`,
@@ -79,9 +81,11 @@ export function createOutputModel(places, news = []) {
     primaryPlaces,
     continuationPlaces,
     continuationSlots,
+    paginationPageCount: initialExplorerPage.totalPages,
+    pooledPlaces: normalizedPlaces.slice(PLACES_PER_PAGE),
     primaryPlaceCount: primaryPlaces.length,
     continuationRealCount: continuationPlaces.length,
-    continuationPlaceholderCount: Math.max(0, 4 - continuationPlaces.length),
+    continuationPlaceholderCount: 0,
     expectedRealRelatedCount,
     expectedRelatedPlaceholderCount: 4 - expectedRealRelatedCount,
   };

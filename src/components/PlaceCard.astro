@@ -6,9 +6,10 @@ interface Props {
   place: VisiblePlace;
   variant?: "sidebar" | "catalogue" | "continuation";
   continuationSlot?: string;
+  initialExplorerPlacement?: "primary" | "continuation" | "pool";
 }
 
-const { place, variant = "catalogue", continuationSlot } = Astro.props;
+const { place, variant = "catalogue", continuationSlot, initialExplorerPlacement } = Astro.props;
 const category = categoryForPlaceType(place.placeType);
 const location = [place.municipality, place.settlement].filter(Boolean).join(" Â· ");
 ---
@@ -20,6 +21,7 @@ const location = [place.municipality, place.settlement].filter(Boolean).join(" Â
   data-place-search={place.searchText.toLocaleLowerCase("sr")}
   data-selected="false"
   data-continuation-slot={continuationSlot}
+  data-initial-explorer-placement={initialExplorerPlacement}
 >
   {place.previewImageSrc && (
     <div class="editorial-place-card__media">
@@ -32,7 +34,7 @@ const location = [place.municipality, place.settlement].filter(Boolean).join(" Â
       />
     </div>
   )}
-  {!place.previewImageSrc && variant === "continuation" && (
+  {!place.previewImageSrc && (variant === "sidebar" || variant === "continuation") && (
     <div class="editorial-place-card__media editorial-place-card__media--fallback" aria-hidden="true">
       <span></span>
       <i></i>

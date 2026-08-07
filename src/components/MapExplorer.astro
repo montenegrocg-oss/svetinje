@@ -1,15 +1,18 @@
 ---
 import ExplorerSidebar from "./ExplorerSidebar.astro";
 import ExplorerContinuation from "./ExplorerContinuation.astro";
+import ExplorerPagination from "./ExplorerPagination.astro";
 import MapCanvas from "./MapCanvas.astro";
 import MapControls from "./MapControls.astro";
+import PlaceCard from "./PlaceCard.astro";
 import PopularRoutes from "./PopularRoutes.astro";
 import RecommendedPlaces from "./RecommendedPlaces.astro";
+import { paginatePlaces, PLACES_PER_PAGE } from "../lib/explorer-pagination";
 import { loadVisiblePlaces } from "../lib/content/publication";
 
 const places = await loadVisiblePlaces();
-const primaryPlaces = places.slice(0, 4);
-const continuationPlaces = places.slice(4);
+const initialPage = paginatePlaces(places, 1);
+const inventoryPlaces = places.slice(PLACES_PER_PAGE);
 ---
 
 <section class="map-explorer" id="mapa" aria-labelledby="map-explorer-title" data-testid="map-explorer">
@@ -25,13 +28,24 @@ const continuationPlaces = places.slice(4);
     <MapControls />
   </div>
 
-  <ExplorerSidebar places={primaryPlaces} />
+  <ExplorerSidebar places={initialPage.primaryPlaces} totalPlaces={places.length} />
   <RecommendedPlaces places={places} />
   <PopularRoutes />
-  <ExplorerContinuation places={continuationPlaces} />
+  <ExplorerContinuation places={initialPage.continuationPlaces} />
+  <ExplorerPagination totalPlaces={places.length} />
+  <div data-explorer-card-pool hidden>
+    {inventoryPlaces.map((place) => (
+      <PlaceCard place={place} variant="sidebar" initialExplorerPlacement="pool" />
+    ))}
+  </div>
 </section>
 
 <script>
+  import {
+    paginatePlaces,
+    pageForPlace,
+  } from "../lib/explorer-pagination";
+
   document.querySelectorAll<HTMLButtonElement>("[data-notice-trigger]").forEach((button) => {
     button.addEventListener("click", () => {
       const targetId = button.dataset.noticeTrigger;
@@ -45,7 +59,16 @@ const continuationPlaces = places.slice(4);
 
   const searchForm = document.querySelector<HTMLFormElement>("[data-catalogue-search]");
   const searchInput = searchForm?.querySelector<HTMLInputElement>("input[type='search']");
-  const placeCards = [...document.querySelectorAll<HTMLElement>("[data-place-card]")];
+  const explorerRoot = document.querySelector<HTMLElement>("[data-testid='map-explorer']");
+  const placeCards = [...(explorerRoot?.querySelectorAll<HTMLElement>("[data-place-card]") ?? [])];
+  const primaryResults = explorerRoot?.querySelector<HTMLElement>("[data-explorer-primary-results]");
+  const continuationResults = explorerRoot?.querySelector<HTMLElement>("[data-explorer-continuation-results]");
+  const cardPool = explorerRoot?.querySelector<HTMLElement>("[data-explorer-card-pool]");
+  const pagination = explorerRoot?.querySelector<HTMLElement>("[data-explorer-pagination]");
+  const previousPageButton = pagination?.querySelector<HTMLButtonElement>("[data-pagination-previous]");
+  const nextPageButton = pagination?.querySelector<HTMLButtonElement>("[data-pagination-next]");
+  const pageButtons = [...(pagination?.querySelectorAll<HTMLButtonElement>("[data-pagination-page]") ?? [])];
+  const paginationStatus = pagination?.querySelector<HTMLElement>("[data-pagination-status]");
   const resultStatus = document.getElementById("catalogue-status");
   const noResults = document.querySelector<HTMLElement>("[data-explorer-no-results]");
   const noResultsTitle = noResults?.querySelector<HTMLElement>("[data-no-results-title]");
@@ -53,7 +76,8 @@ const continuationPlaces = places.slice(4);
   const filterButtons = [...document.querySelectorAll<HTMLButtonElement>("button[data-filter]")];
   const filterIds = new Set(["all", "monasteries", "churches", "holy-places", "routes"]);
   let activeFilter = "all";
-  const explorerRoot = document.querySelector<HTMLElement>("[data-testid='map-explorer']");
+  let currentPage = 1;
+  let matchedCards = [...placeCards];
   const explorerSidebar = document.querySelector<HTMLElement>("[data-testid='explorer-sidebar']");
   const recommendedShelf = explorerRoot?.querySelector<HTMLElement>("[data-testid='recommended-places']");
   const routesShelf = explorerRoot?.querySelector<HTMLElement>("[data-testid='popular-routes']");
@@ -109,40 +133,67 @@ const continuationPlaces = places.slice(4);
     },
   };
 
-  const filterPreviewCards = () => {
-    const query = searchInput?.value.trim().toLocaleLowerCase("sr") ?? "";
-    let visible = 0;
-    placeCards.forEach((card) => {
-      const matches = !query || (card.dataset.placeSearch ?? "").includes(query);
-      card.hidden = !matches;
-      if (matches) visible += 1;
-    });
-    if (resultStatus && placeCards.length > 0) {
-      resultStatus.textContent = visible === 1
-        ? "Приказан је један запис у радном приказу."
-        : visible === 0
-          ? "Нема записа који одговарају претрази."
-          : `Приказано је ${visible} записа.`;
-    }
+  const setCardPlacement = (card: HTMLElement, placement: "primary" | "continuation" | "pool", index = 0) => {
+    const isPrimary = placement === "primary";
+    const isContinuation = placement === "continuation";
+    card.classList.toggle("editorial-place-card--sidebar", isPrimary || placement === "pool");
+    card.classList.toggle("editorial-place-card--continuation", isContinuation);
+    card.hidden = placement === "pool";
+    if (isContinuation) card.dataset.continuationSlot = String(index + 5).padStart(2, "0");
+    else card.removeAttribute("data-continuation-slot");
   };
 
-  const applyExplorerState = () => {
-    if (placeCards.length === 0) return;
-    const query = searchInput?.value.trim().toLocaleLowerCase("sr") ?? "";
-    const visibleIds: string[] = [];
-    let visible = 0;
+  const updatePagination = (totalPages: number) => {
+    if (pagination) pagination.hidden = totalPages <= 1;
+    if (previousPageButton) previousPageButton.disabled = currentPage <= 1;
+    if (nextPageButton) nextPageButton.disabled = currentPage >= totalPages;
+    pageButtons.forEach((button) => {
+      const page = Number(button.dataset.paginationPage);
+      button.hidden = page > totalPages;
+      if (page === currentPage) button.setAttribute("aria-current", "page");
+      else button.removeAttribute("aria-current");
+    });
+    if (paginationStatus) paginationStatus.textContent = `Страница ${currentPage} од ${totalPages}`;
+  };
+
+  const renderCurrentPage = () => {
+    if (!primaryResults || !continuationResults || !cardPool) return;
+    const page = paginatePlaces(matchedCards, currentPage);
+    currentPage = page.currentPage;
 
     placeCards.forEach((card) => {
+      setCardPlacement(card, "pool");
+      cardPool.append(card);
+    });
+    page.primaryPlaces.forEach((card, index) => {
+      setCardPlacement(card, "primary", index);
+      primaryResults.append(card);
+    });
+    page.continuationPlaces.forEach((card, index) => {
+      setCardPlacement(card, "continuation", index);
+      continuationResults.append(card);
+    });
+    continuationResults.dataset.empty = String(page.continuationPlaces.length === 0);
+
+    updatePagination(page.totalPages);
+    window.requestAnimationFrame(syncContinuationHeight);
+  };
+
+  const applyExplorerState = (resetPage = false) => {
+    if (placeCards.length === 0) return;
+    if (resetPage) currentPage = 1;
+    const query = searchInput?.value.trim().toLocaleLowerCase("sr") ?? "";
+    matchedCards = placeCards.filter((card) => {
       const matchesCategory = activeFilter === "all" || card.dataset.placeCategory === activeFilter;
       const matchesSearch = !query || (card.dataset.placeSearch ?? "").includes(query);
       const matches = matchesCategory && matchesSearch;
-      card.hidden = !matches;
-      card.dataset.selected = matches ? card.dataset.selected ?? "false" : "false";
-      if (matches) {
-        visible += 1;
-        visibleIds.push(card.dataset.placeCard ?? "");
-      }
+      if (!matches) card.dataset.selected = "false";
+      return matches;
     });
+    const visibleIds = matchedCards.map((card) => card.dataset.placeCard ?? "");
+    const visible = matchedCards.length;
+
+    renderCurrentPage();
 
     filterButtons.forEach((button) => {
       button.setAttribute("aria-pressed", String(button.dataset.filter === activeFilter));
@@ -169,25 +220,44 @@ const continuationPlaces = places.slice(4);
     window.dispatchEvent(new CustomEvent("svetinje:place-visibility-change", { detail: { visibleIds } }));
   };
 
-  void filterPreviewCards;
-
   filterButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const filter = button.dataset.filter;
       if (!filter || !filterIds.has(filter)) return;
       activeFilter = filter;
-      applyExplorerState();
+      applyExplorerState(true);
     });
   });
 
-  searchInput?.addEventListener("input", applyExplorerState);
+  searchInput?.addEventListener("input", () => applyExplorerState(true));
   searchForm?.addEventListener("submit", (event) => {
     event.preventDefault();
-    applyExplorerState();
+    applyExplorerState(true);
     resultStatus?.scrollIntoView({ block: "nearest" });
   });
 
+  pageButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      currentPage = Number(button.dataset.paginationPage) || 1;
+      renderCurrentPage();
+    });
+  });
+  previousPageButton?.addEventListener("click", () => {
+    currentPage -= 1;
+    renderCurrentPage();
+  });
+  nextPageButton?.addEventListener("click", () => {
+    currentPage += 1;
+    renderCurrentPage();
+  });
+
   const handlePlaceSelection = ((event: CustomEvent<{ id: string }>) => {
+    const selectedCard = matchedCards.find((card) => card.dataset.placeCard === event.detail.id);
+    const selectedPage = selectedCard ? pageForPlace(matchedCards, selectedCard) : null;
+    if (selectedPage && selectedPage !== currentPage) {
+      currentPage = selectedPage;
+      renderCurrentPage();
+    }
     placeCards.forEach((card) => {
       const selected = card.dataset.placeCard === event.detail.id;
       card.dataset.selected = String(selected);

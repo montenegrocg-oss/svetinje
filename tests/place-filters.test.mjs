@@ -7,6 +7,14 @@ import {
   categoryForPlaceType,
   matchesPlaceFilter,
 } from "../src/lib/place-filters.ts";
+import {
+  CONTINUATION_PLACES_PER_PAGE,
+  paginatePlaces,
+  pageCountForPlaces,
+  pageForPlace,
+  PLACES_PER_PAGE,
+  PRIMARY_PLACES_PER_PAGE,
+} from "../src/lib/explorer-pagination.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -32,6 +40,48 @@ test("the shared place-type mapping implements every approved filter category", 
   assert.equal(matchesPlaceFilter("monastery", "routes"), false);
 });
 
+test("the explorer pagination model derives compact four-plus-four pages", () => {
+  const places = Array.from({ length: 25 }, (_, index) => ({ id: `place-${index + 1}` }));
+
+  assert.equal(PLACES_PER_PAGE, 8);
+  assert.equal(PRIMARY_PLACES_PER_PAGE, 4);
+  assert.equal(CONTINUATION_PLACES_PER_PAGE, 4);
+  assert.equal(pageCountForPlaces(8), 1);
+  assert.equal(pageCountForPlaces(9), 2);
+  assert.equal(pageCountForPlaces(25), 4);
+
+  const expectedDistributions = [[4, 4], [4, 4], [4, 4], [1, 0]];
+  expectedDistributions.forEach(([primaryCount, continuationCount], index) => {
+    const page = paginatePlaces(places, index + 1);
+    assert.equal(page.totalPages, 4);
+    assert.equal(page.primaryPlaces.length, primaryCount);
+    assert.equal(page.continuationPlaces.length, continuationCount);
+    assert.ok(page.primaryPlaces.length + page.continuationPlaces.length <= 8);
+  });
+
+  assert.equal(pageForPlace(places, places[9]), 2);
+  assert.equal(pageForPlace(places, places[24]), 4);
+});
+
+test("filtered explorer records are compactly paginated after full-inventory matching", () => {
+  const places = Array.from({ length: 25 }, (_, index) => ({
+    id: `place-${index + 1}`,
+    category: index % 2 === 0 ? "monasteries" : "churches",
+    searchText: index === 9 ? "манастир острог" : `мјесто ${index + 1}`,
+  }));
+  const searchMatches = places.filter((place) => place.searchText.includes("острог"));
+  const monasteryMatches = places.filter((place) => place.category === "monasteries");
+
+  assert.deepEqual(searchMatches.map(({ id }) => id), ["place-10"]);
+  assert.deepEqual(paginatePlaces(searchMatches, 1).primaryPlaces, searchMatches);
+  assert.equal(pageCountForPlaces(monasteryMatches.length), 2);
+  assert.deepEqual(
+    paginatePlaces(monasteryMatches, 2).primaryPlaces.map(({ id }) => id),
+    monasteryMatches.slice(8, 12).map(({ id }) => id),
+  );
+  assert.equal(paginatePlaces(monasteryMatches, 2).continuationPlaces.length, 1);
+});
+
 test("the explorer keeps one shared filter state across cards, controls, and map markers", async () => {
   const [explorer, card, mapCanvas, filters, controls] = await Promise.all([
     source("src/components/MapExplorer.astro"),
@@ -49,10 +99,21 @@ test("the explorer keeps one shared filter state across cards, controls, and map
   assert.match(explorer, /new CustomEvent\("svetinje:filter-change"/);
   assert.match(explorer, /new CustomEvent\("svetinje:place-visibility-change"/);
   assert.match(explorer, /new ResizeObserver\(syncContinuationHeight\)/);
-  assert.match(explorer, /const primaryPlaces = places\.slice\(0, 4\)/);
-  assert.match(explorer, /const continuationPlaces = places\.slice\(4\)/);
-  assert.match(explorer, /<ExplorerSidebar places=\{primaryPlaces\} \/>/);
-  assert.match(explorer, /<ExplorerContinuation places=\{continuationPlaces\} \/>/);
+  assert.match(explorer, /const initialPage = paginatePlaces\(places, 1\)/);
+  assert.match(explorer, /const inventoryPlaces = places\.slice\(PLACES_PER_PAGE\)/);
+  assert.match(explorer, /<ExplorerSidebar places=\{initialPage\.primaryPlaces\} totalPlaces=\{places\.length\} \/>/);
+  assert.match(explorer, /<ExplorerContinuation places=\{initialPage\.continuationPlaces\} \/>/);
+  assert.match(explorer, /data-explorer-card-pool hidden/);
+  assert.match(explorer, /matchedCards = placeCards\.filter/);
+  assert.match(explorer, /const page = paginatePlaces\(matchedCards, currentPage\)/);
+  assert.match(explorer, /page\.primaryPlaces\.forEach/);
+  assert.match(explorer, /page\.continuationPlaces\.forEach/);
+  assert.match(explorer, /if \(resetPage\) currentPage = 1/);
+  assert.match(explorer, /applyExplorerState\(true\)/);
+  assert.match(explorer, /const visibleIds = matchedCards\.map/);
+  assert.match(explorer, /const selectedPage = selectedCard \? pageForPlace\(matchedCards, selectedCard\) : null/);
+  assert.match(explorer, /currentPage = selectedPage;[\s\S]*?renderCurrentPage\(\)/);
+  assert.doesNotMatch(explorer, /innerHTML/);
   assert.match(explorer, /sidebarBottom - continuationTop/);
   assert.match(explorer, /\[data-testid='recommended-places'\]/);
   assert.match(explorer, /\[data-testid='popular-routes'\]/);
@@ -85,9 +146,11 @@ test("the explorer keeps one shared filter state across cards, controls, and map
 });
 
 test("filtering has accessible no-result feedback and lifecycle cleanup", async () => {
-  const [explorer, sidebar, styles] = await Promise.all([
+  const [explorer, sidebar, continuation, pagination, styles] = await Promise.all([
     source("src/components/MapExplorer.astro"),
     source("src/components/ExplorerSidebar.astro"),
+    source("src/components/ExplorerContinuation.astro"),
+    source("src/components/ExplorerPagination.astro"),
     source("src/styles/global.css"),
   ]);
 
@@ -103,5 +166,11 @@ test("filtering has accessible no-result feedback and lifecycle cleanup", async 
   assert.match(styles, /min-height: var\(--explorer-continuation-height, 0px\)/);
   assert.match(styles, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(styles, /grid-template-rows: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.doesNotMatch(continuation, /Math\.max\(MINIMUM_SLOT_COUNT, places\.length\)/);
+  assert.doesNotMatch(continuation, /explorer-continuation-placeholder/);
+  assert.match(pagination, /aria-label="Претходна страница"/);
+  assert.match(pagination, /aria-label="Сљедећа страница"/);
+  assert.match(pagination, /aria-current=\{page === 1 \? "page" : undefined\}/);
+  assert.match(styles, /\.explorer-pagination button\s*\{[\s\S]*?min-width: 2\.75rem;[\s\S]*?min-height: 2\.75rem;/);
   assert.doesNotMatch(styles, /--explorer-bottom-clearance|--explorer-sidebar-clearance/);
 });

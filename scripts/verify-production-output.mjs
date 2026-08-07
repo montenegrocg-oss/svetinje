@@ -281,27 +281,44 @@ function verifyDetail(detailCase, model, pagesByRoute, failures) {
 }
 
 function verifyFixedHomepageContracts(homepageHtml, model, failures) {
+  const explorerCardIds = [...homepageHtml.matchAll(/data-place-card="([^"]+)"/g)].map((match) => match[1]);
+  const uniqueExplorerCardIds = new Set(explorerCardIds);
+  const initialPrimaryCards = countMatches(homepageHtml, /data-initial-explorer-placement="primary"/g);
   const realContinuationCards = countMatches(homepageHtml, /data-place-card="[^"]+"[^>]*data-continuation-slot=/g);
+  const pooledCards = countMatches(homepageHtml, /data-initial-explorer-placement="pool"/g);
   const continuationPlaceholderCount = countMatches(homepageHtml, /data-testid="explorer-continuation-placeholder"/g);
+  if (explorerCardIds.length !== uniqueExplorerCardIds.size) {
+    failures.push("homepage pagination inventory must contain each data-place-card ID exactly once");
+  }
+  if (initialPrimaryCards !== model.primaryPlaceCount) {
+    failures.push(`homepage page 1 must contain ${model.primaryPlaceCount} primary card(s), found ${initialPrimaryCards}`);
+  }
   if (realContinuationCards !== model.continuationRealCount) {
     failures.push(`homepage must contain ${model.continuationRealCount} real continuation card(s), found ${realContinuationCards}`);
+  }
+  if (initialPrimaryCards + realContinuationCards > 8) {
+    failures.push("homepage page 1 must never expose more than eight real explorer cards");
+  }
+  if (pooledCards !== model.pooledPlaces.length) {
+    failures.push(`homepage pagination pool must contain ${model.pooledPlaces.length} card(s), found ${pooledCards}`);
+  }
+  if (!/<div\b(?=[^>]*data-explorer-card-pool)(?=[^>]*\bhidden\b)[^>]*>/.test(homepageHtml)) {
+    failures.push("homepage pagination inventory pool must remain hidden until cards are distributed client-side");
+  }
+  if (!homepageHtml.includes(`data-total-pages="${model.paginationPageCount}"`)) {
+    failures.push(`homepage pagination must derive ${model.paginationPageCount} page(s) from the visible inventory`);
   }
   if (continuationPlaceholderCount !== model.continuationPlaceholderCount) {
     failures.push(`homepage must contain ${model.continuationPlaceholderCount} neutral continuation placeholder(s), found ${continuationPlaceholderCount}`);
   }
   for (const { slot, place } of model.continuationSlots) {
     const card = place ? elementContaining(homepageHtml, "article", `data-place-card="${place.id}"`) : "";
-    const placeholder = !place ? elementContaining(homepageHtml, "article", `data-continuation-slot="${slot}"`) : "";
-    if (place) {
-      if (!card || !card.includes(`data-continuation-slot="${slot}"`)) {
-        failures.push(`homepage continuation slot ${slot} must contain the loaded place ${place.id}`);
-      } else if (!card.includes(`href="/svetinje/${place.slug}/"`)) {
-        failures.push(`homepage continuation card ${place.id} has the wrong detail route`);
-      } else if (!place.previewImageSrc && !card.includes("editorial-place-card__media--fallback")) {
-        failures.push(`homepage continuation card ${place.id} must retain its honest no-image fallback`);
-      }
-    } else if (!placeholder || !placeholder.includes('data-testid="explorer-continuation-placeholder"')) {
-      failures.push(`homepage continuation slot ${slot} must remain an honest placeholder`);
+    if (!card || !card.includes(`data-continuation-slot="${slot}"`)) {
+      failures.push(`homepage continuation slot ${slot} must contain the loaded place ${place.id}`);
+    } else if (!card.includes(`href="/svetinje/${place.slug}/"`)) {
+      failures.push(`homepage continuation card ${place.id} has the wrong detail route`);
+    } else if (!place.previewImageSrc && !card.includes("editorial-place-card__media--fallback")) {
+      failures.push(`homepage continuation card ${place.id} must retain its honest no-image fallback`);
     }
   }
   if (/data-continuation-slot="00\d+"/.test(homepageHtml)) failures.push("homepage continuation slots must use two-digit numbering");

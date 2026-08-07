@@ -7,10 +7,9 @@ interface Props {
 }
 
 const { places = [] } = Astro.props;
-const MINIMUM_SLOT_COUNT = 4;
 const formatSlot = (slot: number) => String(slot).padStart(2, "0");
-const slots = Array.from({ length: Math.max(MINIMUM_SLOT_COUNT, places.length) }, (_, index) => ({
-  place: places[index],
+const slots = places.map((place, index) => ({
+  place,
   slot: index + 5,
 }));
 ---
@@ -19,27 +18,15 @@ const slots = Array.from({ length: Math.max(MINIMUM_SLOT_COUNT, places.length) }
   class="explorer-continuation map-explorer__continuation"
   aria-label="Будући записи светиња"
   data-testid="explorer-continuation"
+  data-explorer-continuation-results
+  data-empty={places.length === 0 ? "true" : "false"}
 >
-  {slots.map(({ place, slot }) => place ? (
-    <PlaceCard place={place} variant="continuation" continuationSlot={formatSlot(slot)} />
-  ) : (
-    <article
-      class="explorer-continuation__placeholder"
-      data-testid="explorer-continuation-placeholder"
-      data-continuation-slot={formatSlot(slot)}
-    >
-      <div class="explorer-continuation__media" aria-hidden="true">
-        <span></span>
-        <i></i>
-        <b>{formatSlot(slot)}</b>
-      </div>
-      <div class="explorer-continuation__topline">
-        <p>СВЕТИЊА</p>
-        <span>У ПРИПРЕМИ</span>
-      </div>
-      <h3>Запис у припреми</h3>
-      <p class="explorer-continuation__location">Локација ће бити додата</p>
-      <p class="explorer-continuation__summary">Фотографија и подаци биће додати након уредничке провјере.</p>
-    </article>
+  {slots.map(({ place, slot }) => (
+    <PlaceCard
+      place={place}
+      variant="continuation"
+      continuationSlot={formatSlot(slot)}
+      initialExplorerPlacement="continuation"
+    />
   ))}
 </section>

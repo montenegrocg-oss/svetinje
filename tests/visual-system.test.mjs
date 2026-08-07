@@ -106,25 +106,29 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.doesNotMatch(homepage, /PopularRoutes/);
   assert.doesNotMatch(homepage, /HomepagePreviews/);
 
-  const [explorer, recommended, routes, continuation] = await Promise.all([
+  const [explorer, recommended, routes, continuation, pagination] = await Promise.all([
     source("src/components/MapExplorer.astro"),
     source("src/components/RecommendedPlaces.astro"),
     source("src/components/PopularRoutes.astro"),
     source("src/components/ExplorerContinuation.astro"),
+    source("src/components/ExplorerPagination.astro"),
   ]);
   assert.match(explorer, /<MapCanvas places=\{places\} \/>/);
   assert.match(explorer, /<MapControls \/>/);
-  assert.match(explorer, /const primaryPlaces = places\.slice\(0, 4\)/);
-  assert.match(explorer, /const continuationPlaces = places\.slice\(4\)/);
-  assert.match(explorer, /<ExplorerSidebar places=\{primaryPlaces\} \/>/);
+  assert.match(explorer, /const initialPage = paginatePlaces\(places, 1\)/);
+  assert.match(explorer, /const inventoryPlaces = places\.slice\(PLACES_PER_PAGE\)/);
+  assert.match(explorer, /<ExplorerSidebar places=\{initialPage\.primaryPlaces\} totalPlaces=\{places\.length\} \/>/);
   assert.match(explorer, /<RecommendedPlaces places=\{places\} \/>/);
   assert.match(explorer, /import PopularRoutes from "\.\/PopularRoutes\.astro"/);
   assert.match(explorer, /import ExplorerContinuation from "\.\/ExplorerContinuation\.astro"/);
+  assert.match(explorer, /import ExplorerPagination from "\.\/ExplorerPagination\.astro"/);
   assert.match(explorer, /<PopularRoutes \/>/);
-  assert.match(explorer, /<ExplorerContinuation places=\{continuationPlaces\} \/>/);
+  assert.match(explorer, /<ExplorerContinuation places=\{initialPage\.continuationPlaces\} \/>/);
+  assert.match(explorer, /<ExplorerPagination totalPlaces=\{places\.length\} \/>/);
   assert.ok(
     explorer.indexOf("<RecommendedPlaces places={places} />") < explorer.indexOf("<PopularRoutes />")
-      && explorer.indexOf("<PopularRoutes />") < explorer.indexOf("<ExplorerContinuation places={continuationPlaces} />"),
+      && explorer.indexOf("<PopularRoutes />") < explorer.indexOf("<ExplorerContinuation places={initialPage.continuationPlaces} />")
+      && explorer.indexOf("<ExplorerContinuation places={initialPage.continuationPlaces} />") < explorer.indexOf("<ExplorerPagination totalPlaces={places.length} />"),
     "recommendations, routes, and continuation must retain their required MapExplorer order",
   );
   assert.match(explorer, /data-testid="map-explorer"/);
@@ -154,15 +158,17 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(routes, /data-testid="popular-routes"/);
   assert.match(routes, /class="popular-routes__inner"/);
   assert.doesNotMatch(routes, /class="shell popular-routes__inner"/);
-  assert.match(continuation, /const MINIMUM_SLOT_COUNT = 4/);
-  assert.match(continuation, /Math\.max\(MINIMUM_SLOT_COUNT, places\.length\)/);
+  assert.doesNotMatch(continuation, /MINIMUM_SLOT_COUNT|Math\.max/);
   assert.match(continuation, /slot: index \+ 5/);
   assert.match(continuation, /String\(slot\)\.padStart\(2, "0"\)/);
-  assert.equal((continuation.match(/data-testid="explorer-continuation-placeholder"/g) ?? []).length, 1);
+  assert.equal((continuation.match(/data-testid="explorer-continuation-placeholder"/g) ?? []).length, 0);
   assert.match(continuation, /data-testid="explorer-continuation"/);
-  assert.match(continuation, /data-continuation-slot=\{formatSlot\(slot\)\}/);
-  assert.match(continuation, /<PlaceCard place=\{place\} variant="continuation" continuationSlot=\{formatSlot\(slot\)\} \/>/);
-  assert.match(continuation, /data-continuation-slot=\{formatSlot\(slot\)\}/);
+  assert.match(continuation, /<PlaceCard[\s\S]*?place=\{place\}[\s\S]*?variant="continuation"[\s\S]*?continuationSlot=\{formatSlot\(slot\)\}/);
+  assert.match(pagination, /data-explorer-pagination/);
+  assert.match(pagination, /data-pagination-previous/);
+  assert.match(pagination, /data-pagination-next/);
+  assert.match(pagination, /data-pagination-page=\{page\}/);
+  assert.match(pagination, /hidden=\{totalPages <= 1\}/);
 });
 
 test("the map loading surface is neutral and cannot reveal the decorative fallback", async () => {
