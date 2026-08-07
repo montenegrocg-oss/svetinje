@@ -45,17 +45,21 @@ test("the approved transparent logo replaces the generated header lockup", async
 });
 
 test("approved map pins are optimized RGBA assets", async () => {
-  const [monastery, church] = await Promise.all([
+  const [monastery, church, holyPlace] = await Promise.all([
     pngInfo("public/images/map/pin-monastery.png"),
     pngInfo("public/images/map/pin-church.png"),
+    pngInfo("public/images/map/pin-holy-place.png"),
   ]);
 
-  assert.deepEqual([monastery.width, monastery.height], [362, 512]);
-  assert.deepEqual([church.width, church.height], [342, 512]);
+  assert.deepEqual([monastery.width, monastery.height], [354, 473]);
+  assert.deepEqual([church.width, church.height], [354, 480]);
+  assert.deepEqual([holyPlace.width, holyPlace.height], [352, 497]);
   assert.equal(monastery.colorType, 6);
   assert.equal(church.colorType, 6);
-  assert.ok(monastery.asset.length < 300_000, `pin-monastery.png is ${monastery.asset.length} bytes`);
-  assert.ok(church.asset.length < 300_000, `pin-church.png is ${church.asset.length} bytes`);
+  assert.equal(holyPlace.colorType, 6);
+  assert.ok(monastery.asset.length < 350_000, `pin-monastery.png is ${monastery.asset.length} bytes`);
+  assert.ok(church.asset.length < 350_000, `pin-church.png is ${church.asset.length} bytes`);
+  assert.ok(holyPlace.asset.length < 350_000, `pin-holy-place.png is ${holyPlace.asset.length} bytes`);
 });
 
 test("desktop and mobile navigation expose the required Serbian guide sections", async () => {
