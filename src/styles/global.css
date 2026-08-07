@@ -1770,7 +1770,7 @@
     left: 50%;
     width: auto;
     max-width: none;
-    height: 3.5rem;
+    height: 2.625rem;
     object-fit: contain;
     filter: drop-shadow(0 0.2rem 0.28rem rgba(10, 25, 40, 0.28));
     pointer-events: none;
@@ -1786,7 +1786,7 @@
 
   .holy-place-marker.is-selected .holy-place-marker__image {
     filter: drop-shadow(0 0 0.2rem rgba(208, 171, 97, 0.85)) drop-shadow(0 0.3rem 0.35rem rgba(10, 41, 68, 0.34));
-    transform: translateX(-50%) scale(1.15);
+    transform: translateX(-50%) scale(1.142857);
   }
 
   .holy-place-marker.is-selected:hover .holy-place-marker__image,
@@ -3001,7 +3001,11 @@
     }
 
     .holy-place-marker__image {
-      height: 3.875rem;
+      height: 2.875rem;
+    }
+
+    .holy-place-marker.is-selected .holy-place-marker__image {
+      transform: translateX(-50%) scale(1.173913);
     }
 
     .map-explorer__heading {

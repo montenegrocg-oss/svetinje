@@ -165,8 +165,9 @@ test("cathedral markers reuse the existing blue church pin", async () => {
   assert.match(mapCanvas, /holy-place-marker__fallback/);
   assert.doesNotMatch(mapCanvas, /markerPlaces\.push\([\s\S]*?placeType:\s*["']church["']/);
   assert.match(styles, /\.holy-place-marker\s*\{[\s\S]*?width: 2\.75rem;[\s\S]*?height: 2\.75rem;/);
-  assert.match(styles, /\.holy-place-marker__image\s*\{[\s\S]*?bottom: 0;[\s\S]*?height: 3\.5rem;[\s\S]*?transform-origin: 50% 100%;/);
-  assert.match(styles, /\.holy-place-marker\.is-selected \.holy-place-marker__image\s*\{[\s\S]*?scale\(1\.15\)/);
+  assert.match(styles, /\.holy-place-marker__image\s*\{[\s\S]*?bottom: 0;[\s\S]*?height: 2\.625rem;[\s\S]*?transform-origin: 50% 100%;/);
+  assert.match(styles, /\.holy-place-marker\.is-selected \.holy-place-marker__image\s*\{[\s\S]*?scale\(1\.142857\)/);
+  assert.match(styles, /@media \(min-width: 48rem\)[\s\S]*?\.holy-place-marker__image\s*\{[\s\S]*?height: 2\.875rem;[\s\S]*?\.holy-place-marker\.is-selected \.holy-place-marker__image\s*\{[\s\S]*?scale\(1\.173913\)/);
   assert.match(styles, /\.holy-place-marker:focus-visible\s*\{[\s\S]*?outline: 3px solid/);
 });
 
