@@ -260,15 +260,18 @@ test("the visual system includes required breakpoints, touch targets, and reduce
   assert.match(css, /@layer reset, tokens, base, components, explorer, homepage, pages, editorial-preview, responsive;/);
 });
 
-test("the homepage introduction has no main photograph or empty media column", async () => {
+test("the homepage replaces the project introduction with a reusable news feed", async () => {
   const homepage = await source("src/pages/index.astro");
   const styles = await source("src/styles/global.css");
   assert.doesNotMatch(homepage, /\/images\/home\/hero\.webp/);
-  assert.doesNotMatch(homepage, /project-intro__media/);
-  assert.match(homepage, /О водичу/);
-  assert.match(homepage, /Уређивачко повјерење/);
-  assert.doesNotMatch(styles, /\.project-intro__media/);
-  assert.match(styles, /grid-template-columns: minmax\(0, 1\.2fr\) minmax\(16rem, 0\.8fr\)/);
+  assert.doesNotMatch(homepage, /project-intro|trust-note|О водичу|Уређивачко повјерење|Провјерено прије објаве/);
+  assert.match(homepage, /НОВОСТИ/);
+  assert.match(homepage, /Последње додато/);
+  assert.match(homepage, /Сајт се тренутно активно допуњава новим садржајем и објектима\./);
+  assert.match(homepage, /selectLatestNews\(await loadVisibleNews\(\), 5\)/);
+  assert.match(homepage, /<NewsFeed items=\{latestNews\}/);
+  assert.doesNotMatch(styles, /\.project-intro|\.trust-note/);
+  assert.match(styles, /\.news-feed-item__link:focus-visible/);
 });
 
 test("the homepage photograph matches its media record and size budget", async () => {

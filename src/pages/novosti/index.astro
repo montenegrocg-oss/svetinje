@@ -1,0 +1,27 @@
+---
+import NewsFeed from "../../components/news/NewsFeed.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { loadVisibleNews } from "../../lib/content/news";
+
+const news = await loadVisibleNews();
+---
+
+<BaseLayout
+  title="Новости"
+  description="Најновији садржаји, измјене и обавјештења са сајта Светиње.me."
+  canonicalPath="/novosti/"
+>
+  <header class="page-hero compact news-archive-hero">
+    <div class="shell narrow">
+      <p class="eyebrow">Светиње.me</p>
+      <h1>Новости</h1>
+      <p>Најновији садржаји, измјене и обавјештења са сајта.</p>
+    </div>
+  </header>
+
+  <section class="section news-archive" aria-label="Све новости">
+    <div class="shell narrow">
+      <NewsFeed items={news} />
+    </div>
+  </section>
+</BaseLayout>

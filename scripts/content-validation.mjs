@@ -10,6 +10,7 @@ const SCHEMA_FILES = {
   source: "source.schema.json",
   practical: "practical.schema.json",
   media: "media.schema.json",
+  news: "news.schema.json",
   policy: "publication-policy.schema.json",
 };
 
@@ -44,6 +45,7 @@ const ENTITY_PATHS = [
   { kind: "source", pattern: /^content\/sources\/([^/]+)\.yaml$/ },
   { kind: "practical", pattern: /^content\/practical\/([^/]+)\/([^/]+)\.yaml$/ },
   { kind: "media", pattern: /^content\/media\/([^/]+)\.yaml$/ },
+  { kind: "news", pattern: /^content\/news\/([^/]+)\.md$/ },
 ];
 
 const COUNT_KEY = {
@@ -52,6 +54,7 @@ const COUNT_KEY = {
   source: "sources",
   practical: "practical",
   media: "media",
+  news: "news",
 };
 
 const PUBLIC_STATUSES = new Set(["approved", "published"]);
@@ -169,6 +172,7 @@ function validatePath(record) {
     if (data.id !== match[2]) errors.push(issue(file, "/id", `practical id must match filename ${match[2]}`));
   }
   if (kind === "media" && data.id !== match[1]) errors.push(issue(file, "/id", `media id must match filename ${match[1]}`));
+  if (kind === "news" && data.id !== match[1]) errors.push(issue(file, "/id", `news id must match filename ${match[1]}`));
   return errors;
 }
 
@@ -219,6 +223,7 @@ function requiredRoles(record) {
       if (["approved", "published"].includes(localized.translation_status)) roles.push(LOCALE_ROLE[locale]);
     }
   }
+  if (record.kind === "news") roles.push("factual", "sr-language");
   if (data.editorial_status === "published") roles.push("publishing");
   return [...new Set(roles.filter(Boolean))];
 }
@@ -320,6 +325,36 @@ function validateMarkdown(record) {
   return errors;
 }
 
+function isSafeNewsTargetUrl(value) {
+  return (
+    typeof value === "string" &&
+    value.startsWith("/") &&
+    !value.startsWith("//") &&
+    !value.startsWith("/svetinje/") &&
+    !/[\\\u0000-\u001f\u007f]/u.test(value)
+  );
+}
+
+function validateNewsMarkdown(record) {
+  const errors = [];
+  const { data, body, file } = record;
+  if (!data) return errors;
+  if (/<\/?(?:script|iframe|object|embed|form|input|button|style|link|meta)\b/i.test(body) || /\son[a-z]+\s*=/i.test(body)) {
+    errors.push(issue(file, "/body", "unsafe raw HTML is not allowed"));
+  }
+  if (/(?:javascript|data|vbscript):/i.test(body)) errors.push(issue(file, "/body", "unsafe URI protocol is not allowed"));
+
+  const modes = [data.related_place_id, data.target_url, data.slug].filter((value) => typeof value === "string").length;
+  if (modes !== 1) errors.push(issue(file, "/", "exactly one navigation strategy is required"));
+  if (data.target_url !== undefined && !isSafeNewsTargetUrl(data.target_url)) {
+    errors.push(issue(file, "/target_url", "target_url must be a safe same-site absolute path and cannot bypass place publication gating"));
+  }
+  if (data.slug !== undefined && !body.trim()) {
+    errors.push(issue(file, "/body", "slug navigation requires a non-empty Markdown body"));
+  }
+  return errors;
+}
+
 function validateUniqueness(records) {
   const errors = [];
   const identifiers = new Map();
@@ -328,7 +363,7 @@ function validateUniqueness(records) {
   for (const record of records) {
     const { data, kind, file } = record;
     if (!data) continue;
-    if (["place", "source", "practical", "media"].includes(kind) && data.id) {
+    if (["place", "source", "practical", "media", "news"].includes(kind) && data.id) {
       const previous = identifiers.get(data.id);
       if (previous) errors.push(issue(file, "/id", `duplicate entity id ${data.id}; first declared in ${previous}`));
       else identifiers.set(data.id, file);
@@ -345,13 +380,18 @@ function validateUniqueness(records) {
         else slugs.set(slugKey, file);
       }
     }
+    if (kind === "news" && data.slug && !["archived", "rejected"].includes(data.editorial_status)) {
+      const previous = slugs.get(`news:${data.slug}`);
+      if (previous) errors.push(issue(file, "/slug", `duplicate active news slug ${data.slug}; first declared in ${previous}`));
+      else slugs.set(`news:${data.slug}`, file);
+    }
   }
   return errors;
 }
 
 function validateReferences(records) {
   const errors = [];
-  const byKind = Object.fromEntries(["place", "source", "practical", "media"].map((kind) => [kind, new Map()]));
+  const byKind = Object.fromEntries(["place", "source", "practical", "media", "news"].map((kind) => [kind, new Map()]));
   for (const record of records) {
     if (byKind[record.kind] && record.data?.id) byKind[record.kind].set(record.data.id, record);
   }
@@ -378,6 +418,9 @@ function validateReferences(records) {
     }
     if (kind === "media") {
       for (const id of data.related_place_ids ?? []) if (!placeIds.has(id)) errors.push(issue(file, "/related_place_ids", `unknown related place id ${id}`));
+    }
+    if (kind === "news" && data.related_place_id && !placeIds.has(data.related_place_id)) {
+      errors.push(issue(file, "/related_place_id", `unknown related place id ${data.related_place_id}`));
     }
   }
 
@@ -415,7 +458,7 @@ function validatePolicyState(records, policy, policyFile) {
 
 export async function validateRepositoryWithSummary(root) {
   const errors = [];
-  const counts = { places: 0, narratives: 0, sources: 0, practical: 0, media: 0 };
+  const counts = { places: 0, narratives: 0, sources: 0, practical: 0, media: 0, news: 0 };
   let validators;
   try {
     validators = await buildValidators(root);
@@ -453,7 +496,7 @@ export async function validateRepositoryWithSummary(root) {
     }
     counts[COUNT_KEY[classification.kind]] += 1;
     const text = await readFile(absoluteFile, "utf8");
-    const parsed = classification.kind === "narrative" ? parseMarkdown(text, file) : parseYaml(text, file);
+    const parsed = ["narrative", "news"].includes(classification.kind) ? parseMarkdown(text, file) : parseYaml(text, file);
     errors.push(...parsed.errors);
     const record = { file, kind: classification.kind, match: classification.match, data: parsed.data, body: parsed.body ?? "" };
     records.push(record);
@@ -464,6 +507,7 @@ export async function validateRepositoryWithSummary(root) {
       }
       errors.push(...validatePath(record), ...validateDates(record));
       if (record.kind === "narrative") errors.push(...validateMarkdown(record));
+      if (record.kind === "news") errors.push(...validateNewsMarkdown(record));
     }
   }
 

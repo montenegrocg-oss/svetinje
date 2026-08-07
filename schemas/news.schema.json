@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://svetinje.me/schemas/news.schema.json",
+  "title": "Svetinje.me news front matter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "locale",
+    "editorial_status",
+    "published_at",
+    "type",
+    "title",
+    "summary",
+    "approvals",
+    "audit"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "$ref": "common.schema.json#/$defs/entityId" },
+    "locale": { "const": "sr" },
+    "editorial_status": { "$ref": "common.schema.json#/$defs/editorialStatus" },
+    "published_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "type": {
+      "enum": ["place-added", "place-updated", "site-update", "announcement", "news"]
+    },
+    "title": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "summary": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "related_place_id": { "$ref": "common.schema.json#/$defs/entityId" },
+    "target_url": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^/(?!/)"
+    },
+    "slug": { "$ref": "common.schema.json#/$defs/slug" },
+    "approvals": { "$ref": "common.schema.json#/$defs/approvals" },
+    "audit": { "$ref": "common.schema.json#/$defs/audit" }
+  },
+  "oneOf": [
+    {
+      "required": ["related_place_id"],
+      "not": { "anyOf": [{ "required": ["target_url"] }, { "required": ["slug"] }] }
+    },
+    {
+      "required": ["target_url"],
+      "not": { "anyOf": [{ "required": ["related_place_id"] }, { "required": ["slug"] }] }
+    },
+    {
+      "required": ["slug"],
+      "not": { "anyOf": [{ "required": ["related_place_id"] }, { "required": ["target_url"] }] }
+    }
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": { "editorial_status": { "enum": ["approved", "published"] } },
+        "required": ["editorial_status"]
+      },
+      "then": {
+        "properties": {
+          "approvals": { "type": "array", "minItems": 3 }
+        }
+      }
+    }
+  ]
+}

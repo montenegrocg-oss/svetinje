@@ -3,6 +3,7 @@
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { loadExcludedContentMarkers } from "../src/lib/content/publication.ts";
+import { loadExcludedNewsMarkers } from "../src/lib/content/news.ts";
 import {
   CATEGORY_HTML_ROUTES,
   createOutputExpectations,
@@ -95,6 +96,72 @@ function verifyCards(page, expectedPlaces, allPlaces, label, failures) {
     }
     if (place.previewImageSrc && !card.includes(`src="${place.previewImageSrc}"`)) {
       failures.push(`${label} card for ${place.id} is missing its eligible preview image`);
+    }
+  }
+}
+
+function verifyNewsFeed(page, expectedItems, label, failures) {
+  if (!page) {
+    failures.push(`${label} page is missing`);
+    return;
+  }
+  const ids = [...page.html.matchAll(/data-news-item="([^"]+)"/g)].map((match) => match[1]);
+  const expectedIds = expectedItems.map((item) => item.id);
+  if (ids.length !== expectedItems.length) {
+    failures.push(`${label} must contain ${expectedItems.length} visible news item(s), found ${ids.length}`);
+  }
+  if (JSON.stringify(ids) !== JSON.stringify(expectedIds)) {
+    failures.push(`${label} news is not in descending timestamp order`);
+  }
+  for (const item of expectedItems) {
+    const row = elementContaining(page.html, "article", `data-news-item="${item.id}"`);
+    if (!row) {
+      failures.push(`${label} is missing news ${item.id}`);
+      continue;
+    }
+    if (
+      !row.includes(`data-published-at="${item.publishedAt}"`) ||
+      !row.includes(`href="${item.href}"`) ||
+      !row.includes(item.title) ||
+      !row.includes(item.summary) ||
+      !row.includes(`<time datetime="${item.publishedAt}"`)
+    ) {
+      failures.push(`${label} news ${item.id} does not match its loaded timestamp, href, or copy`);
+    }
+  }
+}
+
+function verifyNewsContracts(homepage, archive, model, pagesByRoute, failures) {
+  const latest = model.news.slice(0, 5);
+  verifyNewsFeed(homepage, latest, "homepage", failures);
+  verifyNewsFeed(archive, model.news, "news archive", failures);
+  const homepageHtml = homepage?.html ?? "";
+  if (!homepageHtml.includes("НОВОСТИ") || !homepageHtml.includes("Последње додато")) {
+    failures.push("homepage is missing the new news section identity");
+  }
+  if (!homepageHtml.includes("Сајт се тренутно активно допуњава новим садржајем и објектима.")) {
+    failures.push("homepage is missing the exact news introduction");
+  }
+  if (/О водичу|Светиње на једном мјесту|Уређивачко повјерење|Провјерено прије објаве/.test(homepageHtml)) {
+    failures.push("homepage still contains the retired project-intro or trust block");
+  }
+  if (!homepageHtml.includes('href="/novosti/"') || !homepageHtml.includes("Све новости")) {
+    failures.push("homepage is missing its /novosti/ archive link");
+  }
+  if (latest.length === 0 && !homepageHtml.includes("Нове објаве биће доступне овдје.")) {
+    failures.push("homepage is missing its protected empty-news state");
+  }
+  for (const item of model.news) {
+    if (!item.relatedPlaceId) continue;
+    const place = model.placesById.get(item.relatedPlaceId);
+    if (!place || item.href !== `/svetinje/${place.slug}/`) {
+      failures.push(`related-place news ${item.id} does not resolve from the visible place slug`);
+    }
+  }
+  for (const { item, route } of model.newsDetailRoutes) {
+    const detail = pagesByRoute.get(route);
+    if (!detail || !detail.html.includes(`data-news-article="${item.id}"`)) {
+      failures.push(`visible own-detail news route ${route} is missing or mismatched`);
     }
   }
 }
@@ -269,8 +336,10 @@ for (const page of pages) {
 
 const homepage = pagesByRoute.get("index.html");
 const catalogue = pagesByRoute.get("svetinje/index.html");
+const newsArchive = pagesByRoute.get("novosti/index.html");
 const homepageHtml = homepage?.html ?? "";
 verifyFixedHomepageContracts(homepageHtml, model, failures);
+verifyNewsContracts(homepage, newsArchive, model, pagesByRoute, failures);
 verifyCards(homepage, model.places, model.places, "homepage explorer", failures);
 verifyCards(catalogue, model.places, model.places, "general catalogue", failures);
 
@@ -322,6 +391,13 @@ if (!editorialPreview) {
       if (pages.some((page) => page.html.includes(value))) failures.push(`production contains excluded research value ${value}`);
     }
   }
+  const excludedNews = await loadExcludedNewsMarkers(root);
+  for (const marker of excludedNews) {
+    const excludedValues = [marker.id, marker.title, marker.summary, marker.relatedPlaceId, marker.slug, marker.body];
+    for (const value of excludedValues.filter((candidate) => typeof candidate === "string" && candidate.length >= 4)) {
+      if (pages.some((page) => page.html.includes(value))) failures.push(`production contains excluded research news value ${value}`);
+    }
+  }
 }
 
 if (failures.length > 0) {
@@ -329,8 +405,8 @@ if (failures.length > 0) {
   console.error(failures.join("\n"));
   process.exitCode = 1;
 } else if (editorialPreview) {
-  console.log(`Editorial preview output check passed: ${files.length} HTML page(s), ${model.places.length} allowlisted place(s), noindex enforced.`);
+  console.log(`Editorial preview output check passed: ${files.length} HTML page(s), ${model.places.length} allowlisted place(s), ${model.news.length} allowlisted news item(s), noindex enforced.`);
 } else {
   const excluded = await loadExcludedContentMarkers(root);
-  console.log(`Production output check passed: ${files.length} HTML page(s), ${model.places.length} visible place(s), ${excluded.length} excluded narrative(s), 0 leaks.`);
+  console.log(`Production output check passed: ${files.length} HTML page(s), ${model.places.length} visible place(s), ${model.news.length} visible news item(s), ${excluded.length} excluded narrative(s), 0 leaks.`);
 }

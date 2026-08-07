@@ -1,0 +1,22 @@
+---
+import type { VisibleNewsItem } from "../../lib/content/news";
+import NewsFeedItem from "./NewsFeedItem.astro";
+
+interface Props {
+  items: VisibleNewsItem[];
+  emptyText?: string;
+}
+
+const {
+  items,
+  emptyText = "Нове објаве биће доступне овдје.",
+} = Astro.props;
+---
+
+<div class="news-feed" data-news-feed data-news-count={items.length}>
+  {items.length > 0 ? (
+    items.map((item) => <NewsFeedItem item={item} />)
+  ) : (
+    <p class="news-feed__empty">{emptyText}</p>
+  )}
+</div>

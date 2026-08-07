@@ -1,0 +1,24 @@
+---
+import { formatNewsDate, type VisibleNewsItem } from "../../lib/content/news";
+
+interface Props {
+  item: VisibleNewsItem;
+}
+
+const { item } = Astro.props;
+---
+
+<article class="news-feed-item" data-news-item={item.id} data-published-at={item.publishedAt}>
+  <a class="news-feed-item__link" href={item.href}>
+    <div class="news-feed-item__meta">
+      <time datetime={item.publishedAt}>{formatNewsDate(item.publishedAt)}</time>
+      <span aria-hidden="true">·</span>
+      <span>{item.typeLabel}</span>
+    </div>
+    <h3>{item.title}</h3>
+    <div class="news-feed-item__footer">
+      <p>{item.summary}</p>
+      <span class="news-feed-item__arrow" aria-hidden="true">→</span>
+    </div>
+  </a>
+</article>

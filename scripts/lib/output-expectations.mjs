@@ -1,4 +1,5 @@
 import { loadVisiblePlaces } from "../../src/lib/content/publication.ts";
+import { loadVisibleNews } from "../../src/lib/content/news.ts";
 import { categoryForPlaceType } from "../../src/lib/place-filters.ts";
 
 export const STATIC_HTML_ROUTES = Object.freeze([
@@ -9,6 +10,7 @@ export const STATIC_HTML_ROUTES = Object.freeze([
   "sveta-mjesta/index.html",
   "o-projektu/index.html",
   "izvori/index.html",
+  "novosti/index.html",
 ]);
 
 export const CATEGORY_HTML_ROUTES = Object.freeze({
@@ -26,7 +28,7 @@ export const CATEGORY_HREFS = Object.freeze({
 const hasCoordinates = (place) =>
   Number.isFinite(place.latitude) && Number.isFinite(place.longitude);
 
-export function createOutputModel(places) {
+export function createOutputModel(places, news = []) {
   const normalizedPlaces = [...places];
   const categoryMembership = {
     monasteries: [],
@@ -53,13 +55,23 @@ export function createOutputModel(places) {
     { length: Math.max(4, continuationPlaces.length) },
     (_, index) => ({ slot: String(index + 5).padStart(2, "0"), place: continuationPlaces[index] }),
   );
+  const newsDetailRoutes = news.flatMap((item) => item.slug ? [{
+    item,
+    route: `novosti/${item.slug}/index.html`,
+  }] : []);
 
   return {
     places: normalizedPlaces,
     staticRoutes: [...STATIC_HTML_ROUTES],
     detailRoutes,
-    allExpectedRoutes: [...STATIC_HTML_ROUTES, ...detailRoutes.map(({ route }) => route)],
-    expectedPageCount: STATIC_HTML_ROUTES.length + normalizedPlaces.length,
+    news: [...news],
+    newsDetailRoutes,
+    allExpectedRoutes: [
+      ...STATIC_HTML_ROUTES,
+      ...detailRoutes.map(({ route }) => route),
+      ...newsDetailRoutes.map(({ route }) => route),
+    ],
+    expectedPageCount: STATIC_HTML_ROUTES.length + normalizedPlaces.length + newsDetailRoutes.length,
     categoryMembership,
     placesById: new Map(normalizedPlaces.map((place) => [place.id, place])),
     markerPlaces: normalizedPlaces.filter(hasCoordinates),
@@ -77,5 +89,6 @@ export function createOutputModel(places) {
 
 export async function createOutputExpectations(root, { editorialPreview }) {
   const places = await loadVisiblePlaces(root, { editorialPreview });
-  return createOutputModel(places);
+  const news = await loadVisibleNews(root, { editorialPreview, visiblePlaces: places });
+  return createOutputModel(places, news);
 }

@@ -1,0 +1,47 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { formatNewsDate, loadVisibleNews, type VisibleNewsItem } from "../../lib/content/news";
+
+export async function getStaticPaths() {
+  const news = await loadVisibleNews();
+  return news.flatMap((item) => item.slug ? [{ params: { slug: item.slug }, props: { item } }] : []);
+}
+
+const { item } = Astro.props as { item: VisibleNewsItem };
+const bodyBlocks = (item.body ?? "")
+  .split(/\n\s*\n/)
+  .map((block) => block.trim())
+  .filter(Boolean)
+  .map((block) => ({
+    kind: block.startsWith("## ") ? "heading" : "paragraph",
+    text: block.replace(/^##\s+/, "").replace(/\s*\n\s*/g, " "),
+  }));
+---
+
+<BaseLayout
+  title={item.title}
+  description={item.summary}
+  canonicalPath={`/novosti/${item.slug}/`}
+  noindex={item.preview}
+>
+  <article class="news-article" data-news-article={item.id}>
+    <div class="shell narrow">
+      <nav class="news-article__breadcrumb" aria-label="Путања странице">
+        <a href="/novosti/">Новости</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{item.title}</span>
+      </nav>
+      <div class="news-feed-item__meta">
+        <time datetime={item.publishedAt}>{formatNewsDate(item.publishedAt)}</time>
+        <span aria-hidden="true">·</span>
+        <span>{item.typeLabel}</span>
+      </div>
+      <h1>{item.title}</h1>
+      <p class="news-article__summary">{item.summary}</p>
+      <div class="news-article__body">
+        {bodyBlocks.map((block) => block.kind === "heading" ? <h2>{block.text}</h2> : <p>{block.text}</p>)}
+      </div>
+      <a class="news-article__back" href="/novosti/"><span aria-hidden="true">←</span> Све новости</a>
+    </div>
+  </article>
+</BaseLayout>

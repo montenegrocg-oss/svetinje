@@ -1,6 +1,10 @@
 ---
 import MapExplorer from "../components/MapExplorer.astro";
+import NewsFeed from "../components/news/NewsFeed.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { loadVisibleNews, selectLatestNews } from "../lib/content/news";
+
+const latestNews = selectLatestNews(await loadVisibleNews(), 5);
 ---
 
 <BaseLayout
@@ -10,26 +14,17 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 >
   <MapExplorer />
 
-  <section class="project-intro" aria-labelledby="project-intro-title">
-    <div class="shell project-intro__grid">
-      <div class="project-intro__copy">
-        <p class="map-eyebrow">О водичу</p>
-        <h2 id="project-intro-title">Светиње на једном мјесту, са јасним трагом извора.</h2>
-        <p>Светиње.me развија пажљиво уређен дигитални водич за поклонике, посјетиоце и истраживаче православног насљеђа Црне Горе.</p>
-        <div class="project-intro__links">
-          <a class="button-link" href="/o-projektu/">О пројекту <span aria-hidden="true">→</span></a>
-          <a class="button-link button-link--quiet" href="/izvori/">Извори и уређивачка политика <span aria-hidden="true">→</span></a>
-        </div>
+  <section class="homepage-news" aria-labelledby="homepage-news-title">
+    <div class="shell homepage-news__inner">
+      <header class="homepage-news__header">
+        <p class="map-eyebrow">НОВОСТИ</p>
+        <h2 id="homepage-news-title">Последње додато</h2>
+        <p>Сајт се тренутно активно допуњава новим садржајем и објектима.</p>
+      </header>
+      <NewsFeed items={latestNews} />
+      <div class="homepage-news__all">
+        <a href="/novosti/">Све новости <span aria-hidden="true">→</span></a>
       </div>
-      <aside class="trust-note" aria-label="Уређивачко повјерење">
-        <p class="map-eyebrow">Провјерено прије објаве</p>
-        <ul>
-          <li><strong>01</strong><span>Извори</span></li>
-          <li><strong>02</strong><span>Стручна провјера</span></li>
-          <li><strong>03</strong><span>Права медија</span></li>
-        </ul>
-        <p>Јавни каталог је у припреми. Истраживачки записи остају ван јавног приказа.</p>
-      </aside>
     </div>
   </section>
 </BaseLayout>

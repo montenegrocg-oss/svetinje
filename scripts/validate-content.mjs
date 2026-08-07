@@ -9,6 +9,7 @@ const summary = [
   `${counts.sources} source record(s)`,
   `${counts.practical} practical record(s)`,
   `${counts.media} media record(s)`,
+  `${counts.news} news record(s)`,
 ].join(", ");
 if (errors.length > 0) {
   console.error(`Content validation failed with ${errors.length} error(s):`);

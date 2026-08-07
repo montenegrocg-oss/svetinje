@@ -86,3 +86,17 @@ test("a place without coordinates or media still has cards and a detail route", 
   assert.equal(model.primaryPlaceCount, 1);
   assert.equal(model.continuationRealCount, 0);
 });
+
+test("news routes extend the derived output model without fixed page counts", () => {
+  const places = [place("alpha", "monastery")];
+  const news = [
+    { id: "related-update", href: "/svetinje/alpha-slug/", publishedAt: "2026-01-02T00:00:00Z" },
+    { id: "article-update", href: "/novosti/article-update/", slug: "article-update", publishedAt: "2026-01-01T00:00:00Z" },
+  ];
+  const model = createOutputModel(places, news);
+
+  assert.ok(STATIC_HTML_ROUTES.includes("novosti/index.html"));
+  assert.deepEqual(model.newsDetailRoutes.map(({ route }) => route), ["novosti/article-update/index.html"]);
+  assert.ok(model.allExpectedRoutes.includes("novosti/article-update/index.html"));
+  assert.equal(model.expectedPageCount, STATIC_HTML_ROUTES.length + places.length + 1);
+});

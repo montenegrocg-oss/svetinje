@@ -117,6 +117,7 @@ test("the repository summary reports actual validated record counts", async () =
     sources: await countFiles(path.join(contentRoot, "sources"), (file) => file.endsWith(".yaml")),
     practical: await countFiles(path.join(contentRoot, "practical"), (file) => file.endsWith(".yaml")),
     media: await countFiles(path.join(contentRoot, "media"), (file) => file.endsWith(".yaml")),
+    news: await countFiles(path.join(contentRoot, "news"), (file) => file.endsWith(".md")),
   };
   assert.deepEqual(result.errors, []);
   assert.deepEqual(result.counts, actualCounts);
