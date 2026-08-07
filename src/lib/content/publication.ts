@@ -488,11 +488,6 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       assertPreviewField(Number.isFinite(coordinates.latitude) && Number.isFinite(coordinates.longitude), id + " requires valid coordinates");
       assertPreviewField(typeof coordinates.accuracy === "string", id + " requires a coordinate accuracy classification");
     }
-    assertPreviewField(typeof place.location?.municipality?.value === "string", `${id} requires a municipality`);
-    assertPreviewField(typeof place.location?.settlement?.value === "string", `${id} requires a settlement`);
-    assertPreviewField(typeof place.location?.postal_address?.value === "string", `${id} requires an address`);
-    assertPreviewField(typeof place.ecclesiastical?.jurisdiction?.value === "string", `${id} requires an ecclesiastical jurisdiction`);
-
     const sourceIds = [...new Set([...place.source_ids, ...narrative.source_ids])];
     assertPreviewField(sourceIds.length > 0, `${id} requires registered sources`);
     const registeredSources = sourceIds.map((sourceId) => {
@@ -511,12 +506,12 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       }
     }
 
-    const municipality = place.location.municipality.value;
-    const settlement = place.location.settlement.value;
+    const municipality = place.location?.municipality?.value;
+    const settlement = place.location?.settlement?.value;
     const latitude = coordinates?.latitude;
     const longitude = coordinates?.longitude;
     const coordinateAccuracy = coordinates?.accuracy;
-    const ecclesiasticalJurisdiction = place.ecclesiastical.jurisdiction.value;
+    const ecclesiasticalJurisdiction = place.ecclesiastical?.jurisdiction?.value;
     const previewMedia = await previewMediaForPlace(root, place.id, narrative.preferred_name, media, "editorial-preview", policy);
     return {
       id: place.id,
@@ -525,13 +520,13 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       summary: narrative.summary,
       placeType: place.place_type.value,
       typeLabel: placeTypeLabel(place.place_type.value),
-      municipality,
-      settlement,
-      address: place.location.postal_address.value,
+      ...(municipality !== undefined ? { municipality } : {}),
+      ...(settlement !== undefined ? { settlement } : {}),
+      ...(place.location?.postal_address?.value !== undefined ? { address: place.location.postal_address.value } : {}),
       ...(latitude !== undefined ? { latitude } : {}),
       ...(longitude !== undefined ? { longitude } : {}),
       ...(coordinateAccuracy !== undefined ? { coordinateAccuracy } : {}),
-      ecclesiasticalJurisdiction,
+      ...(ecclesiasticalJurisdiction !== undefined ? { ecclesiasticalJurisdiction } : {}),
       ...previewMedia,
       preview: true,
       previewStatus: place.editorial_status,

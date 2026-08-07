@@ -17,6 +17,7 @@ const breadcrumb = category === "monasteries"
       ? { href: "/sveta-mjesta/", label: "Света мјеста" }
       : { href: "/svetinje/", label: "Светиње" };
 const location = place.settlement ?? place.municipality;
+const hasCoordinates = place.latitude !== undefined && place.longitude !== undefined;
 const accuracyLabels: Record<string, string> = {
   "complex-centroid": "Центар комплекса",
 };
@@ -72,7 +73,7 @@ const accuracyLabel = place.coordinateAccuracy
 
     <div class="place-profile-action-status" role="status" aria-live="polite" hidden>
       <span data-place-detail-action-message></span>
-      <a href="/#mapa" data-place-detail-map-link hidden>Отвори главну карту</a>
+      {hasCoordinates && <a href="/#mapa" data-place-detail-map-link hidden>Отвори главну карту</a>}
     </div>
   </div>
 </header>

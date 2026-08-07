@@ -1,0 +1,28 @@
+---
+schema_version: 1
+place_id: manastir-praskvica
+locale: sr
+editorial_status: research
+translation_status: source
+slug: manastir-praskvica
+preferred_name: Манастир Прасквица
+summary: Манастир Прасквица налази се изнад Милочера и Светог Стефана, а његова документована историја обухвата повељу из 1413. године.
+source_ids: [mitropolija-muski-manastiri]
+section_sources: { introduction: [mitropolija-muski-manastiri], history: [mitropolija-muski-manastiri], location: [mitropolija-muski-manastiri] }
+approvals: []
+audit: { created_at: 2026-08-07T12:00:00Z, created_by: codex, updated_at: 2026-08-07T12:00:00Z, updated_by: codex }
+---
+
+## Основни подаци {#introduction}
+
+Манастир Прасквица има храм Светог Николе. Предање које преноси извор помиње 1050. годину, али се та година не представља као документован датум оснивања.[^mitropolija-muski-manastiri]
+
+## Историја {#history}
+
+Повеља Балше III из 1413. године биљежи даровање земље за храм Светог Николе. Комплекс је страдао почетком XIX вијека, а обнова храма завршена је 1856. године; нова оштећења забиљежена су током Другог свјетског рата.[^mitropolija-muski-manastiri]
+
+## Положај {#location}
+
+Манастир се налази на узвишењу изнад Милочера и Светог Стефана, са погледом на паштровску обалу. Извор не наводи координате.[^mitropolija-muski-manastiri]
+
+[^mitropolija-muski-manastiri]: Регистар извора: `mitropolija-muski-manastiri`.

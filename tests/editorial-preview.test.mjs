@@ -125,7 +125,7 @@ test("Dajbabe remains research-only, sourced, and public-safe", async () => {
   assert.doesNotMatch(narrative, /радно вријеме|телефон|електронск[а-я]+ пошта|паркинг/i);
 });
 
-test("Savina is a sourced fifth editorial-preview monastery without media", async () => {
+test("Savina remains a sourced editorial-preview monastery without media", async () => {
   const [placeText, narrative, osmText, manifestText, mediaDirectory] = await Promise.all([
     source("content/places/manastir-savina/place.yaml"),
     source("content/places/manastir-savina/narratives/sr.md"),
@@ -137,7 +137,7 @@ test("Savina is a sourced fifth editorial-preview monastery without media", asyn
   const osm = parse(osmText);
   const manifest = JSON.parse(manifestText);
 
-  assert.equal(manifest.place_ids.at(-1), "manastir-savina");
+  assert.ok(manifest.place_ids.includes("manastir-savina"));
   assert.equal(place.id, "manastir-savina");
   assert.equal(place.editorial_status, "research");
   assert.equal(place.place_type.value, "monastery");
@@ -165,6 +165,73 @@ test("Savina is a sourced fifth editorial-preview monastery without media", asyn
   assert.match(narrative, /по предању|Предање/);
   assert.equal(mediaDirectory.some((file) => /savina/i.test(file)), false);
   assert.doesNotMatch(narrative, /радно вријеме|телефон|електронск[а-я]+ пошта|паркинг/i);
+});
+
+test("the male-monastery import is complete, research-only, and source-bound", async () => {
+  const sourceId = "mitropolija-muski-manastiri";
+  const importedIds = [
+    "cetinjski-manastir",
+    "manastir-ostrog",
+    "manastir-moraca",
+    "manastir-savina",
+    "manastir-zanjice",
+    "miholjska-prevlaka",
+    "manastir-bijelici",
+    "podmaine",
+    "manastir-stanjevici",
+    "manastir-praskvica",
+    "manastir-rezevici",
+    "manastir-gradiste",
+    "manastir-ribnjak",
+    "manastir-vranjina",
+    "manastir-moracnik",
+    "manastir-tophana",
+    "manastir-orahovo",
+    "manastir-donje-brcele",
+    "manastir-kom",
+    "manastir-kosmac",
+    "dajbabe",
+    "lavra-svetog-simeona-mirotocivog",
+    "manastir-recine",
+  ];
+  const manifest = JSON.parse(await source("validation/editorial-preview.json"));
+  const visible = await loadVisiblePlaces(PROJECT_ROOT, { editorialPreview: true });
+  const visibleById = new Map(visible.map((place) => [place.id, place]));
+
+  assert.equal(importedIds.length, 23);
+  for (const id of importedIds) {
+    const place = parse(await source(`content/places/${id}/place.yaml`));
+    const narrative = await source(`content/places/${id}/narratives/sr.md`);
+    assert.equal(place.editorial_status, "research");
+    assert.equal(place.place_type.value, "monastery");
+    assert.deepEqual(place.approvals, []);
+    assert.ok(place.source_ids.includes(sourceId));
+    assert.match(narrative, new RegExp(`source_ids:[\\s\\S]*${sourceId}`));
+    assert.ok(manifest.place_ids.includes(id));
+    assert.equal(visibleById.get(id)?.placeType, "monastery");
+  }
+});
+
+test("a research monastery without coordinates gets a detail route but no marker or false map claim", async () => {
+  const places = await loadVisiblePlaces(PROJECT_ROOT, { editorialPreview: true });
+  const noCoordinates = places.find((place) => place.id === "cetinjski-manastir");
+  const withCoordinates = places.find((place) => place.id === "podmaine");
+  const [detail, mapCanvas, card, practicalPanel] = await Promise.all([
+    source("src/pages/svetinje/[slug].astro"),
+    source("src/components/MapCanvas.astro"),
+    source("src/components/PlaceCard.astro"),
+    source("src/components/place-detail/PlacePracticalPanel.astro"),
+  ]);
+
+  assert.ok(noCoordinates);
+  assert.equal(noCoordinates.latitude, undefined);
+  assert.equal(noCoordinates.longitude, undefined);
+  assert.equal(withCoordinates?.latitude, 42.29799);
+  assert.match(mapCanvas, /Number\.isFinite\(place\.latitude\)/);
+  assert.match(detail, /Тачан положај на интерактивној карти биће додат након географске провјере/);
+  assert.match(detail, /\{hasCoordinates && \([\s\S]*Прикажи на главној карти/);
+  assert.match(card, /\{location && <p class="editorial-place-card__location"/);
+  assert.match(practicalPanel, /\.filter\(\(row\) => Boolean\(row\.value\)\)/);
 });
 
 test("Bar cathedral remains research-only, sourced, and public-safe", async () => {

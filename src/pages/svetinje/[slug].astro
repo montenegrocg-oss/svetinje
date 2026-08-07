@@ -66,6 +66,7 @@ const ARRIVAL_SECTION_IDS = new Set(["location"]);
 const PRACTICAL_SECTION_IDS = new Set(["services", "visitor-information", "verification-notes"]);
 
 const { place, relatedPlaces } = Astro.props as { place: VisiblePlace; relatedPlaces: RelatedPlace[] };
+const hasCoordinates = place.latitude !== undefined && place.longitude !== undefined;
 const historySections = place.narrativeSections.filter((section) => HISTORY_SECTION_IDS.has(section.id));
 const arrivalSections = place.narrativeSections.filter((section) => ARRIVAL_SECTION_IDS.has(section.id));
 const practicalSections = place.narrativeSections.filter((section) => PRACTICAL_SECTION_IDS.has(section.id));
@@ -114,10 +115,17 @@ const aboutSections = place.narrativeSections.filter((section) =>
           {place.address && <p><strong>Адреса:</strong> {place.address}</p>}
           {arrivalSections.length > 0 ? (
             <PlaceNarrativeSegments sections={arrivalSections} />
-          ) : (
+          ) : hasCoordinates ? (
             <p>Локација је означена на главној карти. Прије посјете провјерите приступ и услове на терену.</p>
+          ) : (
+            <p>Текстуални подаци о положају су у припреми.</p>
           )}
-          <a class="place-inline-link" href="/#mapa">Прикажи на главној карти <span aria-hidden="true">→</span></a>
+          {!hasCoordinates && (
+            <p>Тачан положај на интерактивној карти биће додат након географске провјере.</p>
+          )}
+          {hasCoordinates && (
+            <a class="place-inline-link" href="/#mapa">Прикажи на главној карти <span aria-hidden="true">→</span></a>
+          )}
         </section>
       </div>
 

@@ -1,0 +1,28 @@
+---
+schema_version: 1
+place_id: manastir-recine
+locale: sr
+editorial_status: research
+translation_status: source
+slug: manastir-presvete-bogorodice-jerusalimske-recine
+preferred_name: Манастир Пресвете Богородице Јерусалимске у Речинама
+summary: Манастир Пресвете Богородице Јерусалимске је новоосновани манастир у Речинама код Колашина.
+source_ids: [mitropolija-muski-manastiri]
+section_sources: { introduction: [mitropolija-muski-manastiri], history: [mitropolija-muski-manastiri], location: [mitropolija-muski-manastiri] }
+approvals: []
+audit: { created_at: 2026-08-07T12:00:00Z, created_by: codex, updated_at: 2026-08-07T12:00:00Z, updated_by: codex }
+---
+
+## Основни подаци {#introduction}
+
+Манастир Пресвете Богородице Јерусалимске је новоосновани манастир у Речинама код Колашина. Извор га повезује са манастиром Светих Кирила и Методија у Ћириловцу.[^mitropolija-muski-manastiri]
+
+## Историја {#history}
+
+Темељи храма посвећеног Пресветој Богородици Јерусалимској освештани су 24. јула 2007. године, а новосаграђени храм 25. октобра 2008. године. У оквиру манастира извор наводи и параклис Светог пророка Јоила, освештан 18. августа 2013. године.[^mitropolija-muski-manastiri]
+
+## Положај {#location}
+
+Манастир се налази у мјесту Речине код Колашина. Географске координате нијесу наведене.[^mitropolija-muski-manastiri]
+
+[^mitropolija-muski-manastiri]: Регистар извора: `mitropolija-muski-manastiri`.

@@ -255,6 +255,17 @@ function verifyDetail(detailCase, model, pagesByRoute, failures) {
   if (hasCoordinates && (!html.includes(`data-latitude="${place.latitude}"`) || !html.includes(`data-longitude="${place.longitude}"`))) {
     failures.push(`${place.id} detail page is missing its loaded mini-map coordinates`);
   }
+  if (!hasCoordinates) {
+    const arrival = elementContaining(html, "section", 'id="place-arrival-title"');
+    if (!html.includes("Тачан положај на интерактивној карти биће додат након географске провјере.")) {
+      failures.push(`${place.id} detail page is missing the neutral unverified-location message`);
+    }
+    if (arrival.includes('href="/#mapa"') || hero.includes('href="/#mapa"')) {
+      failures.push(`${place.id} detail page exposes a contextual map link without verified coordinates`);
+    }
+    if (html.includes("Локација је означена на главној карти")) failures.push(`${place.id} detail page makes a false map-location claim`);
+  }
+  if (/\bundefined\b/.test(htmlToPlainText(html))) failures.push(`${place.id} detail page renders an undefined value`);
 
   const related = elementContaining(html, "section", 'data-testid="place-related-shelf"');
   if (!related) failures.push(`${place.id} detail page is missing its related-place shelf`);
@@ -377,7 +388,7 @@ for (const detailCase of model.detailRoutes) {
 
 for (const page of pages) {
   if (/rating|>\s*Оцјена\s*</i.test(page.html) || /033\/459-084|manastirmaine@gmail\.com/i.test(page.html)) failures.push(`${page.relative} contains prohibited practical or commercial preview data`);
-  if (/180\s*m|08:00|16:00|18:00|Дјелимично активан|Манастир Прасквица|Црква Св\. Тројице|Манастир Стањевићи|Манастир Дуљево/i.test(page.html)) failures.push(`${page.relative} contains unsupported reference-screenshot content`);
+  if (/180\s*m|08:00|16:00|18:00|Дјелимично активан|Црква Св\. Тројице|Манастир Дуљево/i.test(page.html)) failures.push(`${page.relative} contains unsupported reference-screenshot content`);
 }
 
 if (!editorialPreview) {

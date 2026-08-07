@@ -1,0 +1,26 @@
+schema_version: 1
+id: lavra-svetog-simeona-mirotocivog
+editorial_status: research
+place_type:
+  value: monastery
+  verification:
+    status: requires-verification
+    source_ids: [mitropolija-muski-manastiri]
+    qualification: Званична страница Митрополије наводи Лавру Светог Симеона Мироточивог у регистру мушких манастира; запис чека стручну и црквену провјеру.
+location:
+  settlement:
+    value: Подгорица
+    verification:
+      status: requires-verification
+      source_ids: [mitropolija-muski-manastiri]
+      qualification: Извор комплекс смјешта у Стару варош у Подгорици, без географских координата.
+  postal_address:
+    value: Подград, 81000 Подгорица
+    verification:
+      status: requires-verification
+      source_ids: [mitropolija-muski-manastiri]
+      qualification: Поштански локацијски ред преузет је из извора; контактни подаци су изостављени.
+relationships: {}
+source_ids: [mitropolija-muski-manastiri]
+approvals: []
+audit: { created_at: 2026-08-07T12:00:00Z, created_by: codex, updated_at: 2026-08-07T12:00:00Z, updated_by: codex }
