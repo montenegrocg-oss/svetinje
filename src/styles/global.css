@@ -1374,10 +1374,14 @@
   }
 
   .map-explorer__recommended,
-  .map-explorer__routes {
+  .map-explorer__routes,
+  .map-explorer__continuation {
     min-width: 0;
-    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
     background: var(--paper);
+    box-shadow: var(--shadow-control);
   }
 
   .map-explorer__recommended {
@@ -3565,7 +3569,6 @@
 
     .map-explorer__recommended {
       padding-block: 1.5rem;
-      border-bottom: 0;
     }
 
     .footer-grid {
