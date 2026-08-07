@@ -5,17 +5,19 @@ import NewsFeedItem from "./NewsFeedItem.astro";
 interface Props {
   items: VisibleNewsItem[];
   emptyText?: string;
+  variant?: "homepage" | "archive";
 }
 
 const {
   items,
   emptyText = "Нове објаве биће доступне овдје.",
+  variant = "homepage",
 } = Astro.props;
 ---
 
-<div class="news-feed" data-news-feed data-news-count={items.length}>
+<div class:list={["news-feed", `news-feed--${variant}`]} data-news-feed data-news-count={items.length}>
   {items.length > 0 ? (
-    items.map((item) => <NewsFeedItem item={item} />)
+    items.map((item) => <NewsFeedItem item={item} variant={variant} />)
   ) : (
     <p class="news-feed__empty">{emptyText}</p>
   )}

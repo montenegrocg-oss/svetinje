@@ -8,6 +8,7 @@ import {
   selectLatestNews,
   sortVisibleNews,
 } from "../src/lib/content/news.ts";
+import { serbianNewsDateParts } from "../src/lib/news-types.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 const EXPECTED_ORDER = [
@@ -65,9 +66,32 @@ test("news UI uses semantic linked rows without images, cards, or carousels", as
   ]);
   assert.match(item, /<article[^>]*data-news-item/);
   assert.match(item, /<a class="news-feed-item__link" href=\{item\.href\}>/);
-  assert.match(item, /<time datetime=\{item\.publishedAt\}>/);
+  assert.match(item, /<time class="news-feed-item__date" datetime=\{item\.publishedAt\}>/);
+  assert.match(item, /news-feed-item__day/);
+  assert.match(item, /news-feed-item__date-compact/);
   assert.doesNotMatch(`${feed}\n${item}`, /<img|carousel|slider/i);
+  assert.doesNotMatch(item, /bookmark/i);
   assert.doesNotMatch(homepage, /О водичу|Уређивачко повјерење|project-intro|trust-note/);
   assert.match(homepage, /selectLatestNews\(await loadVisibleNews\(\), 5\)/);
-  assert.match(archive, /<NewsFeed items=\{news\}/);
+  assert.match(homepage, /<NewsFeed items=\{latestNews\} variant="homepage"/);
+  assert.match(archive, /<NewsFeed items=\{news\} variant="archive"/);
+});
+
+test("news archive derives dates and filters from visible records", async () => {
+  const archive = await readFile(path.join(PROJECT_ROOT, "src", "pages", "novosti", "index.astro"), "utf8");
+  assert.deepEqual(serbianNewsDateParts("2026-08-04T12:00:00Z"), {
+    day: "04",
+    monthYear: "авг 2026.",
+    archiveKey: "2026-08",
+    archiveLabel: "август 2026.",
+  });
+  assert.match(archive, /NEWS_TYPES\.map/);
+  assert.match(archive, /archiveByKey/);
+  assert.match(archive, /id="news-archive-feed"/);
+  assert.match(archive, /aria-live="polite"/);
+  assert.match(archive, /data-news-category/);
+  assert.match(archive, /data-news-month/);
+  assert.match(archive, /selectedCategory === "all" \|\| item\.dataset\.newsType === selectedCategory/);
+  assert.match(archive, /selectedMonth === "all" \|\| item\.dataset\.newsMonth === selectedMonth/);
+  assert.match(archive, /Нема новости за изабрани период и категорију\./);
 });

@@ -1,24 +1,34 @@
 ---
 import { formatNewsDate, type VisibleNewsItem } from "../../lib/content/news";
+import { serbianNewsDateParts } from "../../lib/news-types";
 
 interface Props {
   item: VisibleNewsItem;
+  variant?: "homepage" | "archive";
 }
 
-const { item } = Astro.props;
+const { item, variant = "homepage" } = Astro.props;
+const date = serbianNewsDateParts(item.publishedAt);
 ---
 
-<article class="news-feed-item" data-news-item={item.id} data-published-at={item.publishedAt}>
+<article
+  class:list={["news-feed-item", `news-feed-item--${variant}`]}
+  data-news-item={item.id}
+  data-news-type={item.type}
+  data-news-month={date.archiveKey}
+  data-published-at={item.publishedAt}
+>
   <a class="news-feed-item__link" href={item.href}>
-    <div class="news-feed-item__meta">
-      <time datetime={item.publishedAt}>{formatNewsDate(item.publishedAt)}</time>
-      <span aria-hidden="true">·</span>
-      <span>{item.typeLabel}</span>
-    </div>
-    <h3>{item.title}</h3>
-    <div class="news-feed-item__footer">
+    <time class="news-feed-item__date" datetime={item.publishedAt}>
+      <span class="news-feed-item__day" aria-hidden="true">{date.day}</span>
+      <span class="news-feed-item__month" aria-hidden="true">{date.monthYear}</span>
+      <span class="news-feed-item__date-compact">{formatNewsDate(item.publishedAt)}</span>
+    </time>
+    <span class="news-feed-item__badge">{item.typeLabel}</span>
+    <div class="news-feed-item__content">
+      <h3>{item.title}</h3>
       <p>{item.summary}</p>
-      <span class="news-feed-item__arrow" aria-hidden="true">→</span>
     </div>
+    <span class="news-feed-item__arrow" aria-hidden="true">→</span>
   </a>
 </article>

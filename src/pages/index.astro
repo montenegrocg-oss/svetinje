@@ -21,7 +21,7 @@ const latestNews = selectLatestNews(await loadVisibleNews(), 5);
         <h2 id="homepage-news-title">Последње додато</h2>
         <p>Сајт се тренутно активно допуњава новим садржајем и објектима.</p>
       </header>
-      <NewsFeed items={latestNews} />
+      <NewsFeed items={latestNews} variant="homepage" />
       <div class="homepage-news__all">
         <a href="/novosti/">Све новости <span aria-hidden="true">→</span></a>
       </div>
