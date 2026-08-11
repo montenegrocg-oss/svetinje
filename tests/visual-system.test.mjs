@@ -102,7 +102,9 @@ test("unavailable locales remain visibly unavailable rather than becoming links"
 test("the homepage is composed from reusable map-explorer components", async () => {
   const homepage = await source("src/pages/index.astro");
   assert.match(homepage, /import MapExplorer/);
-  assert.match(homepage, /<MapExplorer \/>/);
+  assert.match(homepage, /import PlaceAreas/);
+  assert.match(homepage, /<MapExplorer places=\{places\} \/>/);
+  assert.match(homepage, /<PlaceAreas places=\{places\} \/>/);
   assert.doesNotMatch(homepage, /PopularRoutes/);
   assert.doesNotMatch(homepage, /HomepagePreviews/);
 
