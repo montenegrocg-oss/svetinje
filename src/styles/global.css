@@ -550,6 +550,9 @@
 
 @layer explorer {
   .map-explorer {
+    --map-stage-height: 24rem;
+    --explorer-content-block-padding: 1rem;
+
     position: relative;
     background: var(--stone-100);
     isolation: isolate;
@@ -587,7 +590,7 @@
   .map-stage {
     position: relative;
     z-index: 1;
-    height: 24rem;
+    height: var(--map-stage-height);
     overflow: hidden;
     border-bottom: 1px solid var(--line);
   }
@@ -597,7 +600,7 @@
     align-items: start;
     gap: 1rem;
     width: 100%;
-    padding: 1rem;
+    padding: var(--explorer-content-block-padding) 1rem;
   }
 
   .map-explorer__secondary {
@@ -3458,6 +3461,9 @@
     }
 
     .map-explorer {
+      --map-stage-height: 34rem;
+      --explorer-content-block-padding: 1.5rem;
+      --explorer-sidebar-map-offset: 10.875rem;
       --explorer-panel-left: max(1.5rem, calc((100vw - 94rem) / 2));
       --explorer-panel-width: 26.5rem;
 
@@ -3493,16 +3499,17 @@
       width: var(--explorer-panel-width);
     }
 
-    .map-stage {
-      height: 34rem;
-    }
-
     .map-art {
       min-width: 67rem;
       transform: none;
     }
 
     .explorer-sidebar {
+      margin-block-start: calc(
+        var(--explorer-sidebar-map-offset)
+        - var(--map-stage-height)
+        - var(--explorer-content-block-padding)
+      );
       padding: 0.75rem;
       border: 1px solid rgba(24, 37, 52, 0.13);
       border-radius: var(--radius-lg);
@@ -3513,9 +3520,7 @@
       grid-template-columns: minmax(20rem, var(--explorer-panel-width)) minmax(0, 1fr);
       align-items: start;
       gap: 1.5rem;
-      max-width: 97rem;
-      margin-inline: auto;
-      padding: 1.5rem max(1.5rem, calc((100vw - 94rem) / 2));
+      padding: var(--explorer-content-block-padding) var(--explorer-panel-left);
     }
 
     .explorer-sidebar .filter-chips {
@@ -3541,7 +3546,7 @@
 
     .map-attribution {
       right: 10rem;
-      left: 24.5rem;
+      left: calc(var(--explorer-panel-left) + var(--explorer-panel-width) + 1rem);
       width: auto;
       max-width: none;
       justify-content: flex-end;
@@ -3551,8 +3556,8 @@
     .map-actions {
       top: 6.5rem;
       right: 1rem;
-      left: auto;
-      max-width: calc(100% - var(--explorer-panel-left) - var(--explorer-panel-width) - 2.5rem);
+      left: calc(var(--explorer-panel-left) + var(--explorer-panel-width) + 1rem);
+      max-width: none;
       flex-wrap: wrap;
       justify-content: flex-end;
       overflow: visible;
@@ -3684,6 +3689,7 @@
     }
 
     .map-explorer {
+      --map-stage-height: 39.5rem;
       --explorer-panel-width: 27rem;
     }
 
@@ -3713,10 +3719,6 @@
       display: none;
     }
 
-    .map-stage {
-      height: 39.5rem;
-    }
-
     .map-explorer__heading {
       top: 1rem;
     }
@@ -3740,7 +3742,7 @@
 
     .map-attribution {
       right: max(12rem, calc((100vw - 94rem) / 2 + 10.5rem));
-      left: max(25.5rem, calc((100vw - 94rem) / 2 + 25rem));
+      left: calc(var(--explorer-panel-left) + var(--explorer-panel-width) + 1rem);
     }
 
     .popular-routes__inner {
@@ -3750,8 +3752,9 @@
   }
 
   @media (min-width: 90rem) {
-    .map-stage {
-      height: 40.5rem;
+    .map-explorer {
+      --map-stage-height: 40.5rem;
+      --explorer-sidebar-map-offset: 11.15625rem;
     }
 
     .map-explorer__heading {

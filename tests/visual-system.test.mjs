@@ -159,6 +159,26 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.doesNotMatch(routes, /class="shell popular-routes__inner"/);
 });
 
+test("the homepage sidebar overlays the map without pulling secondary content upward", async () => {
+  const styles = await source("src/styles/global.css");
+  const desktopStart = styles.indexOf("@media (min-width: 48rem)");
+  const desktopStyles = styles.slice(desktopStart);
+
+  assert.ok(desktopStart > -1, "the explorer overlay must start at the tablet breakpoint");
+  assert.match(styles, /\.map-explorer\s*\{[\s\S]*?--map-stage-height: 24rem;[\s\S]*?--explorer-content-block-padding: 1rem;/);
+  assert.match(styles, /\.map-stage\s*\{[\s\S]*?height: var\(--map-stage-height\);/);
+  assert.match(desktopStyles, /--map-stage-height: 34rem;/);
+  assert.match(desktopStyles, /--explorer-sidebar-map-offset: 10\.875rem;/);
+  assert.match(
+    desktopStyles,
+    /\.explorer-sidebar\s*\{[\s\S]*?margin-block-start: calc\([\s\S]*?var\(--explorer-sidebar-map-offset\)[\s\S]*?- var\(--map-stage-height\)[\s\S]*?- var\(--explorer-content-block-padding\)[\s\S]*?\);/,
+  );
+  assert.match(desktopStyles, /\.map-explorer__content\s*\{[\s\S]*?padding: var\(--explorer-content-block-padding\) var\(--explorer-panel-left\);/);
+  assert.match(desktopStyles, /\.map-attribution\s*\{[\s\S]*?left: calc\(var\(--explorer-panel-left\) \+ var\(--explorer-panel-width\) \+ 1rem\);/);
+  assert.match(desktopStyles, /\.map-actions\s*\{[\s\S]*?left: calc\(var\(--explorer-panel-left\) \+ var\(--explorer-panel-width\) \+ 1rem\);/);
+  assert.doesNotMatch(desktopStyles.match(/\.explorer-sidebar\s*\{[\s\S]*?\}/)?.[0] ?? "", /transform:/);
+});
+
 test("the map loading surface is neutral and cannot reveal the decorative fallback", async () => {
   const styles = await source("src/styles/global.css");
 
