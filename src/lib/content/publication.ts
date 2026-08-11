@@ -1,8 +1,8 @@
 import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { parseDocument } from "yaml";
-import type { PlaceAreaId } from "../place-areas";
-import { isPlaceAreaId } from "../place-areas";
+import type { PlaceAreaId } from "../place-areas.ts";
+import { isPlaceAreaId } from "../place-areas.ts";
 
 type ReviewRole = "publishing" | "factual" | "ecclesiastical" | "sr-language" | "media-rights";
 

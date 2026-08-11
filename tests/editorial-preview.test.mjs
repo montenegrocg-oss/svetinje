@@ -261,6 +261,7 @@ test("Bar cathedral remains research-only, sourced, and public-safe", async () =
 
 test("preview UI is allowlist-driven, noindex, and free of prohibited data", async () => {
   const [
+    homepage,
     mapCanvas,
     explorer,
     card,
@@ -276,6 +277,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
     previewWorkflow,
     productionWorkflow,
   ] = await Promise.all([
+    source("src/pages/index.astro"),
     source("src/components/MapCanvas.astro"),
     source("src/components/MapExplorer.astro"),
     source("src/components/PlaceCard.astro"),
@@ -297,7 +299,9 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.match(mapCanvas, /new maplibregl\.Marker/);
   assert.match(mapCanvas, /aria-label.*отвори детаље/);
   assert.match(mapCanvas, /svetinje:place-select/);
-  assert.match(explorer, /loadVisiblePlaces/);
+  assert.match(homepage, /loadVisiblePlaces/);
+  assert.match(homepage, /<MapExplorer places=\{places\} \/>/);
+  assert.doesNotMatch(explorer, /loadVisiblePlaces/);
   assert.match(card, /Радни приказ/);
   assert.match(card, /place\.previewImageSrc/);
   assert.match(card, /class="editorial-place-card__image"/);
