@@ -1,4 +1,6 @@
 ---
+import { resolveMarkerAsset } from "../../lib/map-marker-assets";
+
 interface Props {
   latitude: number;
   longitude: number;
@@ -7,11 +9,7 @@ interface Props {
 }
 
 const { latitude, longitude, name, placeType } = Astro.props;
-const markerSrc = placeType === "monastery"
-  ? "/images/map/pin-monastery.png"
-  : ["church", "chapel", "cathedral"].includes(placeType)
-    ? "/images/map/pin-church.png"
-    : undefined;
+const markerSrc = resolveMarkerAsset(placeType)?.src;
 ---
 
 <section
@@ -26,7 +24,7 @@ const markerSrc = placeType === "monastery"
 >
   <div class="place-mini-map__viewport" data-place-mini-map-renderer aria-hidden="true">
     <div class="place-mini-map__canvas" data-place-mini-map-canvas></div>
-    <div class="place-mini-map__attribution" aria-label="Извори картографских података">
+    <div class="place-mini-map__attribution" data-place-mini-map-attribution aria-label="Извори картографских података" hidden>
       <a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener noreferrer">© MapTiler</a>
       <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a>
     </div>
@@ -56,6 +54,7 @@ const markerSrc = placeType === "monastery"
       const renderer = root.querySelector<HTMLElement>("[data-place-mini-map-renderer]");
       const fallback = root.querySelector<HTMLElement>("[data-place-mini-map-fallback]");
       const container = root.querySelector<HTMLElement>("[data-place-mini-map-canvas]");
+      const attribution = root.querySelector<HTMLElement>("[data-place-mini-map-attribution]");
       if (!MAPTILER_KEY || !renderer || !container || !Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
 
       let map: MapLibreMap;
@@ -79,32 +78,19 @@ const markerSrc = placeType === "monastery"
       }
 
       let ready = false;
+      let loaded = false;
       let removed = false;
       let readyTimer = 0;
-      let repaintFrame = 0;
-
-      const hasRenderableCanvas = () => {
-        try {
-          const canvas = map.getCanvas();
-          return canvas instanceof HTMLCanvasElement
-            && canvas.isConnected
-            && container.contains(canvas)
-            && canvas.clientWidth > 0
-            && canvas.clientHeight > 0
-            && canvas.width > 0
-            && canvas.height > 0;
-        } catch {
-          return false;
-        }
-      };
+      let readyFrame = 0;
 
       const revealMap = () => {
-        if (ready || removed) return;
+        if (ready || removed || !loaded || !map.isStyleLoaded()) return;
         ready = true;
         window.clearTimeout(readyTimer);
-        map.off("render", handleRender);
         root.dataset.mapState = "ready";
+        renderer.hidden = false;
         renderer.setAttribute("aria-hidden", "false");
+        if (attribution) attribution.hidden = false;
         if (fallback) {
           fallback.hidden = true;
           fallback.setAttribute("aria-hidden", "true");
@@ -114,14 +100,11 @@ const markerSrc = placeType === "monastery"
 
       const showFallback = () => {
         if (ready || removed) return;
-        if (hasRenderableCanvas()) {
-          revealMap();
-          return;
-        }
         removed = true;
-        map.off("render", handleRender);
+        window.cancelAnimationFrame(readyFrame);
         renderer.hidden = true;
         renderer.setAttribute("aria-hidden", "true");
+        if (attribution) attribution.hidden = true;
         if (fallback) {
           fallback.hidden = false;
           fallback.setAttribute("aria-hidden", "false");
@@ -130,10 +113,19 @@ const markerSrc = placeType === "monastery"
         map.remove();
       };
 
-      function handleRender() {
+      const handleIdle = () => revealMap();
+
+      const handleMapLoad = () => {
         if (ready || removed) return;
-        if (hasRenderableCanvas()) revealMap();
-      }
+        loaded = true;
+        map.resize();
+        map.once("idle", handleIdle);
+        readyFrame = window.requestAnimationFrame(() => {
+          if (ready || removed) return;
+          map.resize();
+          revealMap();
+        });
+      };
 
       const marker = document.createElement("div");
       marker.className = "place-mini-map__marker";
@@ -151,24 +143,17 @@ const markerSrc = placeType === "monastery"
       }
       new maplibregl.Marker({ element: marker, anchor: "bottom" }).setLngLat([longitude, latitude]).addTo(map);
 
-      map.on("render", handleRender);
-      map.once("load", revealMap);
-      map.once("idle", revealMap);
+      map.once("load", handleMapLoad);
       readyTimer = window.setTimeout(showFallback, MAP_READY_TIMEOUT_MS);
       map.resize();
-      map.triggerRepaint();
-      repaintFrame = window.requestAnimationFrame(() => {
-        if (ready || removed) return;
-        map.resize();
-        map.triggerRepaint();
-      });
 
       document.addEventListener("astro:before-swap", () => {
         if (removed) return;
         removed = true;
         window.clearTimeout(readyTimer);
-        window.cancelAnimationFrame(repaintFrame);
-        map.off("render", handleRender);
+        window.cancelAnimationFrame(readyFrame);
+        map.off("load", handleMapLoad);
+        map.off("idle", handleIdle);
         map.remove();
       }, { once: true });
     });

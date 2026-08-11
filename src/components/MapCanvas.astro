@@ -148,7 +148,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
   import maplibregl from "maplibre-gl";
   import "maplibre-gl/dist/maplibre-gl.css";
   import type { LngLatBoundsLike, Map as MapLibreMap, Marker as MapLibreMarker, PaddingOptions } from "maplibre-gl";
-  import { categoryForPlaceType, type PlaceCategory } from "../lib/place-filters";
+  import { resolveMarkerAsset } from "../lib/map-marker-assets";
 
   const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY?.trim();
   const MAP_LOAD_TIMEOUT_MS = 10_000;
@@ -171,17 +171,6 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     [18.42, 41.8],
     [20.36, 43.57],
   ];
-
-  const MARKER_ASSETS: Record<PlaceCategory, { src: string; width: number; height: number }> = {
-    monasteries: { src: "/images/map/pin-monastery.png", width: 354, height: 473 },
-    churches: { src: "/images/map/pin-church.png", width: 354, height: 480 },
-    "holy-places": { src: "/images/map/pin-holy-place.png", width: 352, height: 497 },
-  };
-
-  const resolveMarkerAsset = (placeType: string) => {
-    const category = categoryForPlaceType(placeType);
-    return category ? MARKER_ASSETS[category] : undefined;
-  };
 
   const getInitialPadding = (width: number): PaddingOptions => {
     if (width >= 1088) return { top: 78, right: 28, bottom: 30, left: 292 };

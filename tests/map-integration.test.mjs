@@ -5,6 +5,7 @@ import test from "node:test";
 import { parse } from "yaml";
 import { loadVisiblePlaces } from "../src/lib/content/publication.ts";
 import { categoryForPlaceType } from "../src/lib/place-filters.ts";
+import { MARKER_ASSETS, resolveMarkerAsset } from "../src/lib/map-marker-assets.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -153,16 +154,16 @@ test("the map accepts only server-selected marker data and adds no route geometr
   assert.doesNotMatch(mapSource, /42\.29799|18\.84452|Манастир Подмаине/iu);
 });
 
-test("marker artwork follows the shared place-category taxonomy", async () => {
-  const [mapCanvas, styles] = await Promise.all([
+test("marker artwork follows one shared place-category taxonomy", async () => {
+  const [mapCanvas, markerAssets, miniMap, styles] = await Promise.all([
     source("src/components/MapCanvas.astro"),
+    source("src/lib/map-marker-assets.ts"),
+    source("src/components/place-detail/PlaceMiniMap.astro"),
     source("src/styles/global.css"),
   ]);
-  const markerAssetByCategory = {
-    monasteries: "/images/map/pin-monastery.png",
-    churches: "/images/map/pin-church.png",
-    "holy-places": "/images/map/pin-holy-place.png",
-  };
+  const markerAssetByCategory = Object.fromEntries(
+    Object.entries(MARKER_ASSETS).map(([category, asset]) => [category, asset.src]),
+  );
   const expectedTypes = {
     monastery: markerAssetByCategory.monasteries,
     skete: markerAssetByCategory.monasteries,
@@ -176,19 +177,19 @@ test("marker artwork follows the shared place-category taxonomy", async () => {
     other: markerAssetByCategory["holy-places"],
   };
 
-  assert.match(mapCanvas, /import \{ categoryForPlaceType, type PlaceCategory \} from "\.\.\/lib\/place-filters"/);
-  assert.match(mapCanvas, /monasteries: \{ src: "\/images\/map\/pin-monastery\.png", width: 354, height: 473 \}/);
-  assert.match(mapCanvas, /churches: \{ src: "\/images\/map\/pin-church\.png", width: 354, height: 480 \}/);
-  assert.match(mapCanvas, /"holy-places": \{ src: "\/images\/map\/pin-holy-place\.png", width: 352, height: 497 \}/);
-  assert.match(mapCanvas, /const category = categoryForPlaceType\(placeType\);[\s\S]*?return category \? MARKER_ASSETS\[category\] : undefined;/);
+  assert.match(mapCanvas, /import \{ resolveMarkerAsset \} from "\.\.\/lib\/map-marker-assets"/);
+  assert.match(miniMap, /import \{ resolveMarkerAsset \} from "\.\.\/\.\.\/lib\/map-marker-assets"/);
+  assert.match(miniMap, /const markerSrc = resolveMarkerAsset\(placeType\)\?\.src/);
+  assert.match(markerAssets, /monasteries: \{ src: "\/images\/map\/pin-monastery\.png", width: 354, height: 473 \}/);
+  assert.match(markerAssets, /churches: \{ src: "\/images\/map\/pin-church\.png", width: 354, height: 480 \}/);
+  assert.match(markerAssets, /"holy-places": \{ src: "\/images\/map\/pin-holy-place\.png", width: 352, height: 497 \}/);
+  assert.match(markerAssets, /const category = categoryForPlaceType\(placeType\);[\s\S]*?return category \? MARKER_ASSETS\[category\] : undefined;/);
   assert.match(mapCanvas, /markerImage\.src = markerAsset\.src/);
   assert.match(mapCanvas, /markerImage\.alt = ""/);
   assert.match(mapCanvas, /holy-place-marker__fallback/);
   assert.doesNotMatch(mapCanvas, /markerPlaces\.push\([\s\S]*?placeType:\s*["']church["']/);
   for (const [placeType, expectedAsset] of Object.entries(expectedTypes)) {
-    const category = categoryForPlaceType(placeType);
-    assert.ok(category, `${placeType} must have a shared category`);
-    assert.equal(markerAssetByCategory[category], expectedAsset);
+    assert.equal(resolveMarkerAsset(placeType)?.src, expectedAsset);
   }
   assert.equal(categoryForPlaceType("unsupported-place-type"), null);
   assert.match(styles, /\.holy-place-marker\s*\{[\s\S]*?width: 2\.75rem;[\s\S]*?height: 2\.75rem;/);
@@ -201,15 +202,7 @@ test("marker artwork follows the shared place-category taxonomy", async () => {
 test("all five editorial-preview markers receive the correct category artwork", async () => {
   const places = await loadVisiblePlaces(PROJECT_ROOT, { editorialPreview: true });
   const markerPlaces = places.filter(({ latitude, longitude }) => Number.isFinite(latitude) && Number.isFinite(longitude));
-  const markerAssetByCategory = {
-    monasteries: "/images/map/pin-monastery.png",
-    churches: "/images/map/pin-church.png",
-    "holy-places": "/images/map/pin-holy-place.png",
-  };
-  const assetFor = (placeType) => {
-    const category = categoryForPlaceType(placeType);
-    return category ? markerAssetByCategory[category] : undefined;
-  };
+  const assetFor = (placeType) => resolveMarkerAsset(placeType)?.src;
 
   assert.equal(markerPlaces.length, 5);
   assert.equal(assetFor(markerPlaces.find(({ id }) => id === "manastir-savina")?.placeType), "/images/map/pin-monastery.png");

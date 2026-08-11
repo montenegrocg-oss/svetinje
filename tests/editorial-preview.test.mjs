@@ -274,6 +274,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
     relatedShelf,
     baseLayout,
     metadata,
+    styles,
     previewWorkflow,
     productionWorkflow,
   ] = await Promise.all([
@@ -290,6 +291,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
     source("src/components/place-detail/PlaceRelatedShelf.astro"),
     source("src/layouts/BaseLayout.astro"),
     source("src/components/PageMetadata.astro"),
+    source("src/styles/global.css"),
     source(".github/workflows/preview-cloudflare.yml"),
     source(".github/workflows/deploy-cloudflare.yml"),
   ]);
@@ -338,12 +340,23 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.match(miniMap, /019fc7d8-717c-701d-9ca5-a53d9438d3ce/);
   assert.match(miniMap, /new maplibregl\.Marker/);
   assert.match(miniMap, /anchor: "bottom"/);
-  assert.match(miniMap, /map\.on\("render", handleRender\)/);
-  assert.match(miniMap, /map\.once\("load", revealMap\)/);
-  assert.match(miniMap, /map\.once\("idle", revealMap\)/);
+  assert.match(miniMap, /map\.once\("load", handleMapLoad\)/);
+  assert.match(miniMap, /loaded = true;[\s\S]*?map\.resize\(\);[\s\S]*?requestAnimationFrame/);
+  assert.match(miniMap, /if \(ready \|\| removed \|\| !loaded \|\| !map\.isStyleLoaded\(\)\) return/);
+  assert.match(miniMap, /map\.once\("idle", handleIdle\)/);
   assert.match(miniMap, /MAP_READY_TIMEOUT_MS = 11000/);
-  assert.match(miniMap, /if \(hasRenderableCanvas\(\)\) revealMap\(\)/);
-  assert.doesNotMatch(miniMap, /isStyleLoaded\(|map\.loaded\(/);
+  assert.match(miniMap, /readyTimer = window\.setTimeout\(showFallback, MAP_READY_TIMEOUT_MS\)/);
+  assert.match(miniMap, /root\.dataset\.mapState = "fallback";[\s\S]*?map\.remove\(\)/);
+  assert.doesNotMatch(miniMap, /hasRenderableCanvas|map\.on\("render"|handleRender/);
+  assert.match(miniMap, /data-place-mini-map-attribution[\s\S]*?hidden/);
+  assert.match(miniMap, /if \(attribution\) attribution\.hidden = false/);
+  assert.match(styles, /\.place-profile-cards\s*\{[\s\S]*?align-items: start;/);
+  assert.match(styles, /\.place-arrival-card\s*\{[\s\S]*?align-self: start;/);
+  assert.match(styles, /\.place-mini-map__viewport,[\s\S]*?\.place-mini-map__fallback\s*\{[\s\S]*?height: 12rem;/);
+  assert.match(styles, /\.place-mini-map__canvas\s*\{[\s\S]*?width: 100%;[\s\S]*?height: 100%;/);
+  assert.match(styles, /--ink-reading: #4f5d69/);
+  assert.match(styles, /\.place-profile-about p\s*\{[\s\S]*?color: var\(--ink-reading\)/);
+  assert.match(styles, /\.place-editorial-card p\s*\{[\s\S]*?color: var\(--ink-reading\)/);
   assert.match(relatedShelf, /data-current-place/);
   assert.match(relatedShelf, /data-related-place/);
   assert.doesNotMatch(detail, /1630|1747|1869|1979|1995|2007/);
