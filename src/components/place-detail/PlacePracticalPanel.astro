@@ -1,21 +1,16 @@
 ---
 import InterfaceIcon from "../InterfaceIcon.astro";
-import type { NarrativeSection, VisiblePlace } from "../../lib/content/publication";
+import type { VisiblePlace } from "../../lib/content/publication";
 import PlaceMiniMap from "./PlaceMiniMap.astro";
-import PlaceNarrativeSegments from "./PlaceNarrativeSegments.astro";
 
 interface Props {
   place: VisiblePlace;
-  practicalSections?: NarrativeSection[];
 }
 
-const { place, practicalSections = [] } = Astro.props;
+const { place } = Astro.props;
 const location = [place.settlement, place.municipality].filter(Boolean).join(" · ");
 const hasCoordinates = place.latitude !== undefined && place.longitude !== undefined;
 const coordinateText = hasCoordinates ? `${place.latitude}, ${place.longitude}` : undefined;
-const accuracyLabels: Record<string, string> = {
-  "complex-centroid": "Центар комплекса",
-};
 const typeIcon = place.placeType === "monastery"
   ? "monastery" as const
   : ["church", "chapel", "cathedral"].includes(place.placeType)
@@ -25,9 +20,7 @@ const practicalRows = [
   { label: "Локација", value: location, icon: "place" as const },
   { label: "Адреса", value: place.address, icon: "info" as const },
   { label: "Тип", value: place.typeLabel, icon: typeIcon },
-  { label: "Црквена припадност", value: place.ecclesiasticalJurisdiction, icon: "church" as const },
-  { label: "Тачност положаја", value: place.coordinateAccuracy ? accuracyLabels[place.coordinateAccuracy] ?? place.coordinateAccuracy : undefined, icon: "target" as const },
-  { label: "Статус записа", value: place.preview ? "Радни приказ" : undefined, icon: "info" as const },
+  { label: "Епархија", value: place.ecclesiasticalJurisdiction, icon: "church" as const },
 ].filter((row) => Boolean(row.value));
 const coordinateQualification = place.placeType === "cathedral"
   ? "Координате означавају центар храмовног комплекса, а не тачан главни улаз."
@@ -55,14 +48,6 @@ const coordinateQualification = place.placeType === "cathedral"
   </dl>
 
   {coordinateText && <p class="place-practical-panel__coordinate-note">{coordinateQualification}</p>}
-  <details class="place-practical-panel__disclosure">
-    <summary>Напомена о подацима</summary>
-    {practicalSections.length > 0 ? (
-      <PlaceNarrativeSegments sections={practicalSections} />
-    ) : (
-      <p>Додатне практичне информације су у припреми. Подаци у радном приказу захтијевају уређивачку провјеру прије јавне објаве.</p>
-    )}
-  </details>
   <p class="place-practical-panel__copy-status" role="status" aria-live="polite" data-coordinate-copy-status></p>
 
   {hasCoordinates && (

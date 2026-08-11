@@ -18,12 +18,6 @@ const breadcrumb = category === "monasteries"
       : { href: "/svetinje/", label: "Светиње" };
 const location = place.settlement ?? place.municipality;
 const hasCoordinates = place.latitude !== undefined && place.longitude !== undefined;
-const accuracyLabels: Record<string, string> = {
-  "complex-centroid": "Центар комплекса",
-};
-const accuracyLabel = place.coordinateAccuracy
-  ? accuracyLabels[place.coordinateAccuracy] ?? place.coordinateAccuracy
-  : undefined;
 ---
 
 <header class="place-profile-hero" data-place-id={place.id} data-place-detail-actions>
@@ -54,8 +48,6 @@ const accuracyLabel = place.coordinateAccuracy
       <ul class="place-profile-chips" aria-label="Основни подаци">
         {location && <li><InterfaceIcon name="place" size={16} />{location}</li>}
         <li><InterfaceIcon name={category === "monasteries" ? "monastery" : category === "churches" ? "church" : "place"} size={16} />{place.typeLabel}</li>
-        {place.preview && <li class="place-profile-chip--status"><i aria-hidden="true"></i>Радни приказ</li>}
-        {accuracyLabel && <li><InterfaceIcon name="target" size={16} />{accuracyLabel}</li>}
       </ul>
     </div>
 

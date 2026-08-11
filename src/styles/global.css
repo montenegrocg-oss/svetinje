@@ -2958,8 +2958,7 @@
       "gallery"
       "practical"
       "cards"
-      "related"
-      "sources";
+      "related";
     gap: clamp(1.25rem, 2.5vw, 2rem);
     align-items: start;
   }
@@ -2972,7 +2971,6 @@
   .place-profile-about h2,
   .place-section-heading h2,
   .place-related h2,
-  .place-profile-sources h2,
   .place-practical-panel h2 {
     margin-top: 0.25rem;
     color: var(--navy-950);
@@ -2984,15 +2982,6 @@
     color: var(--ink-soft);
     font-size: 0.9rem;
     line-height: 1.7;
-  }
-
-  .place-profile-about sup a,
-  .place-editorial-card sup a,
-  .place-practical-panel__disclosure sup a {
-    margin-left: 0.16rem;
-    color: var(--gold);
-    font-size: 0.68rem;
-    font-weight: 850;
   }
 
   .place-detail-gallery {
@@ -3151,32 +3140,14 @@
     display: none;
   }
 
-  .place-practical-panel__disclosure {
-    margin-top: 0.75rem;
-    padding-top: 0.7rem;
-    border-top: 1px solid var(--line);
-  }
-
-  .place-practical-panel__disclosure summary {
-    color: var(--navy-900);
-    cursor: pointer;
-    font-size: 0.72rem;
-    font-weight: 800;
-  }
-
-  .place-practical-panel__disclosure p {
-    margin-top: 0.55rem;
-    color: var(--ink-soft);
-    font-size: 0.7rem;
-    line-height: 1.5;
-  }
-
   .place-narrative-segment + .place-narrative-segment {
     margin-top: 0.85rem;
   }
 
   .place-mini-map {
     position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     margin-top: 1rem;
     overflow: hidden;
     border: 1px solid var(--line);
@@ -3187,7 +3158,20 @@
   .place-mini-map__viewport,
   .place-mini-map__fallback {
     position: relative;
+    grid-area: 1 / 1;
     height: 12rem;
+  }
+
+  .place-mini-map__viewport {
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease;
+  }
+
+  .place-mini-map[data-map-state="ready"] .place-mini-map__viewport {
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .place-mini-map__viewport[hidden],
@@ -3201,6 +3185,7 @@
   }
 
   .place-mini-map__fallback {
+    z-index: 2;
     display: grid;
     overflow: hidden;
     place-items: end start;
@@ -3289,6 +3274,8 @@
   }
 
   .place-mini-map__link {
+    z-index: 3;
+    grid-area: 2 / 1;
     display: flex;
     min-height: 2.7rem;
     align-items: center;
@@ -3327,6 +3314,11 @@
     color: var(--ink-soft);
     font-size: 0.78rem;
     line-height: 1.65;
+  }
+
+  .place-history-card p {
+    font-size: 0.9rem;
+    line-height: 1.7;
   }
 
   .place-inline-link {
@@ -3421,35 +3413,6 @@
 
   .place-related-card--placeholder {
     opacity: 0.76;
-  }
-
-  .place-profile-sources {
-    grid-area: sources;
-    min-width: 0;
-    padding-top: 0.5rem;
-  }
-
-  .place-profile-sources ol {
-    display: grid;
-    gap: 0.55rem;
-    margin-top: 0.85rem;
-  }
-
-  .place-profile-sources li {
-    display: grid;
-    gap: 0.25rem;
-    min-width: 0;
-    padding: 0.8rem 0.9rem;
-    border-left: 2px solid var(--gold);
-    color: var(--navy-950);
-    background: rgba(255, 255, 255, 0.56);
-    font-size: 0.76rem;
-  }
-
-  .place-profile-sources code {
-    color: var(--ink-soft);
-    font-size: 0.64rem;
-    overflow-wrap: anywhere;
   }
 
   .place-profile-action:focus-visible,
@@ -3695,8 +3658,8 @@
     }
 
     .place-detail-gallery__grid {
-      grid-template-columns: minmax(0, 1.35fr) repeat(2, minmax(0, 0.75fr));
-      grid-template-rows: repeat(2, minmax(8rem, 1fr));
+      grid-template-columns: minmax(0, 1.85fr) repeat(2, minmax(0, 0.75fr));
+      grid-template-rows: repeat(2, minmax(9rem, 1fr));
     }
 
     .place-detail-gallery__main {
@@ -3723,8 +3686,7 @@
         "about practical"
         "gallery practical"
         "cards cards"
-        "related related"
-        "sources sources";
+        "related related";
       grid-template-columns: minmax(0, 1.18fr) minmax(19rem, 0.82fr);
     }
   }
@@ -3734,8 +3696,7 @@
       grid-template-areas:
         "about gallery practical"
         "cards cards practical"
-        "related related practical"
-        "sources sources practical";
+        "related related practical";
       grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.95fr) minmax(20rem, 0.9fr);
     }
 

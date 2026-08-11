@@ -24,7 +24,7 @@ const markerSrc = placeType === "monastery"
   data-marker-src={markerSrc}
   data-map-state="fallback"
 >
-  <div class="place-mini-map__viewport" data-place-mini-map-renderer hidden aria-hidden="true">
+  <div class="place-mini-map__viewport" data-place-mini-map-renderer aria-hidden="true">
     <div class="place-mini-map__canvas" data-place-mini-map-canvas></div>
     <div class="place-mini-map__attribution" aria-label="Извори картографских података">
       <a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener noreferrer">© MapTiler</a>
@@ -45,6 +45,7 @@ const markerSrc = placeType === "monastery"
 
   const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY?.trim();
   const MAP_STYLE_ID = "019fc7d8-717c-701d-9ca5-a53d9438d3ce";
+  const MAP_READY_TIMEOUT_MS = 11000;
 
   const initialisePlaceMiniMaps = () => {
     document.querySelectorAll<HTMLElement>("[data-place-mini-map]").forEach((root) => {
@@ -59,6 +60,7 @@ const markerSrc = placeType === "monastery"
 
       let map: MapLibreMap;
       try {
+        root.dataset.mapState = "loading";
         map = new maplibregl.Map({
           container,
           style: `https://api.maptiler.com/maps/${MAP_STYLE_ID}/style.json?key=${encodeURIComponent(MAPTILER_KEY)}`,
@@ -72,7 +74,65 @@ const markerSrc = placeType === "monastery"
           fadeDuration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 200,
         });
       } catch {
+        root.dataset.mapState = "fallback";
         return;
+      }
+
+      let ready = false;
+      let removed = false;
+      let readyTimer = 0;
+      let repaintFrame = 0;
+
+      const hasRenderableCanvas = () => {
+        try {
+          const canvas = map.getCanvas();
+          return canvas instanceof HTMLCanvasElement
+            && canvas.isConnected
+            && container.contains(canvas)
+            && canvas.clientWidth > 0
+            && canvas.clientHeight > 0
+            && canvas.width > 0
+            && canvas.height > 0;
+        } catch {
+          return false;
+        }
+      };
+
+      const revealMap = () => {
+        if (ready || removed) return;
+        ready = true;
+        window.clearTimeout(readyTimer);
+        map.off("render", handleRender);
+        root.dataset.mapState = "ready";
+        renderer.setAttribute("aria-hidden", "false");
+        if (fallback) {
+          fallback.hidden = true;
+          fallback.setAttribute("aria-hidden", "true");
+        }
+        map.resize();
+      };
+
+      const showFallback = () => {
+        if (ready || removed) return;
+        if (hasRenderableCanvas()) {
+          revealMap();
+          return;
+        }
+        removed = true;
+        map.off("render", handleRender);
+        renderer.hidden = true;
+        renderer.setAttribute("aria-hidden", "true");
+        if (fallback) {
+          fallback.hidden = false;
+          fallback.setAttribute("aria-hidden", "false");
+        }
+        root.dataset.mapState = "fallback";
+        map.remove();
+      };
+
+      function handleRender() {
+        if (ready || removed) return;
+        if (hasRenderableCanvas()) revealMap();
       }
 
       const marker = document.createElement("div");
@@ -91,15 +151,26 @@ const markerSrc = placeType === "monastery"
       }
       new maplibregl.Marker({ element: marker, anchor: "bottom" }).setLngLat([longitude, latitude]).addTo(map);
 
-      map.once("load", () => {
-        renderer.hidden = false;
-        renderer.setAttribute("aria-hidden", "false");
-        if (fallback) fallback.hidden = true;
-        root.dataset.mapState = "ready";
+      map.on("render", handleRender);
+      map.once("load", revealMap);
+      map.once("idle", revealMap);
+      readyTimer = window.setTimeout(showFallback, MAP_READY_TIMEOUT_MS);
+      map.resize();
+      map.triggerRepaint();
+      repaintFrame = window.requestAnimationFrame(() => {
+        if (ready || removed) return;
         map.resize();
+        map.triggerRepaint();
       });
 
-      document.addEventListener("astro:before-swap", () => map.remove(), { once: true });
+      document.addEventListener("astro:before-swap", () => {
+        if (removed) return;
+        removed = true;
+        window.clearTimeout(readyTimer);
+        window.cancelAnimationFrame(repaintFrame);
+        map.off("render", handleRender);
+        map.remove();
+      }, { once: true });
     });
   };
 

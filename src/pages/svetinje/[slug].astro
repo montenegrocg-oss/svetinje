@@ -69,7 +69,6 @@ const { place, relatedPlaces } = Astro.props as { place: VisiblePlace; relatedPl
 const hasCoordinates = place.latitude !== undefined && place.longitude !== undefined;
 const historySections = place.narrativeSections.filter((section) => HISTORY_SECTION_IDS.has(section.id));
 const arrivalSections = place.narrativeSections.filter((section) => ARRIVAL_SECTION_IDS.has(section.id));
-const practicalSections = place.narrativeSections.filter((section) => PRACTICAL_SECTION_IDS.has(section.id));
 const aboutSections = place.narrativeSections.filter((section) =>
   !HISTORY_SECTION_IDS.has(section.id)
   && !ARRIVAL_SECTION_IDS.has(section.id)
@@ -88,7 +87,6 @@ const aboutSections = place.narrativeSections.filter((section) =>
   <section class="place-profile-body">
     <div class="shell place-profile-grid">
       <article class="place-profile-about prose" aria-labelledby="place-about-title">
-        <p class="eyebrow">Уређивачки преглед</p>
         <h2 id="place-about-title">О светињи</h2>
         {aboutSections.length > 0 ? (
           <PlaceNarrativeSegments sections={aboutSections} />
@@ -98,10 +96,10 @@ const aboutSections = place.narrativeSections.filter((section) =>
       </article>
 
       <PlaceDetailGallery place={place} />
-      <PlacePracticalPanel place={place} practicalSections={practicalSections} />
+      <PlacePracticalPanel place={place} />
 
       <div class="place-profile-cards">
-        <section class="place-editorial-card prose" aria-labelledby="place-history-title">
+        <section class="place-editorial-card place-history-card prose" aria-labelledby="place-history-title">
           <h2 id="place-history-title">Историја</h2>
           {historySections.length > 0 ? (
             <PlaceNarrativeSegments sections={historySections} />
@@ -130,18 +128,6 @@ const aboutSections = place.narrativeSections.filter((section) =>
       </div>
 
       <PlaceRelatedShelf currentPlace={place} relatedPlaces={relatedPlaces} />
-
-      <section class="place-profile-sources" aria-labelledby="place-sources-title">
-        <div class="place-section-heading">
-          <p class="eyebrow">Траг извора</p>
-          <h2 id="place-sources-title">Извори и напомене</h2>
-        </div>
-        <ol>
-          {place.sources.map((source) => (
-            <li id={`source-${source.id}`}><span>{source.title}</span><code>{source.id}</code></li>
-          ))}
-        </ol>
-      </section>
     </div>
   </section>
 </BaseLayout>

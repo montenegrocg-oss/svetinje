@@ -178,7 +178,6 @@ function verifyNarrative(detail, place, failures) {
 
   const blockBoundaries = {
     about: [html.indexOf('id="place-about-title"'), html.indexOf('data-testid="place-detail-gallery"')],
-    practical: [html.indexOf('class="place-practical-panel"'), html.indexOf('class="place-profile-cards"')],
     history: [html.indexOf('id="place-history-title"'), html.indexOf('id="place-arrival-title"')],
     arrival: [html.indexOf('id="place-arrival-title"'), html.indexOf('data-testid="place-related-shelf"')],
   };
@@ -188,10 +187,13 @@ function verifyNarrative(detail, place, failures) {
   }
 
   const pageText = htmlToPlainText(html);
-  const lastSectionIndexByGroup = { about: -1, history: -1, arrival: -1, practical: -1 };
-  const expectedCitationCounts = new Map();
+  const lastSectionIndexByGroup = { about: -1, history: -1, arrival: -1 };
   for (const section of place.narrativeSections) {
     const marker = `data-narrative-source-section="${section.id}"`;
+    if (PRACTICAL_SECTION_IDS.has(section.id)) {
+      if (html.includes(marker)) failures.push(`${place.id} exposes internal practical note section ${section.id}`);
+      continue;
+    }
     if (countMatches(html, new RegExp(escapeRegExp(marker), "g")) !== 1) {
       failures.push(`${place.id} narrative section ${section.id} must be rendered exactly once`);
       continue;
@@ -200,9 +202,7 @@ function verifyNarrative(detail, place, failures) {
       ? "history"
       : ARRIVAL_SECTION_IDS.has(section.id)
         ? "arrival"
-        : PRACTICAL_SECTION_IDS.has(section.id)
-          ? "practical"
-          : "about";
+        : "about";
     const markerIndex = html.indexOf(marker);
     const [start, end] = blockBoundaries[group];
     if (markerIndex < start || markerIndex >= end) failures.push(`${place.id} narrative section ${section.id} is outside its ${group} block`);
@@ -211,19 +211,13 @@ function verifyNarrative(detail, place, failures) {
     for (const paragraph of section.paragraphs) {
       const paragraphText = paragraph.text.replace(/\s+/g, " ").trim();
       if (!pageText.includes(paragraphText)) failures.push(`${place.id} is missing narrative text from section ${section.id}`);
-      for (const sourceId of paragraph.sourceIds) {
-        expectedCitationCounts.set(sourceId, (expectedCitationCounts.get(sourceId) ?? 0) + 1);
-      }
     }
     if (!FIXED_DETAIL_HEADINGS.includes(section.title)) {
       const originalHeadingPattern = new RegExp(`<h[23][^>]*>${escapeRegExp(section.title)}</h[23]>`, "g");
       if (countMatches(html, originalHeadingPattern) !== 0) failures.push(`${place.id} exposes original narrative heading ${section.title}`);
     }
   }
-  for (const [sourceId, expectedCount] of expectedCitationCounts) {
-    const citationPattern = new RegExp(`href="#source-${escapeRegExp(sourceId)}"`, "g");
-    if (countMatches(html, citationPattern) !== expectedCount) failures.push(`${place.id} must preserve all ${expectedCount} citation link(s) for ${sourceId}`);
-  }
+  if (/href="#source-|<sup\b[^>]*>\s*\[\d+\]/.test(html)) failures.push(`${place.id} detail page exposes inline source footnotes`);
 }
 
 function verifyDetail(detailCase, model, pagesByRoute, failures) {
@@ -276,7 +270,14 @@ function verifyDetail(detailCase, model, pagesByRoute, failures) {
     failures.push(`${place.id} detail page must contain ${model.expectedRelatedPlaceholderCount} related placeholder(s)`);
   }
   if (related.includes(`data-related-place="${place.id}"`)) failures.push(`${place.id} detail page must exclude itself from related places`);
-  if (!html.includes("Извори и напомене") || !html.includes('id="source-')) failures.push(`${place.id} detail page must preserve its source trail`);
+  if (/Траг извора|Извори и напомене|class="place-profile-sources"|id="source-/.test(html)) {
+    failures.push(`${place.id} detail page exposes the retired source-trail presentation`);
+  }
+  if (/Уређивачки преглед|Ауторски медији/.test(html)) failures.push(`${place.id} detail page exposes retired editorial labels`);
+  if (/Тачност положаја|Статус записа|Напомена о подацима|Црквена припадност/.test(html)) {
+    failures.push(`${place.id} detail page exposes retired practical-information labels`);
+  }
+  if (place.ecclesiasticalJurisdiction && !html.includes("Епархија")) failures.push(`${place.id} detail page is missing the Eparchy label`);
   verifyNarrative(detail, place, failures);
 }
 
