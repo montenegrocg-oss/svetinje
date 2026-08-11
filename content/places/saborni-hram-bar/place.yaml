@@ -1,6 +1,7 @@
 schema_version: 1
 id: saborni-hram-bar
 editorial_status: research
+browse_area_id: bar-crmnica-skadarsko-jezero
 place_type:
   value: cathedral
   verification:

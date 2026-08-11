@@ -3,6 +3,7 @@ import path from "node:path";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { parseDocument } from "yaml";
+import { isPlaceAreaId } from "../src/lib/place-areas.ts";
 
 const SCHEMA_FILES = {
   place: "place.schema.json",
@@ -409,6 +410,9 @@ function validateReferences(records) {
       for (const id of sourceList.values) if (!sourceIds.has(id)) errors.push(issue(file, sourceList.at, `unknown source id ${id}`));
     }
     if (kind === "place") {
+      if (data.browse_area_id !== undefined && !isPlaceAreaId(data.browse_area_id)) {
+        errors.push(issue(file, "/browse_area_id", `unknown browse area id ${data.browse_area_id}`));
+      }
       const related = data.relationships?.related_place_ids ?? [];
       for (const id of related) if (!placeIds.has(id)) errors.push(issue(file, "/relationships/related_place_ids", `unknown related place id ${id}`));
       for (const id of data.relationships?.media_ids ?? []) if (!mediaIds.has(id)) errors.push(issue(file, "/relationships/media_ids", `unknown media id ${id}`));

@@ -57,7 +57,7 @@ test("preview news is suppressed when its related place is not visible", async (
   assert.equal(preview.length, 4);
 });
 
-test("news UI uses semantic linked rows without images, cards, or carousels", async () => {
+test("news UI remains isolated to its archive and uses semantic linked rows", async () => {
   const [homepage, feed, item, archive] = await Promise.all([
     readFile(path.join(PROJECT_ROOT, "src", "pages", "index.astro"), "utf8"),
     readFile(path.join(PROJECT_ROOT, "src", "components", "news", "NewsFeed.astro"), "utf8"),
@@ -71,9 +71,7 @@ test("news UI uses semantic linked rows without images, cards, or carousels", as
   assert.match(item, /news-feed-item__date-compact/);
   assert.doesNotMatch(`${feed}\n${item}`, /<img|carousel|slider/i);
   assert.doesNotMatch(item, /bookmark/i);
-  assert.doesNotMatch(homepage, /О водичу|Уређивачко повјерење|project-intro|trust-note/);
-  assert.match(homepage, /selectLatestNews\(await loadVisibleNews\(\), 5\)/);
-  assert.match(homepage, /<NewsFeed items=\{latestNews\} variant="homepage"/);
+  assert.doesNotMatch(homepage, /loadVisibleNews|selectLatestNews|NewsFeed|homepage-news|data-news-item/);
   assert.match(archive, /<NewsFeed items=\{news\} variant="archive"/);
 });
 

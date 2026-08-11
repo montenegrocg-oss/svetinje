@@ -1,10 +1,10 @@
 ---
 import MapExplorer from "../components/MapExplorer.astro";
-import NewsFeed from "../components/news/NewsFeed.astro";
+import PlaceAreas from "../components/PlaceAreas.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { loadVisibleNews, selectLatestNews } from "../lib/content/news";
+import { loadVisiblePlaces } from "../lib/content/publication";
 
-const latestNews = selectLatestNews(await loadVisibleNews(), 5);
+const places = await loadVisiblePlaces();
 ---
 
 <BaseLayout
@@ -12,19 +12,6 @@ const latestNews = selectLatestNews(await loadVisibleNews(), 5);
   description="Дигитални водич кроз православне светиње, поклоничке руте и духовно насљеђе Црне Горе."
   canonicalPath="/"
 >
-  <MapExplorer />
-
-  <section class="homepage-news" aria-labelledby="homepage-news-title">
-    <div class="shell homepage-news__inner">
-      <header class="homepage-news__header">
-        <p class="map-eyebrow">НОВОСТИ</p>
-        <h2 id="homepage-news-title">Последње додато</h2>
-        <p>Сајт се тренутно активно допуњава новим садржајем и објектима.</p>
-      </header>
-      <NewsFeed items={latestNews} variant="homepage" />
-      <div class="homepage-news__all">
-        <a href="/novosti/">Све новости <span aria-hidden="true">→</span></a>
-      </div>
-    </div>
-  </section>
+  <MapExplorer places={places} />
+  <PlaceAreas places={places} />
 </BaseLayout>

@@ -8,6 +8,7 @@ import {
   CATEGORY_HTML_ROUTES,
   createOutputExpectations,
 } from "./lib/output-expectations.mjs";
+import { PLACE_AREAS } from "../src/lib/place-areas.ts";
 
 const HISTORY_SECTION_IDS = new Set([
   "history", "discovery", "foundation", "consecration", "saint-simeon", "relics", "canonization",
@@ -134,26 +135,8 @@ function verifyNewsFeed(page, expectedItems, label, failures) {
   }
 }
 
-function verifyNewsContracts(homepage, archive, model, pagesByRoute, failures) {
-  const latest = model.news.slice(0, 5);
-  verifyNewsFeed(homepage, latest, "homepage", failures);
+function verifyNewsContracts(archive, model, pagesByRoute, failures) {
   verifyNewsFeed(archive, model.news, "news archive", failures);
-  const homepageHtml = homepage?.html ?? "";
-  if (!homepageHtml.includes("НОВОСТИ") || !homepageHtml.includes("Последње додато")) {
-    failures.push("homepage is missing the new news section identity");
-  }
-  if (!homepageHtml.includes("Сајт се тренутно активно допуњава новим садржајем и објектима.")) {
-    failures.push("homepage is missing the exact news introduction");
-  }
-  if (/О водичу|Светиње на једном мјесту|Уређивачко повјерење|Провјерено прије објаве/.test(homepageHtml)) {
-    failures.push("homepage still contains the retired project-intro or trust block");
-  }
-  if (!homepageHtml.includes('href="/novosti/"') || !homepageHtml.includes("Све новости")) {
-    failures.push("homepage is missing its /novosti/ archive link");
-  }
-  if (latest.length === 0 && !homepageHtml.includes("Нове објаве биће доступне овдје.")) {
-    failures.push("homepage is missing its protected empty-news state");
-  }
   for (const item of model.news) {
     if (!item.relatedPlaceId) continue;
     const place = model.placesById.get(item.relatedPlaceId);
@@ -167,6 +150,31 @@ function verifyNewsContracts(homepage, archive, model, pagesByRoute, failures) {
       failures.push(`visible own-detail news route ${route} is missing or mismatched`);
     }
   }
+}
+
+function verifyAreaNavigation(homepage, model, failures) {
+  const html = homepage?.html ?? "";
+  const areaIds = [...html.matchAll(/data-place-area-link="([^"]+)"/g)].map((match) => match[1]);
+  const expectedIds = PLACE_AREAS.map((area) => area.id);
+  if (JSON.stringify(areaIds) !== JSON.stringify(expectedIds)) {
+    failures.push("homepage area navigation must derive every area once and in catalogue order");
+  }
+  for (const area of PLACE_AREAS) {
+    const link = elementContaining(html, "a", `data-place-area-link="${area.id}"`);
+    if (!link || !link.includes(area.label) || !link.includes(`href="/?area=${area.id}#mapa"`)) {
+      failures.push(`homepage area link ${area.id} does not match the shared catalogue`);
+      continue;
+    }
+    const expectedCount = model.areaMembership[area.id].length;
+    const countMarker = `data-place-area-count="${expectedCount}"`;
+    if (expectedCount > 0 && !link.includes(countMarker)) {
+      failures.push(`homepage area ${area.id} is missing its visible-place count`);
+    }
+    if (expectedCount === 0 && /data-place-area-count=/.test(link)) {
+      failures.push(`homepage area ${area.id} must not display a fabricated zero count`);
+    }
+  }
+  if (/data-news-item=|homepage-news/.test(html)) failures.push("homepage still renders the standalone news feed");
 }
 
 function verifyNarrative(detail, place, failures) {
@@ -371,7 +379,8 @@ const catalogue = pagesByRoute.get("svetinje/index.html");
 const newsArchive = pagesByRoute.get("novosti/index.html");
 const homepageHtml = homepage?.html ?? "";
 verifyFixedHomepageContracts(homepageHtml, model, failures);
-verifyNewsContracts(homepage, newsArchive, model, pagesByRoute, failures);
+verifyNewsContracts(newsArchive, model, pagesByRoute, failures);
+verifyAreaNavigation(homepage, model, failures);
 verifyCards(homepage, model.places, model.places, "homepage explorer", failures);
 verifyCards(catalogue, model.places, model.places, "general catalogue", failures);
 

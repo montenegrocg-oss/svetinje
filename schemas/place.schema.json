@@ -17,6 +17,7 @@
     "schema_version": { "const": 1 },
     "id": { "$ref": "common.schema.json#/$defs/entityId" },
     "editorial_status": { "$ref": "common.schema.json#/$defs/editorialStatus" },
+    "browse_area_id": { "$ref": "common.schema.json#/$defs/entityId" },
     "place_type": { "$ref": "#/$defs/placeTypeFact" },
     "parent_place_id": { "$ref": "common.schema.json#/$defs/entityIdFact" },
     "ecclesiastical": { "$ref": "#/$defs/ecclesiastical" },

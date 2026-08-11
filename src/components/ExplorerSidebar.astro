@@ -31,6 +31,10 @@ const { places = [], totalPlaces = places.length } = Astro.props;
   </form>
 
   <FilterChips group="catalogue" />
+  <div class="explorer-area-filter" data-explorer-area-filter hidden>
+    <span>Област: <strong data-explorer-area-label></strong></span>
+    <button type="button" data-clear-area-filter aria-label="Уклони филтер области">×</button>
+  </div>
   {places.length === 0 ? (
     <EmptyCatalogueState statusId="catalogue-status" />
   ) : (

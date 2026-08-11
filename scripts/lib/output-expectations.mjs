@@ -2,6 +2,7 @@ import { loadVisiblePlaces } from "../../src/lib/content/publication.ts";
 import { loadVisibleNews } from "../../src/lib/content/news.ts";
 import { categoryForPlaceType } from "../../src/lib/place-filters.ts";
 import { paginatePlaces, PLACES_PER_PAGE } from "../../src/lib/explorer-pagination.ts";
+import { PLACE_AREAS } from "../../src/lib/place-areas.ts";
 
 export const STATIC_HTML_ROUTES = Object.freeze([
   "index.html",
@@ -61,6 +62,9 @@ export function createOutputModel(places, news = []) {
     item,
     route: `novosti/${item.slug}/index.html`,
   }] : []);
+  const areaMembership = Object.fromEntries(
+    PLACE_AREAS.map((area) => [area.id, normalizedPlaces.filter((place) => place.browseAreaId === area.id)]),
+  );
 
   return {
     places: normalizedPlaces,
@@ -75,6 +79,7 @@ export function createOutputModel(places, news = []) {
     ],
     expectedPageCount: STATIC_HTML_ROUTES.length + normalizedPlaces.length + newsDetailRoutes.length,
     categoryMembership,
+    areaMembership,
     placesById: new Map(normalizedPlaces.map((place) => [place.id, place])),
     markerPlaces: normalizedPlaces.filter(hasCoordinates),
     mediaPlaces: normalizedPlaces.filter((place) => typeof place.previewImageSrc === "string"),

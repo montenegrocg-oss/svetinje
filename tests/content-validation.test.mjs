@@ -131,6 +131,21 @@ test("neutral draft structural records validate", async (t) => {
   assert.deepEqual(await validateRepository(root), []);
 });
 
+test("place browse areas are optional and must reference the shared catalogue", async (t) => {
+  const root = await project(t);
+  await yamlFile(root, "content/places/validation-subject/place.yaml", {
+    ...place(),
+    browse_area_id: "boka-kotorska",
+  });
+  assert.deepEqual(await validateRepository(root), []);
+
+  await yamlFile(root, "content/places/validation-subject/place.yaml", {
+    ...place(),
+    browse_area_id: "unknown-area",
+  });
+  assert.ok(has(await validateRepository(root), "unknown browse area id unknown-area"));
+});
+
 test("duplicate technical entity ids are rejected across record types", async (t) => {
   const root = await project(t);
   await yamlFile(root, "content/places/validation-subject/place.yaml", place());

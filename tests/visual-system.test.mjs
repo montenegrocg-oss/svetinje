@@ -266,17 +266,24 @@ test("the visual system includes required breakpoints, touch targets, and reduce
   assert.match(css, /@layer reset, tokens, base, components, explorer, homepage, pages, editorial-preview, responsive;/);
 });
 
-test("the homepage replaces the project introduction with a reusable news feed", async () => {
-  const homepage = await source("src/pages/index.astro");
+test("the homepage replaces its news feed with shared geographic-area navigation", async () => {
+  const [homepage, areas] = await Promise.all([
+    source("src/pages/index.astro"),
+    source("src/components/PlaceAreas.astro"),
+  ]);
   const styles = await source("src/styles/global.css");
   assert.doesNotMatch(homepage, /\/images\/home\/hero\.webp/);
   assert.doesNotMatch(homepage, /project-intro|trust-note|О водичу|Уређивачко повјерење|Провјерено прије објаве/);
-  assert.match(homepage, /НОВОСТИ/);
-  assert.match(homepage, /Последње додато/);
-  assert.match(homepage, /Сајт се тренутно активно допуњава новим садржајем и објектима\./);
-  assert.match(homepage, /selectLatestNews\(await loadVisibleNews\(\), 5\)/);
-  assert.match(homepage, /<NewsFeed items=\{latestNews\}/);
+  assert.doesNotMatch(homepage, /loadVisibleNews|selectLatestNews|NewsFeed|homepage-news/);
+  assert.match(homepage, /<PlaceAreas places=\{places\} \/>/);
+  assert.match(areas, /PLACE_AREAS\.map/);
+  assert.match(areas, /ИСТРАЖИТЕ/);
+  assert.match(areas, /По областима/);
+  assert.match(areas, /\?area=\$\{area\.id\}#mapa/);
+  assert.match(areas, /area\.count > 0/);
   assert.doesNotMatch(styles, /\.project-intro|\.trust-note/);
+  assert.doesNotMatch(styles, /\.homepage-news/);
+  assert.match(styles, /\.homepage-areas__list a:focus-visible/);
   assert.match(styles, /\.news-feed-item__link:focus-visible/);
 });
 

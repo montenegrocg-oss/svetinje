@@ -1,6 +1,7 @@
 schema_version: 1
 id: manastir-savina
 editorial_status: research
+browse_area_id: boka-kotorska
 place_type:
   value: monastery
   verification:

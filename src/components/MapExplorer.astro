@@ -8,9 +8,13 @@ import PlaceCard from "./PlaceCard.astro";
 import PopularRoutes from "./PopularRoutes.astro";
 import RecommendedPlaces from "./RecommendedPlaces.astro";
 import { paginatePlaces, PLACES_PER_PAGE } from "../lib/explorer-pagination";
-import { loadVisiblePlaces } from "../lib/content/publication";
+import type { VisiblePlace } from "../lib/content/publication";
 
-const places = await loadVisiblePlaces();
+interface Props {
+  places: VisiblePlace[];
+}
+
+const { places } = Astro.props;
 const initialPage = paginatePlaces(places, 1);
 const inventoryPlaces = places.slice(PLACES_PER_PAGE);
 ---
@@ -45,6 +49,7 @@ const inventoryPlaces = places.slice(PLACES_PER_PAGE);
     paginatePlaces,
     pageForPlace,
   } from "../lib/explorer-pagination";
+  import { getPlaceArea } from "../lib/place-areas";
 
   document.querySelectorAll<HTMLButtonElement>("[data-notice-trigger]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -74,8 +79,12 @@ const inventoryPlaces = places.slice(PLACES_PER_PAGE);
   const noResultsTitle = noResults?.querySelector<HTMLElement>("[data-no-results-title]");
   const noResultsBody = noResults?.querySelector<HTMLElement>("[data-no-results-body]");
   const filterButtons = [...document.querySelectorAll<HTMLButtonElement>("button[data-filter]")];
+  const areaFilter = explorerRoot?.querySelector<HTMLElement>("[data-explorer-area-filter]");
+  const areaFilterLabel = areaFilter?.querySelector<HTMLElement>("[data-explorer-area-label]");
+  const clearAreaFilterButton = areaFilter?.querySelector<HTMLButtonElement>("[data-clear-area-filter]");
   const filterIds = new Set(["all", "monasteries", "churches", "holy-places", "routes"]);
   let activeFilter = "all";
+  let activeAreaId = getPlaceArea(new URL(window.location.href).searchParams.get("area"))?.id ?? null;
   let currentPage = 1;
   let matchedCards = [...placeCards];
   const explorerSidebar = document.querySelector<HTMLElement>("[data-testid='explorer-sidebar']");
@@ -179,14 +188,22 @@ const inventoryPlaces = places.slice(PLACES_PER_PAGE);
     window.requestAnimationFrame(syncContinuationHeight);
   };
 
+  const syncAreaFilter = () => {
+    const area = getPlaceArea(activeAreaId);
+    if (areaFilter) areaFilter.hidden = !area;
+    if (areaFilterLabel) areaFilterLabel.textContent = area?.label ?? "";
+  };
+
   const applyExplorerState = (resetPage = false) => {
+    syncAreaFilter();
     if (placeCards.length === 0) return;
     if (resetPage) currentPage = 1;
     const query = searchInput?.value.trim().toLocaleLowerCase("sr") ?? "";
     matchedCards = placeCards.filter((card) => {
+      const matchesArea = !activeAreaId || card.dataset.placeArea === activeAreaId;
       const matchesCategory = activeFilter === "all" || card.dataset.placeCategory === activeFilter;
       const matchesSearch = !query || (card.dataset.placeSearch ?? "").includes(query);
-      const matches = matchesCategory && matchesSearch;
+      const matches = matchesArea && matchesCategory && matchesSearch;
       if (!matches) card.dataset.selected = "false";
       return matches;
     });
@@ -236,6 +253,20 @@ const inventoryPlaces = places.slice(PLACES_PER_PAGE);
     resultStatus?.scrollIntoView({ block: "nearest" });
   });
 
+  clearAreaFilterButton?.addEventListener("click", () => {
+    activeAreaId = null;
+    const url = new URL(window.location.href);
+    url.searchParams.delete("area");
+    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+    applyExplorerState(true);
+  });
+
+  const handlePopState = () => {
+    activeAreaId = getPlaceArea(new URL(window.location.href).searchParams.get("area"))?.id ?? null;
+    applyExplorerState(true);
+  };
+  window.addEventListener("popstate", handlePopState);
+
   pageButtons.forEach((button) => {
     button.addEventListener("click", () => {
       currentPage = Number(button.dataset.paginationPage) || 1;
@@ -281,5 +312,6 @@ const inventoryPlaces = places.slice(PLACES_PER_PAGE);
     explorerRoot?.style.removeProperty("--explorer-continuation-height");
     window.removeEventListener("svetinje:place-select", handlePlaceSelection);
     window.removeEventListener("svetinje:place-selection-cleared", handleClearedSelection);
+    window.removeEventListener("popstate", handlePopState);
   }, { once: true });
 </script>

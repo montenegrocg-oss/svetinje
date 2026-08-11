@@ -1,6 +1,8 @@
 import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { parseDocument } from "yaml";
+import type { PlaceAreaId } from "../place-areas";
+import { isPlaceAreaId } from "../place-areas";
 
 type ReviewRole = "publishing" | "factual" | "ecclesiastical" | "sr-language" | "media-rights";
 
@@ -29,6 +31,7 @@ interface StringFact {
 interface PlaceRecord {
   id: string;
   editorial_status: string;
+  browse_area_id?: string;
   place_type?: {
     value?: string;
     verification?: Verification;
@@ -102,6 +105,7 @@ export interface PublishablePlace {
   name: string;
   summary: string;
   placeType: string;
+  browseAreaId?: PlaceAreaId;
 }
 
 export interface NarrativeParagraph {
@@ -381,6 +385,7 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
       name: narrative.preferred_name,
       summary: narrative.summary,
       placeType: place.place_type.value,
+      ...(isPlaceAreaId(place.browse_area_id) ? { browseAreaId: place.browse_area_id } : {}),
     }];
   });
 }
@@ -519,6 +524,7 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       name: narrative.preferred_name,
       summary: narrative.summary,
       placeType: place.place_type.value,
+      ...(isPlaceAreaId(place.browse_area_id) ? { browseAreaId: place.browse_area_id } : {}),
       typeLabel: placeTypeLabel(place.place_type.value),
       ...(municipality !== undefined ? { municipality } : {}),
       ...(settlement !== undefined ? { settlement } : {}),
