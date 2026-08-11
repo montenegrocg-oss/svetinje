@@ -9,6 +9,7 @@ import {
   createOutputExpectations,
 } from "./lib/output-expectations.mjs";
 import { PLACE_AREAS } from "../src/lib/place-areas.ts";
+import { PLACES_PER_PAGE } from "../src/lib/explorer-pagination.ts";
 
 const HISTORY_SECTION_IDS = new Set([
   "history", "discovery", "foundation", "consecration", "saint-simeon", "relics", "canonization",
@@ -98,6 +99,31 @@ function verifyCards(page, expectedPlaces, allPlaces, label, failures) {
     if (place.previewImageSrc && !card.includes(`src="${place.previewImageSrc}"`)) {
       failures.push(`${label} card for ${place.id} is missing its eligible preview image`);
     }
+  }
+}
+
+function verifyCataloguePagination(page, expectedPlaces, label, failures) {
+  if (!page || expectedPlaces.length === 0) return;
+  const itemTags = [...page.html.matchAll(/<li\b(?=[^>]*\bdata-catalogue-item\b)[^>]*>/g)].map((match) => match[0]);
+  const initiallyVisible = itemTags.filter((tag) => !/\bhidden\b/.test(tag));
+  const expectedVisible = Math.min(PLACES_PER_PAGE, expectedPlaces.length);
+  const expectedPages = Math.ceil(expectedPlaces.length / PLACES_PER_PAGE);
+  const pagination = elementContaining(page.html, "nav", "data-catalogue-pagination");
+
+  if (itemTags.length !== expectedPlaces.length) {
+    failures.push(`${label} pagination must retain ${expectedPlaces.length} unique catalogue item(s), found ${itemTags.length}`);
+  }
+  if (initiallyVisible.length !== expectedVisible) {
+    failures.push(`${label} first page must expose ${expectedVisible} card(s), found ${initiallyVisible.length}`);
+  }
+  if (!pagination.includes(`data-total-pages="${expectedPages}"`)) {
+    failures.push(`${label} pagination must derive ${expectedPages} page(s) from its visible inventory`);
+  }
+  if (expectedPages <= 1 && !/\bhidden\b/.test(pagination)) {
+    failures.push(`${label} pagination must stay hidden for a single page`);
+  }
+  if (expectedPages > 1 && /<nav\b[^>]*\bhidden\b/.test(pagination)) {
+    failures.push(`${label} pagination must be available when more than ${PLACES_PER_PAGE} records exist`);
   }
 }
 
@@ -293,44 +319,45 @@ function verifyFixedHomepageContracts(homepageHtml, model, failures) {
   const explorerCardIds = [...homepageHtml.matchAll(/data-place-card="([^"]+)"/g)].map((match) => match[1]);
   const uniqueExplorerCardIds = new Set(explorerCardIds);
   const initialPrimaryCards = countMatches(homepageHtml, /data-initial-explorer-placement="primary"/g);
-  const realContinuationCards = countMatches(homepageHtml, /data-place-card="[^"]+"[^>]*data-continuation-slot=/g);
   const pooledCards = countMatches(homepageHtml, /data-initial-explorer-placement="pool"/g);
-  const continuationPlaceholderCount = countMatches(homepageHtml, /data-testid="explorer-continuation-placeholder"/g);
   if (explorerCardIds.length !== uniqueExplorerCardIds.size) {
-    failures.push("homepage pagination inventory must contain each data-place-card ID exactly once");
+    failures.push("homepage inventory must contain each data-place-card ID exactly once");
   }
-  if (initialPrimaryCards !== model.primaryPlaceCount) {
-    failures.push(`homepage page 1 must contain ${model.primaryPlaceCount} primary card(s), found ${initialPrimaryCards}`);
+  if (explorerCardIds.length !== model.places.length) {
+    failures.push(`homepage inventory must retain all ${model.places.length} filterable place card(s), found ${explorerCardIds.length}`);
   }
-  if (realContinuationCards !== model.continuationRealCount) {
-    failures.push(`homepage must contain ${model.continuationRealCount} real continuation card(s), found ${realContinuationCards}`);
+  if (initialPrimaryCards !== model.homepagePreviewPlaces.length) {
+    failures.push(`homepage preview must contain ${model.homepagePreviewPlaces.length} initial card(s), found ${initialPrimaryCards}`);
   }
-  if (initialPrimaryCards + realContinuationCards > 8) {
-    failures.push("homepage page 1 must never expose more than eight real explorer cards");
+  if (initialPrimaryCards > model.homepagePreviewLimit) {
+    failures.push(`homepage preview must never expose more than ${model.homepagePreviewLimit} initial cards`);
   }
-  if (pooledCards !== model.pooledPlaces.length) {
-    failures.push(`homepage pagination pool must contain ${model.pooledPlaces.length} card(s), found ${pooledCards}`);
+  if (pooledCards !== model.homepagePooledPlaces.length) {
+    failures.push(`homepage hidden inventory must contain ${model.homepagePooledPlaces.length} card(s), found ${pooledCards}`);
   }
   if (!/<div\b(?=[^>]*data-explorer-card-pool)(?=[^>]*\bhidden\b)[^>]*>/.test(homepageHtml)) {
-    failures.push("homepage pagination inventory pool must remain hidden until cards are distributed client-side");
+    failures.push("homepage inventory pool must remain hidden until filter state distributes its cards");
   }
-  if (!homepageHtml.includes(`data-total-pages="${model.paginationPageCount}"`)) {
-    failures.push(`homepage pagination must derive ${model.paginationPageCount} page(s) from the visible inventory`);
+  if (/data-testid="explorer-continuation"|data-continuation-slot|data-explorer-pagination/.test(homepageHtml)) {
+    failures.push("homepage must not render continuation cards or pagination controls");
   }
-  if (continuationPlaceholderCount !== model.continuationPlaceholderCount) {
-    failures.push(`homepage must contain ${model.continuationPlaceholderCount} neutral continuation placeholder(s), found ${continuationPlaceholderCount}`);
+  const catalogueLink = elementContaining(homepageHtml, "a", "data-explorer-catalogue-link");
+  if (!catalogueLink.includes('href="/svetinje/"')) {
+    failures.push("homepage preview is missing its full-catalogue link");
   }
-  for (const { slot, place } of model.continuationSlots) {
-    const card = place ? elementContaining(homepageHtml, "article", `data-place-card="${place.id}"`) : "";
-    if (!card || !card.includes(`data-continuation-slot="${slot}"`)) {
-      failures.push(`homepage continuation slot ${slot} must contain the loaded place ${place.id}`);
-    } else if (!card.includes(`href="/svetinje/${place.slug}/"`)) {
-      failures.push(`homepage continuation card ${place.id} has the wrong detail route`);
-    } else if (!place.previewImageSrc && !card.includes("editorial-place-card__media--fallback")) {
-      failures.push(`homepage continuation card ${place.id} must retain its honest no-image fallback`);
-    }
+  const catalogueLinkText = htmlToPlainText(catalogueLink);
+  if (model.places.length > 0 && !catalogueLinkText.includes(`Све светиње — ${model.places.length}`)) {
+    failures.push("homepage full-catalogue count must be derived from the complete build-visible inventory");
   }
-  if (/data-continuation-slot="00\d+"/.test(homepageHtml)) failures.push("homepage continuation slots must use two-digit numbering");
+  if (model.places.length === 0 && /Све светиње\s*—\s*0/.test(catalogueLinkText)) {
+    failures.push("homepage must not present a misleading zero catalogue count");
+  }
+  const expectedInitialStatus = model.places.length > model.homepagePreviewPlaces.length
+    ? `Приказана су ${model.homepagePreviewPlaces.length} од ${model.places.length} резултата.`
+    : null;
+  if (expectedInitialStatus && !htmlToPlainText(homepageHtml).includes(expectedInitialStatus)) {
+    failures.push("homepage accessible result status must distinguish shown cards from full matches");
+  }
 
   const visibleRecommendations = RECOMMENDED_PLACE_IDS.flatMap((id) => {
     const place = model.placesById.get(id);
@@ -383,11 +410,13 @@ verifyNewsContracts(newsArchive, model, pagesByRoute, failures);
 verifyAreaNavigation(homepage, model, failures);
 verifyCards(homepage, model.places, model.places, "homepage explorer", failures);
 verifyCards(catalogue, model.places, model.places, "general catalogue", failures);
+verifyCataloguePagination(catalogue, model.places, "general catalogue", failures);
 
 for (const [category, route] of Object.entries(CATEGORY_HTML_ROUTES)) {
   const page = pagesByRoute.get(route);
   const members = model.categoryMembership[category];
   verifyCards(page, members, model.places, `${category} catalogue`, failures);
+  verifyCataloguePagination(page, members, `${category} catalogue`, failures);
   if (members.length === 0 && !page?.html.includes(EMPTY_STATES[category])) failures.push(`${category} catalogue is missing its protected empty state`);
   if (members.length > 0 && page?.html.includes(EMPTY_STATES[category])) failures.push(`${category} catalogue incorrectly renders its empty state`);
 }

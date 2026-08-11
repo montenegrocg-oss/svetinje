@@ -11,6 +11,14 @@ interface Props {
 }
 
 const { places = [], totalPlaces = places.length } = Astro.props;
+const visiblePlaceCount = Math.min(places.length, totalPlaces);
+const initialStatus = visiblePlaceCount === 1
+  ? "Приказан је један резултат."
+  : visiblePlaceCount === 0
+    ? "Нема записа за изабрани филтер."
+    : visiblePlaceCount < totalPlaces
+      ? `Приказана су ${visiblePlaceCount} од ${totalPlaces} резултата.`
+      : `Приказана су ${visiblePlaceCount} резултата.`;
 ---
 
 <aside class="explorer-sidebar" id="pretraga" aria-label="Претрага и филтри каталога" data-testid="explorer-sidebar">
@@ -40,7 +48,7 @@ const { places = [], totalPlaces = places.length } = Astro.props;
   ) : (
     <div class="explorer-results">
       <p id="catalogue-status" class="sr-only" role="status" aria-live="polite">
-        Приказана су {totalPlaces} записа.
+        {initialStatus}
       </p>
       <div class="explorer-results__cards" data-explorer-primary-results>
         {places.map((place) => (
@@ -54,4 +62,8 @@ const { places = [], totalPlaces = places.length } = Astro.props;
       </section>
     </div>
   )}
+  <a class="explorer-catalogue-link" href="/svetinje/" data-explorer-catalogue-link data-visible-place-count={totalPlaces}>
+    <span>{totalPlaces > 0 ? `Све светиње — ${totalPlaces}` : "Све светиње"}</span>
+    <span aria-hidden="true">→</span>
+  </a>
 </aside>

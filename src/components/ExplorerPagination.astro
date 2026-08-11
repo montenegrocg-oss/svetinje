@@ -11,9 +11,9 @@ const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
 ---
 
 <nav
-  class="explorer-pagination map-explorer__pagination"
+  class="explorer-pagination catalogue-pagination"
   aria-label="Странице резултата"
-  data-explorer-pagination
+  data-catalogue-pagination
   data-total-pages={totalPages}
   hidden={totalPages <= 1}
 >

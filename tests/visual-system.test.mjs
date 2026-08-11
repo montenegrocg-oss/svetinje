@@ -108,31 +108,28 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.doesNotMatch(homepage, /PopularRoutes/);
   assert.doesNotMatch(homepage, /HomepagePreviews/);
 
-  const [explorer, recommended, routes, continuation, pagination] = await Promise.all([
+  const [explorer, sidebar, recommended, routes] = await Promise.all([
     source("src/components/MapExplorer.astro"),
+    source("src/components/ExplorerSidebar.astro"),
     source("src/components/RecommendedPlaces.astro"),
     source("src/components/PopularRoutes.astro"),
-    source("src/components/ExplorerContinuation.astro"),
-    source("src/components/ExplorerPagination.astro"),
   ]);
   assert.match(explorer, /<MapCanvas places=\{places\} \/>/);
   assert.match(explorer, /<MapControls \/>/);
-  assert.match(explorer, /const initialPage = paginatePlaces\(places, 1\)/);
-  assert.match(explorer, /const inventoryPlaces = places\.slice\(PLACES_PER_PAGE\)/);
-  assert.match(explorer, /<ExplorerSidebar places=\{initialPage\.primaryPlaces\} totalPlaces=\{places\.length\} \/>/);
+  assert.match(explorer, /const initialPlaces = places\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);
+  assert.match(explorer, /const inventoryPlaces = places\.slice\(HOMEPAGE_PREVIEW_LIMIT\)/);
+  assert.match(explorer, /<ExplorerSidebar places=\{initialPlaces\} totalPlaces=\{places\.length\} \/>/);
   assert.match(explorer, /<RecommendedPlaces places=\{places\} \/>/);
   assert.match(explorer, /import PopularRoutes from "\.\/PopularRoutes\.astro"/);
-  assert.match(explorer, /import ExplorerContinuation from "\.\/ExplorerContinuation\.astro"/);
-  assert.match(explorer, /import ExplorerPagination from "\.\/ExplorerPagination\.astro"/);
   assert.match(explorer, /<PopularRoutes \/>/);
-  assert.match(explorer, /<ExplorerContinuation places=\{initialPage\.continuationPlaces\} \/>/);
-  assert.match(explorer, /<ExplorerPagination totalPlaces=\{places\.length\} \/>/);
   assert.ok(
-    explorer.indexOf("<RecommendedPlaces places={places} />") < explorer.indexOf("<PopularRoutes />")
-      && explorer.indexOf("<PopularRoutes />") < explorer.indexOf("<ExplorerContinuation places={initialPage.continuationPlaces} />")
-      && explorer.indexOf("<ExplorerContinuation places={initialPage.continuationPlaces} />") < explorer.indexOf("<ExplorerPagination totalPlaces={places.length} />"),
-    "recommendations, routes, and continuation must retain their required MapExplorer order",
+    explorer.indexOf("<ExplorerSidebar places={initialPlaces} totalPlaces={places.length} />") < explorer.indexOf("<RecommendedPlaces places={places} />")
+      && explorer.indexOf("<RecommendedPlaces places={places} />") < explorer.indexOf("<PopularRoutes />"),
+    "homepage preview, recommendations, and routes must retain their editorial order",
   );
+  assert.doesNotMatch(explorer, /ExplorerContinuation|ExplorerPagination|data-continuation|data-explorer-pagination/);
+  assert.match(sidebar, /data-explorer-catalogue-link/);
+  assert.match(sidebar, /href="\/svetinje\/"/);
   assert.match(explorer, /data-testid="map-explorer"/);
   assert.match(recommended, /Препоручене светиње/);
   assert.match(recommended, /data-testid="recommended-places"/);
@@ -160,17 +157,6 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(routes, /data-testid="popular-routes"/);
   assert.match(routes, /class="popular-routes__inner"/);
   assert.doesNotMatch(routes, /class="shell popular-routes__inner"/);
-  assert.doesNotMatch(continuation, /MINIMUM_SLOT_COUNT|Math\.max/);
-  assert.match(continuation, /slot: index \+ 5/);
-  assert.match(continuation, /String\(slot\)\.padStart\(2, "0"\)/);
-  assert.equal((continuation.match(/data-testid="explorer-continuation-placeholder"/g) ?? []).length, 0);
-  assert.match(continuation, /data-testid="explorer-continuation"/);
-  assert.match(continuation, /<PlaceCard[\s\S]*?place=\{place\}[\s\S]*?variant="continuation"[\s\S]*?continuationSlot=\{formatSlot\(slot\)\}/);
-  assert.match(pagination, /data-explorer-pagination/);
-  assert.match(pagination, /data-pagination-previous/);
-  assert.match(pagination, /data-pagination-next/);
-  assert.match(pagination, /data-pagination-page=\{page\}/);
-  assert.match(pagination, /hidden=\{totalPages <= 1\}/);
 });
 
 test("the map loading surface is neutral and cannot reveal the decorative fallback", async () => {
@@ -183,9 +169,11 @@ test("the map loading surface is neutral and cannot reveal the decorative fallba
   assert.doesNotMatch(styles, /map-loading-surface[\s\S]{0,180}animation:/);
 });
 
-test("catalogue pages share the established category mapping instead of duplicating it", async () => {
-  const [catalogue, monasteries, churches, holyPlaces, general, filters] = await Promise.all([
+test("catalogue pages share category mapping and one eight-card pagination implementation", async () => {
+  const [catalogue, pagination, paginationModel, monasteries, churches, holyPlaces, general, filters] = await Promise.all([
     source("src/components/CategoryCatalogue.astro"),
+    source("src/components/ExplorerPagination.astro"),
+    source("src/lib/explorer-pagination.ts"),
     source("src/pages/manastiri/index.astro"),
     source("src/pages/crkve/index.astro"),
     source("src/pages/sveta-mjesta/index.astro"),
@@ -196,6 +184,16 @@ test("catalogue pages share the established category mapping instead of duplicat
   assert.match(catalogue, /categoryForPlaceType\(place\.placeType\) === category/);
   assert.match(catalogue, /loadVisiblePlaces/);
   assert.match(catalogue, /<PlaceCard place=\{place\} variant="catalogue" \/>/);
+  assert.match(catalogue, /data-catalogue-item hidden=\{index >= PLACES_PER_PAGE\}/);
+  assert.match(catalogue, /<ExplorerPagination totalPlaces=\{places\.length\} \/>/);
+  assert.match(catalogue, /items\.forEach\(\(item, index\)/);
+  assert.match(catalogue, /item\.hidden = index < pageStart \|\| index >= pageEnd/);
+  assert.match(pagination, /data-catalogue-pagination/);
+  assert.match(pagination, /data-pagination-previous/);
+  assert.match(pagination, /data-pagination-next/);
+  assert.match(paginationModel, /export const PLACES_PER_PAGE = 8/);
+  assert.match(paginationModel, /pagePlaces/);
+  assert.doesNotMatch(paginationModel, /primaryPlaces|continuationPlaces|CONTINUATION/);
   assert.match(monasteries, /category="monasteries"/);
   assert.match(churches, /category="churches"/);
   assert.match(holyPlaces, /category="holy-places"/);

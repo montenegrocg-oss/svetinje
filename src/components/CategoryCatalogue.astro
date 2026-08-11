@@ -2,6 +2,8 @@
 import type { PlaceCategory } from "../lib/place-filters";
 import { categoryForPlaceType } from "../lib/place-filters";
 import { isEditorialPreviewBuild, loadVisiblePlaces } from "../lib/content/publication";
+import { PLACES_PER_PAGE } from "../lib/explorer-pagination";
+import ExplorerPagination from "./ExplorerPagination.astro";
 import PlaceCard from "./PlaceCard.astro";
 
 interface Props {
@@ -29,7 +31,12 @@ const catalogueLabel = category ? `${heading} у радном приказу` : 
   </div>
 </header>
 
-<section class="section catalogue-section">
+<section
+  class="section catalogue-section"
+  data-category-catalogue
+  data-catalogue-total={places.length}
+  data-catalogue-page-size={PLACES_PER_PAGE}
+>
   <div class="shell">
     {places.length === 0 ? (
       <div class="empty-state" role="status">
@@ -40,11 +47,55 @@ const catalogueLabel = category ? `${heading} у радном приказу` : 
         <a class="text-link" href="/izvori/">Прочитај уређивачку политику <span aria-hidden="true">→</span></a>
       </div>
     ) : (
-      <ul class="catalogue-grid editorial-catalogue" aria-label={catalogueLabel}>
-        {places.map((place) => (
-          <li><PlaceCard place={place} variant="catalogue" /></li>
+      <ul class="catalogue-grid editorial-catalogue" aria-label={catalogueLabel} data-catalogue-grid>
+        {places.map((place, index) => (
+          <li data-catalogue-item hidden={index >= PLACES_PER_PAGE}>
+            <PlaceCard place={place} variant="catalogue" />
+          </li>
         ))}
       </ul>
+      <ExplorerPagination totalPlaces={places.length} />
     )}
   </div>
 </section>
+
+<script>
+  import { pageCountForPlaces, PLACES_PER_PAGE } from "../lib/explorer-pagination";
+
+  document.querySelectorAll<HTMLElement>("[data-category-catalogue]").forEach((catalogue) => {
+    const items = [...catalogue.querySelectorAll<HTMLElement>("[data-catalogue-item]")];
+    const pagination = catalogue.querySelector<HTMLElement>("[data-catalogue-pagination]");
+    if (!pagination || items.length === 0) return;
+    const previousButton = pagination.querySelector<HTMLButtonElement>("[data-pagination-previous]");
+    const nextButton = pagination.querySelector<HTMLButtonElement>("[data-pagination-next]");
+    const pageButtons = [...pagination.querySelectorAll<HTMLButtonElement>("[data-pagination-page]")];
+    const status = pagination.querySelector<HTMLElement>("[data-pagination-status]");
+    const totalPages = pageCountForPlaces(items.length);
+    let currentPage = 1;
+
+    const renderPage = (requestedPage: number) => {
+      currentPage = Math.min(Math.max(1, requestedPage), totalPages);
+      const pageStart = (currentPage - 1) * PLACES_PER_PAGE;
+      const pageEnd = pageStart + PLACES_PER_PAGE;
+      items.forEach((item, index) => {
+        item.hidden = index < pageStart || index >= pageEnd;
+      });
+      if (previousButton) previousButton.disabled = currentPage === 1;
+      if (nextButton) nextButton.disabled = currentPage === totalPages;
+      pageButtons.forEach((button) => {
+        const page = Number(button.dataset.paginationPage);
+        if (page === currentPage) button.setAttribute("aria-current", "page");
+        else button.removeAttribute("aria-current");
+      });
+      if (status) status.textContent = `Страница ${currentPage} од ${totalPages}`;
+      catalogue.dataset.cataloguePage = String(currentPage);
+    };
+
+    previousButton?.addEventListener("click", () => renderPage(currentPage - 1));
+    nextButton?.addEventListener("click", () => renderPage(currentPage + 1));
+    pageButtons.forEach((button) => {
+      button.addEventListener("click", () => renderPage(Number(button.dataset.paginationPage)));
+    });
+    renderPage(1);
+  });
+</script>

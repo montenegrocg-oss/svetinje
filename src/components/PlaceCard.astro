@@ -4,12 +4,11 @@ import { categoryForPlaceType } from "../lib/place-filters";
 
 interface Props {
   place: VisiblePlace;
-  variant?: "sidebar" | "catalogue" | "continuation";
-  continuationSlot?: string;
-  initialExplorerPlacement?: "primary" | "continuation" | "pool";
+  variant?: "sidebar" | "catalogue";
+  initialExplorerPlacement?: "primary" | "pool";
 }
 
-const { place, variant = "catalogue", continuationSlot, initialExplorerPlacement } = Astro.props;
+const { place, variant = "catalogue", initialExplorerPlacement } = Astro.props;
 const category = categoryForPlaceType(place.placeType);
 const location = [place.municipality, place.settlement].filter(Boolean).join(" Â· ");
 ---
@@ -21,7 +20,6 @@ const location = [place.municipality, place.settlement].filter(Boolean).join(" Â
   data-place-category={category ?? ""}
   data-place-search={place.searchText.toLocaleLowerCase("sr")}
   data-selected="false"
-  data-continuation-slot={continuationSlot}
   data-initial-explorer-placement={initialExplorerPlacement}
 >
   {place.previewImageSrc && (
@@ -35,7 +33,7 @@ const location = [place.municipality, place.settlement].filter(Boolean).join(" Â
       />
     </div>
   )}
-  {!place.previewImageSrc && (variant === "sidebar" || variant === "continuation") && (
+  {!place.previewImageSrc && variant === "sidebar" && (
     <div class="editorial-place-card__media editorial-place-card__media--fallback" aria-hidden="true">
       <span></span>
       <i></i>

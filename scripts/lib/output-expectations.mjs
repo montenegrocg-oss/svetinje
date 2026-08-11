@@ -2,6 +2,7 @@ import { loadVisiblePlaces } from "../../src/lib/content/publication.ts";
 import { loadVisibleNews } from "../../src/lib/content/news.ts";
 import { categoryForPlaceType } from "../../src/lib/place-filters.ts";
 import { paginatePlaces, PLACES_PER_PAGE } from "../../src/lib/explorer-pagination.ts";
+import { HOMEPAGE_PREVIEW_LIMIT } from "../../src/lib/explorer-preview.ts";
 import { PLACE_AREAS } from "../../src/lib/place-areas.ts";
 
 export const STATIC_HTML_ROUTES = Object.freeze([
@@ -51,13 +52,8 @@ export function createOutputModel(places, news = []) {
     };
   });
   const expectedRealRelatedCount = Math.min(4, Math.max(0, normalizedPlaces.length - 1));
-  const initialExplorerPage = paginatePlaces(normalizedPlaces, 1);
-  const primaryPlaces = initialExplorerPage.primaryPlaces;
-  const continuationPlaces = initialExplorerPage.continuationPlaces;
-  const continuationSlots = continuationPlaces.map((place, index) => ({
-    slot: String(index + 5).padStart(2, "0"),
-    place,
-  }));
+  const cataloguePagination = paginatePlaces(normalizedPlaces, 1);
+  const homepagePreviewPlaces = normalizedPlaces.slice(0, HOMEPAGE_PREVIEW_LIMIT);
   const newsDetailRoutes = news.flatMap((item) => item.slug ? [{
     item,
     route: `novosti/${item.slug}/index.html`,
@@ -83,14 +79,12 @@ export function createOutputModel(places, news = []) {
     placesById: new Map(normalizedPlaces.map((place) => [place.id, place])),
     markerPlaces: normalizedPlaces.filter(hasCoordinates),
     mediaPlaces: normalizedPlaces.filter((place) => typeof place.previewImageSrc === "string"),
-    primaryPlaces,
-    continuationPlaces,
-    continuationSlots,
-    paginationPageCount: initialExplorerPage.totalPages,
-    pooledPlaces: normalizedPlaces.slice(PLACES_PER_PAGE),
-    primaryPlaceCount: primaryPlaces.length,
-    continuationRealCount: continuationPlaces.length,
-    continuationPlaceholderCount: 0,
+    homepagePreviewPlaces,
+    homepagePooledPlaces: normalizedPlaces.slice(HOMEPAGE_PREVIEW_LIMIT),
+    homepagePreviewLimit: HOMEPAGE_PREVIEW_LIMIT,
+    cataloguePageCount: cataloguePagination.totalPages,
+    catalogueFirstPagePlaces: cataloguePagination.pagePlaces,
+    cataloguePlacesPerPage: PLACES_PER_PAGE,
     expectedRealRelatedCount,
     expectedRelatedPlaceholderCount: 4 - expectedRealRelatedCount,
   };

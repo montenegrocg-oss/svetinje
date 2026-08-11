@@ -1,13 +1,11 @@
 ---
 import ExplorerSidebar from "./ExplorerSidebar.astro";
-import ExplorerContinuation from "./ExplorerContinuation.astro";
-import ExplorerPagination from "./ExplorerPagination.astro";
 import MapCanvas from "./MapCanvas.astro";
 import MapControls from "./MapControls.astro";
 import PlaceCard from "./PlaceCard.astro";
 import PopularRoutes from "./PopularRoutes.astro";
 import RecommendedPlaces from "./RecommendedPlaces.astro";
-import { paginatePlaces, PLACES_PER_PAGE } from "../lib/explorer-pagination";
+import { HOMEPAGE_PREVIEW_LIMIT } from "../lib/explorer-preview";
 import type { VisiblePlace } from "../lib/content/publication";
 
 interface Props {
@@ -15,8 +13,8 @@ interface Props {
 }
 
 const { places } = Astro.props;
-const initialPage = paginatePlaces(places, 1);
-const inventoryPlaces = places.slice(PLACES_PER_PAGE);
+const initialPlaces = places.slice(0, HOMEPAGE_PREVIEW_LIMIT);
+const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
 ---
 
 <section class="map-explorer" id="mapa" aria-labelledby="map-explorer-title" data-testid="map-explorer">
@@ -32,11 +30,14 @@ const inventoryPlaces = places.slice(PLACES_PER_PAGE);
     <MapControls />
   </div>
 
-  <ExplorerSidebar places={initialPage.primaryPlaces} totalPlaces={places.length} />
-  <RecommendedPlaces places={places} />
-  <PopularRoutes />
-  <ExplorerContinuation places={initialPage.continuationPlaces} />
-  <ExplorerPagination totalPlaces={places.length} />
+  <div class="map-explorer__content">
+    <ExplorerSidebar places={initialPlaces} totalPlaces={places.length} />
+    <div class="map-explorer__secondary">
+      <RecommendedPlaces places={places} />
+      <PopularRoutes />
+    </div>
+  </div>
+
   <div data-explorer-card-pool hidden>
     {inventoryPlaces.map((place) => (
       <PlaceCard place={place} variant="sidebar" initialExplorerPlacement="pool" />
@@ -46,9 +47,8 @@ const inventoryPlaces = places.slice(PLACES_PER_PAGE);
 
 <script>
   import {
-    paginatePlaces,
-    pageForPlace,
-  } from "../lib/explorer-pagination";
+    selectHomepagePreview,
+  } from "../lib/explorer-preview";
   import { getPlaceArea } from "../lib/place-areas";
 
   document.querySelectorAll<HTMLButtonElement>("[data-notice-trigger]").forEach((button) => {
@@ -67,15 +67,9 @@ const inventoryPlaces = places.slice(PLACES_PER_PAGE);
   const explorerRoot = document.querySelector<HTMLElement>("[data-testid='map-explorer']");
   const placeCards = [...(explorerRoot?.querySelectorAll<HTMLElement>("[data-place-card]") ?? [])];
   const primaryResults = explorerRoot?.querySelector<HTMLElement>("[data-explorer-primary-results]");
-  const continuationResults = explorerRoot?.querySelector<HTMLElement>("[data-explorer-continuation-results]");
   const cardPool = explorerRoot?.querySelector<HTMLElement>("[data-explorer-card-pool]");
-  const pagination = explorerRoot?.querySelector<HTMLElement>("[data-explorer-pagination]");
-  const previousPageButton = pagination?.querySelector<HTMLButtonElement>("[data-pagination-previous]");
-  const nextPageButton = pagination?.querySelector<HTMLButtonElement>("[data-pagination-next]");
-  const pageButtons = [...(pagination?.querySelectorAll<HTMLButtonElement>("[data-pagination-page]") ?? [])];
-  const paginationStatus = pagination?.querySelector<HTMLElement>("[data-pagination-status]");
   const resultStatus = document.getElementById("catalogue-status");
-  const noResults = document.querySelector<HTMLElement>("[data-explorer-no-results]");
+  const noResults = explorerRoot?.querySelector<HTMLElement>("[data-explorer-no-results]");
   const noResultsTitle = noResults?.querySelector<HTMLElement>("[data-no-results-title]");
   const noResultsBody = noResults?.querySelector<HTMLElement>("[data-no-results-body]");
   const filterButtons = [...document.querySelectorAll<HTMLButtonElement>("button[data-filter]")];
@@ -85,39 +79,8 @@ const inventoryPlaces = places.slice(PLACES_PER_PAGE);
   const filterIds = new Set(["all", "monasteries", "churches", "holy-places", "routes"]);
   let activeFilter = "all";
   let activeAreaId = getPlaceArea(new URL(window.location.href).searchParams.get("area"))?.id ?? null;
-  let currentPage = 1;
   let matchedCards = [...placeCards];
-  const explorerSidebar = document.querySelector<HTMLElement>("[data-testid='explorer-sidebar']");
-  const recommendedShelf = explorerRoot?.querySelector<HTMLElement>("[data-testid='recommended-places']");
-  const routesShelf = explorerRoot?.querySelector<HTMLElement>("[data-testid='popular-routes']");
-  const continuationShelf = explorerRoot?.querySelector<HTMLElement>("[data-testid='explorer-continuation']");
-
-  const syncContinuationHeight = () => {
-    if (!explorerRoot || !explorerSidebar || !continuationShelf) return;
-    if (!window.matchMedia("(min-width: 48rem)").matches) {
-      explorerRoot.style.removeProperty("--explorer-continuation-height");
-      return;
-    }
-
-    const sidebarBottom = explorerSidebar.getBoundingClientRect().bottom;
-    const continuationTop = continuationShelf.getBoundingClientRect().top;
-    const targetHeight = Math.max(0, Math.ceil(sidebarBottom - continuationTop));
-    explorerRoot.style.setProperty("--explorer-continuation-height", `${targetHeight}px`);
-  };
-
-  const continuationResizeObserver = explorerSidebar ? new ResizeObserver(syncContinuationHeight) : null;
-  if (explorerSidebar) continuationResizeObserver?.observe(explorerSidebar);
-  if (recommendedShelf) continuationResizeObserver?.observe(recommendedShelf);
-  if (routesShelf) continuationResizeObserver?.observe(routesShelf);
-  window.addEventListener("resize", syncContinuationHeight);
-
-  const singularLabels: Record<string, string> = {
-    monasteries: "манастир",
-    churches: "храм",
-    "holy-places": "свето мјесто",
-    routes: "поклоничка рута",
-    all: "запис",
-  };
+  let selectedPlaceId: string | null = null;
 
   const noResultCopy: Record<string, { title: string; body: string }> = {
     monasteries: {
@@ -142,50 +105,27 @@ const inventoryPlaces = places.slice(PLACES_PER_PAGE);
     },
   };
 
-  const setCardPlacement = (card: HTMLElement, placement: "primary" | "continuation" | "pool", index = 0) => {
-    const isPrimary = placement === "primary";
-    const isContinuation = placement === "continuation";
-    card.classList.toggle("editorial-place-card--sidebar", isPrimary || placement === "pool");
-    card.classList.toggle("editorial-place-card--continuation", isContinuation);
+  const setCardPlacement = (card: HTMLElement, placement: "primary" | "pool") => {
+    card.classList.add("editorial-place-card--sidebar");
     card.hidden = placement === "pool";
-    if (isContinuation) card.dataset.continuationSlot = String(index + 5).padStart(2, "0");
-    else card.removeAttribute("data-continuation-slot");
   };
 
-  const updatePagination = (totalPages: number) => {
-    if (pagination) pagination.hidden = totalPages <= 1;
-    if (previousPageButton) previousPageButton.disabled = currentPage <= 1;
-    if (nextPageButton) nextPageButton.disabled = currentPage >= totalPages;
-    pageButtons.forEach((button) => {
-      const page = Number(button.dataset.paginationPage);
-      button.hidden = page > totalPages;
-      if (page === currentPage) button.setAttribute("aria-current", "page");
-      else button.removeAttribute("aria-current");
-    });
-    if (paginationStatus) paginationStatus.textContent = `Страница ${currentPage} од ${totalPages}`;
-  };
-
-  const renderCurrentPage = () => {
-    if (!primaryResults || !continuationResults || !cardPool) return;
-    const page = paginatePlaces(matchedCards, currentPage);
-    currentPage = page.currentPage;
+  const renderPreview = () => {
+    if (!primaryResults || !cardPool) return 0;
+    const selectedCard = selectedPlaceId
+      ? matchedCards.find((card) => card.dataset.placeCard === selectedPlaceId) ?? null
+      : null;
+    const previewCards = selectHomepagePreview(matchedCards, selectedCard);
 
     placeCards.forEach((card) => {
       setCardPlacement(card, "pool");
       cardPool.append(card);
     });
-    page.primaryPlaces.forEach((card, index) => {
-      setCardPlacement(card, "primary", index);
+    previewCards.forEach((card) => {
+      setCardPlacement(card, "primary");
       primaryResults.append(card);
     });
-    page.continuationPlaces.forEach((card, index) => {
-      setCardPlacement(card, "continuation", index);
-      continuationResults.append(card);
-    });
-    continuationResults.dataset.empty = String(page.continuationPlaces.length === 0);
-
-    updatePagination(page.totalPages);
-    window.requestAnimationFrame(syncContinuationHeight);
+    return previewCards.length;
   };
 
   const syncAreaFilter = () => {
@@ -194,10 +134,27 @@ const inventoryPlaces = places.slice(PLACES_PER_PAGE);
     if (areaFilterLabel) areaFilterLabel.textContent = area?.label ?? "";
   };
 
-  const applyExplorerState = (resetPage = false) => {
+  const updateResultStatus = (shown: number, matched: number) => {
+    if (!resultStatus) return;
+    resultStatus.textContent = matched === 0
+      ? "Нема записа за изабрани филтер."
+      : shown === 1
+        ? "Приказан је један резултат."
+        : shown < matched
+          ? `Приказана су ${shown} од ${matched} резултата.`
+          : `Приказана су ${shown} резултата.`;
+  };
+
+  const applyExplorerState = (resetSelection = false) => {
     syncAreaFilter();
-    if (placeCards.length === 0) return;
-    if (resetPage) currentPage = 1;
+    if (placeCards.length === 0) {
+      window.dispatchEvent(new CustomEvent("svetinje:place-visibility-change", { detail: { visibleIds: [] } }));
+      return;
+    }
+    if (resetSelection) {
+      selectedPlaceId = null;
+      placeCards.forEach((card) => { card.dataset.selected = "false"; });
+    }
     const query = searchInput?.value.trim().toLocaleLowerCase("sr") ?? "";
     matchedCards = placeCards.filter((card) => {
       const matchesArea = !activeAreaId || card.dataset.placeArea === activeAreaId;
@@ -208,16 +165,14 @@ const inventoryPlaces = places.slice(PLACES_PER_PAGE);
       return matches;
     });
     const visibleIds = matchedCards.map((card) => card.dataset.placeCard ?? "");
-    const visible = matchedCards.length;
-
-    renderCurrentPage();
+    const shown = renderPreview();
 
     filterButtons.forEach((button) => {
       button.setAttribute("aria-pressed", String(button.dataset.filter === activeFilter));
     });
 
-    if (noResults) noResults.hidden = visible !== 0;
-    if (visible === 0 && noResultsTitle && noResultsBody) {
+    if (noResults) noResults.hidden = matchedCards.length !== 0;
+    if (matchedCards.length === 0 && noResultsTitle && noResultsBody) {
       const fallbackCopy = noResultCopy.all;
       if (!fallbackCopy) return;
       const copy = (query ? noResultCopy.all : noResultCopy[activeFilter]) ?? fallbackCopy;
@@ -225,14 +180,7 @@ const inventoryPlaces = places.slice(PLACES_PER_PAGE);
       noResultsBody.textContent = copy.body;
     }
 
-    if (resultStatus) {
-      resultStatus.textContent = visible === 1
-        ? "Приказан је један " + singularLabels[activeFilter] + "."
-        : visible === 0
-          ? "Нема записа за изабрани филтер."
-          : "Приказана су " + visible + " записа.";
-    }
-
+    updateResultStatus(shown, matchedCards.length);
     window.dispatchEvent(new CustomEvent("svetinje:filter-change", { detail: { filter: activeFilter } }));
     window.dispatchEvent(new CustomEvent("svetinje:place-visibility-change", { detail: { visibleIds } }));
   };
@@ -267,49 +215,31 @@ const inventoryPlaces = places.slice(PLACES_PER_PAGE);
   };
   window.addEventListener("popstate", handlePopState);
 
-  pageButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      currentPage = Number(button.dataset.paginationPage) || 1;
-      renderCurrentPage();
-    });
-  });
-  previousPageButton?.addEventListener("click", () => {
-    currentPage -= 1;
-    renderCurrentPage();
-  });
-  nextPageButton?.addEventListener("click", () => {
-    currentPage += 1;
-    renderCurrentPage();
-  });
-
   const handlePlaceSelection = ((event: CustomEvent<{ id: string }>) => {
     const selectedCard = matchedCards.find((card) => card.dataset.placeCard === event.detail.id);
-    const selectedPage = selectedCard ? pageForPlace(matchedCards, selectedCard) : null;
-    if (selectedPage && selectedPage !== currentPage) {
-      currentPage = selectedPage;
-      renderCurrentPage();
-    }
+    if (!selectedCard) return;
+    selectedPlaceId = event.detail.id;
     placeCards.forEach((card) => {
-      const selected = card.dataset.placeCard === event.detail.id;
-      card.dataset.selected = String(selected);
+      card.dataset.selected = String(card === selectedCard);
     });
-    if (resultStatus) resultStatus.textContent = "Изабрани запис је истакнут на карти.";
+    renderPreview();
+    if (resultStatus) resultStatus.textContent = "Изабрани запис је истакнут на карти и у прегледу.";
+  }) as EventListener;
+
+  const handleClearedSelection = ((event: CustomEvent<{ id: string }>) => {
+    if (selectedPlaceId !== event.detail.id) return;
+    selectedPlaceId = null;
+    const card = placeCards.find((candidate) => candidate.dataset.placeCard === event.detail.id);
+    if (card) card.dataset.selected = "false";
+    const shown = renderPreview();
+    updateResultStatus(shown, matchedCards.length);
   }) as EventListener;
 
   window.addEventListener("svetinje:place-select", handlePlaceSelection);
-  const handleClearedSelection = ((event: CustomEvent<{ id: string }>) => {
-    const card = placeCards.find((candidate) => candidate.dataset.placeCard === event.detail.id);
-    if (card) card.dataset.selected = "false";
-  }) as EventListener;
-
   window.addEventListener("svetinje:place-selection-cleared", handleClearedSelection);
   applyExplorerState();
-  syncContinuationHeight();
 
   document.addEventListener("astro:before-swap", () => {
-    continuationResizeObserver?.disconnect();
-    window.removeEventListener("resize", syncContinuationHeight);
-    explorerRoot?.style.removeProperty("--explorer-continuation-height");
     window.removeEventListener("svetinje:place-select", handlePlaceSelection);
     window.removeEventListener("svetinje:place-selection-cleared", handleClearedSelection);
     window.removeEventListener("popstate", handlePopState);
