@@ -22,6 +22,10 @@ import {
   FEATURED_CATALOGUE_LIMIT,
   selectFeaturedCataloguePlaces,
 } from "../src/lib/category-catalogue.ts";
+import {
+  buildCatalogueSearchText,
+  matchesCatalogueSearch,
+} from "../src/lib/catalogue-search.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -101,6 +105,27 @@ test("homepage sidebar preview paginates matched places two at a time", () => {
   assert.equal(pageForHomepagePreviewPlace(places, places[9]), 5);
 });
 
+test("catalogue search uses narrow fields and token-prefix matching", () => {
+  const catalogueSearchText = buildCatalogueSearchText({
+    name: "Манастир Острог",
+    alternateNames: ["Острошки манастир"],
+    municipality: "Даниловград",
+    settlement: "Острог",
+    browseAreaLabel: "Острог и средишња Црна Гора",
+    summary: "Православни манастир усјечен у стијену.",
+    narrativeText: "Историјски помен Подострога није каталошки податак.",
+  });
+
+  assert.equal(matchesCatalogueSearch(catalogueSearchText, "Острог"), true);
+  assert.equal(matchesCatalogueSearch("Манастир Подострог", "Острог"), false);
+  assert.equal(matchesCatalogueSearch(catalogueSearchText, "Ост"), true);
+  assert.equal(matchesCatalogueSearch(catalogueSearchText, "Историјски"), false);
+  assert.equal(matchesCatalogueSearch(catalogueSearchText, "Данилов"), true);
+  assert.equal(matchesCatalogueSearch(catalogueSearchText, "средишња црна"), true);
+  assert.equal(matchesCatalogueSearch(catalogueSearchText, "ман ост"), true);
+  assert.equal(matchesCatalogueSearch(catalogueSearchText, "ман будва"), false);
+});
+
 test("the explorer keeps one shared filter state across cards, controls, and map markers", async () => {
   const [explorer, sidebar, card, mapCanvas, filters, controls] = await Promise.all([
     source("src/components/MapExplorer.astro"),
@@ -115,7 +140,7 @@ test("the explorer keeps one shared filter state across cards, controls, and map
   assert.match(mapCanvas, /category: categoryForPlaceType\(place\.placeType\)/);
   assert.match(mapCanvas, /button\.dataset\.placeCategory = place\.category \?\? ""/);
   assert.match(explorer, /const matchesCategory = activeFilter === "all" \|\| card\.dataset\.placeCategory === activeFilter/);
-  assert.match(explorer, /const matchesSearch = !query \|\| \(card\.dataset\.placeSearch \?\? ""\)\.includes\(query\)/);
+  assert.match(explorer, /const matchesSearch = matchesCatalogueSearch\(card\.dataset\.placeSearch \?\? "", query\)/);
   assert.match(explorer, /new CustomEvent\("svetinje:filter-change"/);
   assert.match(explorer, /new CustomEvent\("svetinje:place-visibility-change"/);
   assert.match(explorer, /const initialPlaces = places\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);

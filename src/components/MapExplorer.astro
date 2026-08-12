@@ -46,6 +46,7 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
 </section>
 
 <script>
+  import { matchesCatalogueSearch } from "../lib/catalogue-search";
   import {
     pageCountForHomepagePreview,
     pageForHomepagePreviewPlace,
@@ -181,11 +182,11 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
       currentPage = 1;
       placeCards.forEach((card) => { card.dataset.selected = "false"; });
     }
-    const query = searchInput?.value.trim().toLocaleLowerCase("sr") ?? "";
+    const query = searchInput?.value ?? "";
     matchedCards = placeCards.filter((card) => {
       const matchesArea = !activeAreaId || card.dataset.placeArea === activeAreaId;
       const matchesCategory = activeFilter === "all" || card.dataset.placeCategory === activeFilter;
-      const matchesSearch = !query || (card.dataset.placeSearch ?? "").includes(query);
+      const matchesSearch = matchesCatalogueSearch(card.dataset.placeSearch ?? "", query);
       const matches = matchesArea && matchesCategory && matchesSearch;
       if (!matches) card.dataset.selected = "false";
       return matches;

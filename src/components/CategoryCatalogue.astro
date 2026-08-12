@@ -31,6 +31,7 @@ const catalogueLabel = category ? `${heading} у радном приказу` : 
 const copy = category === "monasteries"
   ? {
       searchPlaceholder: "Претражите манастире…",
+      statusPrefix: "Пронађена",
       statusNoun: "манастира",
       featuredHeading: "Издвојени манастири",
       allHeading: "Сви манастири",
@@ -39,6 +40,7 @@ const copy = category === "monasteries"
   : category === "churches"
     ? {
         searchPlaceholder: "Претражите храмове…",
+        statusPrefix: "Пронађена",
         statusNoun: "храмова",
         featuredHeading: "Издвојени храмови",
         allHeading: "Сви храмови",
@@ -47,6 +49,7 @@ const copy = category === "monasteries"
     : category === "holy-places"
       ? {
           searchPlaceholder: "Претражите света мјеста…",
+          statusPrefix: "Пронађена",
           statusNoun: "светих мјеста",
           featuredHeading: "Издвојена света мјеста",
           allHeading: "Сва света мјеста",
@@ -54,6 +57,7 @@ const copy = category === "monasteries"
         }
       : {
           searchPlaceholder: "Претражите светиње…",
+          statusPrefix: "Пронађене",
           statusNoun: "светиња",
           featuredHeading: "Издвојене светиње",
           allHeading: "Све светиње",
@@ -84,6 +88,7 @@ const countAwareDescription = `Истражите ${places.length} ${copy.countF
   data-catalogue-total={places.length}
   data-catalogue-page-size={PLACES_PER_PAGE}
   data-catalogue-status-noun={copy.statusNoun}
+  data-catalogue-status-prefix={copy.statusPrefix}
 >
   <div class="shell">
     {places.length === 0 ? (
@@ -108,7 +113,7 @@ const countAwareDescription = `Истражите ${places.length} ${copy.countF
           </select>
         </label>
         <p class="catalogue-toolbar__status" data-catalogue-result-status role="status" aria-live="polite">
-          Приказано {places.length} од {places.length} {copy.statusNoun}
+          {copy.statusPrefix} {places.length} {copy.statusNoun}
         </p>
         <div class="catalogue-toolbar__actions">
           <a href="/mapa/">Прикажи на карти <span aria-hidden="true">→</span></a>
@@ -127,7 +132,7 @@ const countAwareDescription = `Истражите ${places.length} ${copy.countF
               <li
                 data-catalogue-featured-item
                 data-place-area={place.browseAreaId ?? ""}
-                data-place-search={place.searchText.toLocaleLowerCase("sr")}
+                data-place-search={place.catalogueSearchText}
               >
                 <PlaceCard place={place} variant="featured" />
               </li>
@@ -146,7 +151,7 @@ const countAwareDescription = `Истражите ${places.length} ${copy.countF
             <li
               data-catalogue-item
               data-place-area={place.browseAreaId ?? ""}
-              data-place-search={place.searchText.toLocaleLowerCase("sr")}
+              data-place-search={place.catalogueSearchText}
               hidden={index >= PLACES_PER_PAGE}
             >
               <PlaceCard place={place} variant="catalogue" />
@@ -165,6 +170,7 @@ const countAwareDescription = `Истражите ${places.length} ${copy.countF
 </section>
 
 <script>
+  import { matchesCatalogueSearch } from "../lib/catalogue-search";
   import { pageCountForPlaces, PLACES_PER_PAGE } from "../lib/explorer-pagination";
 
   document.querySelectorAll<HTMLElement>("[data-category-catalogue]").forEach((catalogue) => {
@@ -184,6 +190,7 @@ const countAwareDescription = `Истражите ${places.length} ${copy.countF
     const status = pagination?.querySelector<HTMLElement>("[data-pagination-status]");
     const totalPlaces = items.length + featuredItems.length;
     const statusNoun = catalogue.dataset.catalogueStatusNoun ?? "резултата";
+    const statusPrefix = catalogue.dataset.catalogueStatusPrefix ?? "Пронађено";
     let matchedItems = [...items];
     let currentPage = 1;
 
@@ -213,11 +220,11 @@ const countAwareDescription = `Истражите ${places.length} ${copy.countF
     };
 
     const matchesFilters = (item: HTMLElement, query: string, areaId: string) =>
-      (!query || (item.dataset.placeSearch ?? "").includes(query))
+      matchesCatalogueSearch(item.dataset.placeSearch ?? "", query)
       && (!areaId || item.dataset.placeArea === areaId);
 
     const applyFilters = () => {
-      const query = searchInput?.value.trim().toLocaleLowerCase("sr") ?? "";
+      const query = searchInput?.value ?? "";
       const areaId = areaSelect?.value ?? "";
       const matchedFeaturedItems = featuredItems.filter((item) => matchesFilters(item, query, areaId));
       matchedItems = items.filter((item) => matchesFilters(item, query, areaId));
@@ -226,8 +233,12 @@ const countAwareDescription = `Истражите ${places.length} ${copy.countF
       if (mainSection) mainSection.hidden = matchedItems.length === 0;
       const matchedTotal = matchedFeaturedItems.length + matchedItems.length;
       if (emptyState) emptyState.hidden = matchedTotal !== 0;
-      if (resultStatus) resultStatus.textContent = `Приказано ${matchedTotal} од ${totalPlaces} ${statusNoun}`;
-      resetButtons.forEach((button) => { button.disabled = !query && !areaId; });
+      const hasFilters = Boolean(query.trim() || areaId);
+      if (resultStatus) {
+        const count = hasFilters ? `${matchedTotal} од ${totalPlaces}` : String(totalPlaces);
+        resultStatus.textContent = `${statusPrefix} ${count} ${statusNoun}`;
+      }
+      resetButtons.forEach((button) => { button.disabled = !hasFilters; });
       currentPage = 1;
       renderPage(1);
     };

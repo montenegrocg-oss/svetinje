@@ -18,7 +18,7 @@ const location = [place.municipality, place.settlement].filter(Boolean).join(" Â
   data-place-card={place.id}
   data-place-area={place.browseAreaId ?? ""}
   data-place-category={category ?? ""}
-  data-place-search={place.searchText.toLocaleLowerCase("sr")}
+  data-place-search={place.catalogueSearchText}
   data-selected="false"
   data-initial-explorer-placement={initialExplorerPlacement}
 >
