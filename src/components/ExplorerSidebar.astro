@@ -66,6 +66,6 @@ const initialStatus = visiblePlaceCount === 1 && totalPlaces === 1
   <nav class="explorer-pagination" data-homepage-pagination aria-label="Странице прегледа светиња" hidden={totalPages === 0}>
     <button type="button" data-homepage-pagination-prev aria-label="Претходна страница" disabled aria-disabled="true">←</button>
     <span data-homepage-pagination-status aria-live="polite">1 / {totalPages || 1}</span>
-    <button type="button" data-homepage-pagination-next aria-label="Сљедећа страница" disabled={totalPages <= 1} aria-disabled={String(totalPages <= 1)}>→</button>
+    <button type="button" data-homepage-pagination-next aria-label="Сљедећа страница" disabled={totalPages <= 1} aria-disabled={totalPages <= 1 ? "true" : "false"}>→</button>
   </nav>
 </aside>
