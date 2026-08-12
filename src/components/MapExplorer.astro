@@ -47,7 +47,9 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
 
 <script>
   import {
-    selectHomepagePreview,
+    pageCountForHomepagePreview,
+    pageForHomepagePreviewPlace,
+    paginateHomepagePreview,
   } from "../lib/explorer-preview";
   import { getPlaceArea } from "../lib/place-areas";
 
@@ -76,11 +78,16 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
   const areaFilter = explorerRoot?.querySelector<HTMLElement>("[data-explorer-area-filter]");
   const areaFilterLabel = areaFilter?.querySelector<HTMLElement>("[data-explorer-area-label]");
   const clearAreaFilterButton = areaFilter?.querySelector<HTMLButtonElement>("[data-clear-area-filter]");
+  const pagination = explorerRoot?.querySelector<HTMLElement>("[data-homepage-pagination]");
+  const paginationPrev = pagination?.querySelector<HTMLButtonElement>("[data-homepage-pagination-prev]");
+  const paginationNext = pagination?.querySelector<HTMLButtonElement>("[data-homepage-pagination-next]");
+  const paginationStatus = pagination?.querySelector<HTMLElement>("[data-homepage-pagination-status]");
   const filterIds = new Set(["all", "monasteries", "churches", "holy-places", "routes"]);
   let activeFilter = "all";
   let activeAreaId = getPlaceArea(new URL(window.location.href).searchParams.get("area"))?.id ?? null;
   let matchedCards = [...placeCards];
   let selectedPlaceId: string | null = null;
+  let currentPage = 1;
 
   const noResultCopy: Record<string, { title: string; body: string }> = {
     monasteries: {
@@ -110,12 +117,26 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
     card.hidden = placement === "pool";
   };
 
+  const updatePagination = (page: number, totalPages: number) => {
+    if (!pagination || !paginationPrev || !paginationNext || !paginationStatus) return;
+    pagination.hidden = totalPages === 0;
+    if (totalPages === 0) return;
+    paginationPrev.disabled = page <= 1;
+    paginationNext.disabled = page >= totalPages;
+    paginationPrev.setAttribute("aria-disabled", String(page <= 1));
+    paginationNext.setAttribute("aria-disabled", String(page >= totalPages));
+    paginationStatus.textContent = `${page} / ${totalPages}`;
+  };
+
   const renderPreview = () => {
     if (!primaryResults || !cardPool) return 0;
-    const selectedCard = selectedPlaceId
-      ? matchedCards.find((card) => card.dataset.placeCard === selectedPlaceId) ?? null
-      : null;
-    const previewCards = selectHomepagePreview(matchedCards, selectedCard);
+    const totalPages = pageCountForHomepagePreview(matchedCards.length);
+    if (totalPages === 0) {
+      currentPage = 1;
+    } else {
+      currentPage = Math.min(Math.max(1, currentPage), totalPages);
+    }
+    const { pagePlaces: previewCards } = paginateHomepagePreview(matchedCards, currentPage);
 
     placeCards.forEach((card) => {
       setCardPlacement(card, "pool");
@@ -125,6 +146,7 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
       setCardPlacement(card, "primary");
       primaryResults.append(card);
     });
+    updatePagination(currentPage, totalPages);
     return previewCards.length;
   };
 
@@ -136,23 +158,27 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
 
   const updateResultStatus = (shown: number, matched: number) => {
     if (!resultStatus) return;
-    resultStatus.textContent = matched === 0
-      ? "Нема записа за изабрани филтер."
-      : shown === 1
-        ? "Приказан је један резултат."
-        : shown < matched
-          ? `Приказана су ${shown} од ${matched} резултата.`
-          : `Приказана су ${shown} резултата.`;
+    if (matched === 0) {
+      resultStatus.textContent = "Нема записа за изабрани филтер.";
+      return;
+    }
+    const totalPages = pageCountForHomepagePreview(matched);
+    const pageCopy = `Страница ${currentPage} од ${totalPages}.`;
+    resultStatus.textContent = shown === 1 && matched === 1
+      ? `Приказан је један резултат. ${pageCopy}`
+      : `Приказана су ${shown} од ${matched} резултата. ${pageCopy}`;
   };
 
   const applyExplorerState = (resetSelection = false) => {
     syncAreaFilter();
     if (placeCards.length === 0) {
+      updatePagination(1, 0);
       window.dispatchEvent(new CustomEvent("svetinje:place-visibility-change", { detail: { visibleIds: [] } }));
       return;
     }
     if (resetSelection) {
       selectedPlaceId = null;
+      currentPage = 1;
       placeCards.forEach((card) => { card.dataset.selected = "false"; });
     }
     const query = searchInput?.value.trim().toLocaleLowerCase("sr") ?? "";
@@ -184,6 +210,24 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
     window.dispatchEvent(new CustomEvent("svetinje:filter-change", { detail: { filter: activeFilter } }));
     window.dispatchEvent(new CustomEvent("svetinje:place-visibility-change", { detail: { visibleIds } }));
   };
+
+  const renderCurrentPaginationPage = () => {
+    const shown = renderPreview();
+    updateResultStatus(shown, matchedCards.length);
+  };
+
+  paginationPrev?.addEventListener("click", () => {
+    if (currentPage <= 1) return;
+    currentPage -= 1;
+    renderCurrentPaginationPage();
+  });
+
+  paginationNext?.addEventListener("click", () => {
+    const totalPages = pageCountForHomepagePreview(matchedCards.length);
+    if (currentPage >= totalPages) return;
+    currentPage += 1;
+    renderCurrentPaginationPage();
+  });
 
   filterButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -218,12 +262,17 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
   const handlePlaceSelection = ((event: CustomEvent<{ id: string }>) => {
     const selectedCard = matchedCards.find((card) => card.dataset.placeCard === event.detail.id);
     if (!selectedCard) return;
+    const selectedPage = pageForHomepagePreviewPlace(matchedCards, selectedCard);
+    if (selectedPage) currentPage = selectedPage;
     selectedPlaceId = event.detail.id;
     placeCards.forEach((card) => {
       card.dataset.selected = String(card === selectedCard);
     });
     renderPreview();
-    if (resultStatus) resultStatus.textContent = "Изабрани запис је истакнут на карти и у прегледу.";
+    if (resultStatus) {
+      const totalPages = pageCountForHomepagePreview(matchedCards.length);
+      resultStatus.textContent = `Изабрани запис је истакнут на карти и у прегледу. Страница ${currentPage} од ${totalPages}.`;
+    }
   }) as EventListener;
 
   const handleClearedSelection = ((event: CustomEvent<{ id: string }>) => {

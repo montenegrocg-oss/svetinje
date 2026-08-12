@@ -14,7 +14,9 @@ import {
 } from "../src/lib/explorer-pagination.ts";
 import {
   HOMEPAGE_PREVIEW_LIMIT,
-  selectHomepagePreview,
+  pageCountForHomepagePreview,
+  pageForHomepagePreviewPlace,
+  paginateHomepagePreview,
 } from "../src/lib/explorer-preview.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
@@ -58,32 +60,32 @@ test("the catalogue pagination model derives flat eight-place pages", () => {
   });
 });
 
-test("homepage preview is capped at two and can surface a selected matched place", () => {
+test("homepage sidebar preview paginates matched places two at a time", () => {
   const places = Array.from({ length: 25 }, (_, index) => ({
     id: `place-${index + 1}`,
     category: index % 2 === 0 ? "monasteries" : "churches",
     searchText: index === 9 ? "манастир острог" : `мјесто ${index + 1}`,
   }));
+  const fiveMatches = places.slice(0, 5);
   const searchMatches = places.filter((place) => place.searchText.includes("острог"));
-  const monasteryMatches = places.filter((place) => place.category === "monasteries");
 
   assert.equal(HOMEPAGE_PREVIEW_LIMIT, 2);
+  assert.equal(pageCountForHomepagePreview(5), 3);
+  assert.equal(pageCountForHomepagePreview(2), 1);
+  assert.equal(pageCountForHomepagePreview(1), 1);
+  assert.equal(pageCountForHomepagePreview(0), 0);
+  assert.deepEqual(paginateHomepagePreview(fiveMatches, 1).pagePlaces.map(({ id }) => id), ["place-1", "place-2"]);
+  assert.deepEqual(paginateHomepagePreview(fiveMatches, 2).pagePlaces.map(({ id }) => id), ["place-3", "place-4"]);
+  assert.deepEqual(paginateHomepagePreview(fiveMatches, 3).pagePlaces.map(({ id }) => id), ["place-5"]);
   assert.deepEqual(searchMatches.map(({ id }) => id), ["place-10"]);
-  assert.deepEqual(selectHomepagePreview(searchMatches), searchMatches);
-  assert.deepEqual(
-    selectHomepagePreview(places, places[9]).map(({ id }) => id),
-    ["place-10", "place-1"],
-  );
-  assert.equal(pageCountForPlaces(monasteryMatches.length), 2);
-  assert.deepEqual(
-    paginatePlaces(monasteryMatches, 2).pagePlaces.map(({ id }) => id),
-    monasteryMatches.slice(8, 13).map(({ id }) => id),
-  );
+  assert.deepEqual(paginateHomepagePreview(searchMatches, 1).pagePlaces, searchMatches);
+  assert.equal(pageForHomepagePreviewPlace(places, places[9]), 5);
 });
 
 test("the explorer keeps one shared filter state across cards, controls, and map markers", async () => {
-  const [explorer, card, mapCanvas, filters, controls] = await Promise.all([
+  const [explorer, sidebar, card, mapCanvas, filters, controls] = await Promise.all([
     source("src/components/MapExplorer.astro"),
+    source("src/components/ExplorerSidebar.astro"),
     source("src/components/PlaceCard.astro"),
     source("src/components/MapCanvas.astro"),
     source("src/components/FilterChips.astro"),
@@ -102,16 +104,24 @@ test("the explorer keeps one shared filter state across cards, controls, and map
   assert.match(explorer, /<ExplorerSidebar places=\{initialPlaces\} totalPlaces=\{places\.length\} \/>/);
   assert.match(explorer, /data-explorer-card-pool hidden/);
   assert.match(explorer, /matchedCards = placeCards\.filter/);
-  assert.match(explorer, /selectHomepagePreview\(matchedCards, selectedCard\)/);
+  assert.match(explorer, /paginateHomepagePreview\(matchedCards, currentPage\)/);
   assert.match(explorer, /previewCards\.forEach/);
-  assert.match(explorer, /if \(resetSelection\)/);
+  assert.match(explorer, /if \(resetSelection\)[\s\S]*?currentPage = 1/);
   assert.match(explorer, /applyExplorerState\(true\)/);
   assert.match(explorer, /const visibleIds = matchedCards\.map/);
+  assert.match(explorer, /paginationPrev\?\.addEventListener\("click"/);
+  assert.match(explorer, /paginationNext\?\.addEventListener\("click"/);
+  assert.match(explorer, /pageForHomepagePreviewPlace\(matchedCards, selectedCard\)/);
   assert.match(explorer, /selectedPlaceId = event\.detail\.id;[\s\S]*?renderPreview\(\)/);
   assert.match(explorer, /selectedPlaceId = null;[\s\S]*?renderPreview\(\)/);
+  assert.match(sidebar, /data-homepage-pagination/);
+  assert.match(sidebar, /data-homepage-pagination-prev/);
+  assert.match(sidebar, /data-homepage-pagination-status/);
+  assert.match(sidebar, /data-homepage-pagination-next/);
+  assert.doesNotMatch(sidebar, /data-explorer-catalogue-link/);
+  assert.doesNotMatch(sidebar, /Све светиње —/);
   assert.doesNotMatch(explorer, /innerHTML/);
-  assert.doesNotMatch(explorer, /ExplorerContinuation|ExplorerPagination|paginatePlaces|pageForPlace|currentPage/);
-  assert.doesNotMatch(explorer, /ResizeObserver|continuation|--explorer-continuation-height/);
+  assert.doesNotMatch(explorer, /ExplorerContinuation|ExplorerPagination|ResizeObserver|continuation|--explorer-continuation-height/);
   assert.match(mapCanvas, /window\.addEventListener\("svetinje:filter-change", handleFilterChange\)/);
   assert.match(mapCanvas, /window\.addEventListener\("svetinje:place-visibility-change", handlePlaceVisibilityChange\)/);
   assert.match(mapCanvas, /button\.hidden = !visible/);
@@ -147,13 +157,15 @@ test("filtering has accessible preview feedback and catalogue pagination remains
   assert.match(explorer, /Нема светих мјеста у овом приказу/);
   assert.match(explorer, /Нема резултата/);
   assert.match(explorer, /Нема записа за изабрани филтер\./);
-  assert.match(explorer, /Приказана су \$\{shown\} од \$\{matched\} резултата\./);
+  assert.match(explorer, /Приказана су \$\{shown\} од \$\{matched\} резултата\. \$\{pageCopy\}/);
+  assert.match(explorer, /Страница \$\{currentPage\} од \$\{totalPages\}/);
   assert.match(explorer, /document\.addEventListener\("astro:before-swap"/);
   assert.match(explorer, /window\.removeEventListener\("svetinje:place-select", handlePlaceSelection\)/);
   assert.match(styles, /\.explorer-no-results\s*\{/);
   assert.match(styles, /\.map-explorer__content\s*\{[\s\S]*?align-items: start/);
-  assert.match(sidebar, /data-explorer-catalogue-link/);
-  assert.match(sidebar, /Све светиње — \$\{totalPlaces\}/);
+  assert.match(sidebar, /aria-label="Странице прегледа светиња"/);
+  assert.match(sidebar, /aria-label="Претходна страница"/);
+  assert.match(sidebar, /aria-label="Сљедећа страница"/);
   assert.match(catalogue, /data-catalogue-item hidden=\{index >= PLACES_PER_PAGE\}/);
   assert.match(catalogue, /renderPage\(currentPage - 1\)/);
   assert.match(catalogue, /renderPage\(currentPage \+ 1\)/);

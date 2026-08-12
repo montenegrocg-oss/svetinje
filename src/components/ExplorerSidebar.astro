@@ -3,6 +3,7 @@ import EmptyCatalogueState from "./EmptyCatalogueState.astro";
 import FilterChips from "./FilterChips.astro";
 import InterfaceIcon from "./InterfaceIcon.astro";
 import PlaceCard from "./PlaceCard.astro";
+import { pageCountForHomepagePreview } from "../lib/explorer-preview";
 import type { VisiblePlace } from "../lib/content/publication";
 
 interface Props {
@@ -12,13 +13,13 @@ interface Props {
 
 const { places = [], totalPlaces = places.length } = Astro.props;
 const visiblePlaceCount = Math.min(places.length, totalPlaces);
-const initialStatus = visiblePlaceCount === 1
-  ? "Приказан је један резултат."
+const totalPages = pageCountForHomepagePreview(totalPlaces);
+const initialPageStatus = totalPages > 0 ? `Страница 1 од ${totalPages}.` : "";
+const initialStatus = visiblePlaceCount === 1 && totalPlaces === 1
+  ? `Приказан је један резултат. ${initialPageStatus}`
   : visiblePlaceCount === 0
     ? "Нема записа за изабрани филтер."
-    : visiblePlaceCount < totalPlaces
-      ? `Приказана су ${visiblePlaceCount} од ${totalPlaces} резултата.`
-      : `Приказана су ${visiblePlaceCount} резултата.`;
+    : `Приказана су ${visiblePlaceCount} од ${totalPlaces} резултата. ${initialPageStatus}`;
 ---
 
 <aside class="explorer-sidebar" id="pretraga" aria-label="Претрага и филтри каталога" data-testid="explorer-sidebar">
@@ -62,8 +63,9 @@ const initialStatus = visiblePlaceCount === 1
       </section>
     </div>
   )}
-  <a class="explorer-catalogue-link" href="/svetinje/" data-explorer-catalogue-link data-visible-place-count={totalPlaces}>
-    <span>{totalPlaces > 0 ? `Све светиње — ${totalPlaces}` : "Све светиње"}</span>
-    <span aria-hidden="true">→</span>
-  </a>
+  <nav class="explorer-pagination" data-homepage-pagination aria-label="Странице прегледа светиња" hidden={totalPages === 0}>
+    <button type="button" data-homepage-pagination-prev aria-label="Претходна страница" disabled aria-disabled="true">←</button>
+    <span data-homepage-pagination-status aria-live="polite">1 / {totalPages || 1}</span>
+    <button type="button" data-homepage-pagination-next aria-label="Сљедећа страница" disabled={totalPages <= 1} aria-disabled={String(totalPages <= 1)}>→</button>
+  </nav>
 </aside>
