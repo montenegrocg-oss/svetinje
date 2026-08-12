@@ -3704,6 +3704,10 @@
 
     .map-explorer {
       --map-stage-height: 39.5rem;
+      --explorer-panel-left: max(
+        clamp(1.5rem, 2.25vw, 2rem),
+        calc((100vw - 104rem) / 2)
+      );
       --explorer-panel-width: 27rem;
     }
 
@@ -3739,7 +3743,7 @@
 
     .map-actions {
       top: 0.45rem;
-      right: max(1.5rem, calc((100vw - 94rem) / 2));
+      right: var(--explorer-panel-left);
       max-width: calc(100% - 28rem);
     }
 
@@ -3751,11 +3755,11 @@
 
     .map-tool-stack,
     .map-help {
-      right: max(1.5rem, calc((100vw - 94rem) / 2));
+      right: var(--explorer-panel-left);
     }
 
     .map-attribution {
-      right: max(12rem, calc((100vw - 94rem) / 2 + 10.5rem));
+      right: max(12rem, calc(var(--explorer-panel-left) + 10.5rem));
       left: calc(var(--explorer-panel-left) + var(--explorer-panel-width) + 1rem);
     }
 

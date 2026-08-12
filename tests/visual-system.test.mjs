@@ -176,6 +176,9 @@ test("the homepage sidebar overlays the map without pulling secondary content up
   assert.match(desktopStyles, /\.map-explorer__content\s*\{[\s\S]*?padding: var\(--explorer-content-block-padding\) var\(--explorer-panel-left\);/);
   assert.match(desktopStyles, /\.map-attribution\s*\{[\s\S]*?left: calc\(var\(--explorer-panel-left\) \+ var\(--explorer-panel-width\) \+ 1rem\);/);
   assert.match(desktopStyles, /\.map-actions\s*\{[\s\S]*?left: calc\(var\(--explorer-panel-left\) \+ var\(--explorer-panel-width\) \+ 1rem\);/);
+  assert.match(desktopStyles, /--explorer-panel-left: max\([\s\S]*?clamp\(1\.5rem, 2\.25vw, 2rem\),[\s\S]*?calc\(\(100vw - 104rem\) \/ 2\)[\s\S]*?\);/);
+  assert.match(desktopStyles, /\.map-actions\s*\{[\s\S]*?right: var\(--explorer-panel-left\);/);
+  assert.match(desktopStyles, /\.map-tool-stack,[\s\S]*?\.map-help\s*\{[\s\S]*?right: var\(--explorer-panel-left\);/);
   assert.doesNotMatch(desktopStyles.match(/\.explorer-sidebar\s*\{[\s\S]*?\}/)?.[0] ?? "", /transform:/);
 });
 
