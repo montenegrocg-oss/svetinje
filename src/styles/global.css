@@ -938,6 +938,9 @@
   .explorer-sidebar {
     position: relative;
     z-index: 25;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
     padding: 0.8rem;
     overflow: hidden;
     border: 1px solid var(--line);
@@ -2568,12 +2571,15 @@
   }
 
   .editorial-place-card--sidebar {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
     padding: 0.9rem;
     box-shadow: 0 0.3rem 1rem rgba(10, 41, 68, 0.06);
   }
 
   .editorial-place-card--sidebar .editorial-place-card__media--fallback {
-    display: none;
+    display: block;
   }
 
   .editorial-place-card--catalogue {
@@ -2709,6 +2715,15 @@
     font-size: 1.2rem;
   }
 
+  .editorial-place-card--sidebar h2 {
+    display: -webkit-box;
+    min-height: 2.4em;
+    overflow: hidden;
+    line-height: 1.2;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
   .editorial-place-card__location {
     margin-top: 0.3rem;
     color: var(--gold);
@@ -2716,11 +2731,25 @@
     font-weight: 750;
   }
 
+  .editorial-place-card--sidebar .editorial-place-card__location {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .editorial-place-card__summary {
     margin-top: 0.65rem;
     color: var(--ink-soft);
     font-size: 0.78rem;
     line-height: 1.5;
+  }
+
+  .editorial-place-card--sidebar .editorial-place-card__summary {
+    display: -webkit-box;
+    min-height: 3em;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
   .editorial-place-card__link {
@@ -2733,6 +2762,11 @@
     font-size: 0.78rem;
     font-weight: 800;
     text-decoration: none;
+  }
+
+  .editorial-place-card--sidebar .editorial-place-card__link {
+    margin-top: auto;
+    padding-top: 0.85rem;
   }
 
   .editorial-place-card__link:hover {
@@ -3573,9 +3607,30 @@
 
     .map-explorer__content {
       grid-template-columns: minmax(20rem, var(--explorer-panel-width)) minmax(0, 1fr);
-      align-items: start;
+      align-items: stretch;
       gap: 1.5rem;
       padding: var(--explorer-content-block-padding) var(--explorer-panel-left);
+    }
+
+    .explorer-results {
+      min-height: 0;
+      flex: 1;
+      grid-template-rows: minmax(0, 1fr);
+    }
+
+    .explorer-results__cards,
+    .explorer-no-results {
+      grid-area: 1 / 1;
+    }
+
+    .explorer-results__cards {
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+    }
+
+    .editorial-place-card--sidebar .editorial-place-card__media {
+      height: clamp(7.5rem, 14vw, 12rem);
+      flex: 0 0 auto;
+      aspect-ratio: auto;
     }
 
     .explorer-sidebar .filter-chips {
