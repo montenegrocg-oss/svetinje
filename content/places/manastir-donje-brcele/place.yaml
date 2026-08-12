@@ -9,7 +9,17 @@ location:
   settlement:
     value: Доње Брчеле
     verification: { status: requires-verification, source_ids: [mitropolija-muski-manastiri], qualification: "Насеље је наведено у називу одјељка, без географских координата." }
+  coordinates:
+    latitude: 42.2473059
+    longitude: 19.0091866
+    crs: EPSG:4326
+    accuracy: complex-centroid
+    publication_safety: public
+    verification:
+      status: requires-verification
+      source_ids: [openstreetmap-manastir-donje-brcele-way-741101141]
+      qualification: Координате представљају радни центар именоване геометрије комплекса Манастира Доњи Брчели, у којој је означена и главна црква Светог Николе, према OpenStreetMap way 741101141 и не означавају тачан улаз.
 relationships: {}
 source_ids: [mitropolija-muski-manastiri]
 approvals: []
-audit: { created_at: 2026-08-07T12:00:00Z, created_by: codex, updated_at: 2026-08-07T12:00:00Z, updated_by: codex }
+audit: { created_at: 2026-08-07T12:00:00Z, created_by: codex, updated_at: 2026-08-12T21:53:45Z, updated_by: codex }
