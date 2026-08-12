@@ -1,6 +1,7 @@
 schema_version: 1
 id: manastir-moraca
 editorial_status: research
+browse_area_id: sjever-crne-gore
 place_type:
   value: monastery
   verification:

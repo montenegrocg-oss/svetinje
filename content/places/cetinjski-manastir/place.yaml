@@ -1,6 +1,7 @@
 schema_version: 1
 id: cetinjski-manastir
 editorial_status: research
+browse_area_id: cetinje-okolina
 place_type:
   value: monastery
   verification:

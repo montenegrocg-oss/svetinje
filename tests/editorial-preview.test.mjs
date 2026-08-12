@@ -8,6 +8,7 @@ import {
   loadEditorialPreviewPlaces,
   loadVisiblePlaces,
 } from "../src/lib/content/publication.ts";
+import { PLACE_AREAS } from "../src/lib/place-areas.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -197,6 +198,7 @@ test("the male-monastery import is complete, research-only, and source-bound", a
   const manifest = JSON.parse(await source("validation/editorial-preview.json"));
   const visible = await loadVisiblePlaces(PROJECT_ROOT, { editorialPreview: true });
   const visibleById = new Map(visible.map((place) => [place.id, place]));
+  const sharedAreaIds = new Set(PLACE_AREAS.map((area) => area.id));
 
   assert.equal(importedIds.length, 23);
   for (const id of importedIds) {
@@ -206,6 +208,7 @@ test("the male-monastery import is complete, research-only, and source-bound", a
     assert.equal(place.place_type.value, "monastery");
     assert.deepEqual(place.approvals, []);
     assert.ok(place.source_ids.includes(sourceId));
+    assert.ok(sharedAreaIds.has(place.browse_area_id), `${id} must use a shared browse area`);
     assert.match(narrative, new RegExp(`source_ids:[\\s\\S]*${sourceId}`));
     assert.ok(manifest.place_ids.includes(id));
     assert.equal(visibleById.get(id)?.placeType, "monastery");

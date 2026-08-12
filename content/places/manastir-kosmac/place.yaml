@@ -1,6 +1,7 @@
 schema_version: 1
 id: manastir-kosmac
 editorial_status: research
+browse_area_id: bar-crmnica-skadarsko-jezero
 place_type:
   value: monastery
   verification: { status: requires-verification, source_ids: [mitropolija-muski-manastiri], qualification: Званична страница Митрополије наводи Космач као манастир; запис чека стручну и црквену провјеру. }

@@ -1,6 +1,7 @@
 schema_version: 1
 id: manastir-ostrog
 editorial_status: research
+browse_area_id: ostrog-sredisnja-crna-gora
 place_type:
   value: monastery
   verification:

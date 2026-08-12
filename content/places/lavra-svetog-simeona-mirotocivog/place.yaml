@@ -1,6 +1,7 @@
 schema_version: 1
 id: lavra-svetog-simeona-mirotocivog
 editorial_status: research
+browse_area_id: podgorica-zeta
 place_type:
   value: monastery
   verification:
