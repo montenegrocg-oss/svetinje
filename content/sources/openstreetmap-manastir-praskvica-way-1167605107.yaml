@@ -1,0 +1,14 @@
+schema_version: 1
+id: openstreetmap-manastir-praskvica-way-1167605107
+editorial_status: research
+source_type: other-approved
+title: OpenStreetMap — Svetog Nikole, way 1167605107
+publisher: OpenStreetMap contributors
+url: https://www.openstreetmap.org/way/1167605107
+accessed_at: 2026-08-12
+original_language: en
+locator: Геометрија главне цркве Светог Николе унутар именованог комплекса Манастира Прасквица.
+status: active
+approval_note: Картографски извор користи се за радни положај комплекса; координата не мора представљати тачан улаз за посјетиоце.
+approvals: []
+audit: { created_at: 2026-08-12T21:23:04Z, created_by: codex, updated_at: 2026-08-12T21:23:04Z, updated_by: codex }

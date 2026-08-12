@@ -1,0 +1,14 @@
+schema_version: 1
+id: openstreetmap-manastir-vranjina-way-208308361
+editorial_status: research
+source_type: other-approved
+title: OpenStreetMap — Crkva Svetog Nikole, way 208308361
+publisher: OpenStreetMap contributors
+url: https://www.openstreetmap.org/way/208308361
+accessed_at: 2026-08-12
+original_language: en
+locator: Геометрија главне цркве Светог Николе унутар именованог комплекса Манастира Врањина.
+status: active
+approval_note: Картографски извор користи се за радни положај комплекса; координата не мора представљати тачан улаз за посјетиоце.
+approvals: []
+audit: { created_at: 2026-08-12T21:23:04Z, created_by: codex, updated_at: 2026-08-12T21:23:04Z, updated_by: codex }

@@ -1,0 +1,14 @@
+schema_version: 1
+id: openstreetmap-manastir-ribnjak-way-757925847
+editorial_status: research
+source_type: other-approved
+title: OpenStreetMap — Manastir Ribnjak, way 757925847
+publisher: OpenStreetMap contributors
+url: https://www.openstreetmap.org/way/757925847
+accessed_at: 2026-08-12
+original_language: en
+locator: Именована геометрија вјерског земљишта комплекса Манастира Рибњак у Зупцима код Бара.
+status: active
+approval_note: Картографски извор користи се за радни положај комплекса; координата не мора представљати тачан улаз за посјетиоце.
+approvals: []
+audit: { created_at: 2026-08-12T21:23:04Z, created_by: codex, updated_at: 2026-08-12T21:23:04Z, updated_by: codex }

@@ -217,7 +217,7 @@ test("the male-monastery import is complete, research-only, and source-bound", a
 
 test("a research monastery without coordinates gets a detail route but no marker or false map claim", async () => {
   const places = await loadVisiblePlaces(PROJECT_ROOT, { editorialPreview: true });
-  const noCoordinates = places.find((place) => place.id === "manastir-praskvica");
+  const noCoordinates = places.find((place) => place.id === "manastir-bijelici");
   const withCoordinates = places.find((place) => place.id === "podmaine");
   const [detail, mapCanvas, card, practicalPanel] = await Promise.all([
     source("src/pages/svetinje/[slug].astro"),

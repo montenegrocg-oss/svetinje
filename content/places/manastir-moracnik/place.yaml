@@ -5,7 +5,18 @@ browse_area_id: bar-crmnica-skadarsko-jezero
 place_type:
   value: monastery
   verification: { status: requires-verification, source_ids: [mitropolija-muski-manastiri], qualification: Званична страница Митрополије наводи Морачник као манастир; запис чека стручну и црквену провјеру. }
+location:
+  coordinates:
+    latitude: 42.1399938
+    longitude: 19.2573424
+    crs: EPSG:4326
+    accuracy: complex-centroid
+    publication_safety: public
+    verification:
+      status: requires-verification
+      source_ids: [openstreetmap-manastir-moracnik-way-742696630]
+      qualification: Координате представљају радни центар именоване зграде Манастира Морачник на југоисточном дијелу острва према OpenStreetMap way 742696630 и не означавају тачан пристан или улаз.
 relationships: {}
 source_ids: [mitropolija-muski-manastiri]
 approvals: []
-audit: { created_at: 2026-08-07T12:00:00Z, created_by: codex, updated_at: 2026-08-07T12:00:00Z, updated_by: codex }
+audit: { created_at: 2026-08-07T12:00:00Z, created_by: codex, updated_at: 2026-08-12T21:23:04Z, updated_by: codex }

@@ -214,6 +214,13 @@ test("editorial-preview markers derive from coordinates and retain category artw
     "manastir-zanjice",
     "miholjska-prevlaka",
     "manastir-stanjevici",
+    "manastir-praskvica",
+    "manastir-rezevici",
+    "manastir-gradiste",
+    "manastir-ribnjak",
+    "manastir-vranjina",
+    "manastir-moracnik",
+    "manastir-kom",
   ];
 
   assert.equal(assetFor(markerPlaces.find(({ id }) => id === "manastir-savina")?.placeType), "/images/map/pin-monastery.png");
