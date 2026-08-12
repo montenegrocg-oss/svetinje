@@ -10,6 +10,7 @@ import {
 } from "./lib/output-expectations.mjs";
 import { PLACE_AREAS } from "../src/lib/place-areas.ts";
 import { PLACES_PER_PAGE } from "../src/lib/explorer-pagination.ts";
+import { pageCountForHomepagePreview } from "../src/lib/explorer-preview.ts";
 
 const HISTORY_SECTION_IDS = new Set([
   "history", "discovery", "foundation", "consecration", "saint-simeon", "relics", "canonization",
@@ -339,18 +340,31 @@ function verifyFixedHomepageContracts(homepageHtml, model, failures) {
     failures.push("homepage inventory pool must remain hidden until filter state distributes its cards");
   }
   if (/data-testid="explorer-continuation"|data-continuation-slot|data-explorer-pagination/.test(homepageHtml)) {
-    failures.push("homepage must not render continuation cards or pagination controls");
+    failures.push("homepage must not render the legacy continuation-card or explorer-pagination system");
   }
-  const catalogueLink = elementContaining(homepageHtml, "a", "data-explorer-catalogue-link");
-  if (!catalogueLink.includes('href="/svetinje/"')) {
-    failures.push("homepage preview is missing its full-catalogue link");
+  if (homepageHtml.includes("data-explorer-catalogue-link")) {
+    failures.push("homepage must not render the retired full-catalogue link");
   }
-  const catalogueLinkText = htmlToPlainText(catalogueLink);
-  if (model.places.length > 0 && !catalogueLinkText.includes(`Све светиње — ${model.places.length}`)) {
-    failures.push("homepage full-catalogue count must be derived from the complete build-visible inventory");
+  const homepagePagination = elementContaining(homepageHtml, "nav", "data-homepage-pagination");
+  const homepagePaginationMarkers = [
+    "data-homepage-pagination",
+    "data-homepage-pagination-prev",
+    "data-homepage-pagination-next",
+    "data-homepage-pagination-status",
+  ];
+  for (const marker of homepagePaginationMarkers) {
+    if (!homepagePagination.includes(marker)) {
+      failures.push(`homepage pagination is missing ${marker}`);
+    }
   }
-  if (model.places.length === 0 && /Све светиње\s*—\s*0/.test(catalogueLinkText)) {
-    failures.push("homepage must not present a misleading zero catalogue count");
+  const expectedHomepagePages = pageCountForHomepagePreview(model.places.length);
+  if (model.places.length > 0) {
+    const expectedPaginationStatus = `1 / ${expectedHomepagePages}`;
+    if (!htmlToPlainText(homepagePagination).includes(expectedPaginationStatus)) {
+      failures.push(`homepage pagination must initially report ${expectedPaginationStatus}`);
+    }
+  } else if (homepagePagination && !/<nav\b[^>]*\bhidden\b/.test(homepagePagination)) {
+    failures.push("homepage pagination must remain hidden for an empty inventory");
   }
   const expectedInitialStatus = model.places.length > model.homepagePreviewPlaces.length
     ? `Приказана су ${model.homepagePreviewPlaces.length} од ${model.places.length} резултата.`
