@@ -1,0 +1,14 @@
+schema_version: 1
+id: openstreetmap-miholjska-prevlaka-way-921834753
+editorial_status: research
+source_type: other-approved
+title: OpenStreetMap — Manastir Svetog Arhangela Mihaila, way 921834753
+publisher: OpenStreetMap contributors
+url: https://www.openstreetmap.org/way/921834753
+accessed_at: 2026-08-12
+original_language: en
+locator: Геометрија манастира Светог Архангела Михаила и центроид комплекса на Михољској Превлаци.
+status: active
+approval_note: Картографски извор користи се за радни приказ положаја комплекса; координате нису центар острва и не означавају тачан улаз.
+approvals: []
+audit: { created_at: 2026-08-12T20:59:30Z, created_by: codex, updated_at: 2026-08-12T20:59:30Z, updated_by: codex }

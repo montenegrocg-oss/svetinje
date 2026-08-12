@@ -203,13 +203,23 @@ test("marker artwork follows one shared place-category taxonomy", async () => {
   assert.match(styles, /\.holy-place-marker:focus-visible\s*\{[\s\S]*?outline: 3px solid/);
 });
 
-test("all five editorial-preview markers receive the correct category artwork", async () => {
+test("editorial-preview markers derive from coordinates and retain category artwork", async () => {
   const places = await loadVisiblePlaces(PROJECT_ROOT, { editorialPreview: true });
   const markerPlaces = places.filter(({ latitude, longitude }) => Number.isFinite(latitude) && Number.isFinite(longitude));
   const assetFor = (placeType) => resolveMarkerAsset(placeType)?.src;
+  const enrichedMonasteryIds = [
+    "cetinjski-manastir",
+    "manastir-ostrog",
+    "manastir-moraca",
+    "manastir-zanjice",
+    "miholjska-prevlaka",
+    "manastir-stanjevici",
+  ];
 
-  assert.equal(markerPlaces.length, 5);
   assert.equal(assetFor(markerPlaces.find(({ id }) => id === "manastir-savina")?.placeType), "/images/map/pin-monastery.png");
+  for (const id of enrichedMonasteryIds) {
+    assert.equal(assetFor(markerPlaces.find((place) => place.id === id)?.placeType), "/images/map/pin-monastery.png");
+  }
   for (const id of ["saborni-hram-podgorica", "saborni-hram-bar"]) {
     assert.equal(assetFor(markerPlaces.find((place) => place.id === id)?.placeType), "/images/map/pin-church.png");
   }
