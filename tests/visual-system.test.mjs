@@ -299,8 +299,11 @@ test("the homepage replaces its news feed with shared geographic-area navigation
   assert.match(areas, /PLACE_AREAS\.map/);
   assert.match(areas, /ИСТРАЖИТЕ/);
   assert.match(areas, /По областима/);
+  assert.match(areas, /class="shell homepage-wide-shell homepage-areas__inner"/);
   assert.match(areas, /\?area=\$\{area\.id\}#mapa/);
   assert.match(areas, /area\.count > 0/);
+  assert.match(styles, /\.homepage-wide-shell\s*\{[\s\S]*?width: min\(calc\(100% - clamp\(3rem, 4\.5vw, 4rem\)\), 104rem\);/);
+  assert.match(styles, /\.homepage-areas\s*\{[\s\S]*?padding-block: clamp\(2\.5rem, 3\.6vw, 3\.5rem\) clamp\(3rem, 4vw, 4rem\);/);
   assert.doesNotMatch(styles, /\.project-intro|\.trust-note/);
   assert.doesNotMatch(styles, /\.homepage-news/);
   assert.match(styles, /\.homepage-areas__list a:focus-visible/);

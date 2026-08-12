@@ -1628,9 +1628,23 @@
   }
 
   @media (min-width: 48rem) {
+    .homepage-areas {
+      padding-block: clamp(2.5rem, 3.6vw, 3.5rem) clamp(3rem, 4vw, 4rem);
+    }
+
     .homepage-areas__list {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       column-gap: clamp(2rem, 5vw, 5rem);
+    }
+  }
+
+  @media (min-width: 68rem) {
+    .homepage-wide-shell {
+      width: min(calc(100% - clamp(3rem, 4.5vw, 4rem)), 104rem);
+    }
+
+    .homepage-areas__inner {
+      max-width: none;
     }
   }
 
