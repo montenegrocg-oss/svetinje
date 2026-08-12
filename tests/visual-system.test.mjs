@@ -222,11 +222,14 @@ test("the map loading surface is neutral and cannot reveal the decorative fallba
   assert.doesNotMatch(styles, /map-loading-surface[\s\S]{0,180}animation:/);
 });
 
-test("catalogue pages share category mapping and one eight-card pagination implementation", async () => {
-  const [catalogue, pagination, paginationModel, monasteries, churches, holyPlaces, general, filters] = await Promise.all([
+test("catalogue pages share category mapping, featured selection, filters, and eight-card pagination", async () => {
+  const [catalogue, card, pagination, paginationModel, featuredModel, areas, monasteries, churches, holyPlaces, general, filters] = await Promise.all([
     source("src/components/CategoryCatalogue.astro"),
+    source("src/components/PlaceCard.astro"),
     source("src/components/ExplorerPagination.astro"),
     source("src/lib/explorer-pagination.ts"),
+    source("src/lib/category-catalogue.ts"),
+    source("src/lib/place-areas.ts"),
     source("src/pages/manastiri/index.astro"),
     source("src/pages/crkve/index.astro"),
     source("src/pages/sveta-mjesta/index.astro"),
@@ -236,16 +239,30 @@ test("catalogue pages share category mapping and one eight-card pagination imple
 
   assert.match(catalogue, /categoryForPlaceType\(place\.placeType\) === category/);
   assert.match(catalogue, /loadVisiblePlaces/);
+  assert.match(catalogue, /PLACE_AREAS\.filter/);
+  assert.match(catalogue, /selectFeaturedCataloguePlaces\(places\)/);
+  assert.match(catalogue, /<PlaceCard place=\{place\} variant="featured" \/>/);
   assert.match(catalogue, /<PlaceCard place=\{place\} variant="catalogue" \/>/);
-  assert.match(catalogue, /data-catalogue-item hidden=\{index >= PLACES_PER_PAGE\}/);
-  assert.match(catalogue, /<ExplorerPagination totalPlaces=\{places\.length\} \/>/);
-  assert.match(catalogue, /items\.forEach\(\(item, index\)/);
+  assert.match(catalogue, /data-catalogue-featured-item/);
+  assert.match(catalogue, /data-catalogue-item/);
+  assert.match(catalogue, /<ExplorerPagination totalPlaces=\{cataloguePlaces\.length\} \/>/);
+  assert.match(catalogue, /data-catalogue-search/);
+  assert.match(catalogue, /data-catalogue-area/);
+  assert.match(catalogue, /href="\/mapa\/"/);
+  assert.match(catalogue, /data-catalogue-reset/);
+  assert.match(catalogue, /matchedItems\.forEach\(\(item, index\)/);
   assert.match(catalogue, /item\.hidden = index < pageStart \|\| index >= pageEnd/);
+  assert.match(catalogue, /const matchedTotal = matchedFeaturedItems\.length \+ matchedItems\.length/);
+  assert.match(catalogue, /currentPage = 1;[\s\S]*?renderPage\(1\)/);
+  assert.match(card, /place\.previewImageSrc && variant !== "catalogue"/);
   assert.match(pagination, /data-catalogue-pagination/);
   assert.match(pagination, /data-pagination-previous/);
   assert.match(pagination, /data-pagination-next/);
   assert.match(paginationModel, /export const PLACES_PER_PAGE = 8/);
   assert.match(paginationModel, /pagePlaces/);
+  assert.match(featuredModel, /FEATURED_CATALOGUE_LIMIT = 2/);
+  assert.match(featuredModel, /filter\(\(place\) => Boolean\(place\.previewImageSrc\)\)/);
+  assert.match(areas, /Будва и Паштровићи/);
   assert.doesNotMatch(paginationModel, /primaryPlaces|continuationPlaces|CONTINUATION/);
   assert.match(monasteries, /category="monasteries"/);
   assert.match(churches, /category="churches"/);

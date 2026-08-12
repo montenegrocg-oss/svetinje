@@ -4,7 +4,7 @@ import { categoryForPlaceType } from "../lib/place-filters";
 
 interface Props {
   place: VisiblePlace;
-  variant?: "sidebar" | "catalogue";
+  variant?: "sidebar" | "catalogue" | "featured";
   initialExplorerPlacement?: "primary" | "pool";
 }
 
@@ -22,7 +22,7 @@ const location = [place.municipality, place.settlement].filter(Boolean).join(" Â
   data-selected="false"
   data-initial-explorer-placement={initialExplorerPlacement}
 >
-  {place.previewImageSrc && (
+  {place.previewImageSrc && variant !== "catalogue" && (
     <div class="editorial-place-card__media">
       <img
         class="editorial-place-card__image"

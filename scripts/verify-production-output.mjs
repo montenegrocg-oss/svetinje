@@ -11,6 +11,7 @@ import {
 import { PLACE_AREAS } from "../src/lib/place-areas.ts";
 import { PLACES_PER_PAGE } from "../src/lib/explorer-pagination.ts";
 import { pageCountForHomepagePreview } from "../src/lib/explorer-preview.ts";
+import { selectFeaturedCataloguePlaces } from "../src/lib/category-catalogue.ts";
 
 const HISTORY_SECTION_IDS = new Set([
   "history", "discovery", "foundation", "consecration", "saint-simeon", "relics", "canonization",
@@ -75,7 +76,7 @@ function parseMarkerPayload(homepageHtml, failures) {
   }
 }
 
-function verifyCards(page, expectedPlaces, allPlaces, label, failures) {
+function verifyCards(page, expectedPlaces, allPlaces, label, failures, expectedImageIds) {
   const html = page?.html ?? "";
   if (!page) {
     failures.push(`${label} page is missing`);
@@ -97,7 +98,7 @@ function verifyCards(page, expectedPlaces, allPlaces, label, failures) {
     if (!card.includes(place.name) || !card.includes(`href="/svetinje/${place.slug}/"`)) {
       failures.push(`${label} card for ${place.id} does not match its loaded name or slug`);
     }
-    if (place.previewImageSrc && !card.includes(`src="${place.previewImageSrc}"`)) {
+    if (place.previewImageSrc && (!expectedImageIds || expectedImageIds.has(place.id)) && !card.includes(`src="${place.previewImageSrc}"`)) {
       failures.push(`${label} card for ${place.id} is missing its eligible preview image`);
     }
   }
@@ -105,14 +106,21 @@ function verifyCards(page, expectedPlaces, allPlaces, label, failures) {
 
 function verifyCataloguePagination(page, expectedPlaces, label, failures) {
   if (!page || expectedPlaces.length === 0) return;
+  const featuredPlaces = selectFeaturedCataloguePlaces(expectedPlaces);
+  const featuredIds = new Set(featuredPlaces.map((place) => place.id));
+  const paginatedPlaces = expectedPlaces.filter((place) => !featuredIds.has(place.id));
+  const featuredItemTags = [...page.html.matchAll(/<li\b(?=[^>]*\bdata-catalogue-featured-item\b)[^>]*>/g)].map((match) => match[0]);
   const itemTags = [...page.html.matchAll(/<li\b(?=[^>]*\bdata-catalogue-item\b)[^>]*>/g)].map((match) => match[0]);
   const initiallyVisible = itemTags.filter((tag) => !/\bhidden\b/.test(tag));
-  const expectedVisible = Math.min(PLACES_PER_PAGE, expectedPlaces.length);
-  const expectedPages = Math.ceil(expectedPlaces.length / PLACES_PER_PAGE);
+  const expectedVisible = Math.min(PLACES_PER_PAGE, paginatedPlaces.length);
+  const expectedPages = Math.ceil(paginatedPlaces.length / PLACES_PER_PAGE);
   const pagination = elementContaining(page.html, "nav", "data-catalogue-pagination");
 
-  if (itemTags.length !== expectedPlaces.length) {
-    failures.push(`${label} pagination must retain ${expectedPlaces.length} unique catalogue item(s), found ${itemTags.length}`);
+  if (featuredItemTags.length !== featuredPlaces.length) {
+    failures.push(`${label} must feature ${featuredPlaces.length} image-bearing place(s), found ${featuredItemTags.length}`);
+  }
+  if (itemTags.length !== paginatedPlaces.length) {
+    failures.push(`${label} pagination must retain ${paginatedPlaces.length} non-featured catalogue item(s), found ${itemTags.length}`);
   }
   if (initiallyVisible.length !== expectedVisible) {
     failures.push(`${label} first page must expose ${expectedVisible} card(s), found ${initiallyVisible.length}`);
@@ -120,7 +128,7 @@ function verifyCataloguePagination(page, expectedPlaces, label, failures) {
   if (!pagination.includes(`data-total-pages="${expectedPages}"`)) {
     failures.push(`${label} pagination must derive ${expectedPages} page(s) from its visible inventory`);
   }
-  if (expectedPages <= 1 && !/\bhidden\b/.test(pagination)) {
+  if (expectedPages <= 1 && pagination && !/\bhidden\b/.test(pagination)) {
     failures.push(`${label} pagination must stay hidden for a single page`);
   }
   if (expectedPages > 1 && /<nav\b[^>]*\bhidden\b/.test(pagination)) {
@@ -423,13 +431,15 @@ verifyFixedHomepageContracts(homepageHtml, model, failures);
 verifyNewsContracts(newsArchive, model, pagesByRoute, failures);
 verifyAreaNavigation(homepage, model, failures);
 verifyCards(homepage, model.places, model.places, "homepage explorer", failures);
-verifyCards(catalogue, model.places, model.places, "general catalogue", failures);
+const generalCatalogueImageIds = new Set(selectFeaturedCataloguePlaces(model.places).map((place) => place.id));
+verifyCards(catalogue, model.places, model.places, "general catalogue", failures, generalCatalogueImageIds);
 verifyCataloguePagination(catalogue, model.places, "general catalogue", failures);
 
 for (const [category, route] of Object.entries(CATEGORY_HTML_ROUTES)) {
   const page = pagesByRoute.get(route);
   const members = model.categoryMembership[category];
-  verifyCards(page, members, model.places, `${category} catalogue`, failures);
+  const featuredImageIds = new Set(selectFeaturedCataloguePlaces(members).map((place) => place.id));
+  verifyCards(page, members, model.places, `${category} catalogue`, failures, featuredImageIds);
   verifyCataloguePagination(page, members, `${category} catalogue`, failures);
   if (members.length === 0 && !page?.html.includes(EMPTY_STATES[category])) failures.push(`${category} catalogue is missing its protected empty state`);
   if (members.length > 0 && page?.html.includes(EMPTY_STATES[category])) failures.push(`${category} catalogue incorrectly renders its empty state`);

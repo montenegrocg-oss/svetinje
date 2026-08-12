@@ -18,6 +18,10 @@ import {
   pageForHomepagePreviewPlace,
   paginateHomepagePreview,
 } from "../src/lib/explorer-preview.ts";
+import {
+  FEATURED_CATALOGUE_LIMIT,
+  selectFeaturedCataloguePlaces,
+} from "../src/lib/category-catalogue.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -58,6 +62,21 @@ test("the catalogue pagination model derives flat eight-place pages", () => {
     assert.equal(page.pagePlaces.length, pageSize);
     assert.ok(page.pagePlaces.length <= PLACES_PER_PAGE);
   });
+});
+
+test("category catalogues feature the first two image-bearing places without changing inventory order", () => {
+  const places = [
+    { id: "text-1" },
+    { id: "image-1", previewImageSrc: "/image-1.webp" },
+    { id: "text-2" },
+    { id: "image-2", previewImageSrc: "/image-2.webp" },
+    { id: "image-3", previewImageSrc: "/image-3.webp" },
+  ];
+
+  assert.equal(FEATURED_CATALOGUE_LIMIT, 2);
+  assert.deepEqual(selectFeaturedCataloguePlaces(places).map(({ id }) => id), ["image-1", "image-2"]);
+  assert.deepEqual(selectFeaturedCataloguePlaces(places.slice(0, 3)).map(({ id }) => id), ["image-1"]);
+  assert.deepEqual(selectFeaturedCataloguePlaces([{ id: "text-only" }]), []);
 });
 
 test("homepage sidebar preview paginates matched places two at a time", () => {
@@ -166,7 +185,14 @@ test("filtering has accessible preview feedback and catalogue pagination remains
   assert.match(sidebar, /aria-label="Странице прегледа светиња"/);
   assert.match(sidebar, /aria-label="Претходна страница"/);
   assert.match(sidebar, /aria-label="Сљедећа страница"/);
-  assert.match(catalogue, /data-catalogue-item hidden=\{index >= PLACES_PER_PAGE\}/);
+  assert.match(catalogue, /data-catalogue-search/);
+  assert.match(catalogue, /data-catalogue-area/);
+  assert.match(catalogue, /data-catalogue-result-status role="status" aria-live="polite"/);
+  assert.match(catalogue, /data-catalogue-featured-item/);
+  assert.match(catalogue, /<ExplorerPagination totalPlaces=\{cataloguePlaces\.length\} \/>/);
+  assert.match(catalogue, /matchedItems = items\.filter/);
+  assert.match(catalogue, /currentPage = 1;[\s\S]*?renderPage\(1\)/);
+  assert.match(catalogue, /pagination\.hidden = totalPages <= 1/);
   assert.match(catalogue, /renderPage\(currentPage - 1\)/);
   assert.match(catalogue, /renderPage\(currentPage \+ 1\)/);
   assert.match(pagination, /aria-label="Претходна страница"/);

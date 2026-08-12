@@ -2,7 +2,9 @@
 import type { PlaceCategory } from "../lib/place-filters";
 import { categoryForPlaceType } from "../lib/place-filters";
 import { isEditorialPreviewBuild, loadVisiblePlaces } from "../lib/content/publication";
+import { selectFeaturedCataloguePlaces } from "../lib/category-catalogue";
 import { PLACES_PER_PAGE } from "../lib/explorer-pagination";
+import { PLACE_AREAS } from "../lib/place-areas";
 import ExplorerPagination from "./ExplorerPagination.astro";
 import PlaceCard from "./PlaceCard.astro";
 
@@ -20,22 +22,68 @@ const editorialPreview = isEditorialPreviewBuild();
 const places = category
   ? visiblePlaces.filter((place) => categoryForPlaceType(place.placeType) === category)
   : visiblePlaces;
+const featuredPlaces = selectFeaturedCataloguePlaces(places);
+const featuredPlaceIds = new Set(featuredPlaces.map((place) => place.id));
+const cataloguePlaces = places.filter((place) => !featuredPlaceIds.has(place.id));
+const relevantAreaIds = new Set(places.flatMap((place) => place.browseAreaId ? [place.browseAreaId] : []));
+const relevantAreas = PLACE_AREAS.filter((area) => relevantAreaIds.has(area.id));
 const catalogueLabel = category ? `${heading} у радном приказу` : "Светиње у радном приказу";
+const copy = category === "monasteries"
+  ? {
+      searchPlaceholder: "Претражите манастире…",
+      statusNoun: "манастира",
+      featuredHeading: "Издвојени манастири",
+      allHeading: "Сви манастири",
+      countForms: ["православни манастир", "православна манастира", "православних манастира"],
+    }
+  : category === "churches"
+    ? {
+        searchPlaceholder: "Претражите храмове…",
+        statusNoun: "храмова",
+        featuredHeading: "Издвојени храмови",
+        allHeading: "Сви храмови",
+        countForms: ["православни храм", "православна храма", "православних храмова"],
+      }
+    : category === "holy-places"
+      ? {
+          searchPlaceholder: "Претражите света мјеста…",
+          statusNoun: "светих мјеста",
+          featuredHeading: "Издвојена света мјеста",
+          allHeading: "Сва света мјеста",
+          countForms: ["свето мјесто", "света мјеста", "светих мјеста"],
+        }
+      : {
+          searchPlaceholder: "Претражите светиње…",
+          statusNoun: "светиња",
+          featuredHeading: "Издвојене светиње",
+          allHeading: "Све светиње",
+          countForms: ["православну светињу", "православне светиње", "православних светиња"],
+        };
+const countFormIndex = places.length % 100 >= 11 && places.length % 100 <= 14
+  ? 2
+  : places.length % 10 === 1
+    ? 0
+    : places.length % 10 >= 2 && places.length % 10 <= 4
+      ? 1
+      : 2;
+const countAwareDescription = `Истражите ${places.length} ${copy.countForms[countFormIndex] ?? copy.countForms[2]} широм Црне Горе.`;
 ---
 
-<header class="page-hero compact">
+<header class="page-hero compact category-page-hero">
   <div class="shell narrow">
     <p class="eyebrow">Каталог</p>
     <h1>{heading}</h1>
-    <p>{editorialPreview && previewDescription ? previewDescription : description}</p>
+    <span class="category-page-hero__rule" aria-hidden="true"></span>
+    <p>{places.length > 0 ? countAwareDescription : editorialPreview && previewDescription ? previewDescription : description}</p>
   </div>
 </header>
 
 <section
-  class="section catalogue-section"
+  class="section catalogue-section category-catalogue"
   data-category-catalogue
   data-catalogue-total={places.length}
   data-catalogue-page-size={PLACES_PER_PAGE}
+  data-catalogue-status-noun={copy.statusNoun}
 >
   <div class="shell">
     {places.length === 0 ? (
@@ -46,16 +94,73 @@ const catalogueLabel = category ? `${heading} у радном приказу` : 
         <p>Истраживачки и радни записи намјерно нису видљиви на овој страници.</p>
         <a class="text-link" href="/izvori/">Прочитај уређивачку политику <span aria-hidden="true">→</span></a>
       </div>
-    ) : (
-      <ul class="catalogue-grid editorial-catalogue" aria-label={catalogueLabel} data-catalogue-grid>
-        {places.map((place, index) => (
-          <li data-catalogue-item hidden={index >= PLACES_PER_PAGE}>
-            <PlaceCard place={place} variant="catalogue" />
-          </li>
-        ))}
-      </ul>
-      <ExplorerPagination totalPlaces={places.length} />
-    )}
+    ) : (<>
+      <div class="catalogue-toolbar" data-catalogue-toolbar>
+        <label class="catalogue-toolbar__search">
+          <span class="sr-only">{copy.searchPlaceholder}</span>
+          <input type="search" placeholder={copy.searchPlaceholder} autocomplete="off" data-catalogue-search />
+        </label>
+        <label class="catalogue-toolbar__area">
+          <span class="sr-only">Изаберите област</span>
+          <select data-catalogue-area>
+            <option value="">Све области</option>
+            {relevantAreas.map((area) => <option value={area.id}>{area.label}</option>)}
+          </select>
+        </label>
+        <p class="catalogue-toolbar__status" data-catalogue-result-status role="status" aria-live="polite">
+          Приказано {places.length} од {places.length} {copy.statusNoun}
+        </p>
+        <div class="catalogue-toolbar__actions">
+          <a href="/mapa/">Прикажи на карти <span aria-hidden="true">→</span></a>
+          <button type="button" data-catalogue-reset disabled>Очисти филтере</button>
+        </div>
+      </div>
+
+      {featuredPlaces.length > 0 && (
+        <section class="catalogue-featured" data-catalogue-featured aria-labelledby="catalogue-featured-title">
+          <div class="catalogue-section-heading">
+            <p class="eyebrow">Избор уредништва</p>
+            <h2 id="catalogue-featured-title">{copy.featuredHeading}</h2>
+          </div>
+          <ul class="catalogue-featured__grid">
+            {featuredPlaces.map((place) => (
+              <li
+                data-catalogue-featured-item
+                data-place-area={place.browseAreaId ?? ""}
+                data-place-search={place.searchText.toLocaleLowerCase("sr")}
+              >
+                <PlaceCard place={place} variant="featured" />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <section class="catalogue-main" data-catalogue-main aria-labelledby="catalogue-main-title">
+        <div class="catalogue-section-heading">
+          <p class="eyebrow">Каталог</p>
+          <h2 id="catalogue-main-title">{copy.allHeading}</h2>
+        </div>
+        <ul class="catalogue-grid editorial-catalogue" aria-label={catalogueLabel} data-catalogue-grid>
+          {cataloguePlaces.map((place, index) => (
+            <li
+              data-catalogue-item
+              data-place-area={place.browseAreaId ?? ""}
+              data-place-search={place.searchText.toLocaleLowerCase("sr")}
+              hidden={index >= PLACES_PER_PAGE}
+            >
+              <PlaceCard place={place} variant="catalogue" />
+            </li>
+          ))}
+        </ul>
+        <ExplorerPagination totalPlaces={cataloguePlaces.length} />
+      </section>
+
+      <section class="catalogue-filter-empty" data-catalogue-filter-empty hidden role="status" aria-live="polite">
+        <h2>Нема резултата за изабране филтере.</h2>
+        <button type="button" data-catalogue-reset>Очисти филтере</button>
+      </section>
+    </>)}
   </div>
 </section>
 
@@ -64,31 +169,67 @@ const catalogueLabel = category ? `${heading} у радном приказу` : 
 
   document.querySelectorAll<HTMLElement>("[data-category-catalogue]").forEach((catalogue) => {
     const items = [...catalogue.querySelectorAll<HTMLElement>("[data-catalogue-item]")];
+    const featuredItems = [...catalogue.querySelectorAll<HTMLElement>("[data-catalogue-featured-item]")];
+    const featuredSection = catalogue.querySelector<HTMLElement>("[data-catalogue-featured]");
+    const mainSection = catalogue.querySelector<HTMLElement>("[data-catalogue-main]");
+    const searchInput = catalogue.querySelector<HTMLInputElement>("[data-catalogue-search]");
+    const areaSelect = catalogue.querySelector<HTMLSelectElement>("[data-catalogue-area]");
+    const resultStatus = catalogue.querySelector<HTMLElement>("[data-catalogue-result-status]");
+    const emptyState = catalogue.querySelector<HTMLElement>("[data-catalogue-filter-empty]");
+    const resetButtons = [...catalogue.querySelectorAll<HTMLButtonElement>("[data-catalogue-reset]")];
     const pagination = catalogue.querySelector<HTMLElement>("[data-catalogue-pagination]");
-    if (!pagination || items.length === 0) return;
-    const previousButton = pagination.querySelector<HTMLButtonElement>("[data-pagination-previous]");
-    const nextButton = pagination.querySelector<HTMLButtonElement>("[data-pagination-next]");
-    const pageButtons = [...pagination.querySelectorAll<HTMLButtonElement>("[data-pagination-page]")];
-    const status = pagination.querySelector<HTMLElement>("[data-pagination-status]");
-    const totalPages = pageCountForPlaces(items.length);
+    const previousButton = pagination?.querySelector<HTMLButtonElement>("[data-pagination-previous]");
+    const nextButton = pagination?.querySelector<HTMLButtonElement>("[data-pagination-next]");
+    const pageButtons = [...(pagination?.querySelectorAll<HTMLButtonElement>("[data-pagination-page]") ?? [])];
+    const status = pagination?.querySelector<HTMLElement>("[data-pagination-status]");
+    const totalPlaces = items.length + featuredItems.length;
+    const statusNoun = catalogue.dataset.catalogueStatusNoun ?? "резултата";
+    let matchedItems = [...items];
     let currentPage = 1;
 
     const renderPage = (requestedPage: number) => {
-      currentPage = Math.min(Math.max(1, requestedPage), totalPages);
+      const totalPages = pageCountForPlaces(matchedItems.length);
+      currentPage = totalPages === 0 ? 1 : Math.min(Math.max(1, requestedPage), totalPages);
       const pageStart = (currentPage - 1) * PLACES_PER_PAGE;
       const pageEnd = pageStart + PLACES_PER_PAGE;
-      items.forEach((item, index) => {
+      items.forEach((item) => { item.hidden = true; });
+      matchedItems.forEach((item, index) => {
         item.hidden = index < pageStart || index >= pageEnd;
       });
       if (previousButton) previousButton.disabled = currentPage === 1;
       if (nextButton) nextButton.disabled = currentPage === totalPages;
       pageButtons.forEach((button) => {
         const page = Number(button.dataset.paginationPage);
+        button.hidden = page > totalPages;
         if (page === currentPage) button.setAttribute("aria-current", "page");
         else button.removeAttribute("aria-current");
       });
-      if (status) status.textContent = `Страница ${currentPage} од ${totalPages}`;
+      if (pagination) {
+        pagination.hidden = totalPages <= 1;
+        pagination.dataset.totalPages = String(totalPages);
+      }
+      if (status && totalPages > 0) status.textContent = `Страница ${currentPage} од ${totalPages}`;
       catalogue.dataset.cataloguePage = String(currentPage);
+    };
+
+    const matchesFilters = (item: HTMLElement, query: string, areaId: string) =>
+      (!query || (item.dataset.placeSearch ?? "").includes(query))
+      && (!areaId || item.dataset.placeArea === areaId);
+
+    const applyFilters = () => {
+      const query = searchInput?.value.trim().toLocaleLowerCase("sr") ?? "";
+      const areaId = areaSelect?.value ?? "";
+      const matchedFeaturedItems = featuredItems.filter((item) => matchesFilters(item, query, areaId));
+      matchedItems = items.filter((item) => matchesFilters(item, query, areaId));
+      featuredItems.forEach((item) => { item.hidden = !matchedFeaturedItems.includes(item); });
+      if (featuredSection) featuredSection.hidden = matchedFeaturedItems.length === 0;
+      if (mainSection) mainSection.hidden = matchedItems.length === 0;
+      const matchedTotal = matchedFeaturedItems.length + matchedItems.length;
+      if (emptyState) emptyState.hidden = matchedTotal !== 0;
+      if (resultStatus) resultStatus.textContent = `Приказано ${matchedTotal} од ${totalPlaces} ${statusNoun}`;
+      resetButtons.forEach((button) => { button.disabled = !query && !areaId; });
+      currentPage = 1;
+      renderPage(1);
     };
 
     previousButton?.addEventListener("click", () => renderPage(currentPage - 1));
@@ -96,6 +237,16 @@ const catalogueLabel = category ? `${heading} у радном приказу` : 
     pageButtons.forEach((button) => {
       button.addEventListener("click", () => renderPage(Number(button.dataset.paginationPage)));
     });
-    renderPage(1);
+    searchInput?.addEventListener("input", applyFilters);
+    areaSelect?.addEventListener("change", applyFilters);
+    resetButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        if (searchInput) searchInput.value = "";
+        if (areaSelect) areaSelect.value = "";
+        applyFilters();
+        searchInput?.focus();
+      });
+    });
+    applyFilters();
   });
 </script>
