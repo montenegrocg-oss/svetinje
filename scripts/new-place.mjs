@@ -3,9 +3,7 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { stringify } from "yaml";
-
-const ENTITY_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+import { assertSafeEntitySegment, serializeResearchPlaceScaffold } from "./lib/place-scaffold.mjs";
 
 function parseArguments(args) {
   const [id, placeType, ...options] = args;
@@ -26,20 +24,6 @@ function parseArguments(args) {
   return parsed;
 }
 
-function assertKebabCase(value, label, maxLength) {
-  if (
-    typeof value !== "string" ||
-    value.length > maxLength ||
-    path.isAbsolute(value) ||
-    value.includes("..") ||
-    value.includes("/") ||
-    value.includes("\\") ||
-    !ENTITY_ID_PATTERN.test(value)
-  ) {
-    throw new Error(`${label} must be lowercase ASCII kebab-case with no paths, spaces, uppercase letters, or punctuation`);
-  }
-}
-
 async function supportedPlaceTypes(root) {
   const schemaFile = path.join(root, "schemas", "place.schema.json");
   const schema = JSON.parse(await readFile(schemaFile, "utf8"));
@@ -58,17 +42,17 @@ export async function createPlaceScaffold({
   slug = id,
   now = new Date(),
 }) {
-  assertKebabCase(id, "Place ID", 100);
-  assertKebabCase(slug, "Slug", 80);
-  if (name !== undefined && (typeof name !== "string" || name.trim().length === 0)) {
-    throw new Error("Preferred name must not be empty");
-  }
-
   const allowedTypes = await supportedPlaceTypes(root);
-  if (!allowedTypes.includes(placeType)) {
-    throw new Error(`Unsupported place type: ${placeType}. Allowed values: ${allowedTypes.join(", ")}`);
-  }
-  if (!(now instanceof Date) || Number.isNaN(now.valueOf())) throw new Error("Audit timestamp must be a valid date");
+  const scaffold = serializeResearchPlaceScaffold({
+    id,
+    placeType,
+    name,
+    slug,
+    supportedPlaceTypes: allowedTypes,
+    actor: "maxim",
+    now,
+  });
+  assertSafeEntitySegment(id, "Place ID", 100);
 
   const placesRoot = path.resolve(root, "content", "places");
   const target = path.resolve(placesRoot, id);
@@ -85,45 +69,13 @@ export async function createPlaceScaffold({
     throw error;
   }
 
-  const timestamp = now.toISOString();
-  const audit = {
-    created_at: timestamp,
-    created_by: "maxim",
-    updated_at: timestamp,
-    updated_by: "maxim",
-  };
-  const placeRecord = {
-    schema_version: 1,
-    id,
-    editorial_status: "research",
-    place_type: {
-      value: placeType,
-      verification: { status: "requires-verification" },
-    },
-    relationships: {},
-    source_ids: [],
-    approvals: [],
-    audit,
-  };
-  const narrativeFrontMatter = {
-    schema_version: 1,
-    place_id: id,
-    locale: "sr",
-    editorial_status: "research",
-    translation_status: "source",
-    slug,
-    ...(name === undefined ? {} : { preferred_name: name.trim() }),
-    source_ids: [],
-    approvals: [],
-    audit,
-  };
-  const narrative = `---\n${stringify(narrativeFrontMatter)}---\n\n<!--\nДодајте preferred_name, summary, регистроване source_ids, section_sources\nи изворима поткријепљене одјељке на српском језику прије додавања овог\nмјеста у validation/editorial-preview.json.\n-->\n`;
-
   try {
     const narrativesDirectory = path.join(target, "narratives");
     await mkdir(narrativesDirectory);
-    await writeFile(path.join(target, "place.yaml"), stringify(placeRecord), { encoding: "utf8", flag: "wx" });
-    await writeFile(path.join(narrativesDirectory, "sr.md"), narrative, { encoding: "utf8", flag: "wx" });
+    const placeFile = scaffold.files.find((file) => file.path.endsWith("/place.yaml"));
+    const narrativeFile = scaffold.files.find((file) => file.path.endsWith("/narratives/sr.md"));
+    await writeFile(path.join(target, "place.yaml"), placeFile.content, { encoding: "utf8", flag: "wx" });
+    await writeFile(path.join(narrativesDirectory, "sr.md"), narrativeFile.content, { encoding: "utf8", flag: "wx" });
   } catch (error) {
     await rm(target, { recursive: true, force: true });
     throw error;
