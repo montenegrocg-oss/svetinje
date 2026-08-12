@@ -128,8 +128,11 @@ test("the homepage is composed from reusable map-explorer components", async () 
     "homepage preview, recommendations, and routes must retain their editorial order",
   );
   assert.doesNotMatch(explorer, /ExplorerContinuation|ExplorerPagination|data-continuation|data-explorer-pagination/);
-  assert.match(sidebar, /data-explorer-catalogue-link/);
-  assert.match(sidebar, /href="\/svetinje\/"/);
+  assert.match(sidebar, /data-homepage-pagination/);
+  assert.match(sidebar, /data-homepage-pagination-prev/);
+  assert.match(sidebar, /data-homepage-pagination-next/);
+  assert.match(sidebar, /data-homepage-pagination-status/);
+  assert.doesNotMatch(sidebar, /data-explorer-catalogue-link/);
   assert.match(explorer, /data-testid="map-explorer"/);
   assert.match(recommended, /Препоручене светиње/);
   assert.match(recommended, /data-testid="recommended-places"/);
