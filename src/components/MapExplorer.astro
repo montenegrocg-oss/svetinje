@@ -49,7 +49,6 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
   import { matchesCatalogueSearch } from "../lib/catalogue-search";
   import {
     pageCountForHomepagePreview,
-    pageForHomepagePreviewPlace,
     paginateHomepagePreview,
   } from "../lib/explorer-preview";
   import { getPlaceArea } from "../lib/place-areas";
@@ -87,7 +86,6 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
   let activeFilter = "all";
   let activeAreaId = getPlaceArea(new URL(window.location.href).searchParams.get("area"))?.id ?? null;
   let matchedCards = [...placeCards];
-  let selectedPlaceId: string | null = null;
   let currentPage = 1;
 
   const noResultCopy: Record<string, { title: string; body: string }> = {
@@ -178,7 +176,6 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
       return;
     }
     if (resetSelection) {
-      selectedPlaceId = null;
       currentPage = 1;
       placeCards.forEach((card) => { card.dataset.selected = "false"; });
     }
@@ -260,38 +257,9 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
   };
   window.addEventListener("popstate", handlePopState);
 
-  const handlePlaceSelection = ((event: CustomEvent<{ id: string }>) => {
-    const selectedCard = matchedCards.find((card) => card.dataset.placeCard === event.detail.id);
-    if (!selectedCard) return;
-    const selectedPage = pageForHomepagePreviewPlace(matchedCards, selectedCard);
-    if (selectedPage) currentPage = selectedPage;
-    selectedPlaceId = event.detail.id;
-    placeCards.forEach((card) => {
-      card.dataset.selected = String(card === selectedCard);
-    });
-    renderPreview();
-    if (resultStatus) {
-      const totalPages = pageCountForHomepagePreview(matchedCards.length);
-      resultStatus.textContent = `Изабрани запис је истакнут на карти и у прегледу. Страница ${currentPage} од ${totalPages}.`;
-    }
-  }) as EventListener;
-
-  const handleClearedSelection = ((event: CustomEvent<{ id: string }>) => {
-    if (selectedPlaceId !== event.detail.id) return;
-    selectedPlaceId = null;
-    const card = placeCards.find((candidate) => candidate.dataset.placeCard === event.detail.id);
-    if (card) card.dataset.selected = "false";
-    const shown = renderPreview();
-    updateResultStatus(shown, matchedCards.length);
-  }) as EventListener;
-
-  window.addEventListener("svetinje:place-select", handlePlaceSelection);
-  window.addEventListener("svetinje:place-selection-cleared", handleClearedSelection);
   applyExplorerState();
 
   document.addEventListener("astro:before-swap", () => {
-    window.removeEventListener("svetinje:place-select", handlePlaceSelection);
-    window.removeEventListener("svetinje:place-selection-cleared", handleClearedSelection);
     window.removeEventListener("popstate", handlePopState);
   }, { once: true });
 </script>

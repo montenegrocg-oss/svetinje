@@ -272,7 +272,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     let visitorMovedMap = false;
     let resizeTimer: number | undefined;
     const markers: MapLibreMarker[] = [];
-    const markerButtons: HTMLButtonElement[] = [];
+    const markerLinks: HTMLAnchorElement[] = [];
     const previewPopup = new maplibregl.Popup({
       closeButton: false,
       closeOnClick: false,
@@ -284,9 +284,8 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     let previewCloseTimer: number | undefined;
     let activePreview: {
       place: MarkerPlace;
-      button: HTMLButtonElement;
+      link: HTMLAnchorElement;
       card: HTMLElement;
-      pinned: boolean;
     } | undefined;
 
     const clearPreviewCloseTimer = () => {
@@ -298,15 +297,15 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       clearPreviewCloseTimer();
       root.removeAttribute("data-popup-open");
       if (!activePreview) return;
-      activePreview.button.setAttribute("aria-expanded", "false");
-      activePreview.button.removeAttribute("aria-controls");
+      activePreview.link.setAttribute("aria-expanded", "false");
+      activePreview.link.removeAttribute("aria-controls");
       activePreview = undefined;
       previewPopup.remove();
     };
 
     const schedulePreviewClose = () => {
       clearPreviewCloseTimer();
-      if (!activePreview || activePreview.pinned) return;
+      if (!activePreview) return;
       previewCloseTimer = window.setTimeout(closePreview, 200);
     };
 
@@ -384,49 +383,32 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       return card;
     };
 
-    const openPreview = (place: MarkerPlace, button: HTMLButtonElement, pinned: boolean) => {
+    const openPreview = (place: MarkerPlace, link: HTMLAnchorElement) => {
       clearPreviewCloseTimer();
       if (activePreview?.place.id === place.id) {
         root.dataset.popupOpen = "true";
-        if (pinned) activePreview.pinned = true;
         return;
       }
       closePreview();
       const card = createPreviewCard(place);
-      button.setAttribute("aria-expanded", "true");
-      button.setAttribute("aria-controls", card.id);
+      link.setAttribute("aria-expanded", "true");
+      link.setAttribute("aria-controls", card.id);
       previewPopup
         .setLngLat([place.longitude, place.latitude])
         .setDOMContent(card)
         .addTo(map);
-      activePreview = { place, button, card, pinned };
+      activePreview = { place, link, card };
       root.dataset.popupOpen = "true";
     };
 
-    const selectPlace = (id: string) => {
-      root.querySelectorAll<HTMLButtonElement>("[data-map-marker]").forEach((button) => {
-        const selected = button.dataset.mapMarker === id;
-        button.classList.toggle("is-selected", selected);
-        button.setAttribute("aria-pressed", String(selected));
-      });
-      window.dispatchEvent(new CustomEvent("svetinje:place-select", { detail: { id } }));
-    };
-
-    const activatePlace = (place: MarkerPlace, button: HTMLButtonElement) => {
-      clearPreviewCloseTimer();
-      selectPlace(place.id);
-      openPreview(place, button, true);
-    };
-
     markerPlaces.forEach((place) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "holy-place-marker";
-      button.dataset.mapMarker = place.id;
-      button.dataset.placeCategory = place.category ?? "";
-      button.setAttribute("aria-label", `${place.name} — отвори детаље`);
-      button.setAttribute("aria-pressed", "false");
-      button.setAttribute("aria-expanded", "false");
+      const link = document.createElement("a");
+      link.href = `/svetinje/${encodeURIComponent(place.slug)}/`;
+      link.className = "holy-place-marker";
+      link.dataset.mapMarker = place.id;
+      link.dataset.placeCategory = place.category ?? "";
+      link.setAttribute("aria-label", `${place.name} — отвори страницу`);
+      link.setAttribute("aria-expanded", "false");
       const markerAsset = resolveMarkerAsset(place.placeType);
       if (markerAsset) {
         const markerImage = document.createElement("img");
@@ -438,35 +420,30 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
         markerImage.decoding = "async";
         markerImage.draggable = false;
         markerImage.setAttribute("aria-hidden", "true");
-        button.append(markerImage);
+        link.append(markerImage);
       } else {
         const markerFallback = document.createElement("span");
         markerFallback.className = "holy-place-marker__fallback";
         markerFallback.setAttribute("aria-hidden", "true");
         markerFallback.append(document.createElement("i"));
-        button.append(markerFallback);
+        link.append(markerFallback);
       }
-      button.addEventListener("pointerenter", (event) => {
+      link.addEventListener("pointerenter", (event) => {
         if (event.pointerType !== "mouse") return;
-        openPreview(place, button, false);
+        openPreview(place, link);
       });
-      button.addEventListener("pointerleave", (event) => {
+      link.addEventListener("pointerleave", (event) => {
         if (event.pointerType !== "mouse") return;
         schedulePreviewClose();
       });
-      button.addEventListener("pointerup", (event) => {
-        if (event.pointerType !== "touch" && event.pointerType !== "pen") return;
-        activatePlace(place, button);
-      });
-      button.addEventListener("focus", () => openPreview(place, button, false));
-      button.addEventListener("focusout", (event) => {
+      link.addEventListener("focus", () => openPreview(place, link));
+      link.addEventListener("focusout", (event) => {
         if (event.relatedTarget instanceof Node && activePreview?.card.contains(event.relatedTarget)) return;
         schedulePreviewClose();
       });
-      button.addEventListener("click", () => activatePlace(place, button));
-      markerButtons.push(button);
+      markerLinks.push(link);
       markers.push(
-        new maplibregl.Marker({ element: button, anchor: "bottom" })
+        new maplibregl.Marker({ element: link, anchor: "bottom" })
           .setLngLat([place.longitude, place.latitude])
           .addTo(map),
       );
@@ -517,29 +494,20 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       fitMontenegro(false);
     };
 
-    const clearSelectedMarker = (id: string) => {
-      const marker = markerButtons.find((button) => button.dataset.mapMarker === id);
-      if (!marker || !marker.classList.contains("is-selected")) return;
-      marker.classList.remove("is-selected");
-      marker.setAttribute("aria-pressed", "false");
-      window.dispatchEvent(new CustomEvent("svetinje:place-selection-cleared", { detail: { id } }));
-    };
-
     const setMarkerVisibility = (visibleIds: Set<string>) => {
-      markerButtons.forEach((button) => {
-        const id = button.dataset.mapMarker ?? "";
+      markerLinks.forEach((link) => {
+        const id = link.dataset.mapMarker ?? "";
         const visible = visibleIds.has(id);
-        button.hidden = !visible;
+        link.hidden = !visible;
         if (!visible) {
           if (activePreview?.place.id === id) closePreview();
-          clearSelectedMarker(id);
         }
       });
     };
 
     const handlePreviewEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape" || !activePreview) return;
-      const marker = activePreview.button;
+      const marker = activePreview.link;
       closePreview();
       if (document.activeElement && !root.contains(document.activeElement)) marker.focus();
     };
@@ -547,16 +515,16 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     const handleOutsidePreviewPointer = (event: PointerEvent) => {
       if (!activePreview) return;
       const eventPath = event.composedPath();
-      if (eventPath.includes(activePreview.button) || eventPath.includes(activePreview.card)) return;
+      if (eventPath.includes(activePreview.link) || eventPath.includes(activePreview.card)) return;
       closePreview();
     };
 
     const handleFilterChange = ((event: CustomEvent<{ filter?: string }>) => {
       const filter = event.detail?.filter;
       if (!filter) return;
-      setMarkerVisibility(new Set(markerButtons
-        .filter((button) => filter === "all" || button.dataset.placeCategory === filter)
-        .map((button) => button.dataset.mapMarker ?? "")));
+      setMarkerVisibility(new Set(markerLinks
+        .filter((link) => filter === "all" || link.dataset.placeCategory === filter)
+        .map((link) => link.dataset.mapMarker ?? "")));
     }) as EventListener;
 
     const handlePlaceVisibilityChange = ((event: CustomEvent<{ visibleIds?: string[] }>) => {

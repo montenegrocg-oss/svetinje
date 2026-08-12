@@ -138,7 +138,7 @@ test("the explorer keeps one shared filter state across cards, controls, and map
 
   assert.match(card, /data-place-category=\{category \?\? ""\}/);
   assert.match(mapCanvas, /category: categoryForPlaceType\(place\.placeType\)/);
-  assert.match(mapCanvas, /button\.dataset\.placeCategory = place\.category \?\? ""/);
+  assert.match(mapCanvas, /link\.dataset\.placeCategory = place\.category \?\? ""/);
   assert.match(explorer, /const matchesCategory = activeFilter === "all" \|\| card\.dataset\.placeCategory === activeFilter/);
   assert.match(explorer, /const matchesSearch = matchesCatalogueSearch\(card\.dataset\.placeSearch \?\? "", query\)/);
   assert.match(explorer, /new CustomEvent\("svetinje:filter-change"/);
@@ -155,9 +155,7 @@ test("the explorer keeps one shared filter state across cards, controls, and map
   assert.match(explorer, /const visibleIds = matchedCards\.map/);
   assert.match(explorer, /paginationPrev\?\.addEventListener\("click"/);
   assert.match(explorer, /paginationNext\?\.addEventListener\("click"/);
-  assert.match(explorer, /pageForHomepagePreviewPlace\(matchedCards, selectedCard\)/);
-  assert.match(explorer, /selectedPlaceId = event\.detail\.id;[\s\S]*?renderPreview\(\)/);
-  assert.match(explorer, /selectedPlaceId = null;[\s\S]*?renderPreview\(\)/);
+  assert.doesNotMatch(explorer, /pageForHomepagePreviewPlace\(matchedCards|selectedPlaceId/);
   assert.match(sidebar, /data-homepage-pagination/);
   assert.match(sidebar, /data-homepage-pagination-prev/);
   assert.match(sidebar, /data-homepage-pagination-status/);
@@ -168,7 +166,7 @@ test("the explorer keeps one shared filter state across cards, controls, and map
   assert.doesNotMatch(explorer, /ExplorerContinuation|ExplorerPagination|ResizeObserver|continuation|--explorer-continuation-height/);
   assert.match(mapCanvas, /window\.addEventListener\("svetinje:filter-change", handleFilterChange\)/);
   assert.match(mapCanvas, /window\.addEventListener\("svetinje:place-visibility-change", handlePlaceVisibilityChange\)/);
-  assert.match(mapCanvas, /button\.hidden = !visible/);
+  assert.match(mapCanvas, /link\.hidden = !visible/);
   assert.match(filters, /id: "all"/);
   assert.match(controls, /data-filter="all" aria-pressed="true"/);
   assert.match(controls, /<InterfaceIcon name="grid" size=\{18\} \/><span>Све<\/span>/);
@@ -204,7 +202,7 @@ test("filtering has accessible preview feedback and catalogue pagination remains
   assert.match(explorer, /Приказана су \$\{shown\} од \$\{matched\} резултата\. \$\{pageCopy\}/);
   assert.match(explorer, /Страница \$\{currentPage\} од \$\{totalPages\}/);
   assert.match(explorer, /document\.addEventListener\("astro:before-swap"/);
-  assert.match(explorer, /window\.removeEventListener\("svetinje:place-select", handlePlaceSelection\)/);
+  assert.doesNotMatch(explorer, /svetinje:place-select|svetinje:place-selection-cleared/);
   assert.match(styles, /\.explorer-no-results\s*\{/);
   assert.match(styles, /\.map-explorer__content\s*\{[\s\S]*?align-items: start/);
   assert.match(sidebar, /aria-label="Странице прегледа светиња"/);

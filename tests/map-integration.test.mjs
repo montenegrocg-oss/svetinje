@@ -147,13 +147,13 @@ test("the map accepts only server-selected marker data and adds no route geometr
   assert.match(mapSource, /data-map-place-data/);
   assert.match(mapSource, /placeType: place\.placeType/);
   assert.match(mapSource, /category: categoryForPlaceType\(place\.placeType\)/);
-  assert.match(mapSource, /button\.dataset\.placeCategory = place\.category \?\? ""/);
+  assert.match(mapSource, /link\.dataset\.placeCategory = place\.category \?\? ""/);
   assert.match(mapSource, /new maplibregl\.Marker/);
-  assert.match(mapSource, /new maplibregl\.Marker\(\{ element: button, anchor: "bottom" \}\)/);
-  assert.match(mapSource, /data-map-marker/);
-  assert.match(mapSource, /svetinje:place-select/);
-  assert.match(mapSource, /button\.type = "button"/);
-  assert.match(mapSource, /button\.setAttribute\("aria-label", `\$\{place\.name\} — отвори детаље`\)/);
+  assert.match(mapSource, /new maplibregl\.Marker\(\{ element: link, anchor: "bottom" \}\)/);
+  assert.match(mapSource, /dataset\.mapMarker/);
+  assert.match(mapSource, /const link = document\.createElement\("a"\)/);
+  assert.match(mapSource, /link\.href = `\/svetinje\/\$\{encodeURIComponent\(place\.slug\)\}\/`/);
+  assert.match(mapSource, /link\.setAttribute\("aria-label", `\$\{place\.name\} — отвори страницу`\)/);
   assert.doesNotMatch(mapSource, /addSource\s*\(|addLayer\s*\(|FeatureCollection|LineString|routeCoordinates/i);
   assert.doesNotMatch(mapSource, /42\.29799|18\.84452|Манастир Подмаине/iu);
 });
@@ -234,7 +234,7 @@ test("editorial-preview markers derive from coordinates and retain category artw
   assert.equal(markerPlaces.find(({ id }) => id === "manastir-savina")?.previewImageSrc, undefined);
 });
 
-test("one accessible marker preview supports hover, focus, pinning, filtering, and approved local media", async () => {
+test("one accessible marker preview supports hover and focus while markers navigate directly", async () => {
   const [mapCanvas, publication, styles] = await Promise.all([
     source("src/components/MapCanvas.astro"),
     source("src/lib/content/publication.ts"),
@@ -245,24 +245,23 @@ test("one accessible marker preview supports hover, focus, pinning, filtering, a
   assert.match(mapCanvas, /closeButton: false,[\s\S]*?closeOnClick: false,[\s\S]*?maxWidth: "240px"/);
   assert.match(mapCanvas, /\.setDOMContent\(card\)/);
   assert.doesNotMatch(mapCanvas, /(?:previewPopup|map-place-preview)[\s\S]{0,160}innerHTML/);
-  assert.match(mapCanvas, /button\.addEventListener\("pointerenter", \(event\) => \{[\s\S]*?event\.pointerType !== "mouse"[\s\S]*?openPreview\(place, button, false\)/);
-  assert.match(mapCanvas, /button\.addEventListener\("pointerleave", \(event\) => \{[\s\S]*?event\.pointerType !== "mouse"[\s\S]*?schedulePreviewClose\(\)/);
-  assert.match(mapCanvas, /button\.addEventListener\("pointerup", \(event\) => \{[\s\S]*?event\.pointerType !== "touch" && event\.pointerType !== "pen"[\s\S]*?activatePlace\(place, button\)/);
-  assert.match(mapCanvas, /button\.addEventListener\("focus", \(\) => openPreview\(place, button, false\)\)/);
-  assert.match(mapCanvas, /const activatePlace = \(place: MarkerPlace, button: HTMLButtonElement\) => \{[\s\S]*?selectPlace\(place\.id\);[\s\S]*?openPreview\(place, button, true\)/);
-  assert.match(mapCanvas, /button\.addEventListener\("click", \(\) => activatePlace\(place, button\)\)/);
+  assert.match(mapCanvas, /link\.addEventListener\("pointerenter", \(event\) => \{[\s\S]*?event\.pointerType !== "mouse"[\s\S]*?openPreview\(place, link\)/);
+  assert.match(mapCanvas, /link\.addEventListener\("pointerleave", \(event\) => \{[\s\S]*?event\.pointerType !== "mouse"[\s\S]*?schedulePreviewClose\(\)/);
+  assert.match(mapCanvas, /link\.addEventListener\("focus", \(\) => openPreview\(place, link\)\)/);
+  assert.doesNotMatch(mapCanvas, /activatePlace|selectPlace|link\.addEventListener\("pointerup"|link\.addEventListener\("click"/);
   assert.match(mapCanvas, /card\.addEventListener\("pointerenter", \(event\) => \{[\s\S]*?event\.pointerType !== "mouse"[\s\S]*?clearPreviewCloseTimer\(\)/);
   assert.match(mapCanvas, /card\.addEventListener\("pointerleave", \(event\) => \{[\s\S]*?event\.pointerType !== "mouse"[\s\S]*?schedulePreviewClose\(\)/);
-  assert.match(mapCanvas, /event\.composedPath\(\)[\s\S]*?eventPath\.includes\(activePreview\.button\)[\s\S]*?eventPath\.includes\(activePreview\.card\)/);
+  assert.match(mapCanvas, /event\.composedPath\(\)[\s\S]*?eventPath\.includes\(activePreview\.link\)[\s\S]*?eventPath\.includes\(activePreview\.card\)/);
   assert.match(mapCanvas, /window\.setTimeout\(closePreview, 200\)/);
   assert.match(mapCanvas, /event\.key !== "Escape"/);
   assert.match(mapCanvas, /document\.addEventListener\("pointerdown", handleOutsidePreviewPointer\)/);
-  assert.match(mapCanvas, /button\.setAttribute\("aria-expanded", "true"\)/);
-  assert.match(mapCanvas, /button\.setAttribute\("aria-controls", card\.id\)/);
+  assert.match(mapCanvas, /link\.setAttribute\("aria-expanded", "true"\)/);
+  assert.match(mapCanvas, /link\.setAttribute\("aria-controls", card\.id\)/);
   assert.match(mapCanvas, /root\.dataset\.popupOpen = "true"/);
   assert.match(mapCanvas, /root\.removeAttribute\("data-popup-open"\)/);
   assert.match(mapCanvas, /if \(activePreview\?\.place\.id === place\.id\) \{[\s\S]*?root\.dataset\.popupOpen = "true"/);
-  assert.match(mapCanvas, /activePreview = \{ place, button, card, pinned \};[\s\S]*?root\.dataset\.popupOpen = "true"/);
+  assert.match(mapCanvas, /activePreview = \{ place, link, card \};[\s\S]*?root\.dataset\.popupOpen = "true"/);
+  assert.doesNotMatch(mapCanvas, /activePreview\.pinned|pinned:/);
   assert.match(mapCanvas, /if \(activePreview\?\.place\.id === id\) closePreview\(\)/);
   assert.match(mapCanvas, /link\.href = `\/svetinje\/\$\{encodeURIComponent\(place\.slug\)\}\/`/);
   assert.match(mapCanvas, /notice\.textContent = "Ауторска фотографија биће додата"/);
