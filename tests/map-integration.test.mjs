@@ -234,7 +234,7 @@ test("editorial-preview markers derive from coordinates and retain category artw
   assert.equal(markerPlaces.find(({ id }) => id === "manastir-savina")?.previewImageSrc, undefined);
 });
 
-test("one accessible marker preview supports hover and focus while markers navigate directly", async () => {
+test("one accessible marker preview preserves desktop navigation and pins touch previews", async () => {
   const [mapCanvas, publication, styles] = await Promise.all([
     source("src/components/MapCanvas.astro"),
     source("src/lib/content/publication.ts"),
@@ -248,7 +248,11 @@ test("one accessible marker preview supports hover and focus while markers navig
   assert.match(mapCanvas, /link\.addEventListener\("pointerenter", \(event\) => \{[\s\S]*?event\.pointerType !== "mouse"[\s\S]*?openPreview\(place, link\)/);
   assert.match(mapCanvas, /link\.addEventListener\("pointerleave", \(event\) => \{[\s\S]*?event\.pointerType !== "mouse"[\s\S]*?schedulePreviewClose\(\)/);
   assert.match(mapCanvas, /link\.addEventListener\("focus", \(\) => openPreview\(place, link\)\)/);
-  assert.doesNotMatch(mapCanvas, /activatePlace|selectPlace|link\.addEventListener\("pointerup"|link\.addEventListener\("click"/);
+  assert.match(mapCanvas, /link\.addEventListener\("pointerup", \(event\) => \{[\s\S]*?event\.pointerType !== "touch" && event\.pointerType !== "pen"[\s\S]*?event\.preventDefault\(\)[\s\S]*?openPreview\(place, link, true\)/);
+  assert.match(mapCanvas, /link\.addEventListener\("click", \(event\) => \{[\s\S]*?isTouchActivation[\s\S]*?if \(!isTouchActivation\) return;[\s\S]*?event\.preventDefault\(\)/);
+  assert.match(mapCanvas, /const openPreview = \(place: MarkerPlace, link: HTMLAnchorElement, pinned = false\)/);
+  assert.match(mapCanvas, /if \(!activePreview \|\| activePreview\.pinned\) return;/);
+  assert.doesNotMatch(mapCanvas, /activatePlace|selectPlace/);
   assert.match(mapCanvas, /card\.addEventListener\("pointerenter", \(event\) => \{[\s\S]*?event\.pointerType !== "mouse"[\s\S]*?clearPreviewCloseTimer\(\)/);
   assert.match(mapCanvas, /card\.addEventListener\("pointerleave", \(event\) => \{[\s\S]*?event\.pointerType !== "mouse"[\s\S]*?schedulePreviewClose\(\)/);
   assert.match(mapCanvas, /event\.composedPath\(\)[\s\S]*?eventPath\.includes\(activePreview\.link\)[\s\S]*?eventPath\.includes\(activePreview\.card\)/);
@@ -260,10 +264,11 @@ test("one accessible marker preview supports hover and focus while markers navig
   assert.match(mapCanvas, /root\.dataset\.popupOpen = "true"/);
   assert.match(mapCanvas, /root\.removeAttribute\("data-popup-open"\)/);
   assert.match(mapCanvas, /if \(activePreview\?\.place\.id === place\.id\) \{[\s\S]*?root\.dataset\.popupOpen = "true"/);
-  assert.match(mapCanvas, /activePreview = \{ place, link, card \};[\s\S]*?root\.dataset\.popupOpen = "true"/);
-  assert.doesNotMatch(mapCanvas, /activePreview\.pinned|pinned:/);
+  assert.match(mapCanvas, /activePreview = \{ place, link, card, pinned \};[\s\S]*?root\.dataset\.popupOpen = "true"/);
+  assert.match(mapCanvas, /activePreview = \{ place, link, card, pinned \}/);
   assert.match(mapCanvas, /if \(activePreview\?\.place\.id === id\) closePreview\(\)/);
   assert.match(mapCanvas, /link\.href = `\/svetinje\/\$\{encodeURIComponent\(place\.slug\)\}\/`/);
+  assert.match(mapCanvas, /map-place-preview__link[\s\S]*?link\.href = `\/svetinje\/\$\{encodeURIComponent\(place\.slug\)\}\/`/);
   assert.match(mapCanvas, /notice\.textContent = "Ауторска фотографија биће додата"/);
   assert.match(mapCanvas, /image\.alt = place\.previewImageAlt \?\? place\.name/);
 

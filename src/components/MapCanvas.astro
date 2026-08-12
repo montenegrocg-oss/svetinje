@@ -286,6 +286,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       place: MarkerPlace;
       link: HTMLAnchorElement;
       card: HTMLElement;
+      pinned: boolean;
     } | undefined;
 
     const clearPreviewCloseTimer = () => {
@@ -305,7 +306,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
 
     const schedulePreviewClose = () => {
       clearPreviewCloseTimer();
-      if (!activePreview) return;
+      if (!activePreview || activePreview.pinned) return;
       previewCloseTimer = window.setTimeout(closePreview, 200);
     };
 
@@ -383,10 +384,11 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       return card;
     };
 
-    const openPreview = (place: MarkerPlace, link: HTMLAnchorElement) => {
+    const openPreview = (place: MarkerPlace, link: HTMLAnchorElement, pinned = false) => {
       clearPreviewCloseTimer();
       if (activePreview?.place.id === place.id) {
         root.dataset.popupOpen = "true";
+        if (pinned) activePreview.pinned = true;
         return;
       }
       closePreview();
@@ -397,7 +399,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
         .setLngLat([place.longitude, place.latitude])
         .setDOMContent(card)
         .addTo(map);
-      activePreview = { place, link, card };
+      activePreview = { place, link, card, pinned };
       root.dataset.popupOpen = "true";
     };
 
@@ -435,6 +437,20 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       link.addEventListener("pointerleave", (event) => {
         if (event.pointerType !== "mouse") return;
         schedulePreviewClose();
+      });
+      let suppressTouchClickUntil = 0;
+      link.addEventListener("pointerup", (event) => {
+        if (event.pointerType !== "touch" && event.pointerType !== "pen") return;
+        event.preventDefault();
+        suppressTouchClickUntil = Date.now() + 800;
+        openPreview(place, link, true);
+      });
+      link.addEventListener("click", (event) => {
+        const pointerType = event instanceof PointerEvent ? event.pointerType : "";
+        const isTouchActivation = pointerType === "touch" || pointerType === "pen" || Date.now() < suppressTouchClickUntil;
+        if (!isTouchActivation) return;
+        event.preventDefault();
+        suppressTouchClickUntil = 0;
       });
       link.addEventListener("focus", () => openPreview(place, link));
       link.addEventListener("focusout", (event) => {
