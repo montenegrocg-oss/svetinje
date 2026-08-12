@@ -1806,6 +1806,42 @@
 }
 
 @layer pages {
+  .dedicated-map-page {
+    width: 100%;
+    background: #e9e5da;
+  }
+
+  .dedicated-map-page__stage {
+    height: calc(100vh - 4.55rem);
+    height: calc(100dvh - 4.55rem);
+    min-height: 32rem;
+    border: 0;
+  }
+
+  .dedicated-map-page .map-canvas::after {
+    content: none;
+  }
+
+  .dedicated-map-page .map-tool-stack,
+  .dedicated-map-page .map-help {
+    right: clamp(0.75rem, 2vw, 2rem);
+  }
+
+  .dedicated-map-page .map-tool-stack {
+    top: clamp(0.75rem, 2vw, 1.5rem);
+  }
+
+  .dedicated-map-page .map-help {
+    bottom: clamp(1.75rem, 4vw, 3rem);
+  }
+
+  .dedicated-map-page .map-attribution {
+    right: clamp(4.5rem, 8vw, 8rem);
+    left: clamp(0.75rem, 2vw, 2rem);
+    width: auto;
+    max-width: none;
+  }
+
   .page-hero {
     padding-block: clamp(4rem, 9vw, 7.5rem);
     border-bottom: 1px solid var(--line);
@@ -3405,6 +3441,11 @@
 
 @layer responsive {
   @media (min-width: 48rem) {
+    .dedicated-map-page__stage {
+      height: calc(100vh - 5rem);
+      height: calc(100dvh - 5rem);
+    }
+
     .news-feed-item__link {
       grid-template-columns: 6.6rem 9.1rem minmax(0, 1fr) 2rem;
       grid-template-areas: "date badge content arrow";
@@ -3686,6 +3727,11 @@
   }
 
   @media (min-width: 68rem) {
+    .dedicated-map-page__stage {
+      height: calc(100vh - 5.25rem);
+      height: calc(100dvh - 5.25rem);
+    }
+
     .news-archive__layout {
       grid-template-columns: minmax(0, 1fr) 18.125rem;
       align-items: start;
@@ -3898,6 +3944,15 @@
     .catalogue-skeleton__copy {
       display: none;
     }
+  }
+
+  .dedicated-map-page .map-tool-stack,
+  .dedicated-map-page .map-help {
+    right: clamp(0.75rem, 2vw, 2rem);
+  }
+
+  .dedicated-map-page .map-tool-stack {
+    top: clamp(0.75rem, 2vw, 1.5rem);
   }
 
   @media (prefers-reduced-motion: reduce) {

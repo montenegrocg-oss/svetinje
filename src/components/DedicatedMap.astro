@@ -1,0 +1,18 @@
+---
+import type { VisiblePlace } from "../lib/content/publication";
+import MapCanvas from "./MapCanvas.astro";
+import MapControls from "./MapControls.astro";
+
+interface Props {
+  places: VisiblePlace[];
+}
+
+const { places } = Astro.props;
+---
+
+<section class="dedicated-map-page" aria-label="Интерактивна карта православних светиња">
+  <div class="map-stage dedicated-map-page__stage">
+    <MapCanvas places={places} layout="full" />
+    <MapControls variant="map-page" />
+  </div>
+</section>

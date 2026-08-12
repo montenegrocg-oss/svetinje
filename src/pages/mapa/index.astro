@@ -1,0 +1,15 @@
+---
+import DedicatedMap from "../../components/DedicatedMap.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { loadVisiblePlaces } from "../../lib/content/publication";
+
+const places = await loadVisiblePlaces();
+---
+
+<BaseLayout
+  title="Мапа — Светиње"
+  description="Интерактивна карта православних манастира, храмова и светих мјеста у Црној Гори."
+  canonicalPath="/mapa/"
+>
+  <DedicatedMap places={places} />
+</BaseLayout>

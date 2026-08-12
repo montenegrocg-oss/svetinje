@@ -4,9 +4,10 @@ import { categoryForPlaceType } from "../lib/place-filters";
 
 interface Props {
   places?: VisiblePlace[];
+  layout?: "homepage" | "full";
 }
 
-const { places = [] } = Astro.props;
+const { places = [], layout = "homepage" } = Astro.props;
 const hasMapTilerKey = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
 const markerPlaces = places.flatMap((place) =>
   Number.isFinite(place.latitude) && Number.isFinite(place.longitude)
@@ -31,6 +32,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
 <div
   class="map-canvas"
   data-home-map
+  data-map-layout={layout}
   data-testid="map-canvas"
   data-map-state={hasMapTilerKey ? "loading" : "fallback"}
 >
@@ -172,7 +174,12 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     [20.36, 43.57],
   ];
 
-  const getInitialPadding = (width: number): PaddingOptions => {
+  const getInitialPadding = (width: number, layout: "homepage" | "full"): PaddingOptions => {
+    if (layout === "full") {
+      if (width >= 1088) return { top: 56, right: 56, bottom: 56, left: 56 };
+      if (width >= 768) return { top: 42, right: 42, bottom: 42, left: 42 };
+      return { top: 22, right: 22, bottom: 22, left: 22 };
+    }
     if (width >= 1088) return { top: 78, right: 28, bottom: 30, left: 292 };
     if (width >= 768) return { top: 135, right: 26, bottom: 34, left: 245 };
     return { top: 62, right: 14, bottom: 26, left: 14 };
@@ -183,6 +190,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     if (!root || root.dataset.mapInitialised === "true") return;
 
     root.dataset.mapInitialised = "true";
+    const mapLayout = root.dataset.mapLayout === "full" ? "full" : "homepage";
     const renderer = root.querySelector<HTMLElement>("[data-map-renderer]");
     const fallback = root.querySelector<HTMLElement>("[data-map-fallback]");
     const loadingSurface = root.querySelector<HTMLElement>("[data-map-loading-surface]");
@@ -467,7 +475,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     const animationDuration = () => (reducedMotion.matches ? 0 : 420);
     const fitMontenegro = (animate: boolean) => {
       map.fitBounds(MONTENEGRO_BOUNDS, {
-        padding: getInitialPadding(root.clientWidth),
+        padding: getInitialPadding(root.clientWidth, mapLayout),
         duration: animate ? animationDuration() : 0,
         linear: true,
         maxZoom: 8,

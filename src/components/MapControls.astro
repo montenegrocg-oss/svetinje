@@ -1,17 +1,25 @@
 ---
 import InterfaceIcon from "./InterfaceIcon.astro";
+
+interface Props {
+  variant?: "homepage" | "map-page";
+}
+
+const { variant = "homepage" } = Astro.props;
 ---
 
-<div class="map-actions" aria-label="Брзи избор на карти" data-filter-group="map">
-  <button type="button" class="map-action" data-filter="all" aria-pressed="true"><InterfaceIcon name="grid" size={18} /><span>Све</span></button>
-  <button type="button" class="map-action" data-filter="monasteries" aria-pressed="false"><InterfaceIcon name="monastery" size={18} /><span>Манастири</span></button>
-  <button type="button" class="map-action" data-filter="churches" aria-pressed="false"><InterfaceIcon name="church" size={18} /><span>Цркве</span></button>
-  <button type="button" class="map-action" data-filter="holy-places" aria-pressed="false"><InterfaceIcon name="place" size={18} /><span>Света мјеста</span></button>
-  <button type="button" class="map-action map-action--wide" data-filter="routes" aria-pressed="false"><InterfaceIcon name="route" size={18} /><span>Поклоничке руте</span></button>
-  <button type="button" class="map-action map-action--primary" data-notice-trigger="route-notice" aria-controls="route-notice"><InterfaceIcon name="route" size={18} /><span>Изгради руту</span></button>
-</div>
+{variant === "homepage" && (
+  <div class="map-actions" aria-label="Брзи избор на карти" data-filter-group="map">
+    <button type="button" class="map-action" data-filter="all" aria-pressed="true"><InterfaceIcon name="grid" size={18} /><span>Све</span></button>
+    <button type="button" class="map-action" data-filter="monasteries" aria-pressed="false"><InterfaceIcon name="monastery" size={18} /><span>Манастири</span></button>
+    <button type="button" class="map-action" data-filter="churches" aria-pressed="false"><InterfaceIcon name="church" size={18} /><span>Цркве</span></button>
+    <button type="button" class="map-action" data-filter="holy-places" aria-pressed="false"><InterfaceIcon name="place" size={18} /><span>Света мјеста</span></button>
+    <button type="button" class="map-action map-action--wide" data-filter="routes" aria-pressed="false"><InterfaceIcon name="route" size={18} /><span>Поклоничке руте</span></button>
+    <button type="button" class="map-action map-action--primary" data-notice-trigger="route-notice" aria-controls="route-notice"><InterfaceIcon name="route" size={18} /><span>Изгради руту</span></button>
+  </div>
+)}
 
-<div class="map-tool-stack" aria-label="Контроле карте">
+<div class:list={["map-tool-stack", { "map-tool-stack--page": variant === "map-page" }]} aria-label="Контроле карте">
   <details class="map-popover map-layers">
     <summary><InterfaceIcon name="layers" size={21} /><span>Слојеви</span></summary>
     <div class="map-popover__panel">
@@ -26,7 +34,7 @@ import InterfaceIcon from "./InterfaceIcon.astro";
   <button class="map-target" type="button" data-map-reset disabled aria-label="Прикажи поново Црну Гору"><InterfaceIcon name="target" size={21} /></button>
 </div>
 
-<details class="map-popover map-help">
+<details class:list={["map-popover", "map-help", { "map-help--page": variant === "map-page" }]}>
   <summary><InterfaceIcon name="info" size={18} /><span>Како користити карту?</span></summary>
   <div class="map-popover__panel">
     <strong>Интерактивна основна карта</strong>
@@ -34,6 +42,8 @@ import InterfaceIcon from "./InterfaceIcon.astro";
   </div>
 </details>
 
-<p class="map-notice" id="route-notice" role="status" tabindex="-1" hidden>
-  Функција планирања руте је у припреми.
-</p>
+{variant === "homepage" && (
+  <p class="map-notice" id="route-notice" role="status" tabindex="-1" hidden>
+    Функција планирања руте је у припреми.
+  </p>
+)}

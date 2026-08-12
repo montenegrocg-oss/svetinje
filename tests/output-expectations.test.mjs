@@ -102,3 +102,7 @@ test("news routes extend the derived output model without fixed page counts", ()
   assert.ok(model.allExpectedRoutes.includes("novosti/article-update/index.html"));
   assert.equal(model.expectedPageCount, STATIC_HTML_ROUTES.length + places.length + 1);
 });
+
+test("the dedicated map is a derived static route", () => {
+  assert.ok(STATIC_HTML_ROUTES.includes("mapa/index.html"));
+});

@@ -69,7 +69,7 @@ test("desktop and mobile navigation expose the required Serbian guide sections",
     ["/manastiri/", "Манастири"],
     ["/crkve/", "Цркве"],
     ["/sveta-mjesta/", "Света мјеста"],
-    ["/#mapa", "Мапа"],
+    ["/mapa/", "Мапа"],
     ["/#rute", "Руте"],
     ["/o-projektu/", "О пројекту"],
   ];
@@ -157,6 +157,33 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(routes, /data-testid="popular-routes"/);
   assert.match(routes, /class="popular-routes__inner"/);
   assert.doesNotMatch(routes, /class="shell popular-routes__inner"/);
+});
+
+test("the dedicated map route reuses the shared map without homepage-only UI", async () => {
+  const [page, dedicatedMap, canvas, controls, header, outputModel, styles] = await Promise.all([
+    source("src/pages/mapa/index.astro"),
+    source("src/components/DedicatedMap.astro"),
+    source("src/components/MapCanvas.astro"),
+    source("src/components/MapControls.astro"),
+    source("src/components/Header.astro"),
+    source("scripts/lib/output-expectations.mjs"),
+    source("src/styles/global.css"),
+  ]);
+
+  assert.match(page, /loadVisiblePlaces/);
+  assert.match(page, /<DedicatedMap places=\{places\} \/>/);
+  assert.match(page, /canonicalPath="\/mapa\/"/);
+  assert.doesNotMatch(page, /MapExplorer|ExplorerSidebar|RecommendedPlaces|PopularRoutes|PlaceAreas/);
+  assert.match(dedicatedMap, /<MapCanvas places=\{places\} layout="full" \/>/);
+  assert.match(dedicatedMap, /<MapControls variant="map-page" \/>/);
+  assert.match(canvas, /data-map-layout=\{layout\}/);
+  assert.match(canvas, /if \(layout === "full"\)/);
+  assert.match(controls, /variant === "homepage"/);
+  assert.match(controls, /map-tool-stack--page/);
+  assert.match(header, /\{ href: "\/mapa\/", label: "Мапа" \}/);
+  assert.doesNotMatch(header, /\{ href: "\/#mapa", label: "Мапа" \}/);
+  assert.match(outputModel, /"mapa\/index\.html"/);
+  assert.match(styles, /\.dedicated-map-page__stage\s*\{[\s\S]*?100dvh/);
 });
 
 test("the homepage sidebar overlays the map without pulling secondary content upward", async () => {

@@ -7,6 +7,7 @@ import { PLACE_AREAS } from "../../src/lib/place-areas.ts";
 
 export const STATIC_HTML_ROUTES = Object.freeze([
   "index.html",
+  "mapa/index.html",
   "svetinje/index.html",
   "manastiri/index.html",
   "crkve/index.html",
