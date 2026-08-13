@@ -10,6 +10,8 @@ export interface AdminEnv {
   ENVIRONMENT?: string;
   DEV_AUTH_BYPASS?: string;
   DEV_AUTH_EMAIL?: string;
+  PUBLIC_MAPTILER_KEY?: string;
+  ASSETS?: Fetcher;
 }
 
 export interface AdminSession {

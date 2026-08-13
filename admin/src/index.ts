@@ -1,9 +1,9 @@
 import { authenticateRequest } from "./auth.ts";
 import { AdminError, errorResponse } from "./errors.ts";
 import { GitHubRepository } from "./github.ts";
-import { createPlace, getPlace, listPlaces } from "./service.ts";
+import { createPlace, getEditablePlace, getPlace, listPlaces, updatePlace } from "./service.ts";
 import type { AdminEnv } from "./types.ts";
-import { dashboardPage, newPlacePage, placePage, placesPage } from "./ui.ts";
+import { dashboardPage, editPlacePage, newPlacePage, placePage, placesPage } from "./ui.ts";
 
 const JSON_HEADERS = { "cache-control": "no-store" };
 
@@ -42,7 +42,12 @@ export async function handleRequest(request: Request, env: AdminEnv): Promise<Re
     }
     const apiPlaceMatch = url.pathname.match(/^\/api\/places\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
     if (request.method === "GET" && apiPlaceMatch?.[1]) {
-      return Response.json(await getPlace(repository, env, apiPlaceMatch[1]), { headers: JSON_HEADERS });
+      const record = await getEditablePlace(repository, env, apiPlaceMatch[1]);
+      return Response.json({ place: record.place, options: record.options, branch: record.branch, headSha: record.state.headSha }, { headers: JSON_HEADERS });
+    }
+    if (request.method === "PATCH" && apiPlaceMatch?.[1]) {
+      requireSameOrigin(request);
+      return Response.json(await updatePlace(repository, env, session, apiPlaceMatch[1], await jsonBody(request)), { headers: JSON_HEADERS });
     }
     if (request.method === "POST" && url.pathname === "/api/places") {
       requireSameOrigin(request);
@@ -60,11 +65,17 @@ export async function handleRequest(request: Request, env: AdminEnv): Promise<Re
       const snapshot = await listPlaces(repository, env);
       return newPlacePage(session, snapshot.supportedPlaceTypes, snapshot.state.headSha);
     }
+    const editPlaceMatch = url.pathname.match(/^\/places\/([a-z0-9]+(?:-[a-z0-9]+)*)\/edit$/);
+    if (request.method === "GET" && editPlaceMatch?.[1]) {
+      const result = await getEditablePlace(repository, env, editPlaceMatch[1]);
+      return editPlacePage(session, result, env.PUBLIC_MAPTILER_KEY?.trim());
+    }
     const placeMatch = url.pathname.match(/^\/places\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
     if (request.method === "GET" && placeMatch?.[1]) {
       const result = await getPlace(repository, env, placeMatch[1]);
       return placePage(session, result.place);
     }
+    if (request.method === "GET" && url.pathname.startsWith("/assets/") && env.ASSETS) return env.ASSETS.fetch(request);
     throw new AdminError("not_found", 404, "Route does not exist");
   } catch (error) {
     return errorResponse(error);

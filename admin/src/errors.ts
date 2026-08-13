@@ -2,6 +2,8 @@ export type AdminErrorCode =
   | "unauthenticated"
   | "invalid_form_data"
   | "unsupported_place_type"
+  | "unknown_browse_area"
+  | "unsupported_narrative_section"
   | "duplicate_id"
   | "invalid_editorial_branch"
   | "github_authentication_failure"
@@ -12,16 +14,19 @@ export type AdminErrorCode =
 export class AdminError extends Error {
   readonly code: AdminErrorCode;
   readonly status: number;
+  readonly fields?: Record<string, string>;
 
   constructor(
     code: AdminErrorCode,
     status: number,
     message: string,
+    fields?: Record<string, string>,
   ) {
     super(message);
     this.name = "AdminError";
     this.code = code;
     this.status = status;
+    if (fields) this.fields = fields;
   }
 }
 
@@ -29,6 +34,8 @@ const SAFE_MESSAGES: Record<AdminErrorCode, string> = {
   unauthenticated: "Пријава није важећа.",
   invalid_form_data: "Подаци обрасца нијесу важећи.",
   unsupported_place_type: "Врста објекта није подржана.",
+  unknown_browse_area: "Област није дио важећег каталога области.",
+  unsupported_narrative_section: "Одељак текста није подржан канонском шемом.",
   duplicate_id: "Објекат са тим техничким ID-јем већ постоји.",
   invalid_editorial_branch: "Уређивачка Git грана није безбједно конфигурисана.",
   github_authentication_failure: "GitHub App аутентификација није успјела.",
@@ -42,7 +49,7 @@ export function errorResponse(error: unknown): Response {
     ? error
     : new AdminError("internal_error", 500, SAFE_MESSAGES.internal_error);
   return Response.json(
-    { error: { code: safe.code, message: SAFE_MESSAGES[safe.code] } },
+    { error: { code: safe.code, message: SAFE_MESSAGES[safe.code], ...(safe.fields ? { fields: safe.fields } : {}) } },
     { status: safe.status, headers: { "cache-control": "no-store" } },
   );
 }

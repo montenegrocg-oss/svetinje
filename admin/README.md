@@ -1,4 +1,4 @@
-# Svetinje.me editorial admin — Phase 1
+# Svetinje.me editorial admin — Phase 2
 
 This directory is an independently deployable Cloudflare Worker intended for `admin.svetinje.me`. It is not a public `/admin/` route and does not participate in the root Astro build.
 
@@ -23,6 +23,7 @@ Set these as Worker variables or secrets; never commit their values:
 - `GITHUB_OWNER=montenegrocg-oss`
 - `GITHUB_REPO=svetinje`
 - `GITHUB_EDITORIAL_BRANCH` — mandatory non-`main` editorial branch.
+- `PUBLIC_MAPTILER_KEY` — public browser key used only by the isolated editorial coordinate picker.
 - `ENVIRONMENT=production` in deployed environments.
 
 Minimum GitHub App repository permission: **Contents: Read and write** for `montenegrocg-oss/svetinje`. No pull request, administration, workflow, issue or deployment permission is required for Phase 1.
@@ -56,15 +57,27 @@ pnpm --dir admin build
 - Ref updates explicitly use `force: false`; concurrent movement returns a conflict.
 - No merge or automatic publication exists.
 
-## Phase 1 features
+## Phase 2 features
 
 - authenticated dashboard with repository-derived counts;
 - searchable place inventory;
-- read-only structured place summary;
+- read-only structured place summary with a link to the editor;
 - minimal Serbian name/ID/slug/type creation form;
 - one atomic research-scaffold commit to the configured editorial branch;
-- JSON endpoints: `GET /api/session`, `GET /api/places`, `GET /api/places/:id`, `POST /api/places`.
+- existing-place editor for Serbian identity and catalogue metadata, canonical place type, shared browse area, ecclesiastical jurisdiction and structured location;
+- MapLibre coordinate picker bundled as a same-origin admin asset, with click/tap placement, draggable refinement, manual numeric inputs and point clearing;
+- Serbian narrative editor that retains canonical section IDs, order, source relationships and untouched Markdown blocks while allowing supported sections and paragraphs to be edited;
+- compact read-only source references and editorial-preview membership display;
+- JSON endpoints: `GET /api/session`, `GET /api/places`, `GET /api/places/:id`, `POST /api/places`, and `PATCH /api/places/:id`.
+
+## Existing-place saves
+
+`PATCH /api/places/:id` requires the branch HEAD supplied as `expectedHeadSha`. The server reloads the canonical YAML and Serbian Markdown, validates the submitted fields and canonical schemas, changes only the supported values, and writes both files in one Git commit. The preview allowlist is not part of that commit.
+
+Unchanged facts retain their verification metadata exactly. A materially changed structured fact is reset to `requires-verification` without carrying stale field-level evidence. Creation audit metadata is preserved; update time and actor come from the authenticated session.
+
+The branch HEAD is checked before the commit and again by the non-force ref update. If it has moved, the API returns HTTP 409 and the editor keeps the local form values so the operator can review and reload instead of overwriting another change.
 
 ## Deferred
 
-Editing existing records, narratives, sources, media, practical information, approvals, preview promotion, pull requests, merge/release controls, audit history UI and deployment automation are intentionally deferred to later phases.
+Full source creation/editing, media and photo upload, practical-information editing, approvals/review workflow, editorial-preview promotion, production publication, pull requests, merge/release controls, audit-history UI and deployment automation remain deferred to later phases.

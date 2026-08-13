@@ -1,6 +1,7 @@
 import { AdminError } from "./errors.ts";
 import { editorialBranch } from "./github.ts";
-import { loadAdminRepository } from "./repository-content.ts";
+import { loadAdminRepository, loadEditablePlace } from "./repository-content.ts";
+import { updateCanonicalPlace, type UpdatePlaceBody } from "./place-editor.ts";
 import type { AdminEnv, AdminSession, GitRepository } from "./types.ts";
 import { serializeResearchPlaceScaffold } from "../../scripts/lib/place-scaffold.mjs";
 
@@ -25,6 +26,10 @@ export async function getPlace(repository: GitRepository, env: AdminEnv, id: str
   const place = snapshot.places.find((candidate) => candidate.id === id);
   if (!place) throw new AdminError("not_found", 404, "Place does not exist");
   return { place, branch: snapshot.branch, headSha: snapshot.state.headSha };
+}
+
+export async function getEditablePlace(repository: GitRepository, env: AdminEnv, id: string) {
+  return loadEditablePlace(repository, editorialBranch(env), id);
 }
 
 export async function createPlace(
@@ -93,4 +98,33 @@ export async function createPlace(
       inPreview: false,
     },
   };
+}
+
+export async function updatePlace(
+  repository: GitRepository,
+  env: AdminEnv,
+  session: AdminSession,
+  id: string,
+  body: UpdatePlaceBody,
+  now = new Date(),
+) {
+  const branch = editorialBranch(env);
+  const record = await loadEditablePlace(repository, branch, id);
+  const expectedHeadSha = asString(body.expectedHeadSha);
+  if (!expectedHeadSha || !/^[0-9a-f]{40}$/.test(expectedHeadSha)) {
+    throw new AdminError("invalid_form_data", 400, "Expected branch HEAD is invalid", { expectedHeadSha: "HEAD ревизија није важећа." });
+  }
+  if (expectedHeadSha !== record.state.headSha) throw new AdminError("git_conflict", 409, "Editorial branch moved before save validation");
+  const updated = updateCanonicalPlace(record, body, session.actor, now);
+  const result = await repository.commitFilesAtomic({
+    branch,
+    expectedHeadSha,
+    baseTreeSha: record.state.treeSha,
+    files: [
+      { path: `content/places/${id}/place.yaml`, content: updated.placeYaml },
+      { path: `content/places/${id}/narratives/sr.md`, content: updated.narrativeMarkdown },
+    ],
+    message: `Update research place ${id}`,
+  });
+  return { commitSha: result.commitSha, branch: result.branch, placeId: id };
 }
