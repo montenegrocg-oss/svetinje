@@ -1,8 +1,36 @@
+import { createPrivateKey } from "node:crypto";
 import { importPKCS8, SignJWT } from "jose";
 import { AdminError } from "./errors.ts";
 import type { AdminEnv, BranchState, GitCommitResult, GitRepository, RepositoryFile, TreeEntry } from "./types.ts";
 
 const API_VERSION = "2022-11-28";
+const PKCS1_HEADER = "-----BEGIN RSA PRIVATE KEY-----";
+const PKCS8_HEADER = "-----BEGIN PRIVATE KEY-----";
+
+type GitHubAuthenticationFailure =
+  | "private_key_import_failed"
+  | "installation_token_http_failure"
+  | "installation_token_response_invalid";
+
+function authenticationFailure(reason: GitHubAuthenticationFailure): AdminError {
+  return new AdminError("github_authentication_failure", 502, reason);
+}
+
+async function importGitHubAppPrivateKey(privateKeySecret: string): Promise<CryptoKey> {
+  const privateKeyPem = privateKeySecret.replaceAll("\\n", "\n").trim();
+
+  if (privateKeyPem.startsWith(PKCS8_HEADER)) {
+    return importPKCS8(privateKeyPem, "RS256");
+  }
+
+  if (privateKeyPem.startsWith(PKCS1_HEADER)) {
+    const keyObject = createPrivateKey({ key: privateKeyPem, format: "pem" });
+    const pkcs8Pem = keyObject.export({ type: "pkcs8", format: "pem" });
+    return importPKCS8(pkcs8Pem.toString(), "RS256");
+  }
+
+  throw authenticationFailure("private_key_import_failed");
+}
 
 export function editorialBranch(env: AdminEnv): string {
   const branch = env.GITHUB_EDITORIAL_BRANCH?.trim();
@@ -46,27 +74,50 @@ export class GitHubRepository implements GitRepository {
     if (!GITHUB_APP_ID?.trim() || !GITHUB_APP_INSTALLATION_ID?.trim() || !GITHUB_APP_PRIVATE_KEY?.trim()) {
       throw new AdminError("github_authentication_failure", 502, "GitHub App configuration is incomplete");
     }
+    let key: CryptoKey;
     try {
-      const key = await importPKCS8(GITHUB_APP_PRIVATE_KEY.replaceAll("\\n", "\n"), "RS256");
-      const now = Math.floor(this.#now() / 1000);
-      const appJwt = await new SignJWT({})
+      key = await importGitHubAppPrivateKey(GITHUB_APP_PRIVATE_KEY);
+    } catch {
+      throw authenticationFailure("private_key_import_failed");
+    }
+
+    const now = Math.floor(this.#now() / 1000);
+    let appJwt: string;
+    try {
+      appJwt = await new SignJWT({})
         .setProtectedHeader({ alg: "RS256" })
         .setIssuedAt(now - 30)
         .setExpirationTime(now + 540)
         .setIssuer(GITHUB_APP_ID.trim())
         .sign(key);
-      const response = await this.#fetch(`https://api.github.com/app/installations/${encodeURIComponent(GITHUB_APP_INSTALLATION_ID.trim())}/access_tokens`, {
+    } catch {
+      throw authenticationFailure("private_key_import_failed");
+    }
+
+    let response: Response;
+    try {
+      response = await this.#fetch(`https://api.github.com/app/installations/${encodeURIComponent(GITHUB_APP_INSTALLATION_ID.trim())}/access_tokens`, {
         method: "POST",
         headers: this.#headers(appJwt),
         body: JSON.stringify({ repositories: [this.#repo], permissions: { contents: "write" } }),
       });
-      if (!response.ok) throw new Error(`GitHub token endpoint returned ${response.status}`);
+    } catch {
+      throw authenticationFailure("installation_token_http_failure");
+    }
+
+    if (!response.ok) {
+      throw authenticationFailure("installation_token_http_failure");
+    }
+
+    try {
       const body = await response.json() as { token?: unknown };
-      if (typeof body.token !== "string") throw new Error("GitHub token response is invalid");
+      if (typeof body.token !== "string" || !body.token.trim()) {
+        throw authenticationFailure("installation_token_response_invalid");
+      }
       return body.token;
     } catch (error) {
       if (error instanceof AdminError) throw error;
-      throw new AdminError("github_authentication_failure", 502, "GitHub App installation authentication failed");
+      throw authenticationFailure("installation_token_response_invalid");
     }
   }
 

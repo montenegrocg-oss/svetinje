@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { generateKeyPairSync } from "node:crypto";
 import test from "node:test";
-import { exportJWK, generateKeyPair, SignJWT } from "jose";
+import { exportJWK, generateKeyPair, jwtVerify, SignJWT } from "jose";
 import { parse } from "yaml";
 import { authenticateRequest } from "../src/auth.ts";
 import { AdminError, errorResponse } from "../src/errors.ts";
@@ -87,6 +87,56 @@ async function withAccessJwks(jwk, operation) {
   } finally {
     globalThis.fetch = originalFetch;
   }
+}
+
+function createGitHubAppKeyPair(type) {
+  const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
+  return {
+    privateKeyPem: privateKey.export({ type, format: "pem" }).toString(),
+    publicKey,
+  };
+}
+
+async function verifyGitHubAppKey(privateKeySecret, publicKey) {
+  const expectedNow = Math.floor(Date.parse("2026-08-13T09:00:00Z") / 1000);
+  let appJwt;
+  const repository = new GitHubRepository({
+    env: {
+      ...env,
+      GITHUB_APP_ID: "123",
+      GITHUB_APP_INSTALLATION_ID: "456",
+      GITHUB_APP_PRIVATE_KEY: privateKeySecret,
+    },
+    fetchImpl: async (url, init = {}) => {
+      const pathname = new URL(url).pathname;
+      if (pathname === "/app/installations/456/access_tokens") {
+        const authorization = new Headers(init.headers).get("authorization");
+        assert.match(authorization ?? "", /^Bearer /);
+        appJwt = authorization.slice("Bearer ".length);
+        return Response.json({ token: "installation-token" }, { status: 201 });
+      }
+      if (pathname.endsWith("/git/ref/heads/editorial%2Fwork")) {
+        return Response.json({ object: { sha: "a".repeat(40) } });
+      }
+      if (pathname.endsWith(`/git/commits/${"a".repeat(40)}`)) {
+        return Response.json({ tree: { sha: "b".repeat(40) } });
+      }
+      throw new Error(`Unexpected request ${pathname}`);
+    },
+    now: () => Date.parse("2026-08-13T09:00:00Z"),
+  });
+
+  await repository.readBranchState("editorial/work");
+  assert.equal(typeof appJwt, "string");
+  const { payload, protectedHeader } = await jwtVerify(appJwt, publicKey, {
+    algorithms: ["RS256"],
+    issuer: "123",
+    currentDate: new Date("2026-08-13T09:00:00Z"),
+  });
+  assert.equal(protectedHeader.alg, "RS256");
+  assert.equal(payload.iat, expectedNow - 30);
+  assert.equal(payload.exp, expectedNow + 540);
+  return appJwt;
 }
 
 test("writes fail closed without a non-main editorial branch", () => {
@@ -226,6 +276,112 @@ test("serialized API errors never disclose secrets or raw internal messages", as
   assert.equal(response.status, 502);
   assert.doesNotMatch(serialized, new RegExp(secret));
   assert.doesNotMatch(serialized, /GitHub rejected/);
+  assert.match(serialized, /github_authentication_failure/);
+});
+
+test("GitHub-style PKCS#1 private key signs the App JWT", async () => {
+  const { privateKeyPem, publicKey } = createGitHubAppKeyPair("pkcs1");
+  await verifyGitHubAppKey(privateKeyPem, publicKey);
+});
+
+test("PKCS#8 private key continues to sign the App JWT", async () => {
+  const { privateKeyPem, publicKey } = createGitHubAppKeyPair("pkcs8");
+  await verifyGitHubAppKey(privateKeyPem, publicKey);
+});
+
+test("GitHub App private key secret normalizes literal newline sequences", async () => {
+  const { privateKeyPem, publicKey } = createGitHubAppKeyPair("pkcs1");
+  await verifyGitHubAppKey(privateKeyPem.replaceAll("\n", "\\n"), publicKey);
+});
+
+test("unsupported GitHub App PEM headers fail closed before any request", async () => {
+  let fetchCalls = 0;
+  const repository = new GitHubRepository({
+    env: {
+      ...env,
+      GITHUB_APP_ID: "123",
+      GITHUB_APP_INSTALLATION_ID: "456",
+      GITHUB_APP_PRIVATE_KEY: "-----BEGIN EC PRIVATE KEY-----\nunsupported\n-----END EC PRIVATE KEY-----",
+    },
+    fetchImpl: async () => {
+      fetchCalls += 1;
+      return Response.json({});
+    },
+  });
+
+  await assert.rejects(
+    () => repository.readBranchState("editorial/work"),
+    (error) => error.code === "github_authentication_failure" && error.message === "private_key_import_failed",
+  );
+  assert.equal(fetchCalls, 0);
+});
+
+test("GitHub installation token failures retain safe internal diagnostics", async () => {
+  const { privateKeyPem } = createGitHubAppKeyPair("pkcs8");
+  for (const [tokenResponse, expectedReason] of [
+    [new Response(null, { status: 401 }), "installation_token_http_failure"],
+    [Response.json({ token: "" }, { status: 201 }), "installation_token_response_invalid"],
+  ]) {
+    const repository = new GitHubRepository({
+      env: {
+        ...env,
+        GITHUB_APP_ID: "123",
+        GITHUB_APP_INSTALLATION_ID: "456",
+        GITHUB_APP_PRIVATE_KEY: privateKeyPem,
+      },
+      fetchImpl: async () => tokenResponse.clone(),
+    });
+    await assert.rejects(
+      () => repository.readBranchState("editorial/work"),
+      (error) => error.code === "github_authentication_failure" && error.message === expectedReason,
+    );
+  }
+});
+
+test("GitHub authentication failures do not log or publicly disclose keys, JWTs, or tokens", async () => {
+  const { privateKeyPem } = createGitHubAppKeyPair("pkcs1");
+  const installationToken = "installation-token-secret-value";
+  let appJwt = "";
+  const logged = [];
+  const originalConsole = { log: console.log, warn: console.warn, error: console.error };
+  console.log = (...values) => logged.push(values);
+  console.warn = (...values) => logged.push(values);
+  console.error = (...values) => logged.push(values);
+
+  let failure;
+  try {
+    const repository = new GitHubRepository({
+      env: {
+        ...env,
+        GITHUB_APP_ID: "123",
+        GITHUB_APP_INSTALLATION_ID: "456",
+        GITHUB_APP_PRIVATE_KEY: privateKeyPem,
+      },
+      fetchImpl: async (url, init = {}) => {
+        const pathname = new URL(url).pathname;
+        if (pathname === "/app/installations/456/access_tokens") {
+          appJwt = new Headers(init.headers).get("authorization")?.slice("Bearer ".length) ?? "";
+          return Response.json({ token: installationToken }, { status: 201 });
+        }
+        return Response.json({}, { status: 401 });
+      },
+    });
+    await repository.readBranchState("editorial/work");
+  } catch (error) {
+    failure = error;
+  } finally {
+    console.log = originalConsole.log;
+    console.warn = originalConsole.warn;
+    console.error = originalConsole.error;
+  }
+
+  assert.equal(failure?.code, "github_authentication_failure");
+  assert.equal(logged.length, 0);
+  assert.notEqual(appJwt, "");
+  const serialized = await errorResponse(failure).text();
+  assert.doesNotMatch(serialized, new RegExp(privateKeyPem.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.doesNotMatch(serialized, new RegExp(appJwt.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.doesNotMatch(serialized, new RegExp(installationToken));
   assert.match(serialized, /github_authentication_failure/);
 });
 
