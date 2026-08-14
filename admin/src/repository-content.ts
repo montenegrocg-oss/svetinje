@@ -1,4 +1,5 @@
 import { parse, stringify } from "yaml";
+import { parseEditorialPreviewRegistry } from "../../src/lib/content/editorial-preview-eligibility.ts";
 import { resolveMediaUrl } from "../../src/lib/media-url.ts";
 import { PLACE_AREAS } from "../../src/lib/place-areas.ts";
 import { AdminError, internalFailure } from "./errors.ts";
@@ -78,6 +79,9 @@ export interface EditablePlaceRecord {
   state: BranchState;
   schemas: { common: Record<string, any>; media: Record<string, any>; place: Record<string, any>; narrative: Record<string, any> };
   rawMedia: Array<{ path: string; record: Record<string, any> }>;
+  previewPlaceIds: string[];
+  knownSourceIds: ReadonlySet<string>;
+  repositoryPaths: ReadonlySet<string>;
 }
 
 const blob = (tree: TreeEntry[], path: string) => tree.find((entry) => entry.type === "blob" && entry.path === path);
@@ -200,11 +204,18 @@ async function loadContext(repository: GitRepository, branch: string) {
   } catch {
     throw internalFailure("catalog_tree_processing_failed");
   }
+  let previewPlaceIds: string[];
+  try {
+    previewPlaceIds = parseEditorialPreviewRegistry(previewData);
+  } catch {
+    throw internalFailure("catalog_tree_processing_failed");
+  }
   return {
     state,
     tree,
     options: schemaEnums(placeSchema, narrativeSchema, commonSchema),
-    previewIds: new Set(Array.isArray(previewData.place_ids) ? previewData.place_ids.filter((id: unknown): id is string => typeof id === "string") : []),
+    previewIds: new Set(previewPlaceIds),
+    previewPlaceIds,
     schemas: { common: commonSchema, media: mediaSchema, place: placeSchema, narrative: narrativeSchema },
   };
 }
@@ -253,12 +264,13 @@ export async function loadAdminRepository(repository: GitRepository, branch: str
 }
 
 export async function loadEditablePlace(repository: GitRepository, branch: string, id: string): Promise<EditablePlaceRecord> {
-  const { state, tree, options, previewIds, schemas } = await loadContext(repository, branch);
+  const { state, tree, options, previewIds, previewPlaceIds, schemas } = await loadContext(repository, branch);
   const placeEntry = blob(tree, `content/places/${id}/place.yaml`);
   const narrativeEntry = blob(tree, `content/places/${id}/narratives/sr.md`);
   if (!placeEntry || !narrativeEntry) throw new AdminError("not_found", 404, "Place does not exist");
   const mediaEntries = tree.filter((entry) => entry.type === "blob" && /^content\/media\/[^/]+\.ya?ml$/.test(entry.path));
-  const contents = await readBlobContents(repository, [placeEntry, narrativeEntry, ...mediaEntries]);
+  const sourceEntries = tree.filter((entry) => entry.type === "blob" && /^content\/sources\/[^/]+\.ya?ml$/.test(entry.path));
+  const contents = await readBlobContents(repository, [placeEntry, narrativeEntry, ...mediaEntries, ...sourceEntries]);
   const rawPlace = parseCatalogYaml(contentFor(contents, placeEntry));
   const parsedNarrative = parseNarrative(contentFor(contents, narrativeEntry));
   const rawNarrative = parsedNarrative.frontMatter;
@@ -269,6 +281,10 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
     name: String(entry.name ?? ""), context: String(entry.context ?? ""), verificationStatus: String(entry.verification_status ?? "requires-verification"),
   })) : [];
   const rawMedia = mediaEntries.map((entry) => ({ path: entry.path, record: parseCatalogYaml(contentFor(contents, entry)) }));
+  const knownSourceIds = new Set(sourceEntries.flatMap((entry) => {
+    const source = parseCatalogYaml(contentFor(contents, entry));
+    return typeof source.id === "string" ? [source.id] : [];
+  }));
   const placeMedia = rawMedia.filter(({ record }) => Array.isArray(record.related_place_ids) && record.related_place_ids.includes(id));
   const mediaOrder = Array.isArray(rawPlace.relationships?.media_ids)
     ? rawPlace.relationships.media_ids.filter((value: unknown): value is string => typeof value === "string")
@@ -304,6 +320,9 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
   const postalAddress = factValue(rawPlace.location?.postal_address);
   return {
     rawPlace, rawNarrative, rawMedia, narrativeBody: parsedNarrative.body, options, branch, state, schemas,
+    previewPlaceIds,
+    knownSourceIds,
+    repositoryPaths: new Set(tree.filter((entry) => entry.type === "blob").map((entry) => entry.path)),
     place: {
       id,
       preferredName: String(rawNarrative.preferred_name ?? id),

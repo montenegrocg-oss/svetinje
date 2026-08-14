@@ -2,7 +2,7 @@ import { authenticateRequest } from "./auth.ts";
 import { AdminError, errorResponse } from "./errors.ts";
 import { GitHubRepository } from "./github.ts";
 import { deletePlacePhoto, MAX_PHOTO_COUNT, MAX_UPLOAD_BYTES, updatePlacePhoto, uploadPlacePhotos } from "./media.ts";
-import { createPlace, getEditablePlace, getPlace, listPlaces, updatePlace } from "./service.ts";
+import { createPlace, getEditablePlace, getPlace, listPlaces, updatePlace, updatePlacePreview } from "./service.ts";
 import type { AdminEnv } from "./types.ts";
 import { dashboardPage, editPlacePage, newPlacePage, placePage, placesPage } from "./ui.ts";
 
@@ -78,6 +78,11 @@ export async function handleRequest(request: Request, env: AdminEnv): Promise<Re
     if (request.method === "DELETE" && apiPhotoMatch?.[1] && apiPhotoMatch[2]) {
       requireSameOrigin(request);
       return Response.json(await deletePlacePhoto(repository, env, session, apiPhotoMatch[1], apiPhotoMatch[2], await jsonBody(request)), { headers: JSON_HEADERS });
+    }
+    const apiPreviewMatch = url.pathname.match(/^\/api\/places\/([a-z0-9]+(?:-[a-z0-9]+)*)\/preview$/);
+    if (request.method === "PATCH" && apiPreviewMatch?.[1]) {
+      requireSameOrigin(request);
+      return Response.json(await updatePlacePreview(repository, env, session, apiPreviewMatch[1], await jsonBody(request)), { headers: JSON_HEADERS });
     }
     const apiPlaceMatch = url.pathname.match(/^\/api\/places\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
     if (request.method === "GET" && apiPlaceMatch?.[1]) {

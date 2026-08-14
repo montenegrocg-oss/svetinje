@@ -281,13 +281,18 @@ test("Access JWT issuer, audience, and signature validation remain fail closed",
 });
 
 test("write endpoint rejects cross-origin JSON before any GitHub operation", async () => {
-  const response = await handleRequest(new Request("https://admin.example.test/api/places", {
-    method: "POST",
-    headers: { "content-type": "application/json", origin: "https://attacker.example" },
-    body: JSON.stringify(validBody),
-  }), { ENVIRONMENT: "development", DEV_AUTH_BYPASS: "true", GITHUB_EDITORIAL_BRANCH: "editorial/work" });
-  assert.equal(response.status, 403);
-  assert.equal((await response.json()).error.code, "invalid_form_data");
+  for (const [url, method, body] of [
+    ["https://admin.example.test/api/places", "POST", validBody],
+    ["https://admin.example.test/api/places/existing-place/preview", "PATCH", { expectedHeadSha: "a".repeat(40), enabled: true }],
+  ]) {
+    const response = await handleRequest(new Request(url, {
+      method,
+      headers: { "content-type": "application/json", origin: "https://attacker.example" },
+      body: JSON.stringify(body),
+    }), { ENVIRONMENT: "development", DEV_AUTH_BYPASS: "true", GITHUB_EDITORIAL_BRANCH: "editorial/work" });
+    assert.equal(response.status, 403);
+    assert.equal((await response.json()).error.code, "invalid_form_data");
+  }
 });
 
 test("serialized API errors never disclose secrets or raw internal messages", async () => {

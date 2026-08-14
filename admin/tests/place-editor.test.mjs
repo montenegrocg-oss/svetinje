@@ -4,7 +4,7 @@ import test from "node:test";
 import { parse } from "yaml";
 import { updateCanonicalPlace } from "../src/place-editor.ts";
 import { loadEditablePlace, parseNarrative } from "../src/repository-content.ts";
-import { updatePlace } from "../src/service.ts";
+import { updatePlace, updatePlacePreview } from "../src/service.ts";
 import { editPlacePage } from "../src/ui.ts";
 
 const HEAD = "a".repeat(40);
@@ -112,6 +112,24 @@ class RoundTripRepository extends Repository {
   }
 }
 
+class PreviewRoundTripRepository extends Repository {
+  headSha = HEAD;
+  commitCount = 0;
+  constructor(initialIds = []) {
+    super();
+    this.blobs.preview = JSON.stringify({ place_ids: initialIds });
+  }
+  async readBranchState() { return { headSha: this.headSha, treeSha: TREE }; }
+  async commitFilesAtomic(input) {
+    this.committed = input;
+    this.commitCount += 1;
+    assert.deepEqual(input.files.map(({ path }) => path), ["validation/editorial-preview.json"]);
+    this.blobs.preview = input.files[0].content;
+    this.headSha = this.commitCount.toString(16).padStart(40, "0");
+    return { commitSha: this.headSha, branch: input.branch };
+  }
+}
+
 const env = { GITHUB_EDITORIAL_BRANCH: "editorial/work" };
 const session = { subject: "user", email: "editor@example.com", actor: "editor-user", developmentBypass: false };
 const body = (place) => ({
@@ -129,6 +147,63 @@ test("GET editable model derives schema options and preserves narrative structur
   assert.equal(model.place.inPreview, true);
   assert.equal("placeSourceIds" in model.place, false);
   assert.equal("sourceIds" in model.place.alternateNames[0], false);
+});
+
+test("editorial preview add, duplicate add, remove, and duplicate remove stay atomic and canonical", async () => {
+  const repository = new PreviewRoundTripRepository();
+  const added = await updatePlacePreview(repository, env, session, "existing-place", { expectedHeadSha: HEAD, enabled: true });
+  assert.equal(added.inPreview, true);
+  assert.equal(added.unchanged, false);
+  assert.equal(repository.commitCount, 1);
+  assert.equal(repository.committed.message, "Add existing-place to editorial preview");
+  assert.deepEqual(JSON.parse(repository.blobs.preview), { place_ids: ["existing-place"] });
+
+  const duplicateAdd = await updatePlacePreview(repository, env, session, "existing-place", { expectedHeadSha: repository.headSha, enabled: true });
+  assert.equal(duplicateAdd.unchanged, true);
+  assert.equal(repository.commitCount, 1);
+
+  const removed = await updatePlacePreview(repository, env, session, "existing-place", { expectedHeadSha: repository.headSha, enabled: false });
+  assert.equal(removed.inPreview, false);
+  assert.equal(removed.unchanged, false);
+  assert.equal(repository.commitCount, 2);
+  assert.equal(repository.committed.message, "Remove existing-place from editorial preview");
+  assert.deepEqual(JSON.parse(repository.blobs.preview), { place_ids: [] });
+  assert.equal(repository.committed.files.some(({ path }) => path.includes("content/places") || path.includes("content/media")), false);
+
+  const duplicateRemove = await updatePlacePreview(repository, env, session, "existing-place", { expectedHeadSha: repository.headSha, enabled: false });
+  assert.equal(duplicateRemove.unchanged, true);
+  assert.equal(repository.commitCount, 2);
+});
+
+test("editorial preview eligibility rejects incomplete and public-unsafe records", async () => {
+  const incomplete = new PreviewRoundTripRepository();
+  incomplete.blobs.narrative = NARRATIVE.replace("summary: Existing summary\n", "");
+  await assert.rejects(
+    () => updatePlacePreview(incomplete, env, session, "existing-place", { expectedHeadSha: HEAD, enabled: true }),
+    (error) => error.code === "invalid_form_data" && Boolean(error.fields?.summary),
+  );
+  assert.equal(incomplete.commitCount, 0);
+
+  const unsafe = new PreviewRoundTripRepository();
+  unsafe.blobs.place = PLACE.replace("publication_safety: public", "publication_safety: review-required");
+  await assert.rejects(
+    () => updatePlacePreview(unsafe, env, session, "existing-place", { expectedHeadSha: HEAD, enabled: true }),
+    (error) => error.code === "invalid_form_data" && Boolean(error.fields?.publicationSafety),
+  );
+  assert.equal(unsafe.commitCount, 0);
+});
+
+test("editorial preview updates reject stale HEAD and unknown places", async () => {
+  const repository = new PreviewRoundTripRepository();
+  await assert.rejects(
+    () => updatePlacePreview(repository, env, session, "existing-place", { expectedHeadSha: "f".repeat(40), enabled: true }),
+    (error) => error.code === "git_conflict" && error.status === 409,
+  );
+  await assert.rejects(
+    () => updatePlacePreview(repository, env, session, "missing-place", { expectedHeadSha: HEAD, enabled: true }),
+    (error) => error.code === "not_found" && error.status === 404,
+  );
+  assert.equal(repository.commitCount, 0);
 });
 
 test("PATCH round trip updates basic, location, coordinates and narrative in one commit without data loss", async () => {
@@ -274,6 +349,35 @@ test("place editor exposes the photo workflow and no source-registry controls", 
   assert.match(clientSource, /0\.85/);
   assert.match(clientSource, /FormData/);
   assert.doesNotMatch(clientSource, /sourceIds|data-alt-sources/);
+});
+
+test("place editor exposes explicit editorial-preview management without production wording", async () => {
+  const record = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
+  const previewHtml = await editPlacePage(session, record).text();
+  assert.match(previewHtml, /data-preview-enabled="true"/);
+  assert.match(previewHtml, /У радном приказу/);
+  assert.match(previewHtml, /Уклони из радног приказа/);
+  assert.match(previewHtml, /Објекат ће нестати са радне верзије сајта, али његови подаци и фотографије остају сачувани у администрацији./);
+
+  const repository = new Repository();
+  repository.blobs.preview = JSON.stringify({ place_ids: [] });
+  const nonPreview = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  const nonPreviewHtml = await editPlacePage(session, nonPreview).text();
+  assert.match(nonPreviewHtml, /Објекат још није видљив на радној верзији сајта./);
+  assert.match(nonPreviewHtml, /Додај у радни приказ/);
+  assert.match(nonPreviewHtml, /Промјена ће бити видљива након завршетка радне изградње./);
+  const previewBlock = nonPreviewHtml.match(/<section class="panel preview-control"[\s\S]+?<\/section>/)?.[0] ?? "";
+  assert.doesNotMatch(previewBlock, /production|publication/i);
+
+  const [uiSource, clientSource] = await Promise.all([
+    readFile(new URL("../src/ui.ts", import.meta.url), "utf8"),
+    readFile(new URL("../client/editor.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(uiSource, /У радном приказу/);
+  assert.match(uiSource, /Није у радном приказу/);
+  assert.match(clientSource, /\/api\/places\/\$\{encodeURIComponent\(form\.dataset\.placeId/);
+  assert.match(clientSource, /Садржај је у међувремену измијењен\. Освјежите страницу и покушајте поново\./);
+  assert.match(clientSource, /Нема промјена\./);
 });
 
 test("admin media thumbnails use the scoped R2 CSP and relationship-order controls", async () => {

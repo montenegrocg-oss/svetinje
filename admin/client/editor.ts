@@ -32,6 +32,68 @@ const renderValidationErrors = (result: any) => {
   }
   summary.appendChild(list);
 };
+
+const previewControl = document.querySelector<HTMLElement>("[data-preview-control]");
+const previewToggle = previewControl?.querySelector<HTMLButtonElement>("[data-preview-toggle]");
+const previewBadge = previewControl?.querySelector<HTMLElement>("[data-preview-badge]");
+const previewDescription = previewControl?.querySelector<HTMLElement>("[data-preview-description]");
+const previewStatus = previewControl?.querySelector<HTMLElement>("[data-preview-status]");
+const previewDialog = previewControl?.querySelector<HTMLDialogElement>("[data-preview-dialog]");
+let previewEnabled = previewControl?.dataset.previewEnabled === "true";
+
+const renderPreviewState = (enabled: boolean) => {
+  previewEnabled = enabled;
+  if (previewControl) previewControl.dataset.previewEnabled = String(enabled);
+  if (previewBadge) previewBadge.hidden = !enabled;
+  if (previewDescription) {
+    previewDescription.hidden = enabled;
+    previewDescription.textContent = enabled ? "" : "Објекат још није видљив на радној верзији сајта.";
+  }
+  if (previewToggle) {
+    previewToggle.textContent = enabled ? "Уклони из радног приказа" : "Додај у радни приказ";
+    previewToggle.classList.toggle("secondary", enabled);
+  }
+};
+
+async function updatePreview(enabled: boolean) {
+  if (!previewToggle) return;
+  previewToggle.disabled = true;
+  if (previewStatus) previewStatus.textContent = enabled ? "Додавање у радни приказ…" : "Уклањање из радног приказа…";
+  if (summary) summary.textContent = "";
+  const response = await fetch(`/api/places/${encodeURIComponent(form!.dataset.placeId ?? "")}/preview`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ expectedHeadSha: form!.dataset.headSha, enabled }),
+  });
+  const result = await response.json() as any;
+  if (!response.ok) {
+    renderValidationErrors(result);
+    if (previewStatus) previewStatus.textContent = response.status === 409
+      ? "Садржај је у међувремену измијењен. Освјежите страницу и покушајте поново."
+      : "Промјена радног приказа није успјела.";
+  } else {
+    form!.dataset.headSha = result.commitSha;
+    renderPreviewState(result.inPreview === true);
+    if (previewStatus) previewStatus.textContent = result.unchanged
+      ? "Нема промјена."
+      : enabled
+        ? "Објекат је додат у радни приказ."
+        : "Објекат је уклоњен из радног приказа.";
+  }
+  previewToggle.disabled = false;
+}
+
+previewToggle?.addEventListener("click", () => {
+  if (!previewEnabled) {
+    void updatePreview(true);
+    return;
+  }
+  previewDialog?.showModal();
+});
+previewDialog?.addEventListener("close", () => {
+  if (previewDialog.returnValue === "confirm") void updatePreview(false);
+  previewDialog.returnValue = "";
+});
 const collectAlternateNames = () => [...form.querySelectorAll<HTMLElement>("[data-alternate-row]")].map((row) => ({
   name: row.querySelector<HTMLInputElement>("[data-alt-name]")?.value ?? "",
   context: row.querySelector<HTMLTextAreaElement>("[data-alt-context]")?.value ?? "",

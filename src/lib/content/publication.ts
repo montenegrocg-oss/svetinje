@@ -5,6 +5,10 @@ import { buildCatalogueSearchText } from "../catalogue-search.ts";
 import { resolveMediaUrl } from "../media-url.ts";
 import type { PlaceAreaId } from "../place-areas.ts";
 import { getPlaceArea, isPlaceAreaId } from "../place-areas.ts";
+import {
+  editorialPreviewEligibilityErrors,
+  parseEditorialPreviewRegistry,
+} from "./editorial-preview-eligibility.ts";
 
 type ReviewRole = "publishing" | "factual" | "ecclesiastical" | "sr-language" | "media-rights";
 
@@ -470,20 +474,11 @@ async function loadPreviewAllowlist(root: string, knownPlaceIds: Set<string>): P
   } catch (error) {
     throw new Error(`Editorial preview validation failed: cannot read ${file}: ${error instanceof Error ? error.message : String(error)}`);
   }
-  assertPreviewField(isObject(value), "validation/editorial-preview.json must contain a JSON object");
-  assertPreviewField(
-    Object.keys(value).length === 1 && Object.hasOwn(value, "place_ids"),
-    "validation/editorial-preview.json may contain only place_ids",
-  );
-  assertPreviewField(Array.isArray(value.place_ids), "place_ids must be an array");
-  assertPreviewField(
-    value.place_ids.every((id) => typeof id === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)),
-    "place_ids must contain valid lowercase ASCII kebab-case entity IDs",
-  );
-  const ids = value.place_ids as string[];
-  assertPreviewField(new Set(ids).size === ids.length, "place_ids must not contain duplicates");
-  for (const id of ids) assertPreviewField(knownPlaceIds.has(id), `unknown allowlisted place ID ${id}`);
-  return ids;
+  try {
+    return parseEditorialPreviewRegistry(value, knownPlaceIds);
+  } catch (error) {
+    throw new Error(`Editorial preview validation failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 export function isEditorialPreviewBuild(): boolean {
@@ -497,6 +492,7 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
     narratives.filter((narrative) => narrative.locale === "sr").map((narrative) => [narrative.place_id, narrative]),
   );
   const sourceById = new Map(sources.map((source) => [source.id, source]));
+  const knownSourceIds = new Set(sourceById.keys());
   const allowlist = await loadPreviewAllowlist(root, new Set(placeById.keys()));
 
   return Promise.all(allowlist.map(async (id) => {
@@ -504,20 +500,28 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
     const narrative = narrativeByPlace.get(id);
     assertPreviewField(place, `missing place record for ${id}`);
     assertPreviewField(narrative, `missing Serbian narrative for ${id}`);
-    assertPreviewField(!["archived", "rejected"].includes(place.editorial_status), `${id} is not eligible for preview`);
-    assertPreviewField(!["archived", "rejected"].includes(narrative.editorial_status), `${id} narrative is not eligible for preview`);
-    assertPreviewField(narrative.translation_status === "source", `${id} Serbian narrative must remain the source text`);
-    assertPreviewField(typeof narrative.slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(narrative.slug), `${id} requires a valid Serbian slug`);
-    assertPreviewField(typeof narrative.preferred_name === "string" && narrative.preferred_name.trim(), `${id} requires a preferred Serbian name`);
-    assertPreviewField(typeof narrative.summary === "string" && narrative.summary.trim(), `${id} requires a Serbian summary`);
-    assertPreviewField(typeof place.place_type?.value === "string", `${id} requires a place type`);
+    const eligibilityErrors = editorialPreviewEligibilityErrors({
+      id,
+      place,
+      narrative,
+      narrativeBody: narrative.body,
+      mediaRecords: media,
+      knownSourceIds,
+    });
+    assertPreviewField(
+      Object.keys(eligibilityErrors).length === 0,
+      `${id} is not eligible for preview: ${Object.values(eligibilityErrors).join(" ")}`,
+    );
+    const slug = narrative.slug;
+    const preferredName = narrative.preferred_name;
+    const summary = narrative.summary;
+    const placeType = place.place_type?.value;
+    assertPreviewField(typeof slug === "string", `${id} requires a valid Serbian slug`);
+    assertPreviewField(typeof preferredName === "string", `${id} requires a preferred Serbian name`);
+    assertPreviewField(typeof summary === "string", `${id} requires a Serbian summary`);
+    assertPreviewField(typeof placeType === "string", `${id} requires a place type`);
 
     const coordinates = place.location?.coordinates;
-    if (coordinates) {
-      assertPreviewField(coordinates.publication_safety === "public", id + " coordinates must be public-safe");
-      assertPreviewField(Number.isFinite(coordinates.latitude) && Number.isFinite(coordinates.longitude), id + " requires valid coordinates");
-      assertPreviewField(typeof coordinates.accuracy === "string", id + " requires a coordinate accuracy classification");
-    }
     const sourceIds = [...new Set([...(place.source_ids ?? []), ...(narrative.source_ids ?? [])])];
     const registeredSources = sourceIds.map((sourceId) => {
       const source = sourceById.get(sourceId);
@@ -537,23 +541,23 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
     const mediaOrder = Array.isArray((place.relationships as { media_ids?: unknown } | undefined)?.media_ids)
       ? (place.relationships as { media_ids: unknown[] }).media_ids.filter((value): value is string => typeof value === "string")
       : [];
-    const previewMedia = await previewMediaForPlace(root, place.id, narrative.preferred_name, media, "editorial-preview", policy, mediaOrder);
+    const previewMedia = await previewMediaForPlace(root, place.id, preferredName, media, "editorial-preview", policy, mediaOrder);
     return {
       id: place.id,
-      slug: narrative.slug,
-      name: narrative.preferred_name,
-      summary: narrative.summary,
-      placeType: place.place_type.value,
+      slug,
+      name: preferredName,
+      summary,
+      placeType,
       ...(browseAreaId ? { browseAreaId } : {}),
       catalogueSearchText: buildCatalogueSearchText({
-        name: narrative.preferred_name,
+        name: preferredName,
         alternateNames: (narrative.alternate_names ?? []).flatMap((alternate) => alternate.name ?? []),
         municipality,
         settlement,
         browseAreaLabel: getPlaceArea(browseAreaId)?.label,
-        summary: narrative.summary,
+        summary,
       }),
-      typeLabel: placeTypeLabel(place.place_type.value),
+      typeLabel: placeTypeLabel(placeType),
       ...(municipality !== undefined ? { municipality } : {}),
       ...(settlement !== undefined ? { settlement } : {}),
       ...(place.location?.postal_address?.value !== undefined ? { address: place.location.postal_address.value } : {}),
@@ -568,8 +572,8 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       sourceIds,
       sources: registeredSources,
       searchText: [
-        narrative.preferred_name,
-        narrative.summary,
+        preferredName,
+        summary,
         ...(narrative.alternate_names ?? []).map((alternate) => alternate.name ?? ""),
         narrative.body,
         municipality,
