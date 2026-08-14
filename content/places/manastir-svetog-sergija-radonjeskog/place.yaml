@@ -5,10 +5,12 @@ place_type:
   value: monastery
   verification:
     status: requires-verification
-relationships: {}
+relationships:
+  media_ids:
+    - photo-manastir-svetog-sergija-radonjeskog-37ce7059d211
 approvals: []
 audit:
   created_at: 2026-08-14T20:43:46.009Z
   created_by: montenegro-cg
-  updated_at: 2026-08-14T20:43:46.009Z
+  updated_at: 2026-08-14T22:19:41Z
   updated_by: montenegro-cg
