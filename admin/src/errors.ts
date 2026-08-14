@@ -30,47 +30,6 @@ export class AdminError extends Error {
   }
 }
 
-const GITHUB_AUTHENTICATION_STAGES = new Set([
-  "configuration_incomplete",
-  "private_key_import_failed",
-  "app_jwt_sign_failed",
-  "installation_token_http_failure",
-  "installation_token_response_invalid",
-  "repository_request_rejected",
-]);
-
-const GITHUB_OPERATIONS = new Set([
-  "branch_ref",
-  "commit",
-  "tree",
-  "blob",
-  "create_tree",
-  "create_commit",
-  "update_ref",
-]);
-
-const GITHUB_CONFIGURATION_NAMES = new Set([
-  "GITHUB_APP_ID",
-  "GITHUB_APP_INSTALLATION_ID",
-  "GITHUB_APP_PRIVATE_KEY",
-]);
-
-const INTERNAL_DIAGNOSTIC_STAGES = new Set([
-  "repository_request_failed",
-  "catalog_tree_processing_failed",
-  "catalog_blob_decode_failed",
-  "catalog_yaml_parse_failed",
-  "schema_compile_failed",
-  "dashboard_render_failed",
-]);
-
-const INTERNAL_READ_OPERATIONS = new Set([
-  "branch_ref",
-  "commit",
-  "tree",
-  "blob",
-]);
-
 export type InternalDiagnosticStage =
   | "repository_request_failed"
   | "catalog_tree_processing_failed"
@@ -84,49 +43,6 @@ export function internalFailure(
   fields: { status?: number; operation?: "branch_ref" | "commit" | "tree" | "blob" } = {},
 ): AdminError {
   return new AdminError("internal_error", 502, stage, { stage, ...fields });
-}
-
-function safeGitHubAuthenticationFields(
-  fields: Record<string, string | number | string[]> | undefined,
-): Record<string, string | number | string[]> | undefined {
-  const stage = typeof fields?.stage === "string" && GITHUB_AUTHENTICATION_STAGES.has(fields.stage)
-    ? fields.stage
-    : undefined;
-  if (!stage) return undefined;
-
-  const safe: Record<string, string | number | string[]> = { stage };
-  if (typeof fields?.status === "number" && Number.isInteger(fields.status) && fields.status >= 100 && fields.status <= 599) {
-    safe.status = fields.status;
-  }
-  if (typeof fields?.operation === "string" && GITHUB_OPERATIONS.has(fields.operation)) {
-    safe.operation = fields.operation;
-  }
-  if (stage === "configuration_incomplete" && Array.isArray(fields?.missing)) {
-    safe.missing = fields.missing.filter((name) => GITHUB_CONFIGURATION_NAMES.has(name));
-  }
-  return safe;
-}
-
-function safeInternalFields(
-  fields: Record<string, string | number | string[]> | undefined,
-): Record<string, string | number | string[]> | undefined {
-  const stage = typeof fields?.stage === "string" && INTERNAL_DIAGNOSTIC_STAGES.has(fields.stage)
-    ? fields.stage
-    : undefined;
-  if (!stage) return undefined;
-
-  const safe: Record<string, string | number | string[]> = { stage };
-  if (typeof fields?.status === "number" && Number.isInteger(fields.status) && fields.status >= 100 && fields.status <= 599) {
-    safe.status = fields.status;
-  }
-  if (
-    stage === "repository_request_failed"
-    && typeof fields?.operation === "string"
-    && INTERNAL_READ_OPERATIONS.has(fields.operation)
-  ) {
-    safe.operation = fields.operation;
-  }
-  return safe;
 }
 
 const SAFE_MESSAGES: Record<AdminErrorCode, string> = {
@@ -147,11 +63,9 @@ export function errorResponse(error: unknown): Response {
   const safe = error instanceof AdminError
     ? error
     : new AdminError("internal_error", 500, SAFE_MESSAGES.internal_error);
-  const fields = safe.code === "github_authentication_failure"
-    ? safeGitHubAuthenticationFields(safe.fields)
-    : safe.code === "internal_error"
-      ? safeInternalFields(safe.fields)
-      : safe.fields;
+  const fields = safe.code === "github_authentication_failure" || safe.code === "internal_error"
+    ? undefined
+    : safe.fields;
   return Response.json(
     { error: { code: safe.code, message: SAFE_MESSAGES[safe.code], ...(fields ? { fields } : {}) } },
     { status: safe.status, headers: { "cache-control": "no-store" } },

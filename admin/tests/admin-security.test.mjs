@@ -148,14 +148,14 @@ async function captureFailure(operation) {
   assert.fail("Expected operation to fail");
 }
 
-async function assertSafeGitHubAuthenticationFailure(error, expectedFields) {
+async function assertSafeGitHubAuthenticationFailure(error) {
   assert.equal(error?.code, "github_authentication_failure");
   const response = errorResponse(error);
   const body = await response.json();
   assert.equal(response.status, 502);
   assert.equal(body.error.code, "github_authentication_failure");
   assert.equal(body.error.message, "GitHub App аутентификација није успјела.");
-  assert.deepEqual(body.error.fields, expectedFields);
+  assert.deepEqual(Object.keys(body.error).sort(), ["code", "message"]);
 }
 
 test("writes fail closed without a non-main editorial branch", () => {
@@ -298,16 +298,13 @@ test("serialized API errors never disclose secrets or raw internal messages", as
   assert.match(serialized, /github_authentication_failure/);
 });
 
-test("incomplete GitHub App configuration reports only missing variable names", async () => {
+test("incomplete GitHub App configuration stays private", async () => {
   const repository = new GitHubRepository({
     env,
     fetchImpl: async () => assert.fail("Configuration failure must happen before fetch"),
   });
   const error = await captureFailure(() => repository.readBranchState("editorial/work"));
-  await assertSafeGitHubAuthenticationFailure(error, {
-    stage: "configuration_incomplete",
-    missing: ["GITHUB_APP_ID", "GITHUB_APP_INSTALLATION_ID", "GITHUB_APP_PRIVATE_KEY"],
-  });
+  await assertSafeGitHubAuthenticationFailure(error);
 });
 
 test("GitHub-style PKCS#1 private key signs the App JWT", async () => {
@@ -341,7 +338,7 @@ test("unsupported GitHub App PEM headers fail closed before any request", async 
   });
 
   const error = await captureFailure(() => repository.readBranchState("editorial/work"));
-  await assertSafeGitHubAuthenticationFailure(error, { stage: "private_key_import_failed" });
+  await assertSafeGitHubAuthenticationFailure(error);
   assert.equal(fetchCalls, 0);
 });
 
@@ -358,14 +355,14 @@ test("GitHub App JWT signing failures have a distinct safe stage", async () => {
     now: () => Number.NaN,
   });
   const error = await captureFailure(() => repository.readBranchState("editorial/work"));
-  await assertSafeGitHubAuthenticationFailure(error, { stage: "app_jwt_sign_failed" });
+  await assertSafeGitHubAuthenticationFailure(error);
 });
 
-test("GitHub installation token failures retain safe internal diagnostics", async () => {
+test("GitHub installation token failures keep internal diagnostics out of responses", async () => {
   const { privateKeyPem } = createGitHubAppKeyPair("pkcs8");
-  for (const [tokenResponse, expectedFields] of [
-    [new Response(null, { status: 401 }), { stage: "installation_token_http_failure", status: 401 }],
-    [Response.json({ token: "" }, { status: 201 }), { stage: "installation_token_response_invalid", status: 201 }],
+  for (const tokenResponse of [
+    new Response(null, { status: 401 }),
+    Response.json({ token: "" }, { status: 201 }),
   ]) {
     const repository = new GitHubRepository({
       env: {
@@ -377,7 +374,7 @@ test("GitHub installation token failures retain safe internal diagnostics", asyn
       fetchImpl: async () => tokenResponse.clone(),
     });
     const error = await captureFailure(() => repository.readBranchState("editorial/work"));
-    await assertSafeGitHubAuthenticationFailure(error, expectedFields);
+    await assertSafeGitHubAuthenticationFailure(error);
   }
 
   const networkRepository = new GitHubRepository({
@@ -390,7 +387,7 @@ test("GitHub installation token failures retain safe internal diagnostics", asyn
     fetchImpl: async () => { throw new Error("network unavailable"); },
   });
   const networkError = await captureFailure(() => networkRepository.readBranchState("editorial/work"));
-  await assertSafeGitHubAuthenticationFailure(networkError, { stage: "installation_token_http_failure" });
+  await assertSafeGitHubAuthenticationFailure(networkError);
 });
 
 test("GitHub authentication failures do not log or publicly disclose keys, JWTs, or tokens", async () => {
@@ -431,11 +428,7 @@ test("GitHub authentication failures do not log or publicly disclose keys, JWTs,
   }
 
   assert.equal(failure?.code, "github_authentication_failure");
-  await assertSafeGitHubAuthenticationFailure(failure, {
-    stage: "repository_request_rejected",
-    status: 401,
-    operation: "branch_ref",
-  });
+  await assertSafeGitHubAuthenticationFailure(failure);
   assert.equal(logged.length, 0);
   assert.notEqual(appJwt, "");
   const serialized = await errorResponse(failure).text();
@@ -445,7 +438,7 @@ test("GitHub authentication failures do not log or publicly disclose keys, JWTs,
   assert.match(serialized, /github_authentication_failure/);
 });
 
-test("GitHub authentication error serialization allows only approved diagnostic fields", async () => {
+test("GitHub authentication error serialization omits all diagnostic fields", async () => {
   const secret = "installation-token-secret-value";
   const response = errorResponse(new AdminError("github_authentication_failure", 502, secret, {
     stage: "repository_request_rejected",
@@ -458,11 +451,7 @@ test("GitHub authentication error serialization allows only approved diagnostic 
   const serialized = await response.text();
   assert.doesNotMatch(serialized, new RegExp(secret));
   const body = JSON.parse(serialized);
-  assert.deepEqual(body.error.fields, {
-    stage: "repository_request_rejected",
-    status: 403,
-    operation: "branch_ref",
-  });
+  assert.deepEqual(Object.keys(body.error).sort(), ["code", "message"]);
   assert.equal(body.error.message, "GitHub App аутентификација није успјела.");
 });
 
@@ -548,7 +537,7 @@ test("GitHub transport batches repository blobs through one GraphQL request", as
   assert.deepEqual(calls, ["/app/installations/456/access_tokens", "/graphql"]);
 });
 
-test("internal GitHub diagnostics expose only approved stage, status, and read operation", async () => {
+test("internal GitHub diagnostics are omitted from public responses", async () => {
   const secret = "private-response-material";
   const response = errorResponse(new AdminError("internal_error", 502, secret, {
     stage: "repository_request_failed",
@@ -559,14 +548,10 @@ test("internal GitHub diagnostics expose only approved stage, status, and read o
   }));
   const serialized = await response.text();
   assert.doesNotMatch(serialized, new RegExp(secret));
-  assert.deepEqual(JSON.parse(serialized).error.fields, {
-    stage: "repository_request_failed",
-    status: 503,
-    operation: "blob",
-  });
+  assert.deepEqual(Object.keys(JSON.parse(serialized).error).sort(), ["code", "message"]);
 });
 
-test("post-load internal diagnostics expose only fixed stage names", async () => {
+test("post-load internal diagnostic stages remain private", async () => {
   for (const stage of [
     "catalog_tree_processing_failed",
     "catalog_blob_decode_failed",
@@ -579,7 +564,7 @@ test("post-load internal diagnostics expose only fixed stage names", async () =>
       operation: "create_commit",
       privateKey: "unsafe detail",
     }));
-    assert.deepEqual((await response.json()).error.fields, { stage });
+    assert.deepEqual(Object.keys((await response.json()).error).sort(), ["code", "message"]);
   }
 });
 
