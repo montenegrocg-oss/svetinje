@@ -5,6 +5,8 @@ export type AdminErrorCode =
   | "unknown_browse_area"
   | "unsupported_narrative_section"
   | "duplicate_id"
+  | "protected_record"
+  | "deletion_blocked"
   | "invalid_editorial_branch"
   | "github_authentication_failure"
   | "git_conflict"
@@ -56,6 +58,8 @@ const SAFE_MESSAGES: Record<AdminErrorCode, string> = {
   unknown_browse_area: "Област није дио важећег каталога области.",
   unsupported_narrative_section: "Одељак текста није подржан канонском шемом.",
   duplicate_id: "Објекат са тим техничким ID-јем већ постоји.",
+  protected_record: "Одобрени или објављени објекти не могу се трајно брисати. За њих је потребан поступак архивирања.",
+  deletion_blocked: "Објекат се не може обрисати јер га користе други записи.",
   invalid_editorial_branch: "Уређивачка Git грана није безбједно конфигурисана.",
   github_authentication_failure: "GitHub App аутентификација није успјела.",
   git_conflict: "Уређивачка грана је у међувремену промијењена. Освјежите податке и покушајте поново.",

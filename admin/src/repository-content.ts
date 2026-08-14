@@ -84,6 +84,17 @@ export interface EditablePlaceRecord {
   repositoryPaths: ReadonlySet<string>;
 }
 
+export interface PlaceDeletionRecord {
+  branch: string;
+  state: BranchState;
+  tree: TreeEntry[];
+  rawPlace: Record<string, any>;
+  rawMedia: Array<{ path: string; record: Record<string, any> }>;
+  previewPlaceIds: string[];
+  ownedPaths: string[];
+  externalReferences: string[];
+}
+
 const blob = (tree: TreeEntry[], path: string) => tree.find((entry) => entry.type === "blob" && entry.path === path);
 
 export function parseNarrative(markdown: string): { frontMatter: Record<string, any>; body: string } {
@@ -348,5 +359,88 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
       mediaCount: media.length,
       inPreview: previewIds.has(id),
     },
+  };
+}
+
+const PLACE_REFERENCE_KEYS = new Set([
+  "place_id",
+  "place_ids",
+  "related_place_id",
+  "related_place_ids",
+  "parent_place_id",
+  "associated_entity_ids",
+]);
+
+function referenceValueContainsId(value: unknown, id: string): boolean {
+  if (value === id) return true;
+  if (Array.isArray(value)) return value.some((entry) => entry === id);
+  if (value && typeof value === "object" && "value" in value) {
+    return referenceValueContainsId((value as { value?: unknown }).value, id);
+  }
+  return false;
+}
+
+function structuredRecordReferencesPlace(value: unknown, id: string): boolean {
+  if (!value || typeof value !== "object") return false;
+  if (Array.isArray(value)) return value.some((entry) => structuredRecordReferencesPlace(entry, id));
+  for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
+    if (PLACE_REFERENCE_KEYS.has(key) && referenceValueContainsId(nested, id)) return true;
+    if (structuredRecordReferencesPlace(nested, id)) return true;
+  }
+  return false;
+}
+
+function parseStructuredDependency(path: string, content: string): Record<string, any> | undefined {
+  try {
+    if (/\.md$/i.test(path)) return parseNarrative(content).frontMatter;
+    if (/\.json$/i.test(path)) return JSON.parse(content) as Record<string, any>;
+    if (/\.ya?ml$/i.test(path)) return parse(content) as Record<string, any>;
+  } catch {
+    throw internalFailure("catalog_tree_processing_failed");
+  }
+  return undefined;
+}
+
+/**
+ * Loads only the repository facts required to safely delete a place. It is
+ * intentionally tolerant of legacy/schema-invalid research content and does
+ * not require a Serbian narrative or canonical validation.
+ */
+export async function loadPlaceDeletionRecord(repository: GitRepository, branch: string, id: string): Promise<PlaceDeletionRecord> {
+  const { state, tree, previewPlaceIds } = await loadContext(repository, branch);
+  const placePath = `content/places/${id}/place.yaml`;
+  const placeEntry = blob(tree, placePath);
+  if (!placeEntry) throw new AdminError("not_found", 404, "Place does not exist");
+
+  const placePrefix = `content/places/${id}/`;
+  const practicalPrefix = `content/practical/${id}/`;
+  const ownedEntries = tree.filter((entry) => entry.type === "blob" && (
+    entry.path.startsWith(placePrefix) || entry.path.startsWith(practicalPrefix)
+  ));
+  const mediaEntries = tree.filter((entry) => entry.type === "blob" && /^content\/media\/[^/]+\.ya?ml$/.test(entry.path));
+  const dependencyEntries = tree.filter((entry) => {
+    if (entry.type !== "blob" || !entry.path.startsWith("content/")) return false;
+    if (entry.path.startsWith(placePrefix) || entry.path.startsWith(practicalPrefix)) return false;
+    if (entry.path.startsWith("content/media/") || entry.path.startsWith("content/sources/")) return false;
+    if (/^content\/places\/[^/]+\/(?!place\.yaml$)/.test(entry.path)) return false;
+    return /\.(?:ya?ml|json|md)$/i.test(entry.path);
+  });
+  const contents = await readBlobContents(repository, [placeEntry, ...mediaEntries, ...dependencyEntries]);
+  const rawPlace = parseCatalogYaml(contentFor(contents, placeEntry));
+  const rawMedia = mediaEntries.map((entry) => ({ path: entry.path, record: parseCatalogYaml(contentFor(contents, entry)) }));
+  const externalReferences = dependencyEntries.flatMap((entry) => {
+    const record = parseStructuredDependency(entry.path, contentFor(contents, entry));
+    return record && structuredRecordReferencesPlace(record, id) ? [entry.path] : [];
+  });
+
+  return {
+    branch,
+    state,
+    tree,
+    rawPlace,
+    rawMedia,
+    previewPlaceIds,
+    ownedPaths: ownedEntries.map((entry) => entry.path),
+    externalReferences: [...new Set(externalReferences)].sort(),
   };
 }

@@ -68,7 +68,7 @@ pnpm --dir admin build
 - MapLibre coordinate picker bundled as a same-origin admin asset, with click/tap placement, draggable refinement, manual numeric inputs and point clearing;
 - Serbian narrative editor that retains canonical section IDs, order, source relationships and untouched Markdown blocks while allowing supported sections and paragraphs to be edited;
 - compact read-only source references and editorial-preview membership display;
-- JSON endpoints: `GET /api/session`, `GET /api/places`, `GET /api/places/:id`, `POST /api/places`, and `PATCH /api/places/:id`.
+- JSON endpoints: `GET /api/session`, `GET /api/places`, `GET /api/places/:id`, `POST /api/places`, `PATCH /api/places/:id`, and `DELETE /api/places/:id`.
 
 ## Existing-place saves
 
@@ -77,6 +77,14 @@ pnpm --dir admin build
 Unchanged facts retain their verification metadata exactly. A materially changed structured fact is reset to `requires-verification` without carrying stale field-level evidence. Creation audit metadata is preserved; update time and actor come from the authenticated session.
 
 The branch HEAD is checked before the commit and again by the non-force ref update. If it has moved, the API returns HTTP 409 and the editor keeps the local form values so the operator can review and reload instead of overwriting another change.
+
+## Permanent deletion of working records
+
+Hard deletion is available only for non-public working statuses: `research`, `draft`, `fact-review`, `ecclesiastical-review`, `language-review`, `needs-reverification`, `disputed`, and `rejected`. Records marked `approved` or `published` are blocked and require a future archival workflow instead.
+
+The operator must type the exact immutable place ID in the destructive dialog. The request also carries the current branch HEAD, and deletion fails with a conflict if the editorial branch has moved. External structured references from another place, route, news item, or entity block deletion.
+
+One atomic Git commit removes every blob below the place and practical-information directories, removes preview membership when present, deletes media metadata owned exclusively by the place, and detaches shared media without deleting it. Source records remain independent and are never removed automatically. Exclusive R2 objects are deleted only after the Git commit succeeds; an R2 cleanup failure is reported as a safe warning and never rolls Git back. The Git commit remains in repository history so an operator can restore deleted content manually through Git when necessary.
 
 ## Deferred
 

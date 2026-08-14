@@ -2,7 +2,7 @@ import { authenticateRequest } from "./auth.ts";
 import { AdminError, errorResponse } from "./errors.ts";
 import { GitHubRepository } from "./github.ts";
 import { deletePlacePhoto, MAX_PHOTO_COUNT, MAX_UPLOAD_BYTES, updatePlacePhoto, uploadPlacePhotos } from "./media.ts";
-import { createPlace, getEditablePlace, getPlace, listPlaces, updatePlace, updatePlacePreview } from "./service.ts";
+import { createPlace, deletePlace, getEditablePlace, getPlace, listPlaces, updatePlace, updatePlacePreview } from "./service.ts";
 import type { AdminEnv } from "./types.ts";
 import { dashboardPage, editPlacePage, newPlacePage, placePage, placesPage } from "./ui.ts";
 
@@ -93,6 +93,10 @@ export async function handleRequest(request: Request, env: AdminEnv): Promise<Re
       requireSameOrigin(request);
       return Response.json(await updatePlace(repository, env, session, apiPlaceMatch[1], await jsonBody(request)), { headers: JSON_HEADERS });
     }
+    if (request.method === "DELETE" && apiPlaceMatch?.[1]) {
+      requireSameOrigin(request);
+      return Response.json(await deletePlace(repository, env, session, apiPlaceMatch[1], await jsonBody(request)), { headers: JSON_HEADERS });
+    }
     if (request.method === "POST" && url.pathname === "/api/places") {
       requireSameOrigin(request);
       const result = await createPlace(repository, env, session, await jsonBody(request));
@@ -103,7 +107,10 @@ export async function handleRequest(request: Request, env: AdminEnv): Promise<Re
       return dashboardPage(session, await listPlaces(repository, env));
     }
     if (request.method === "GET" && url.pathname === "/places") {
-      return placesPage(session, await listPlaces(repository, env));
+      return placesPage(session, await listPlaces(repository, env), {
+        ...(url.searchParams.get("deleted") ? { deletedId: url.searchParams.get("deleted")! } : {}),
+        mediaCleanupIncomplete: url.searchParams.get("mediaCleanup") === "incomplete",
+      });
     }
     if (request.method === "GET" && url.pathname === "/places/new") {
       const snapshot = await listPlaces(repository, env);

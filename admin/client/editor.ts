@@ -94,6 +94,73 @@ previewDialog?.addEventListener("close", () => {
   if (previewDialog.returnValue === "confirm") void updatePreview(false);
   previewDialog.returnValue = "";
 });
+
+const deleteOpen = document.querySelector<HTMLButtonElement>("[data-delete-place-open]");
+const deleteDialog = document.querySelector<HTMLDialogElement>("[data-delete-place-dialog]");
+const deleteConfirmation = deleteDialog?.querySelector<HTMLInputElement>("[data-delete-place-confirmation]");
+const deleteCancel = deleteDialog?.querySelector<HTMLButtonElement>("[data-delete-place-cancel]");
+const deleteSubmit = deleteDialog?.querySelector<HTMLButtonElement>("[data-delete-place-submit]");
+const deleteStatus = deleteDialog?.querySelector<HTMLElement>("[data-delete-place-status]");
+const placeId = form.dataset.placeId ?? "";
+let deletePending = false;
+
+const resetDeleteDialog = () => {
+  if (deleteConfirmation) deleteConfirmation.value = "";
+  if (deleteSubmit) deleteSubmit.disabled = true;
+  if (deleteStatus) deleteStatus.textContent = "";
+};
+
+deleteOpen?.addEventListener("click", () => {
+  resetDeleteDialog();
+  deleteDialog?.showModal();
+  deleteConfirmation?.focus();
+});
+deleteConfirmation?.addEventListener("input", () => {
+  if (deleteSubmit) deleteSubmit.disabled = deletePending || deleteConfirmation.value !== placeId;
+});
+deleteCancel?.addEventListener("click", () => deleteDialog?.close());
+deleteDialog?.addEventListener("close", () => {
+  if (!deletePending) resetDeleteDialog();
+});
+deleteSubmit?.addEventListener("click", async () => {
+  if (deletePending || deleteConfirmation?.value !== placeId) return;
+  deletePending = true;
+  if (deleteOpen) deleteOpen.disabled = true;
+  deleteSubmit.disabled = true;
+  if (deleteStatus) deleteStatus.textContent = "Брисање…";
+  let completed = false;
+  try {
+    const response = await fetch(`/api/places/${encodeURIComponent(placeId)}`, {
+      method: "DELETE",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        expectedHeadSha: form.dataset.headSha,
+        confirmed: true,
+        confirmationId: placeId,
+      }),
+    });
+    const result = await response.json() as any;
+    if (!response.ok) {
+      if (deleteStatus) deleteStatus.textContent = result.error?.code === "git_conflict"
+        ? "Садржај је у међувремену измијењен. Освјежите страницу и покушајте поново."
+        : result.error?.message ?? "Објекат није обрисан.";
+      return;
+    }
+    dirty = false;
+    completed = true;
+    const query = new URLSearchParams({ deleted: placeId });
+    if (result.mediaCleanupIncomplete === true) query.set("mediaCleanup", "incomplete");
+    location.assign(`/places?${query.toString()}`);
+  } catch {
+    if (deleteStatus) deleteStatus.textContent = "Објекат није обрисан.";
+  } finally {
+    deletePending = false;
+    if (!completed) {
+      if (deleteOpen) deleteOpen.disabled = false;
+      if (deleteSubmit) deleteSubmit.disabled = deleteConfirmation?.value !== placeId;
+    }
+  }
+});
 const collectAlternateNames = () => [...form.querySelectorAll<HTMLElement>("[data-alternate-row]")].map((row) => ({
   name: row.querySelector<HTMLInputElement>("[data-alt-name]")?.value ?? "",
   context: row.querySelector<HTMLTextAreaElement>("[data-alt-context]")?.value ?? "",

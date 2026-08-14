@@ -98,8 +98,29 @@ function mediaBucket(env: AdminEnv): R2Bucket {
   return env.MEDIA_BUCKET;
 }
 
-function isSafeR2ObjectKey(value: string): boolean {
+export function isSafeR2ObjectKey(value: string): boolean {
   return value.startsWith("places/") && !value.startsWith("/") && !value.includes("../") && !value.includes("/..");
+}
+
+export async function deleteCommittedR2Objects(env: AdminEnv, objectKeys: string[]): Promise<{ failedCount: number }> {
+  const uniqueKeys = [...new Set(objectKeys)];
+  const safeKeys = uniqueKeys.filter(isSafeR2ObjectKey);
+  let failedCount = uniqueKeys.length - safeKeys.length;
+  if (!env.MEDIA_BUCKET) {
+    failedCount += safeKeys.length;
+  } else {
+    for (const objectKey of safeKeys) {
+      try {
+        await env.MEDIA_BUCKET.delete(objectKey);
+      } catch {
+        failedCount += 1;
+      }
+    }
+  }
+  if (failedCount > 0) {
+    console.warn(JSON.stringify({ event: "media.r2.delete_failed", object_count: failedCount }));
+  }
+  return { failedCount };
 }
 
 async function rollbackR2Objects(bucket: R2Bucket, objectKeys: string[], event: string): Promise<void> {

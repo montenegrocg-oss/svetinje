@@ -1,4 +1,5 @@
 import { AdminError } from "./errors.ts";
+import { stringify } from "yaml";
 import { editorialBranch } from "./github.ts";
 import {
   editorialPreviewEligibilityErrors,
@@ -10,10 +11,11 @@ import {
   validateNarrative,
   validatePlace,
 } from "./generated/canonical-validators.js";
-import { loadAdminRepository, loadEditablePlace } from "./repository-content.ts";
+import { loadAdminRepository, loadEditablePlace, loadPlaceDeletionRecord } from "./repository-content.ts";
 import { fingerprintCanonicalSchemas } from "./schema-fingerprint.ts";
 import { updateCanonicalPlace, type UpdatePlaceBody } from "./place-editor.ts";
-import type { AdminEnv, AdminSession, GitRepository } from "./types.ts";
+import { deleteCommittedR2Objects, isSafeR2ObjectKey } from "./media.ts";
+import type { AdminEnv, AdminSession, GitRepository, RepositoryFile } from "./types.ts";
 import { serializeResearchPlaceScaffold } from "../../scripts/lib/place-scaffold.mjs";
 
 interface CreatePlaceBody {
@@ -28,6 +30,23 @@ export interface UpdatePlacePreviewBody {
   expectedHeadSha?: unknown;
   enabled?: unknown;
 }
+
+export interface DeletePlaceBody {
+  expectedHeadSha?: unknown;
+  confirmed?: unknown;
+  confirmationId?: unknown;
+}
+
+const DELETABLE_STATUSES = new Set([
+  "research",
+  "draft",
+  "fact-review",
+  "ecclesiastical-review",
+  "language-review",
+  "needs-reverification",
+  "disputed",
+  "rejected",
+]);
 
 function asString(value: unknown): string | undefined {
   return typeof value === "string" ? value.trim() : undefined;
@@ -200,4 +219,111 @@ export async function updatePlacePreview(
     message: `${body.enabled ? "Add" : "Remove"} ${id} ${body.enabled ? "to" : "from"} editorial preview`,
   });
   return { commitSha: result.commitSha, branch: result.branch, placeId: id, inPreview: body.enabled, unchanged: false };
+}
+
+export async function deletePlace(
+  repository: GitRepository,
+  env: AdminEnv,
+  session: AdminSession,
+  id: string,
+  body: DeletePlaceBody,
+  now = new Date(),
+) {
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) {
+    throw new AdminError("invalid_form_data", 400, "Place ID is invalid");
+  }
+  const expectedHeadSha = asString(body.expectedHeadSha);
+  if (!expectedHeadSha || !/^[0-9a-f]{40}$/.test(expectedHeadSha)) {
+    throw new AdminError("invalid_form_data", 400, "Expected branch HEAD is invalid");
+  }
+  if (body.confirmed !== true || body.confirmationId !== id) {
+    throw new AdminError("invalid_form_data", 400, "Place deletion confirmation is invalid");
+  }
+
+  const branch = editorialBranch(env);
+  const record = await loadPlaceDeletionRecord(repository, branch, id);
+  if (expectedHeadSha !== record.state.headSha) {
+    throw new AdminError("git_conflict", 409, "Editorial branch moved before deletion");
+  }
+  const editorialStatus = typeof record.rawPlace.editorial_status === "string"
+    ? record.rawPlace.editorial_status
+    : "";
+  if (editorialStatus === "approved" || editorialStatus === "published") {
+    throw new AdminError("protected_record", 409, "Approved or published places must be archived");
+  }
+  if (!DELETABLE_STATUSES.has(editorialStatus)) {
+    throw new AdminError("invalid_form_data", 400, "Place editorial status cannot be deleted");
+  }
+  if (record.externalReferences.length > 0) {
+    throw new AdminError("deletion_blocked", 409, "Place is referenced by other repository records", {
+      dependencies: record.externalReferences,
+    });
+  }
+
+  const updatedAt = now.toISOString().replace(/\.\d{3}Z$/, "Z");
+  const fileMap = new Map<string, RepositoryFile>();
+  for (const path of record.ownedPaths) fileMap.set(path, { path, delete: true });
+  const r2ObjectKeys: string[] = [];
+  for (const target of record.rawMedia.filter(({ record: media }) => (
+    Array.isArray(media.related_place_ids) && media.related_place_ids.includes(id)
+  ))) {
+    const remainingPlaceIds = target.record.related_place_ids.filter((placeId: unknown) => placeId !== id);
+    const objectKey = typeof target.record.object_key === "string" ? target.record.object_key.replaceAll("\\", "/") : "";
+    const sharedObject = record.rawMedia.some(({ path, record: media }) => {
+      if (path === target.path || typeof media.object_key !== "string" || media.object_key.replaceAll("\\", "/") !== objectKey) return false;
+      const relatedPlaceIds = Array.isArray(media.related_place_ids) ? media.related_place_ids : [];
+      return !relatedPlaceIds.includes(id) || relatedPlaceIds.some((placeId: unknown) => placeId !== id);
+    });
+    if (remainingPlaceIds.length > 0) {
+      const media = structuredClone(target.record);
+      media.related_place_ids = remainingPlaceIds;
+      media.audit = { ...media.audit, updated_at: updatedAt, updated_by: session.actor };
+      fileMap.set(target.path, { path: target.path, content: stringify(media, { lineWidth: 0 }) });
+      continue;
+    }
+
+    fileMap.set(target.path, { path: target.path, delete: true });
+    if (!sharedObject && target.record.storage_provider === "cloudflare-r2") {
+      r2ObjectKeys.push(objectKey);
+    }
+    if (
+      !sharedObject
+      && target.record.storage_provider === "local-public"
+      && objectKey.startsWith("public/images/")
+      && !objectKey.includes("../")
+      && record.tree.some((entry) => entry.type === "blob" && entry.path === objectKey)
+    ) {
+      fileMap.set(objectKey, { path: objectKey, delete: true });
+    }
+  }
+
+  if (record.previewPlaceIds.includes(id)) {
+    const previewPlaceIds = record.previewPlaceIds.filter((placeId) => placeId !== id);
+    fileMap.set("validation/editorial-preview.json", {
+      path: "validation/editorial-preview.json",
+      content: serializeEditorialPreviewRegistry(previewPlaceIds),
+    });
+  }
+
+  const result = await repository.commitFilesAtomic({
+    branch,
+    expectedHeadSha,
+    baseTreeSha: record.state.treeSha,
+    files: [...fileMap.values()],
+    message: `Delete research place ${id}`,
+  });
+
+  const cleanup = await deleteCommittedR2Objects(env, r2ObjectKeys.filter(isSafeR2ObjectKey));
+  const unsafeObjectCount = r2ObjectKeys.filter((objectKey) => !isSafeR2ObjectKey(objectKey)).length;
+  if (unsafeObjectCount > 0) {
+    console.warn(JSON.stringify({ event: "media.r2.delete_failed", object_count: unsafeObjectCount }));
+  }
+  const mediaCleanupIncomplete = cleanup.failedCount + unsafeObjectCount > 0;
+  return {
+    commitSha: result.commitSha,
+    branch: result.branch,
+    placeId: id,
+    mediaCleanupIncomplete,
+    ...(mediaCleanupIncomplete ? { warnings: ["media_cleanup_incomplete"] } : {}),
+  };
 }
