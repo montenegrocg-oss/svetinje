@@ -4,16 +4,17 @@ import InterfaceIcon from "./InterfaceIcon.astro";
 interface Props {
   group: string;
   compact?: boolean;
+  includeRoutes?: boolean;
 }
 
-const { group, compact = false } = Astro.props;
+const { group, compact = false, includeRoutes = true } = Astro.props;
 const filters = [
   { id: "all", label: "Све", icon: "grid" as const },
   { id: "monasteries", label: "Манастири", icon: "monastery" as const },
   { id: "churches", label: "Цркве", icon: "church" as const },
   { id: "holy-places", label: "Света мјеста", icon: "place" as const },
   { id: "routes", label: "Поклоничке руте", icon: "route" as const },
-];
+].filter((filter) => includeRoutes || filter.id !== "routes");
 ---
 
 <div class:list={["filter-chips", { "filter-chips--compact": compact }]} data-filter-group={group} aria-label="Филтери каталога">

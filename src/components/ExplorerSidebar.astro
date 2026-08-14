@@ -39,7 +39,7 @@ const initialStatus = visiblePlaceCount === 1 && totalPlaces === 1
     </button>
   </form>
 
-  <FilterChips group="catalogue" />
+  <FilterChips group="catalogue" includeRoutes={false} />
   <div class="explorer-area-filter" data-explorer-area-filter hidden>
     <span>Област: <strong data-explorer-area-label></strong></span>
     <button type="button" data-clear-area-filter aria-label="Уклони филтер области">×</button>

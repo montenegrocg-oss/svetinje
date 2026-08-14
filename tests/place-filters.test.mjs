@@ -184,6 +184,40 @@ test("the explorer keeps one shared filter state across cards, controls, and map
   assert.doesNotMatch(routeBuilder, /data-filter=/);
 });
 
+test("mobile map and panel filters expose distinct responsive sets with one shared state", async () => {
+  const [explorer, sidebar, filters, controls, styles] = await Promise.all([
+    source("src/components/MapExplorer.astro"),
+    source("src/components/ExplorerSidebar.astro"),
+    source("src/components/FilterChips.astro"),
+    source("src/components/MapControls.astro"),
+    source("src/styles/global.css"),
+  ]);
+
+  for (const filter of ["all", "monasteries", "churches"]) {
+    assert.match(controls, new RegExp(`class="map-action" data-filter="${filter}"`));
+  }
+  assert.match(controls, /class="map-action map-action--mobile-hidden" data-filter="holy-places"/);
+  assert.match(controls, /data-filter="routes"/);
+  assert.match(controls, /map-action--primary map-action--mobile-hidden/);
+  assert.match(sidebar, /<FilterChips group="catalogue" includeRoutes=\{false\} \/>/);
+  assert.match(filters, /includeRoutes \|\| filter\.id !== "routes"/);
+  assert.match(filters, /id: "holy-places"/);
+
+  assert.match(explorer, /const filterButtons = \[\.\.\.document\.querySelectorAll<HTMLButtonElement>\("button\[data-filter\]"\)\]/);
+  assert.match(explorer, /filterButtons\.forEach\(\(button\) => \{[\s\S]*?aria-pressed[\s\S]*?activeFilter/);
+  assert.match(explorer, /filterButtons\.forEach\(\(button\) => \{[\s\S]*?activeFilter = filter;[\s\S]*?applyExplorerState\(true\)/);
+
+  const mobileRules = styles.match(/@media \(max-width: 47\.99rem\) \{([\s\S]*?)\n  \}\n\n  @media \(min-width: 48rem\)/)?.[1] ?? "";
+  assert.match(mobileRules, /\.map-actions\s*\{[\s\S]*?grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);[\s\S]*?overflow: visible/);
+  assert.match(mobileRules, /\.map-action--mobile-hidden\s*\{[\s\S]*?display: none/);
+  assert.match(mobileRules, /\.explorer-sidebar \.filter-chips\s*\{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);[\s\S]*?overflow: visible/);
+  assert.match(mobileRules, /\.map-action\s*\{[\s\S]*?min-height: 2\.75rem/);
+  assert.match(mobileRules, /\.explorer-sidebar \.filter-chip\s*\{[\s\S]*?min-height: 2\.75rem/);
+
+  const desktopRules = styles.match(/@media \(min-width: 48rem\) \{([\s\S]*?)\n  \}\n\n  @media \(min-width: 64rem\)/)?.[1] ?? "";
+  assert.doesNotMatch(desktopRules, /map-action--mobile-hidden/);
+});
+
 test("filtering has accessible preview feedback and catalogue pagination remains reusable", async () => {
   const [explorer, sidebar, catalogue, pagination, styles] = await Promise.all([
     source("src/components/MapExplorer.astro"),
