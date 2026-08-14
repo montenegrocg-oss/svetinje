@@ -3,7 +3,7 @@ import { cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/pr
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { parse } from "yaml";
+import { parse, stringify } from "yaml";
 import {
   loadEditorialPreviewPlaces,
   loadVisiblePlaces,
@@ -53,12 +53,42 @@ test("editorial preview inventory is driven by the canonical allowlist", async (
     assert.ok(place.summary.trim());
     assert.ok(place.placeType);
     assert.ok(place.narrativeSections.length > 0);
-    assert.ok(place.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length > 0)));
+    assert.ok(place.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length === 0)));
+    assert.ok(Array.isArray(place.galleryImages));
     if (place.previewImageSrc) {
       assert.match(place.previewImageSrc, /^\/images\/places\//);
       assert.ok(place.previewImageAlt?.trim());
     }
   }
+});
+
+test("Serbian narratives contain no visible source-registry footnotes", async () => {
+  const placeIds = await readdir(path.join(PROJECT_ROOT, "content", "places"));
+  assert.equal(placeIds.length, 25);
+  for (const placeId of placeIds) {
+    const narrative = await source(path.join("content", "places", placeId, "narratives", "sr.md"));
+    assert.doesNotMatch(narrative, /\[\^[^\]]+\]/, `${placeId} contains an inline source citation`);
+    assert.doesNotMatch(narrative, /^\s*:\s*\[[^\]]+\]\(https?:\/\//m, `${placeId} contains an orphaned source definition`);
+    assert.doesNotMatch(narrative, /Регистар извора/, `${placeId} contains a source registry label`);
+  }
+});
+
+test("editorial preview accepts canonical place and narrative records without source registries", async (t) => {
+  const root = await previewProject(t);
+  const placeFile = path.join(root, "content", "places", "podmaine", "place.yaml");
+  const narrativeFile = path.join(root, "content", "places", "podmaine", "narratives", "sr.md");
+  const place = parse(await readFile(placeFile, "utf8"));
+  delete place.source_ids;
+  await writeFile(placeFile, stringify(place), "utf8");
+  const markdown = await readFile(narrativeFile, "utf8");
+  const closing = markdown.indexOf("\n---\n", 4);
+  const frontMatter = parse(markdown.slice(4, closing));
+  delete frontMatter.source_ids;
+  delete frontMatter.section_sources;
+  for (const alternate of frontMatter.alternate_names ?? []) delete alternate.source_ids;
+  await writeFile(narrativeFile, `---\n${stringify(frontMatter)}---\n${markdown.slice(closing + 5)}`, "utf8");
+  const visible = await loadEditorialPreviewPlaces(root);
+  assert.ok(visible.some(({ id }) => id === "podmaine"));
 });
 
 test("preview allowlist rejects duplicates and unknown place IDs", async (t) => {
@@ -330,7 +360,8 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.match(detailHero, /categoryForPlaceType/);
   assert.doesNotMatch(detailHero, /Радни приказ|Центар комплекса|accuracyLabel/);
   assert.match(detailGallery, /const placeholderSlots = \[1, 2, 3, 4\]/);
-  assert.equal((detailGallery.match(/<img\b/g) ?? []).length, 1);
+  assert.match(detailGallery, /place\.galleryImages/);
+  assert.equal((detailGallery.match(/<img\b/g) ?? []).length, 2);
   assert.doesNotMatch(detailGallery, /Ауторски медији/);
   assert.match(narrativeSegments, /data-narrative-source-section=\{section\.id\}/);
   assert.doesNotMatch(narrativeSegments, /paragraph\.sourceIds\.map|<sup\b|#source-/);

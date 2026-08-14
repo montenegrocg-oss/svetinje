@@ -57,7 +57,6 @@ export function serializeResearchPlaceScaffold({
       verification: { status: "requires-verification" },
     },
     relationships: {},
-    source_ids: [],
     approvals: [],
     audit,
   };
@@ -69,11 +68,10 @@ export function serializeResearchPlaceScaffold({
     translation_status: "source",
     slug: input.slug,
     ...(input.name === undefined ? {} : { preferred_name: input.name }),
-    source_ids: [],
     approvals: [],
     audit,
   };
-  const narrative = `---\n${stringify(narrativeFrontMatter)}---\n\n<!--\nДодајте summary, регистроване source_ids, section_sources и изворима\nпоткријепљене одјељке прије додавања овог мјеста у validation/editorial-preview.json.\n-->\n`;
+  const narrative = `---\n${stringify(narrativeFrontMatter)}---\n\n<!--\nДодајте summary и канонске одјељке прије додавања овог мјеста у\nvalidation/editorial-preview.json.\n-->\n`;
 
   return {
     id: input.id,

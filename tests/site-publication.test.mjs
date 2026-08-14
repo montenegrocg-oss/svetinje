@@ -3,6 +3,7 @@ import { cp, mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { stringify } from "yaml";
 import {
   loadExcludedNarrativeMarkers,
   loadPublishablePlaces,
@@ -49,6 +50,35 @@ test("research status excludes Podmaine independently of the repository publicat
     );
 
     assert.deepEqual(await loadPublishablePlaces(root), []);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("a reviewed published place can be selected without a source registry", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "svetinje-unsourced-publication-"));
+  try {
+    await mkdir(path.join(root, "content", "places", "neutral-place", "narratives"), { recursive: true });
+    await mkdir(path.join(root, "validation"), { recursive: true });
+    const approval = (role) => ({ role, reviewer_id: "reviewer", outcome: "approved" });
+    await writeFile(path.join(root, "content", "places", "neutral-place", "place.yaml"), stringify({
+      id: "neutral-place",
+      editorial_status: "published",
+      place_type: { value: "church", verification: { status: "verified" } },
+      relationships: {},
+      approvals: [approval("factual"), approval("ecclesiastical"), approval("publishing")],
+    }), "utf8");
+    const narrative = {
+      place_id: "neutral-place", locale: "sr", editorial_status: "published", translation_status: "source",
+      slug: "neutral-place", preferred_name: "Неутрално мјесто", summary: "Неутрални опис.",
+      approvals: [approval("factual"), approval("ecclesiastical"), approval("sr-language"), approval("publishing")],
+    };
+    await writeFile(path.join(root, "content", "places", "neutral-place", "narratives", "sr.md"), `---\n${stringify(narrative)}---\n`, "utf8");
+    await writeFile(path.join(root, "validation", "publication-policy.json"), JSON.stringify({
+      public_publication_locked: false,
+      role_assignments: { publishing: ["reviewer"], factual: ["reviewer"], ecclesiastical: ["reviewer"], "sr-language": ["reviewer"] },
+    }), "utf8");
+    assert.deepEqual((await loadPublishablePlaces(root)).map(({ id }) => id), ["neutral-place"]);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

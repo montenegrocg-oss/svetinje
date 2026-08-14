@@ -11,6 +11,7 @@ const TREE = "b".repeat(40);
 const PLACE_SCHEMA = await readFile(new URL("../../schemas/place.schema.json", import.meta.url), "utf8");
 const NARRATIVE_SCHEMA = await readFile(new URL("../../schemas/narrative.schema.json", import.meta.url), "utf8");
 const COMMON_SCHEMA = await readFile(new URL("../../schemas/common.schema.json", import.meta.url), "utf8");
+const MEDIA_SCHEMA = await readFile(new URL("../../schemas/media.schema.json", import.meta.url), "utf8");
 const PLACE = `schema_version: 1
 id: existing-place
 editorial_status: research
@@ -85,11 +86,11 @@ audit: { created_at: 2026-08-01T00:00:00Z, created_by: maxim, updated_at: 2026-0
 class Repository {
   committed;
   constructor() {
-    this.blobs = { placeSchema: PLACE_SCHEMA, narrativeSchema: NARRATIVE_SCHEMA, commonSchema: COMMON_SCHEMA, preview: JSON.stringify({ place_ids: ["existing-place"] }), place: PLACE, narrative: NARRATIVE, sourceOne: "id: source-one\n", sourceMap: "id: source-map\n" };
+    this.blobs = { placeSchema: PLACE_SCHEMA, narrativeSchema: NARRATIVE_SCHEMA, commonSchema: COMMON_SCHEMA, mediaSchema: MEDIA_SCHEMA, preview: JSON.stringify({ place_ids: ["existing-place"] }), place: PLACE, narrative: NARRATIVE, sourceOne: "id: source-one\n", sourceMap: "id: source-map\n" };
   }
   async readBranchState() { return { headSha: HEAD, treeSha: TREE }; }
   async readTree() { return [
-    ["schemas/place.schema.json", "placeSchema"], ["schemas/narrative.schema.json", "narrativeSchema"], ["schemas/common.schema.json", "commonSchema"], ["validation/editorial-preview.json", "preview"],
+    ["schemas/place.schema.json", "placeSchema"], ["schemas/narrative.schema.json", "narrativeSchema"], ["schemas/common.schema.json", "commonSchema"], ["schemas/media.schema.json", "mediaSchema"], ["validation/editorial-preview.json", "preview"],
     ["content/places/existing-place/place.yaml", "place"], ["content/places/existing-place/narratives/sr.md", "narrative"], ["content/sources/source-one.yaml", "sourceOne"], ["content/sources/source-map.yaml", "sourceMap"],
   ].map(([path, sha]) => ({ path, sha, type: "blob", mode: "100644" })); }
   async readBlob(sha) { return this.blobs[sha]; }
@@ -111,7 +112,8 @@ test("GET editable model derives schema options and preserves narrative structur
   assert.deepEqual(model.options.placeTypes.slice(0, 2), ["monastery", "church"]);
   assert.equal(model.options.placeTypes.includes("cathedral"), true);
   assert.equal(model.place.inPreview, true);
-  assert.deepEqual(model.place.placeSourceIds, ["source-one", "source-map"]);
+  assert.equal("placeSourceIds" in model.place, false);
+  assert.equal("sourceIds" in model.place.alternateNames[0], false);
 });
 
 test("PATCH round trip updates basic, location, coordinates and narrative in one commit without data loss", async () => {
@@ -201,6 +203,23 @@ test("preview coordinates require explicit public safety while non-preview recor
 test("place editor explains preview coordinate safety next to the field", async () => {
   const uiSource = await readFile(new URL("../src/ui.ts", import.meta.url), "utf8");
   assert.match(uiSource, /За објекат у радном приказу координате морају бити означене као јавне\./);
+});
+
+test("place editor exposes the photo workflow and no source-registry controls", async () => {
+  const [uiSource, clientSource] = await Promise.all([
+    readFile(new URL("../src/ui.ts", import.meta.url), "utf8"),
+    readFile(new URL("../client/editor.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(uiSource, /href="#foto">Фото/);
+  assert.match(uiSource, /type="file" accept="image\/\*" multiple/);
+  assert.match(uiSource, /Још нема фотографија\./);
+  assert.match(uiSource, /data-photo-alt/);
+  assert.match(uiSource, /data-save-photo-alt>Сачувај опис/);
+  assert.doesNotMatch(uiSource, /href="#izvori"|data-alt-sources|Постојеће референце|section_sources/);
+  assert.match(clientSource, /2400/);
+  assert.match(clientSource, /0\.85/);
+  assert.match(clientSource, /FormData/);
+  assert.doesNotMatch(clientSource, /sourceIds|data-alt-sources/);
 });
 
 test("canonical schema violations return invalid_form_data instead of internal_error", async () => {

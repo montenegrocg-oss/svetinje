@@ -38,10 +38,22 @@ export interface GitCommitResult {
   branch: string;
 }
 
-export interface RepositoryFile {
+export interface RepositoryTextFile {
   path: string;
   content: string;
 }
+
+export interface RepositoryBinaryFile {
+  path: string;
+  base64: string;
+}
+
+export interface RepositoryDeletedFile {
+  path: string;
+  delete: true;
+}
+
+export type RepositoryFile = RepositoryTextFile | RepositoryBinaryFile | RepositoryDeletedFile;
 
 export interface GitRepository {
   readBranchState(branch: string): Promise<BranchState>;

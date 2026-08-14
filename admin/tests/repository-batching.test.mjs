@@ -29,6 +29,7 @@ class BatchRepository {
         verificationStatus: { enum: ["verified", "requires-verification"] },
       },
     }));
+    this.add("schemas/media.schema.json", JSON.stringify({ $id: "https://svetinje.me/schemas/media.schema.json" }));
     this.add("validation/editorial-preview.json", JSON.stringify({ place_ids: [] }));
 
     for (let index = 0; index < REPRESENTATIVE_PLACE_COUNT; index += 1) {

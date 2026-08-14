@@ -28,16 +28,25 @@ export interface NarrativeSection {
 
 export interface EditablePlace extends AdminPlace {
   shortName?: string;
-  alternateNames: Array<{ name: string; context: string; sourceIds: string[]; verificationStatus: string }>;
+  alternateNames: Array<{ name: string; context: string; verificationStatus: string }>;
   jurisdiction?: string;
   countryCode?: string;
   postalAddress?: string;
   coordinateAccuracy?: string;
   publicationSafety?: string;
   sections: NarrativeSection[];
-  placeSourceIds: string[];
-  narrativeSourceIds: string[];
-  sectionSources: Record<string, string[]>;
+  media: AdminMedia[];
+}
+
+export interface AdminMedia {
+  id: string;
+  objectKey: string;
+  src: string;
+  mimeType: string;
+  width?: number;
+  height?: number;
+  altText: string;
+  isPrimary: boolean;
 }
 
 export interface CanonicalOptions {
@@ -47,7 +56,6 @@ export interface CanonicalOptions {
   publicationSafety: string[];
   narrativeSectionIds: string[];
   verificationStatuses: string[];
-  sourceIds: string[];
 }
 
 export interface AdminRepositorySnapshot {
@@ -67,7 +75,8 @@ export interface EditablePlaceRecord {
   options: CanonicalOptions;
   branch: string;
   state: BranchState;
-  schemas: { common: Record<string, any>; place: Record<string, any>; narrative: Record<string, any> };
+  schemas: { common: Record<string, any>; media: Record<string, any>; place: Record<string, any>; narrative: Record<string, any> };
+  rawMedia: Array<{ path: string; record: Record<string, any> }>;
 }
 
 const blob = (tree: TreeEntry[], path: string) => tree.find((entry) => entry.type === "blob" && entry.path === path);
@@ -150,7 +159,7 @@ function parseCatalogYaml(content: string): Record<string, any> {
   }
 }
 
-function schemaEnums(placeSchema: any, narrativeSchema: any, commonSchema: any, sourceIds: string[]): CanonicalOptions {
+function schemaEnums(placeSchema: any, narrativeSchema: any, commonSchema: any): CanonicalOptions {
   const stringArray = (value: unknown, label: string): string[] => {
     if (!Array.isArray(value) || value.some((entry) => typeof entry !== "string")) throw new Error(`Cannot read ${label} from canonical schema`);
     return value as string[];
@@ -162,14 +171,13 @@ function schemaEnums(placeSchema: any, narrativeSchema: any, commonSchema: any, 
     publicationSafety: stringArray(commonSchema.$defs?.publicationSafety?.enum, "publication safety"),
     narrativeSectionIds: stringArray(narrativeSchema.$defs?.sectionKey?.enum, "narrative sections"),
     verificationStatuses: stringArray(commonSchema.$defs?.verificationStatus?.enum, "verification statuses"),
-    sourceIds,
   };
 }
 
 async function loadContext(repository: GitRepository, branch: string) {
   const state = await repository.readBranchState(branch);
   const tree = await repository.readTree(state.treeSha);
-  const required = ["schemas/place.schema.json", "schemas/narrative.schema.json", "schemas/common.schema.json", "validation/editorial-preview.json"];
+  const required = ["schemas/place.schema.json", "schemas/narrative.schema.json", "schemas/common.schema.json", "schemas/media.schema.json", "validation/editorial-preview.json"];
   const entries = required.map((path) => blob(tree, path));
   if (entries.some((entry) => !entry)) throw internalFailure("catalog_tree_processing_failed");
   const requiredEntries = entries as TreeEntry[];
@@ -177,24 +185,24 @@ async function loadContext(repository: GitRepository, branch: string) {
   let placeSchema: Record<string, any>;
   let narrativeSchema: Record<string, any>;
   let commonSchema: Record<string, any>;
+  let mediaSchema: Record<string, any>;
   let previewData: Record<string, any>;
   try {
     const parsed = requiredEntries.map((entry) => JSON.parse(contentFor(contents, entry)) as Record<string, any>);
     placeSchema = parsed[0]!;
     narrativeSchema = parsed[1]!;
     commonSchema = parsed[2]!;
-    previewData = parsed[3]!;
+    mediaSchema = parsed[3]!;
+    previewData = parsed[4]!;
   } catch {
     throw internalFailure("catalog_tree_processing_failed");
   }
   return {
     state,
     tree,
-    options: schemaEnums(placeSchema, narrativeSchema, commonSchema, tree
-      .filter((entry) => entry.type === "blob" && /^content\/sources\/[^/]+\.ya?ml$/.test(entry.path))
-      .map((entry) => entry.path.split("/").at(-1)!.replace(/\.ya?ml$/, ""))),
+    options: schemaEnums(placeSchema, narrativeSchema, commonSchema),
     previewIds: new Set(Array.isArray(previewData.place_ids) ? previewData.place_ids.filter((id: unknown): id is string => typeof id === "string") : []),
-    schemas: { common: commonSchema, place: placeSchema, narrative: narrativeSchema },
+    schemas: { common: commonSchema, media: mediaSchema, place: placeSchema, narrative: narrativeSchema },
   };
 }
 
@@ -246,7 +254,8 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
   const placeEntry = blob(tree, `content/places/${id}/place.yaml`);
   const narrativeEntry = blob(tree, `content/places/${id}/narratives/sr.md`);
   if (!placeEntry || !narrativeEntry) throw new AdminError("not_found", 404, "Place does not exist");
-  const contents = await readBlobContents(repository, [placeEntry, narrativeEntry]);
+  const mediaEntries = tree.filter((entry) => entry.type === "blob" && /^content\/media\/[^/]+\.ya?ml$/.test(entry.path));
+  const contents = await readBlobContents(repository, [placeEntry, narrativeEntry, ...mediaEntries]);
   const rawPlace = parseCatalogYaml(contentFor(contents, placeEntry));
   const parsedNarrative = parseNarrative(contentFor(contents, narrativeEntry));
   const rawNarrative = parsedNarrative.frontMatter;
@@ -254,15 +263,40 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
   const placeSourceIds = Array.isArray(rawPlace.source_ids) ? rawPlace.source_ids.filter((value: unknown): value is string => typeof value === "string") : [];
   const narrativeSourceIds = Array.isArray(rawNarrative.source_ids) ? rawNarrative.source_ids.filter((value: unknown): value is string => typeof value === "string") : [];
   const alternateNames = Array.isArray(rawNarrative.alternate_names) ? rawNarrative.alternate_names.map((entry: any) => ({
-    name: String(entry.name ?? ""), context: String(entry.context ?? ""), sourceIds: Array.isArray(entry.source_ids) ? entry.source_ids.filter((value: unknown): value is string => typeof value === "string") : [], verificationStatus: String(entry.verification_status ?? "requires-verification"),
+    name: String(entry.name ?? ""), context: String(entry.context ?? ""), verificationStatus: String(entry.verification_status ?? "requires-verification"),
   })) : [];
+  const rawMedia = mediaEntries.map((entry) => ({ path: entry.path, record: parseCatalogYaml(contentFor(contents, entry)) }));
+  const placeMedia = rawMedia.filter(({ record }) => Array.isArray(record.related_place_ids) && record.related_place_ids.includes(id));
+  const mediaOrder = Array.isArray(rawPlace.relationships?.media_ids)
+    ? rawPlace.relationships.media_ids.filter((value: unknown): value is string => typeof value === "string")
+    : [];
+  const orderedMedia = [...placeMedia].sort((left, right) => {
+    const leftIndex = mediaOrder.indexOf(String(left.record.id));
+    const rightIndex = mediaOrder.indexOf(String(right.record.id));
+    return (leftIndex < 0 ? Number.MAX_SAFE_INTEGER : leftIndex) - (rightIndex < 0 ? Number.MAX_SAFE_INTEGER : rightIndex);
+  });
+  const media = orderedMedia.flatMap(({ record }) => {
+    const objectKey = typeof record.object_key === "string" ? record.object_key.replaceAll("\\", "/") : "";
+    if (!objectKey.startsWith("public/images/") || objectKey.includes("../")) return [];
+    const localized = record.localized_text?.sr;
+    return [{
+      id: String(record.id),
+      objectKey,
+      src: `/${objectKey.slice("public/".length)}`,
+      mimeType: typeof record.mime_type === "string" ? record.mime_type : "application/octet-stream",
+      ...(Number.isInteger(record.width) ? { width: record.width } : {}),
+      ...(Number.isInteger(record.height) ? { height: record.height } : {}),
+      altText: typeof localized?.alt_text === "string" ? localized.alt_text : String(rawNarrative.preferred_name ?? id),
+      isPrimary: mediaOrder[0] === record.id || (mediaOrder.length === 0 && orderedMedia[0]?.record.id === record.id),
+    }];
+  });
   const jurisdiction = factValue(rawPlace.ecclesiastical?.jurisdiction);
   const countryCode = factValue(rawPlace.location?.country_code);
   const municipality = factValue(rawPlace.location?.municipality);
   const settlement = factValue(rawPlace.location?.settlement);
   const postalAddress = factValue(rawPlace.location?.postal_address);
   return {
-    rawPlace, rawNarrative, narrativeBody: parsedNarrative.body, options, branch, state, schemas,
+    rawPlace, rawNarrative, rawMedia, narrativeBody: parsedNarrative.body, options, branch, state, schemas,
     place: {
       id,
       preferredName: String(rawNarrative.preferred_name ?? id),
@@ -283,11 +317,9 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
       ...(typeof rawNarrative.summary === "string" ? { summary: rawNarrative.summary } : {}),
       alternateNames,
       sections: parseNarrativeSections(parsedNarrative.body),
-      placeSourceIds,
-      narrativeSourceIds,
-      sectionSources: rawNarrative.section_sources && typeof rawNarrative.section_sources === "object" ? rawNarrative.section_sources : {},
+      media,
       sourcesCount: new Set([...placeSourceIds, ...narrativeSourceIds]).size,
-      mediaCount: 0,
+      mediaCount: media.length,
       inPreview: previewIds.has(id),
     },
   };

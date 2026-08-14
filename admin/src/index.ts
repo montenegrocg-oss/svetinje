@@ -1,6 +1,7 @@
 import { authenticateRequest } from "./auth.ts";
 import { AdminError, errorResponse } from "./errors.ts";
 import { GitHubRepository } from "./github.ts";
+import { deletePlacePhoto, MAX_PHOTO_COUNT, MAX_UPLOAD_BYTES, updatePlacePhoto, uploadPlacePhotos } from "./media.ts";
 import { createPlace, getEditablePlace, getPlace, listPlaces, updatePlace } from "./service.ts";
 import type { AdminEnv } from "./types.ts";
 import { dashboardPage, editPlacePage, newPlacePage, placePage, placesPage } from "./ui.ts";
@@ -27,6 +28,29 @@ function requireSameOrigin(request: Request): void {
   }
 }
 
+async function photoUpload(request: Request) {
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("multipart/form-data")) {
+    throw new AdminError("invalid_form_data", 415, "Photo upload must use multipart/form-data");
+  }
+  const contentLength = Number(request.headers.get("content-length"));
+  if (Number.isFinite(contentLength) && contentLength > MAX_UPLOAD_BYTES) {
+    throw new AdminError("invalid_form_data", 413, "Photo upload request is too large");
+  }
+  let form: FormData;
+  try {
+    form = await request.formData();
+  } catch {
+    throw new AdminError("invalid_form_data", 400, "Photo upload body is invalid");
+  }
+  const files = form.getAll("photos").filter((value): value is File => value instanceof File);
+  if (files.length < 1 || files.length > MAX_PHOTO_COUNT) throw new AdminError("invalid_form_data", 400, `Upload must contain 1-${MAX_PHOTO_COUNT} photographs`);
+  if (files.reduce((total, file) => total + file.size, 0) > MAX_UPLOAD_BYTES) throw new AdminError("invalid_form_data", 413, "Photo upload request is too large");
+  return {
+    expectedHeadSha: form.get("expectedHeadSha"),
+    photos: await Promise.all(files.map(async (file) => ({ name: file.name, mimeType: file.type.toLowerCase(), bytes: new Uint8Array(await file.arrayBuffer()) }))),
+  };
+}
+
 export async function handleRequest(request: Request, env: AdminEnv): Promise<Response> {
   try {
     const session = await authenticateRequest(request, env);
@@ -39,6 +63,21 @@ export async function handleRequest(request: Request, env: AdminEnv): Promise<Re
     if (request.method === "GET" && url.pathname === "/api/places") {
       const snapshot = await listPlaces(repository, env);
       return Response.json({ places: snapshot.places, stats: snapshot.stats, branch: snapshot.branch, headSha: snapshot.state.headSha }, { headers: JSON_HEADERS });
+    }
+    const apiPhotoCollectionMatch = url.pathname.match(/^\/api\/places\/([a-z0-9]+(?:-[a-z0-9]+)*)\/photos$/);
+    if (request.method === "POST" && apiPhotoCollectionMatch?.[1]) {
+      requireSameOrigin(request);
+      const upload = await photoUpload(request);
+      return Response.json(await uploadPlacePhotos(repository, env, session, apiPhotoCollectionMatch[1], upload.expectedHeadSha, upload.photos), { status: 201, headers: JSON_HEADERS });
+    }
+    const apiPhotoMatch = url.pathname.match(/^\/api\/places\/([a-z0-9]+(?:-[a-z0-9]+)*)\/photos\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
+    if (request.method === "PATCH" && apiPhotoMatch?.[1] && apiPhotoMatch[2]) {
+      requireSameOrigin(request);
+      return Response.json(await updatePlacePhoto(repository, env, session, apiPhotoMatch[1], apiPhotoMatch[2], await jsonBody(request)), { headers: JSON_HEADERS });
+    }
+    if (request.method === "DELETE" && apiPhotoMatch?.[1] && apiPhotoMatch[2]) {
+      requireSameOrigin(request);
+      return Response.json(await deletePlacePhoto(repository, env, session, apiPhotoMatch[1], apiPhotoMatch[2], await jsonBody(request)), { headers: JSON_HEADERS });
     }
     const apiPlaceMatch = url.pathname.match(/^\/api\/places\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
     if (request.method === "GET" && apiPlaceMatch?.[1]) {

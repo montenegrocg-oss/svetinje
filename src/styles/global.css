@@ -3289,6 +3289,7 @@
   }
 
   .place-detail-gallery__main,
+  .place-detail-gallery__image,
   .place-detail-gallery__placeholder {
     position: relative;
     min-width: 0;
@@ -3304,7 +3305,8 @@
     aspect-ratio: 16 / 10;
   }
 
-  .place-detail-gallery__main img {
+  .place-detail-gallery__main img,
+  .place-detail-gallery__image img {
     width: 100%;
     height: 100%;
     object-fit: cover;

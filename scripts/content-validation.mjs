@@ -306,15 +306,12 @@ function validateMarkdown(record) {
     headingKeys.push(key);
   }
   if (PUBLIC_STATUSES.has(data.editorial_status)) {
-    for (const key of headingKeys) {
-      if (!data.section_sources?.[key]) errors.push(issue(file, `/section_sources/${key}`, "published factual section requires sources"));
-    }
-    for (const key of Object.keys(data.section_sources ?? {})) {
-      if (!headingKeys.includes(key)) errors.push(issue(file, `/section_sources/${key}`, "section source key has no matching H2 section"));
-    }
     if (/\b(?:TBD|TODO|FIXME|placeholder|lorem ipsum|to be confirmed)\b/i.test(`${JSON.stringify(data)}\n${body}`)) {
       errors.push(issue(file, "/", "approved content cannot contain placeholder markers"));
     }
+  }
+  for (const key of Object.keys(data.section_sources ?? {})) {
+    if (!headingKeys.includes(key)) errors.push(issue(file, `/section_sources/${key}`, "section source key has no matching H2 section"));
   }
   if (data.locale === "sr" && body.trim() && !/[\u0400-\u04ff]/u.test(body)) {
     errors.push(issue(file, "/body", "Serbian source narrative must contain Cyrillic text"));

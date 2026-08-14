@@ -71,7 +71,7 @@ function parseOptionalNumber(value: unknown, field: string, min: number, max: nu
   return numeric;
 }
 
-function validateAlternateNames(value: unknown, options: CanonicalOptions, errors: Record<string, string>) {
+function validateAlternateNames(value: unknown, original: unknown, options: CanonicalOptions, errors: Record<string, string>) {
   if (!Array.isArray(value)) {
     errors.alternateNames = "Алтернативни називи морају бити листа.";
     return [];
@@ -84,11 +84,15 @@ function validateAlternateNames(value: unknown, options: CanonicalOptions, error
     const record = entry as Record<string, unknown>;
     const name = requiredText(record.name, `alternateNames.${index}.name`, errors);
     const context = requiredText(record.context, `alternateNames.${index}.context`, errors);
-    const sourceIds = Array.isArray(record.sourceIds) ? record.sourceIds.filter((id): id is string => typeof id === "string" && id.trim().length > 0) : [];
-    if (sourceIds.length === 0 || sourceIds.some((id) => !options.sourceIds.includes(id))) errors[`alternateNames.${index}.sourceIds`] = "Изаберите постојећи регистровани извор.";
     const verificationStatus = text(record.verificationStatus);
     if (!verificationStatus || !options.verificationStatuses.includes(verificationStatus)) errors[`alternateNames.${index}.verificationStatus`] = "Статус провјере није подржан.";
-    return name && context && verificationStatus ? [{ name, context, source_ids: [...new Set(sourceIds)], verification_status: verificationStatus }] : [];
+    const legacy = Array.isArray(original) && original[index] && typeof original[index] === "object"
+      ? original[index] as Record<string, unknown>
+      : undefined;
+    const sourceIds = Array.isArray(legacy?.source_ids)
+      ? legacy.source_ids.filter((id): id is string => typeof id === "string" && id.trim().length > 0)
+      : [];
+    return name && context && verificationStatus ? [{ name, context, ...(sourceIds.length ? { source_ids: [...new Set(sourceIds)] } : {}), verification_status: verificationStatus }] : [];
   });
 }
 
@@ -145,21 +149,10 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   if (record.place.inPreview && latitude !== undefined && longitude !== undefined && publicationSafety !== "public") {
     errors.publicationSafety = "Координате објекта у радном приказу морају бити означене као јавне.";
   }
-  const alternateNames = validateAlternateNames(body.alternateNames ?? [], record.options, errors);
+  const alternateNames = validateAlternateNames(body.alternateNames ?? [], record.rawNarrative.alternate_names, record.options, errors);
   const sections = validateSections(body.sections ?? [], record.place.sections, record.options, errors);
   const narrativeBody = serializeNarrativeSections(sections, record.narrativeBody);
   assertSafeMarkdown(narrativeBody, errors);
-  if (["approved", "published"].includes(String(record.rawNarrative.editorial_status))) {
-    const sectionSources = record.rawNarrative.section_sources && typeof record.rawNarrative.section_sources === "object"
-      ? record.rawNarrative.section_sources as Record<string, unknown>
-      : {};
-    for (const section of sections) {
-      const sources = sectionSources[section.id];
-      if (!Array.isArray(sources) || sources.length === 0) {
-        errors[`sections.${section.id}`] = "Одобрени текст мора задржати регистроване изворе за сваки одјељак.";
-      }
-    }
-  }
   if (Object.keys(errors).length > 0) throw new AdminError("invalid_form_data", 400, "Place update is invalid", errors);
 
   const place = structuredClone(record.rawPlace);

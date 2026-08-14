@@ -6,6 +6,7 @@ import { fingerprintCanonicalSchemas } from "../src/schema-fingerprint.ts";
 
 const schemaUrls = {
   common: new URL("../../schemas/common.schema.json", import.meta.url),
+  media: new URL("../../schemas/media.schema.json", import.meta.url),
   place: new URL("../../schemas/place.schema.json", import.meta.url),
   narrative: new URL("../../schemas/narrative.schema.json", import.meta.url),
 };
@@ -21,10 +22,12 @@ const ajv = new Ajv2020({
 });
 addFormats(ajv);
 ajv.addSchema(schemas.common);
+ajv.addSchema(schemas.media);
 ajv.addSchema(schemas.place);
 ajv.addSchema(schemas.narrative);
 
 const standaloneValidators = standaloneCode(ajv, {
+  validateMedia: schemas.media.$id,
   validatePlace: schemas.place.$id,
   validateNarrative: schemas.narrative.$id,
 });
@@ -46,4 +49,4 @@ const outputUrl = new URL("../src/generated/canonical-validators.js", import.met
 const declarationsUrl = new URL("../src/generated/canonical-validators.d.ts", import.meta.url);
 await mkdir(new URL("../src/generated/", import.meta.url), { recursive: true });
 await writeFile(outputUrl, output, "utf8");
-await writeFile(declarationsUrl, `import type { ValidateFunction } from "ajv";\nexport const validatePlace: ValidateFunction;\nexport const validateNarrative: ValidateFunction;\nexport const CANONICAL_SCHEMA_FINGERPRINT: string;\n`, "utf8");
+await writeFile(declarationsUrl, `import type { ValidateFunction } from "ajv";\nexport const validateMedia: ValidateFunction;\nexport const validatePlace: ValidateFunction;\nexport const validateNarrative: ValidateFunction;\nexport const CANONICAL_SCHEMA_FINGERPRINT: string;\n`, "utf8");

@@ -1,5 +1,6 @@
 export interface CanonicalSchemas {
   common: Record<string, unknown>;
+  media: Record<string, unknown>;
   place: Record<string, unknown>;
   narrative: Record<string, unknown>;
 }
@@ -17,6 +18,7 @@ function canonicalize(value: unknown): unknown {
 export async function fingerprintCanonicalSchemas(schemas: CanonicalSchemas): Promise<string> {
   const canonicalJson = JSON.stringify(canonicalize({
     common: schemas.common,
+    media: schemas.media,
     narrative: schemas.narrative,
     place: schemas.place,
   }));

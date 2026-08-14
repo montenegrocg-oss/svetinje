@@ -21,6 +21,7 @@ type GitHubRepositoryOperation =
   | "commit"
   | "tree"
   | "blob"
+  | "create_blob"
   | "create_tree"
   | "create_commit"
   | "update_ref";
@@ -267,11 +268,22 @@ export class GitHubRepository implements GitRepository {
     if (current.headSha !== input.expectedHeadSha) {
       throw new AdminError("git_conflict", 409, "Editorial branch moved before commit creation");
     }
+    const binaryBlobs = new Map<string, string>();
+    await Promise.all(input.files.flatMap((file) => "base64" in file ? [
+      this.#request<{ sha: string }>("create_blob", "/git/blobs", {
+        method: "POST",
+        body: JSON.stringify({ content: file.base64, encoding: "base64" }),
+      }).then(({ sha }) => binaryBlobs.set(file.path, sha)),
+    ] : []));
     const tree = await this.#request<{ sha: string }>("create_tree", "/git/trees", {
       method: "POST",
       body: JSON.stringify({
         base_tree: input.baseTreeSha,
-        tree: input.files.map((file) => ({ path: file.path, mode: "100644", type: "blob", content: file.content })),
+        tree: input.files.map((file) => {
+          if ("delete" in file) return { path: file.path, mode: "100644", type: "blob", sha: null };
+          if ("base64" in file) return { path: file.path, mode: "100644", type: "blob", sha: binaryBlobs.get(file.path) };
+          return { path: file.path, mode: "100644", type: "blob", content: file.content };
+        }),
       }),
     });
     const commit = await this.#request<{ sha: string }>("create_commit", "/git/commits", {

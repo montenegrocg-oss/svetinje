@@ -126,8 +126,12 @@ test("the repository summary reports actual validated record counts", async () =
 
 test("neutral draft structural records validate", async (t) => {
   const root = await project(t);
-  await yamlFile(root, "content/places/validation-subject/place.yaml", place());
-  await narrativeFile(root, "validation-subject", "sr", narrative());
+  const unsourcedPlace = place();
+  const unsourcedNarrative = narrative();
+  delete unsourcedPlace.source_ids;
+  delete unsourcedNarrative.source_ids;
+  await yamlFile(root, "content/places/validation-subject/place.yaml", unsourcedPlace);
+  await narrativeFile(root, "validation-subject", "sr", unsourcedNarrative);
   assert.deepEqual(await validateRepository(root), []);
 });
 

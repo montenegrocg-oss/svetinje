@@ -261,6 +261,7 @@ function verifyNarrative(detail, place, failures) {
     }
   }
   if (/href="#source-|<sup\b[^>]*>\s*\[\d+\]/.test(html)) failures.push(`${place.id} detail page exposes inline source footnotes`);
+  if (/\[\^[^\]]+\]|Регистар извора/.test(html)) failures.push(`${place.id} detail page exposes source-registry syntax`);
 }
 
 function verifyDetail(detailCase, model, pagesByRoute, failures) {

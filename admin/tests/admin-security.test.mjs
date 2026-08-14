@@ -12,6 +12,7 @@ import { handleRequest } from "../src/index.ts";
 const PLACE_SCHEMA = JSON.stringify({ $defs: { placeType: { enum: ["monastery", "church"] }, coordinateAccuracy: { enum: ["complex-centroid"] } } });
 const NARRATIVE_SCHEMA = JSON.stringify({ $defs: { sectionKey: { enum: ["introduction", "history"] } } });
 const COMMON_SCHEMA = JSON.stringify({ $defs: { publicationSafety: { enum: ["public", "review-required"] }, verificationStatus: { enum: ["verified", "requires-verification"] } } });
+const MEDIA_SCHEMA = JSON.stringify({ $id: "https://svetinje.me/schemas/media.schema.json" });
 const PREVIEW = JSON.stringify({ place_ids: ["existing-place"] });
 const EXISTING = `schema_version: 1\nid: existing-place\neditorial_status: research\nrelationships: {}\nsource_ids: []\napprovals: []\naudit: { created_at: 2026-08-01T00:00:00Z, created_by: maxim, updated_at: 2026-08-01T00:00:00Z, updated_by: maxim }\n`;
 const NARRATIVE = `---\nschema_version: 1\nplace_id: existing-place\nlocale: sr\neditorial_status: research\ntranslation_status: source\nslug: existing-place\npreferred_name: Постојећи објекат\nsource_ids: []\napprovals: []\naudit: { created_at: 2026-08-01T00:00:00Z, created_by: maxim, updated_at: 2026-08-01T00:00:00Z, updated_by: maxim }\n---\n`;
@@ -19,7 +20,7 @@ const NARRATIVE = `---\nschema_version: 1\nplace_id: existing-place\nlocale: sr\
 class FakeRepository {
   committed;
   constructor() {
-    this.blobs = { schema: PLACE_SCHEMA, narrativeSchema: NARRATIVE_SCHEMA, commonSchema: COMMON_SCHEMA, preview: PREVIEW, place: EXISTING, narrative: NARRATIVE };
+    this.blobs = { schema: PLACE_SCHEMA, narrativeSchema: NARRATIVE_SCHEMA, commonSchema: COMMON_SCHEMA, mediaSchema: MEDIA_SCHEMA, preview: PREVIEW, place: EXISTING, narrative: NARRATIVE };
   }
   async readBranchState() { return { headSha: "a".repeat(40), treeSha: "b".repeat(40) }; }
   async readTree() {
@@ -27,6 +28,7 @@ class FakeRepository {
       { path: "schemas/place.schema.json", mode: "100644", type: "blob", sha: "schema" },
       { path: "schemas/narrative.schema.json", mode: "100644", type: "blob", sha: "narrativeSchema" },
       { path: "schemas/common.schema.json", mode: "100644", type: "blob", sha: "commonSchema" },
+      { path: "schemas/media.schema.json", mode: "100644", type: "blob", sha: "mediaSchema" },
       { path: "validation/editorial-preview.json", mode: "100644", type: "blob", sha: "preview" },
       { path: "content/places/existing-place/place.yaml", mode: "100644", type: "blob", sha: "place" },
       { path: "content/places/existing-place/narratives/sr.md", mode: "100644", type: "blob", sha: "narrative" },
@@ -205,7 +207,7 @@ test("save creates one atomic two-file research scaffold and never touches previ
   const place = parse(repository.committed.files[0].content);
   assert.equal(place.editorial_status, "research");
   assert.equal(place.place_type.verification.status, "requires-verification");
-  assert.deepEqual(place.source_ids, []);
+  assert.equal(place.source_ids, undefined);
   assert.deepEqual(place.approvals, []);
   assert.equal(place.location, undefined);
 });
@@ -584,6 +586,10 @@ test("GitHub transport creates one tree and commit, checks HEAD twice, and updat
       return Response.json({ object: { sha: "a".repeat(40) } });
     }
     if (parsedUrl.pathname.endsWith(`/git/commits/${"a".repeat(40)}`)) return Response.json({ tree: { sha: "b".repeat(40) } });
+    if (parsedUrl.pathname.endsWith("/git/blobs")) {
+      assert.deepEqual(body, { content: "AAEC", encoding: "base64" });
+      return Response.json({ sha: "e".repeat(40) }, { status: 201 });
+    }
     if (parsedUrl.pathname.endsWith("/git/trees")) return Response.json({ sha: "c".repeat(40) }, { status: 201 });
     if (parsedUrl.pathname.endsWith("/git/commits")) return Response.json({ sha: "d".repeat(40) }, { status: 201 });
     if (parsedUrl.pathname.endsWith("/git/refs/heads/editorial%2Fwork")) return Response.json({ object: { sha: "d".repeat(40) } });
@@ -603,7 +609,7 @@ test("GitHub transport creates one tree and commit, checks HEAD twice, and updat
     branch: "editorial/work",
     expectedHeadSha: "a".repeat(40),
     baseTreeSha: "b".repeat(40),
-    files: [{ path: "content/places/test/place.yaml", content: "id: test\n" }, { path: "content/places/test/narratives/sr.md", content: "---\n" }],
+    files: [{ path: "content/places/test/place.yaml", content: "id: test\n" }, { path: "content/places/test/narratives/sr.md", content: "---\n" }, { path: "public/images/places/test/photo.jpg", base64: "AAEC" }],
     message: "Add research place test",
   });
   assert.equal(result.commitSha, "d".repeat(40));
@@ -612,7 +618,8 @@ test("GitHub transport creates one tree and commit, checks HEAD twice, and updat
   const refUpdate = calls.find((call) => call.method === "PATCH");
   assert.deepEqual(refUpdate.body, { sha: "d".repeat(40), force: false });
   const treeCreate = calls.find((call) => call.method === "POST" && call.pathname.endsWith("/git/trees"));
-  assert.equal(treeCreate.body.tree.length, 2);
+  assert.equal(treeCreate.body.tree.length, 3);
+  assert.deepEqual(treeCreate.body.tree.at(-1), { path: "public/images/places/test/photo.jpg", mode: "100644", type: "blob", sha: "e".repeat(40) });
   assert.equal(calls.some((call) => call.authorization === "Bearer installation-token"), true);
   assert.equal(calls.some((call) => JSON.stringify(call).includes(privateKeyPem)), false);
 });

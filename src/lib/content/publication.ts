@@ -52,7 +52,7 @@ interface PlaceRecord {
       verification?: Verification;
     };
   };
-  source_ids: string[];
+  source_ids?: string[];
   approvals: Approval[];
   [key: string]: unknown;
 }
@@ -66,7 +66,7 @@ interface NarrativeRecord {
   preferred_name?: string;
   summary?: string;
   alternate_names?: Array<{ name?: string }>;
-  source_ids: string[];
+  source_ids?: string[];
   approvals: Approval[];
   body: string;
 }
@@ -84,6 +84,8 @@ interface MediaRecord {
   editorial_status: string;
   media_type: string;
   object_key?: string;
+  width?: number;
+  height?: number;
   creator?: string;
   copyright_owner?: string;
   rights_basis?: string;
@@ -108,11 +110,20 @@ export interface PublishablePlace {
   placeType: string;
   browseAreaId?: PlaceAreaId;
   catalogueSearchText: string;
+  mediaIds?: string[];
 }
 
 export interface NarrativeParagraph {
   text: string;
   sourceIds: string[];
+}
+
+export interface VisibleMediaImage {
+  id: string;
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
 }
 
 export interface NarrativeSection {
@@ -132,6 +143,7 @@ export interface VisiblePlace extends PublishablePlace {
   ecclesiasticalJurisdiction?: string;
   previewImageSrc?: string;
   previewImageAlt?: string;
+  galleryImages: VisibleMediaImage[];
   preview: boolean;
   previewStatus?: string;
   narrativeSections: NarrativeSection[];
@@ -306,8 +318,11 @@ async function previewMediaForPlace(
   mediaRecords: MediaRecord[],
   mode: "production" | "editorial-preview",
   policy: PublicationPolicy,
-): Promise<Pick<VisiblePlace, "previewImageSrc" | "previewImageAlt">> {
-  for (const media of mediaRecords) {
+  mediaOrder: string[] = [],
+): Promise<Pick<VisiblePlace, "previewImageSrc" | "previewImageAlt" | "galleryImages">> {
+  const order = new Map(mediaOrder.map((id, index) => [id, index]));
+  const images: VisibleMediaImage[] = [];
+  for (const media of [...mediaRecords].sort((left, right) => (order.get(left.id) ?? Number.MAX_SAFE_INTEGER) - (order.get(right.id) ?? Number.MAX_SAFE_INTEGER))) {
     const statusAllowed = mode === "production"
       ? media.editorial_status === "published" && hasRequiredApprovals(media.approvals, ["media-rights", "publishing"], policy)
       : ["approved", "published"].includes(media.editorial_status);
@@ -324,38 +339,32 @@ async function previewMediaForPlace(
     }
     const src = await localMediaSrc(root, media.object_key);
     if (src) {
-      return {
-        previewImageSrc: src,
-        previewImageAlt: typeof localized.alt_text === "string" ? localized.alt_text : placeName,
-      };
+      images.push({
+        id: media.id,
+        src,
+        alt: typeof localized.alt_text === "string" ? localized.alt_text : placeName,
+        ...(typeof media.width === "number" ? { width: media.width } : {}),
+        ...(typeof media.height === "number" ? { height: media.height } : {}),
+      });
     }
   }
-  return {};
+  const primary = images[0];
+  return {
+    galleryImages: images,
+    ...(primary ? { previewImageSrc: primary.src, previewImageAlt: primary.alt } : {}),
+  };
 }
 
 export async function loadPublishablePlaces(root = process.cwd()): Promise<PublishablePlace[]> {
   const policy = await loadPolicy(root);
   if (policy.public_publication_locked) return [];
 
-  const { places, narratives, sources } = await loadRecords(root);
-  const sourceById = new Map(sources.map((source) => [source.id, source]));
+  const { places, narratives } = await loadRecords(root);
   const narrativeByPlace = new Map(
     narratives
       .filter((narrative) => narrative.locale === "sr")
       .map((narrative) => [narrative.place_id, narrative]),
   );
-
-  const sourcesArePublishable = (ids: string[]): boolean =>
-    ids.length > 0 &&
-    ids.every((id) => {
-      const source = sourceById.get(id);
-      return Boolean(
-        source &&
-          source.editorial_status === "published" &&
-          source.status === "active" &&
-          hasRequiredApprovals(source.approvals, ["factual", "publishing"], policy),
-      );
-    });
 
   return places.flatMap((place) => {
     const narrative = narrativeByPlace.get(place.id);
@@ -375,8 +384,7 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
         narrative.approvals,
         ["factual", "ecclesiastical", "sr-language", "publishing"],
         policy,
-      ) ||
-      !sourcesArePublishable([...new Set([...place.source_ids, ...narrative.source_ids])])
+      )
     ) {
       return [];
     }
@@ -388,6 +396,9 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
       name: narrative.preferred_name,
       summary: narrative.summary,
       placeType: place.place_type.value,
+      ...(Array.isArray((place.relationships as { media_ids?: unknown } | undefined)?.media_ids)
+        ? { mediaIds: (place.relationships as { media_ids: unknown[] }).media_ids.filter((value): value is string => typeof value === "string") }
+        : {}),
       ...(browseAreaId ? { browseAreaId } : {}),
       catalogueSearchText: buildCatalogueSearchText({
         name: narrative.preferred_name,
@@ -504,23 +515,14 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       assertPreviewField(Number.isFinite(coordinates.latitude) && Number.isFinite(coordinates.longitude), id + " requires valid coordinates");
       assertPreviewField(typeof coordinates.accuracy === "string", id + " requires a coordinate accuracy classification");
     }
-    const sourceIds = [...new Set([...place.source_ids, ...narrative.source_ids])];
-    assertPreviewField(sourceIds.length > 0, `${id} requires registered sources`);
+    const sourceIds = [...new Set([...(place.source_ids ?? []), ...(narrative.source_ids ?? [])])];
     const registeredSources = sourceIds.map((sourceId) => {
       const source = sourceById.get(sourceId);
-      assertPreviewField(source && source.status === "active", `${id} references missing or inactive source ${sourceId}`);
+      assertPreviewField(source, `${id} references missing source ${sourceId}`);
       return { id: source.id, title: source.title };
     });
     const narrativeSections = parseNarrativeSections(narrative.body);
-    assertPreviewField(narrativeSections.length > 0, `${id} requires sourced narrative sections`);
-    for (const section of narrativeSections) {
-      for (const paragraph of section.paragraphs) {
-        assertPreviewField(paragraph.sourceIds.length > 0, `${id} narrative paragraph in ${section.id} requires a source reference`);
-        for (const sourceId of paragraph.sourceIds) {
-          assertPreviewField(sourceById.has(sourceId), `${id} narrative references unknown source ${sourceId}`);
-        }
-      }
-    }
+    assertPreviewField(narrativeSections.length > 0, `${id} requires narrative sections`);
 
     const municipality = place.location?.municipality?.value;
     const settlement = place.location?.settlement?.value;
@@ -529,7 +531,10 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
     const longitude = coordinates?.longitude;
     const coordinateAccuracy = coordinates?.accuracy;
     const ecclesiasticalJurisdiction = place.ecclesiastical?.jurisdiction?.value;
-    const previewMedia = await previewMediaForPlace(root, place.id, narrative.preferred_name, media, "editorial-preview", policy);
+    const mediaOrder = Array.isArray((place.relationships as { media_ids?: unknown } | undefined)?.media_ids)
+      ? (place.relationships as { media_ids: unknown[] }).media_ids.filter((value): value is string => typeof value === "string")
+      : [];
+    const previewMedia = await previewMediaForPlace(root, place.id, narrative.preferred_name, media, "editorial-preview", policy, mediaOrder);
     return {
       id: place.id,
       slug: narrative.slug,
@@ -582,7 +587,7 @@ export async function loadVisiblePlaces(
     return Promise.all(publicPlaces.map(async (place) => ({
       ...place,
       typeLabel: placeTypeLabel(place.placeType),
-      ...(await previewMediaForPlace(root, place.id, place.name, media, "production", policy)),
+      ...(await previewMediaForPlace(root, place.id, place.name, media, "production", policy, place.mediaIds ?? [])),
       preview: false,
       narrativeSections: [],
       sourceIds: [],
@@ -633,6 +638,9 @@ export async function loadExcludedContentMarkers(
       records.media,
       "editorial-preview",
       policy,
+      Array.isArray((place.relationships as { media_ids?: unknown } | undefined)?.media_ids)
+        ? (place.relationships as { media_ids: unknown[] }).media_ids.filter((value): value is string => typeof value === "string")
+        : [],
     );
     return {
       placeId: place.id,

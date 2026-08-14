@@ -6,6 +6,7 @@ interface Props {
 }
 
 const { place } = Astro.props;
+const [primaryImage, ...secondaryImages] = place.galleryImages;
 const placeholderSlots = [1, 2, 3, 4] as const;
 ---
 
@@ -14,20 +15,27 @@ const placeholderSlots = [1, 2, 3, 4] as const;
     <h2 id="place-gallery-title">Фотографије</h2>
   </div>
   <div class="place-detail-gallery__grid">
-    {place.previewImageSrc ? (
+    {primaryImage ? (
       <figure class="place-detail-gallery__main">
-        <img src={place.previewImageSrc} alt={place.previewImageAlt ?? place.name} loading="lazy" decoding="async" />
+        <img src={primaryImage.src} alt={primaryImage.alt} width={primaryImage.width} height={primaryImage.height} loading="lazy" decoding="async" />
       </figure>
     ) : (
       <div class="place-detail-gallery__main place-detail-gallery__placeholder">
         <span aria-hidden="true"></span><p>Ауторска фотографија биће додата</p>
       </div>
     )}
-    {placeholderSlots.map((slot) => (
-      <div class="place-detail-gallery__placeholder" data-gallery-slot={slot}>
-        <span aria-hidden="true"></span>
-        <p>{slot === 4 ? "Галерија у припреми" : "Још фотографија биће додато"}</p>
-      </div>
-    ))}
+    {placeholderSlots.map((slot, index) => {
+      const image = secondaryImages[index];
+      return image ? (
+        <figure class="place-detail-gallery__image" data-gallery-slot={slot}>
+          <img src={image.src} alt={image.alt} width={image.width} height={image.height} loading="lazy" decoding="async" />
+        </figure>
+      ) : (
+        <div class="place-detail-gallery__placeholder" data-gallery-slot={slot}>
+          <span aria-hidden="true"></span>
+          <p>{slot === 4 ? "Галерија у припреми" : "Још фотографија биће додато"}</p>
+        </div>
+      );
+    })}
   </div>
 </section>
