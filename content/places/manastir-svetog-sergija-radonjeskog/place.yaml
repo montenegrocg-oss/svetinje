@@ -5,12 +5,14 @@ place_type:
   value: monastery
   verification:
     status: requires-verification
-relationships: {}
+relationships:
+  media_ids:
+    - photo-manastir-svetog-sergija-radonjeskog-e2e9da5dff9b
 approvals: []
 audit:
   created_at: 2026-08-14T23:34:50.389Z
   created_by: montenegro-cg
-  updated_at: 2026-08-14T23:36:22Z
+  updated_at: 2026-08-14T23:38:20Z
   updated_by: montenegro-cg
 browse_area_id: bar-crmnica-skadarsko-jezero
 ecclesiastical:
