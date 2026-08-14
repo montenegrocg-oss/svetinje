@@ -1,11 +1,12 @@
 import { createPrivateKey } from "node:crypto";
 import { importPKCS8, SignJWT } from "jose";
-import { AdminError } from "./errors.ts";
+import { AdminError, internalFailure } from "./errors.ts";
 import type { AdminEnv, BranchState, GitCommitResult, GitRepository, RepositoryFile, TreeEntry } from "./types.ts";
 
 const API_VERSION = "2022-11-28";
 const PKCS1_HEADER = "-----BEGIN RSA PRIVATE KEY-----";
 const PKCS8_HEADER = "-----BEGIN PRIVATE KEY-----";
+const GRAPHQL_BLOB_BATCH_SIZE = 80;
 
 type GitHubAuthenticationStage =
   | "configuration_incomplete"
@@ -128,7 +129,6 @@ export class GitHubRepository implements GitRepository {
     } catch {
       throw authenticationFailure("installation_token_http_failure");
     }
-
     if (!response.ok) {
       throw authenticationFailure("installation_token_http_failure", { status: response.status });
     }
@@ -157,10 +157,18 @@ export class GitHubRepository implements GitRepository {
 
   async #request<T>(operation: GitHubRepositoryOperation, path: string, init: RequestInit = {}): Promise<T> {
     const token = await this.#installationToken();
-    const response = await this.#fetch(`https://api.github.com/repos/${this.#owner}/${this.#repo}${path}`, {
-      ...init,
-      headers: { ...this.#headers(token), ...(init.headers ?? {}) },
-    });
+    let response: Response;
+    try {
+      response = await this.#fetch(`https://api.github.com/repos/${this.#owner}/${this.#repo}${path}`, {
+        ...init,
+        headers: { ...this.#headers(token), ...(init.headers ?? {}) },
+      });
+    } catch {
+      if (operation === "branch_ref" || operation === "commit" || operation === "tree" || operation === "blob") {
+        throw internalFailure("repository_request_failed", { operation });
+      }
+      throw new AdminError("internal_error", 502, "GitHub request failed");
+    }
     if (!response.ok) {
       if (response.status === 409 || response.status === 422) {
         throw new AdminError("git_conflict", 409, "Git ref update was rejected");
@@ -168,7 +176,10 @@ export class GitHubRepository implements GitRepository {
       if (response.status === 401 || response.status === 403) {
         throw authenticationFailure("repository_request_rejected", { status: response.status, operation });
       }
-      throw new AdminError("internal_error", 502, `GitHub request failed with status ${response.status}`);
+      if (operation === "branch_ref" || operation === "commit" || operation === "tree" || operation === "blob") {
+        throw internalFailure("repository_request_failed", { status: response.status, operation });
+      }
+      throw new AdminError("internal_error", 502, "GitHub request failed");
     }
     return response.status === 204 ? undefined as T : await response.json() as T;
   }
@@ -191,6 +202,58 @@ export class GitHubRepository implements GitRepository {
     const compact = blob.content.replace(/\s/g, "");
     const bytes = Uint8Array.from(atob(compact), (character) => character.charCodeAt(0));
     return new TextDecoder().decode(bytes);
+  }
+
+  async readBlobs(shas: string[]): Promise<Map<string, string>> {
+    const uniqueShas = [...new Set(shas)];
+    if (uniqueShas.length === 0) return new Map();
+    if (uniqueShas.some((sha) => !/^[0-9a-f]{40}$/i.test(sha))) {
+      throw internalFailure("catalog_blob_decode_failed");
+    }
+
+    const blobs = new Map<string, string>();
+    for (let offset = 0; offset < uniqueShas.length; offset += GRAPHQL_BLOB_BATCH_SIZE) {
+      const batch = uniqueShas.slice(offset, offset + GRAPHQL_BLOB_BATCH_SIZE);
+      const selections = batch.map((sha, index) => (
+        `blob${index}: object(oid: "${sha}") { ... on Blob { isBinary text } }`
+      )).join("\n");
+      const token = await this.#installationToken();
+      let response: Response;
+      try {
+        response = await this.#fetch("https://api.github.com/graphql", {
+          method: "POST",
+          headers: this.#headers(token),
+          body: JSON.stringify({
+            query: `query ReadRepositoryBlobs($owner: String!, $repo: String!) { repository(owner: $owner, name: $repo) { ${selections} } }`,
+            variables: { owner: this.#owner, repo: this.#repo },
+          }),
+        });
+      } catch {
+        throw internalFailure("repository_request_failed", { operation: "blob" });
+      }
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          throw authenticationFailure("repository_request_rejected", { status: response.status, operation: "blob" });
+        }
+        throw internalFailure("repository_request_failed", { status: response.status, operation: "blob" });
+      }
+
+      let body: { data?: { repository?: Record<string, { isBinary?: unknown; text?: unknown } | null> | null }; errors?: unknown };
+      try {
+        body = await response.json() as typeof body;
+      } catch {
+        throw internalFailure("catalog_blob_decode_failed");
+      }
+      if (body.errors || !body.data?.repository) throw internalFailure("catalog_blob_decode_failed");
+      for (const [index, sha] of batch.entries()) {
+        const value = body.data.repository[`blob${index}`];
+        if (!value || value.isBinary === true || typeof value.text !== "string") {
+          throw internalFailure("catalog_blob_decode_failed");
+        }
+        blobs.set(sha, value.text);
+      }
+    }
+    return blobs;
   }
 
   async commitFilesAtomic(input: {

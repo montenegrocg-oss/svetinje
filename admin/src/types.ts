@@ -47,6 +47,7 @@ export interface GitRepository {
   readBranchState(branch: string): Promise<BranchState>;
   readTree(treeSha: string): Promise<TreeEntry[]>;
   readBlob(sha: string): Promise<string>;
+  readBlobs?(shas: string[]): Promise<Map<string, string>>;
   commitFilesAtomic(input: {
     branch: string;
     expectedHeadSha: string;

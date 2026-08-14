@@ -1,6 +1,6 @@
 import { parse, stringify } from "yaml";
 import { PLACE_AREAS } from "../../src/lib/place-areas.ts";
-import { AdminError } from "./errors.ts";
+import { AdminError, internalFailure } from "./errors.ts";
 import type { BranchState, GitRepository, TreeEntry } from "./types.ts";
 
 export interface AdminPlace {
@@ -76,7 +76,11 @@ export function parseNarrative(markdown: string): { frontMatter: Record<string, 
   if (!markdown.startsWith("---\n")) throw new AdminError("internal_error", 500, "Narrative has no front matter");
   const end = markdown.indexOf("\n---\n", 4);
   if (end < 0) throw new AdminError("internal_error", 500, "Narrative front matter is not closed");
-  return { frontMatter: parse(markdown.slice(4, end)) as Record<string, any>, body: markdown.slice(end + 5) };
+  try {
+    return { frontMatter: parse(markdown.slice(4, end)) as Record<string, any>, body: markdown.slice(end + 5) };
+  } catch {
+    throw internalFailure("catalog_yaml_parse_failed");
+  }
 }
 
 export function serializeNarrative(frontMatter: Record<string, any>, body: string): string {
@@ -123,6 +127,29 @@ const factValue = (record: unknown): string | undefined => {
   return typeof value === "string" ? value : undefined;
 };
 
+async function readBlobContents(repository: GitRepository, entries: TreeEntry[]): Promise<Map<string, string>> {
+  const shas = entries.map((entry) => entry.sha);
+  const contents = repository.readBlobs
+    ? await repository.readBlobs(shas)
+    : new Map(await Promise.all(shas.map(async (sha) => [sha, await repository.readBlob(sha)] as const)));
+  if (shas.some((sha) => !contents.has(sha))) throw internalFailure("catalog_blob_decode_failed");
+  return contents;
+}
+
+function contentFor(contents: Map<string, string>, entry: TreeEntry): string {
+  const content = contents.get(entry.sha);
+  if (content === undefined) throw internalFailure("catalog_blob_decode_failed");
+  return content;
+}
+
+function parseCatalogYaml(content: string): Record<string, any> {
+  try {
+    return parse(content) as Record<string, any>;
+  } catch {
+    throw internalFailure("catalog_yaml_parse_failed");
+  }
+}
+
 function schemaEnums(placeSchema: any, narrativeSchema: any, commonSchema: any, sourceIds: string[]): CanonicalOptions {
   const stringArray = (value: unknown, label: string): string[] => {
     if (!Array.isArray(value) || value.some((entry) => typeof entry !== "string")) throw new Error(`Cannot read ${label} from canonical schema`);
@@ -144,8 +171,22 @@ async function loadContext(repository: GitRepository, branch: string) {
   const tree = await repository.readTree(state.treeSha);
   const required = ["schemas/place.schema.json", "schemas/narrative.schema.json", "schemas/common.schema.json", "validation/editorial-preview.json"];
   const entries = required.map((path) => blob(tree, path));
-  if (entries.some((entry) => !entry)) throw new Error("Canonical schemas or preview allowlist are missing");
-  const [placeSchema, narrativeSchema, commonSchema, previewData] = await Promise.all(entries.map(async (entry) => JSON.parse(await repository.readBlob(entry!.sha))));
+  if (entries.some((entry) => !entry)) throw internalFailure("catalog_tree_processing_failed");
+  const requiredEntries = entries as TreeEntry[];
+  const contents = await readBlobContents(repository, requiredEntries);
+  let placeSchema: Record<string, any>;
+  let narrativeSchema: Record<string, any>;
+  let commonSchema: Record<string, any>;
+  let previewData: Record<string, any>;
+  try {
+    const parsed = requiredEntries.map((entry) => JSON.parse(contentFor(contents, entry)) as Record<string, any>);
+    placeSchema = parsed[0]!;
+    narrativeSchema = parsed[1]!;
+    commonSchema = parsed[2]!;
+    previewData = parsed[3]!;
+  } catch {
+    throw internalFailure("catalog_tree_processing_failed");
+  }
   return {
     state,
     tree,
@@ -161,15 +202,17 @@ export async function loadAdminRepository(repository: GitRepository, branch: str
   const { state, tree, options, previewIds } = await loadContext(repository, branch);
   const placeEntries = tree.filter((entry) => entry.type === "blob" && /^content\/places\/[^/]+\/place\.yaml$/.test(entry.path));
   const mediaEntries = tree.filter((entry) => entry.type === "blob" && /^content\/media\/[^/]+\.ya?ml$/.test(entry.path));
-  const mediaRecords = await Promise.all(mediaEntries.map(async (entry) => parse(await repository.readBlob(entry.sha)) as { related_place_ids?: unknown }));
+  const narrativeEntries = tree.filter((entry) => entry.type === "blob" && /^content\/places\/[^/]+\/narratives\/sr\.md$/.test(entry.path));
+  const contents = await readBlobContents(repository, [...mediaEntries, ...placeEntries, ...narrativeEntries]);
+  const mediaRecords = mediaEntries.map((entry) => parseCatalogYaml(contentFor(contents, entry)) as { related_place_ids?: unknown });
   const mediaCounts = new Map<string, number>();
   for (const media of mediaRecords) if (Array.isArray(media.related_place_ids)) for (const id of media.related_place_ids) if (typeof id === "string") mediaCounts.set(id, (mediaCounts.get(id) ?? 0) + 1);
 
-  const places = await Promise.all(placeEntries.map(async (entry): Promise<AdminPlace> => {
-    const record = parse(await repository.readBlob(entry.sha)) as Record<string, any>;
+  const places = placeEntries.map((entry): AdminPlace => {
+    const record = parseCatalogYaml(contentFor(contents, entry));
     const id = String(record.id ?? entry.path.split("/")[2]);
     const narrativeEntry = blob(tree, `content/places/${id}/narratives/sr.md`);
-    const narrative = narrativeEntry ? parseNarrative(await repository.readBlob(narrativeEntry.sha)).frontMatter : {};
+    const narrative = narrativeEntry ? parseNarrative(contentFor(contents, narrativeEntry)).frontMatter : {};
     const sourceIds = new Set([...(Array.isArray(record.source_ids) ? record.source_ids : []), ...(Array.isArray(narrative.source_ids) ? narrative.source_ids : [])].filter((value): value is string => typeof value === "string"));
     const coordinates = record.location?.coordinates;
     const municipality = factValue(record.location?.municipality);
@@ -190,7 +233,7 @@ export async function loadAdminRepository(repository: GitRepository, branch: str
       mediaCount: mediaCounts.get(id) ?? 0,
       inPreview: previewIds.has(id),
     };
-  }));
+  });
   places.sort((left, right) => left.preferredName.localeCompare(right.preferredName, "sr"));
   const statuses: Record<string, number> = {};
   for (const place of places) statuses[place.editorialStatus] = (statuses[place.editorialStatus] ?? 0) + 1;
@@ -203,8 +246,9 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
   const placeEntry = blob(tree, `content/places/${id}/place.yaml`);
   const narrativeEntry = blob(tree, `content/places/${id}/narratives/sr.md`);
   if (!placeEntry || !narrativeEntry) throw new AdminError("not_found", 404, "Place does not exist");
-  const rawPlace = parse(await repository.readBlob(placeEntry.sha)) as Record<string, any>;
-  const parsedNarrative = parseNarrative(await repository.readBlob(narrativeEntry.sha));
+  const contents = await readBlobContents(repository, [placeEntry, narrativeEntry]);
+  const rawPlace = parseCatalogYaml(contentFor(contents, placeEntry));
+  const parsedNarrative = parseNarrative(contentFor(contents, narrativeEntry));
   const rawNarrative = parsedNarrative.frontMatter;
   const coordinates = rawPlace.location?.coordinates;
   const placeSourceIds = Array.isArray(rawPlace.source_ids) ? rawPlace.source_ids.filter((value: unknown): value is string => typeof value === "string") : [];

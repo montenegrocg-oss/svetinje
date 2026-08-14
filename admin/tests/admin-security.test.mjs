@@ -507,6 +507,82 @@ test("default GitHub transport binds receiver-sensitive fetch to globalThis", as
   assert.equal(receivers.every((receiver) => receiver === globalThis), true);
 });
 
+test("GitHub transport batches repository blobs through one GraphQL request", async () => {
+  const { privateKeyPem } = createGitHubAppKeyPair("pkcs8");
+  const shas = ["a".repeat(40), "b".repeat(40)];
+  const calls = [];
+  const repository = new GitHubRepository({
+    env: {
+      ...env,
+      GITHUB_APP_ID: "123",
+      GITHUB_APP_INSTALLATION_ID: "456",
+      GITHUB_APP_PRIVATE_KEY: privateKeyPem,
+    },
+    fetchImpl: async (url, init = {}) => {
+      const parsedUrl = new URL(url);
+      calls.push(parsedUrl.pathname);
+      if (parsedUrl.pathname === "/app/installations/456/access_tokens") {
+        return Response.json({ token: "installation-token" }, { status: 201 });
+      }
+      if (parsedUrl.pathname === "/graphql") {
+        const request = JSON.parse(init.body);
+        assert.equal(request.variables.owner, "montenegrocg-oss");
+        assert.equal(request.variables.repo, "svetinje");
+        assert.match(request.query, new RegExp(shas[0]));
+        assert.match(request.query, new RegExp(shas[1]));
+        return Response.json({
+          data: {
+            repository: {
+              blob0: { isBinary: false, text: "first" },
+              blob1: { isBinary: false, text: "second" },
+            },
+          },
+        });
+      }
+      assert.fail(`Unexpected request ${parsedUrl.pathname}`);
+    },
+  });
+
+  const blobs = await repository.readBlobs(shas);
+  assert.deepEqual([...blobs.entries()], [[shas[0], "first"], [shas[1], "second"]]);
+  assert.deepEqual(calls, ["/app/installations/456/access_tokens", "/graphql"]);
+});
+
+test("internal GitHub diagnostics expose only approved stage, status, and read operation", async () => {
+  const secret = "private-response-material";
+  const response = errorResponse(new AdminError("internal_error", 502, secret, {
+    stage: "repository_request_failed",
+    status: 503,
+    operation: "blob",
+    response: secret,
+    token: secret,
+  }));
+  const serialized = await response.text();
+  assert.doesNotMatch(serialized, new RegExp(secret));
+  assert.deepEqual(JSON.parse(serialized).error.fields, {
+    stage: "repository_request_failed",
+    status: 503,
+    operation: "blob",
+  });
+});
+
+test("post-load internal diagnostics expose only fixed stage names", async () => {
+  for (const stage of [
+    "catalog_tree_processing_failed",
+    "catalog_blob_decode_failed",
+    "catalog_yaml_parse_failed",
+    "schema_compile_failed",
+    "dashboard_render_failed",
+  ]) {
+    const response = errorResponse(new AdminError("internal_error", 502, "unsafe detail", {
+      stage,
+      operation: "create_commit",
+      privateKey: "unsafe detail",
+    }));
+    assert.deepEqual((await response.json()).error.fields, { stage });
+  }
+});
+
 test("GitHub transport creates one tree and commit, checks HEAD twice, and updates ref without force", async () => {
   const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
   const privateKeyPem = privateKey.export({ type: "pkcs8", format: "pem" });
