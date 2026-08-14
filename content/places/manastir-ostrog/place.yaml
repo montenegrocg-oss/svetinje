@@ -25,6 +25,10 @@ location:
     value: ME
     verification:
       status: requires-verification
+  municipality:
+    value: Никшић
+    verification:
+      status: requires-verification
 relationships:
   media_ids:
     - photo-manastir-ostrog-a4c3f03b8640
@@ -34,6 +38,10 @@ approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-14T21:29:40Z
+  updated_at: 2026-08-14T21:30:20Z
   updated_by: montenegro-cg
-ecclesiastical: {}
+ecclesiastical:
+  jurisdiction:
+    value: Митрополија црногорско-приморска
+    verification:
+      status: requires-verification
