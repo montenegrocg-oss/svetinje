@@ -113,7 +113,8 @@ export function parseNarrativeSections(body: string): NarrativeSection[] {
 
 export function serializeNarrativeSections(sections: NarrativeSection[], originalBody = ""): string {
   const firstHeading = originalBody.search(/^##\s+/m);
-  const prefix = firstHeading > 0 ? originalBody.slice(0, firstHeading).trimEnd() : "";
+  const originalPrefix = firstHeading > 0 ? originalBody.slice(0, firstHeading) : "";
+  const prefix = originalPrefix.trimEnd();
   const headings = [...originalBody.matchAll(/^##\s+(.+?)\s+\{#([a-z0-9-]+)\}\s*$/gm)];
   const originalBlocks = new Map(headings.map((heading, index) => {
     const start = heading.index ?? 0;
@@ -128,7 +129,8 @@ export function serializeNarrativeSections(sections: NarrativeSection[], origina
       ? block
       : `## ${section.title} {#${section.id}}\n\n${section.paragraphs.join("\n\n")}`;
   }).join("\n\n");
-  return `${prefix ? `${prefix}\n\n` : ""}${rendered}${rendered ? "\n" : ""}`;
+  const leading = prefix ? `${prefix}\n\n` : originalPrefix;
+  return `${leading}${rendered}${rendered ? "\n" : ""}`;
 }
 
 const factValue = (record: unknown): string | undefined => {

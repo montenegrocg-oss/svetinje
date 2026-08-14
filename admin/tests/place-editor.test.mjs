@@ -98,6 +98,20 @@ class Repository {
   async commitFilesAtomic(input) { this.committed = input; return { commitSha: "d".repeat(40), branch: input.branch }; }
 }
 
+class RoundTripRepository extends Repository {
+  headSha = HEAD;
+  commitCount = 0;
+  async readBranchState() { return { headSha: this.headSha, treeSha: TREE }; }
+  async commitFilesAtomic(input) {
+    this.committed = input;
+    this.commitCount += 1;
+    this.blobs.place = input.files.find(({ path }) => path.endsWith("/place.yaml")).content;
+    this.blobs.narrative = input.files.find(({ path }) => path.endsWith("/narratives/sr.md")).content;
+    this.headSha = this.commitCount.toString(16).padStart(40, "0");
+    return { commitSha: this.headSha, branch: input.branch };
+  }
+}
+
 const env = { GITHUB_EDITORIAL_BRANCH: "editorial/work" };
 const session = { subject: "user", email: "editor@example.com", actor: "editor-user", developmentBypass: false };
 const body = (place) => ({
@@ -174,6 +188,39 @@ test("no-op PATCH succeeds without changing audit timestamps or creating a Git c
   assert.equal(result.unchanged, true);
   assert.equal(result.commitSha, HEAD);
   assert.equal(repository.committed, undefined);
+});
+
+test("a repeated PATCH after serialization and readback does not create an audit-only commit", async () => {
+  const repository = new RoundTripRepository();
+  const original = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  const first = await updatePlace(
+    repository,
+    env,
+    session,
+    "existing-place",
+    { ...body(original.place), summary: "Updated summary" },
+    new Date("2026-08-13T12:00:00Z"),
+  );
+  assert.equal(first.unchanged, false);
+  assert.equal(repository.commitCount, 1);
+
+  const savedPlace = parse(repository.blobs.place);
+  const savedNarrative = parseNarrative(repository.blobs.narrative).frontMatter;
+  const reloaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  const repeated = await updatePlace(
+    repository,
+    env,
+    session,
+    "existing-place",
+    { ...body(reloaded.place), expectedHeadSha: repository.headSha },
+    new Date("2026-08-13T12:05:00Z"),
+  );
+
+  assert.equal(repeated.unchanged, true);
+  assert.equal(repeated.commitSha, repository.headSha);
+  assert.equal(repository.commitCount, 1);
+  assert.deepEqual(parse(repository.blobs.place).audit, savedPlace.audit);
+  assert.deepEqual(parseNarrative(repository.blobs.narrative).frontMatter.audit, savedNarrative.audit);
 });
 
 test("preview coordinates require explicit public safety while non-preview records retain canonical options", async () => {

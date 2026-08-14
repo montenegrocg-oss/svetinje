@@ -40,7 +40,17 @@ export interface UpdatedCanonicalFiles {
 }
 
 const text = (value: unknown) => typeof value === "string" ? value.trim() : undefined;
-const same = (left: unknown, right: unknown) => JSON.stringify(left) === JSON.stringify(right);
+const canonicalize = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .filter(([, entry]) => entry !== undefined)
+      .sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0)
+      .map(([key, entry]) => [key, canonicalize(entry)]),
+  );
+};
+const same = (left: unknown, right: unknown) => JSON.stringify(canonicalize(left)) === JSON.stringify(canonicalize(right));
 const requiredText = (value: unknown, field: string, errors: Record<string, string>) => {
   const result = text(value);
   if (!result) errors[field] = "Поље је обавезно.";

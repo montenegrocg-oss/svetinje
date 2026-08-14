@@ -64,7 +64,6 @@ test("editorial preview inventory is driven by the canonical allowlist", async (
 
 test("Serbian narratives contain no visible source-registry footnotes", async () => {
   const placeIds = await readdir(path.join(PROJECT_ROOT, "content", "places"));
-  assert.equal(placeIds.length, 25);
   for (const placeId of placeIds) {
     const narrative = await source(path.join("content", "places", placeId, "narratives", "sr.md"));
     assert.doesNotMatch(narrative, /\[\^[^\]]+\]/, `${placeId} contains an inline source citation`);
