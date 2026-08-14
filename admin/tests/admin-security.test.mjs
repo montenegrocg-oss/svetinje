@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { generateKeyPairSync } from "node:crypto";
 import test from "node:test";
+import { exportJWK, generateKeyPair, SignJWT } from "jose";
 import { parse } from "yaml";
 import { authenticateRequest } from "../src/auth.ts";
 import { AdminError, errorResponse } from "../src/errors.ts";
@@ -98,13 +99,85 @@ test("save creates one atomic two-file research scaffold and never touches previ
 });
 
 test("development auth bypass cannot activate in production", async () => {
-  await assert.rejects(
-    () => authenticateRequest(new Request("https://admin.example.test"), { ENVIRONMENT: "production", DEV_AUTH_BYPASS: "true" }),
-    (error) => error.code === "unauthenticated",
-  );
+  const infoLogs = [];
+  const originalInfo = console.info;
+  console.info = (diagnostic) => infoLogs.push(diagnostic);
+  try {
+    await assert.rejects(
+      () => authenticateRequest(new Request("https://admin.example.test"), { ENVIRONMENT: "production", DEV_AUTH_BYPASS: "true" }),
+      (error) => error.code === "unauthenticated",
+    );
+  } finally {
+    console.info = originalInfo;
+  }
+  assert.deepEqual(infoLogs, [{
+    "auth.config.team_domain_present": false,
+    "auth.config.audience_present": false,
+    "auth.request.assertion_present": false,
+  }]);
   const local = await authenticateRequest(new Request("http://localhost"), { ENVIRONMENT: "development", DEV_AUTH_BYPASS: "true", DEV_AUTH_EMAIL: "maxim@example.com" });
   assert.equal(local.developmentBypass, true);
   assert.equal(local.actor, "maxim");
+});
+
+test("Access diagnostics expose only presence and safe JOSE claim failure metadata", async () => {
+  const issuer = "https://diagnostic.cloudflareaccess.com";
+  const expectedAudience = "expected-audience";
+  const rejectedAudience = "rejected-audience";
+  const privateEmail = "private@example.test";
+  const privateSubject = "private-subject";
+  const { publicKey, privateKey } = await generateKeyPair("RS256", { extractable: true });
+  const jwk = await exportJWK(publicKey);
+  Object.assign(jwk, { alg: "RS256", kid: "diagnostic-key", use: "sig" });
+  const assertion = await new SignJWT({ email: privateEmail })
+    .setProtectedHeader({ alg: "RS256", kid: "diagnostic-key" })
+    .setSubject(privateSubject)
+    .setIssuer(issuer)
+    .setAudience(rejectedAudience)
+    .setIssuedAt()
+    .setExpirationTime("5m")
+    .sign(privateKey);
+
+  const infoLogs = [];
+  const errorLogs = [];
+  const originalInfo = console.info;
+  const originalError = console.error;
+  const originalFetch = globalThis.fetch;
+  console.info = (diagnostic) => infoLogs.push(diagnostic);
+  console.error = (diagnostic) => errorLogs.push(diagnostic);
+  globalThis.fetch = async () => Response.json({ keys: [jwk] });
+  try {
+    await assert.rejects(
+      () => authenticateRequest(new Request("https://admin.example.test", {
+        headers: { "Cf-Access-Jwt-Assertion": assertion },
+      }), {
+        ENVIRONMENT: "production",
+        CLOUDFLARE_ACCESS_TEAM_DOMAIN: issuer,
+        CLOUDFLARE_ACCESS_AUD: expectedAudience,
+      }),
+      (error) => error.code === "unauthenticated",
+    );
+  } finally {
+    console.info = originalInfo;
+    console.error = originalError;
+    globalThis.fetch = originalFetch;
+  }
+
+  assert.deepEqual(infoLogs, [{
+    "auth.config.team_domain_present": true,
+    "auth.config.audience_present": true,
+    "auth.request.assertion_present": true,
+  }]);
+  assert.deepEqual(errorLogs, [{
+    "auth.jwt.error_name": "JWTClaimValidationFailed",
+    "auth.jwt.error_code": "ERR_JWT_CLAIM_VALIDATION_FAILED",
+    "auth.jwt.claim": "aud",
+    "auth.jwt.reason": "check_failed",
+  }]);
+  const serializedLogs = JSON.stringify({ infoLogs, errorLogs });
+  for (const sensitiveValue of [assertion, issuer, expectedAudience, rejectedAudience, privateEmail, privateSubject]) {
+    assert.doesNotMatch(serializedLogs, new RegExp(sensitiveValue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
 });
 
 test("write endpoint rejects cross-origin JSON before any GitHub operation", async () => {
