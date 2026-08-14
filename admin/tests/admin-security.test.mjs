@@ -38,6 +38,8 @@ class FakeRepository {
 
 const env = { GITHUB_EDITORIAL_BRANCH: "editorial/work", GITHUB_OWNER: "montenegrocg-oss", GITHUB_REPO: "svetinje" };
 const session = { subject: "user", email: "maxim@example.com", actor: "maxim", developmentBypass: false };
+const ACCESS_ISSUER = "https://access-test.cloudflareaccess.com";
+const ACCESS_AUDIENCE = "admin-application-audience";
 const validBody = {
   preferredName: "Пробни објекат",
   id: "probni-objekat",
@@ -45,6 +47,47 @@ const validBody = {
   placeType: "monastery",
   expectedHeadSha: "a".repeat(40),
 };
+
+async function createAccessKeyPair(kid = "access-test-key") {
+  const keyPair = await generateKeyPair("RS256", { extractable: true });
+  const jwk = await exportJWK(keyPair.publicKey);
+  Object.assign(jwk, { alg: "RS256", kid, use: "sig" });
+  return { ...keyPair, jwk, kid };
+}
+
+async function signAccessJwt({ privateKey, kid, issuer = ACCESS_ISSUER, audience = ACCESS_AUDIENCE, email, subject }) {
+  const claims = email === undefined ? {} : { email };
+  let token = new SignJWT(claims)
+    .setProtectedHeader({ alg: "RS256", kid })
+    .setIssuer(issuer)
+    .setAudience(audience)
+    .setIssuedAt()
+    .setExpirationTime("5m");
+  if (subject !== undefined) token = token.setSubject(subject);
+  return token.sign(privateKey);
+}
+
+function accessRequest(assertion) {
+  return new Request("https://admin.example.test", {
+    headers: { "Cf-Access-Jwt-Assertion": assertion },
+  });
+}
+
+const accessEnv = {
+  ENVIRONMENT: "production",
+  CLOUDFLARE_ACCESS_TEAM_DOMAIN: ACCESS_ISSUER,
+  CLOUDFLARE_ACCESS_AUD: ACCESS_AUDIENCE,
+};
+
+async function withAccessJwks(jwk, operation) {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => Response.json({ keys: [jwk] });
+  try {
+    return await operation();
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
 
 test("writes fail closed without a non-main editorial branch", () => {
   for (const branch of [undefined, "", "main"]) {
@@ -99,85 +142,71 @@ test("save creates one atomic two-file research scaffold and never touches previ
 });
 
 test("development auth bypass cannot activate in production", async () => {
-  const infoLogs = [];
-  const originalInfo = console.info;
-  console.info = (diagnostic) => infoLogs.push(diagnostic);
-  try {
-    await assert.rejects(
-      () => authenticateRequest(new Request("https://admin.example.test"), { ENVIRONMENT: "production", DEV_AUTH_BYPASS: "true" }),
-      (error) => error.code === "unauthenticated",
-    );
-  } finally {
-    console.info = originalInfo;
-  }
-  assert.deepEqual(infoLogs, [{
-    "auth.config.team_domain_present": false,
-    "auth.config.audience_present": false,
-    "auth.request.assertion_present": false,
-  }]);
+  await assert.rejects(
+    () => authenticateRequest(new Request("https://admin.example.test"), { ENVIRONMENT: "production", DEV_AUTH_BYPASS: "true" }),
+    (error) => error.code === "unauthenticated",
+  );
   const local = await authenticateRequest(new Request("http://localhost"), { ENVIRONMENT: "development", DEV_AUTH_BYPASS: "true", DEV_AUTH_EMAIL: "maxim@example.com" });
   assert.equal(local.developmentBypass, true);
   assert.equal(local.actor, "maxim");
 });
 
-test("Access diagnostics expose only presence and safe JOSE claim failure metadata", async () => {
-  const issuer = "https://diagnostic.cloudflareaccess.com";
-  const expectedAudience = "expected-audience";
-  const rejectedAudience = "rejected-audience";
-  const privateEmail = "private@example.test";
-  const privateSubject = "private-subject";
-  const { publicKey, privateKey } = await generateKeyPair("RS256", { extractable: true });
-  const jwk = await exportJWK(publicKey);
-  Object.assign(jwk, { alg: "RS256", kid: "diagnostic-key", use: "sig" });
-  const assertion = await new SignJWT({ email: privateEmail })
-    .setProtectedHeader({ alg: "RS256", kid: "diagnostic-key" })
-    .setSubject(privateSubject)
-    .setIssuer(issuer)
-    .setAudience(rejectedAudience)
-    .setIssuedAt()
-    .setExpirationTime("5m")
-    .sign(privateKey);
+test("valid Access JWT with email and subject creates a human admin session", async () => {
+  const { privateKey, jwk, kid } = await createAccessKeyPair();
+  const assertion = await signAccessJwt({
+    privateKey,
+    kid,
+    email: "maxim@example.test",
+    subject: "access-user-id",
+  });
+  const authenticated = await withAccessJwks(jwk, () => authenticateRequest(accessRequest(assertion), accessEnv));
+  assert.equal(authenticated.subject, "access-user-id");
+  assert.equal(authenticated.email, "maxim@example.test");
+  assert.equal(authenticated.actor, "maxim");
+  assert.equal(authenticated.developmentBypass, false);
+});
 
-  const infoLogs = [];
-  const errorLogs = [];
-  const originalInfo = console.info;
-  const originalError = console.error;
-  const originalFetch = globalThis.fetch;
-  console.info = (diagnostic) => infoLogs.push(diagnostic);
-  console.error = (diagnostic) => errorLogs.push(diagnostic);
-  globalThis.fetch = async () => Response.json({ keys: [jwk] });
-  try {
-    await assert.rejects(
-      () => authenticateRequest(new Request("https://admin.example.test", {
-        headers: { "Cf-Access-Jwt-Assertion": assertion },
-      }), {
-        ENVIRONMENT: "production",
-        CLOUDFLARE_ACCESS_TEAM_DOMAIN: issuer,
-        CLOUDFLARE_ACCESS_AUD: expectedAudience,
-      }),
-      (error) => error.code === "unauthenticated",
-    );
-  } finally {
-    console.info = originalInfo;
-    console.error = originalError;
-    globalThis.fetch = originalFetch;
-  }
+test("valid Access JWT with email falls back to email when subject is absent or empty", async () => {
+  const { privateKey, jwk, kid } = await createAccessKeyPair();
+  await withAccessJwks(jwk, async () => {
+    for (const subject of [undefined, ""]) {
+      const assertion = await signAccessJwt({ privateKey, kid, email: "maxim@example.test", subject });
+      const authenticated = await authenticateRequest(accessRequest(assertion), accessEnv);
+      assert.equal(authenticated.subject, "maxim@example.test");
+      assert.equal(authenticated.email, "maxim@example.test");
+    }
+  });
+});
 
-  assert.deepEqual(infoLogs, [{
-    "auth.config.team_domain_present": true,
-    "auth.config.audience_present": true,
-    "auth.request.assertion_present": true,
-  }]);
-  assert.deepEqual(errorLogs, [{
-    "auth.jwt.error_name": "JWTClaimValidationFailed",
-    "auth.jwt.error_code": "ERR_JWT_CLAIM_VALIDATION_FAILED",
-    "auth.jwt.claim": "aud",
-    "auth.jwt.reason": "check_failed",
-  }]);
-  const serializedLogs = JSON.stringify({ infoLogs, errorLogs });
-  for (const sensitiveValue of [assertion, issuer, expectedAudience, rejectedAudience, privateEmail, privateSubject]) {
-    assert.doesNotMatch(serializedLogs, new RegExp(sensitiveValue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-  }
+test("Access JWT without a non-empty email cannot create a human admin session", async () => {
+  const { privateKey, jwk, kid } = await createAccessKeyPair();
+  await withAccessJwks(jwk, async () => {
+    for (const email of [undefined, ""]) {
+      const assertion = await signAccessJwt({ privateKey, kid, email, subject: "" });
+      await assert.rejects(
+        () => authenticateRequest(accessRequest(assertion), accessEnv),
+        (error) => error.code === "unauthenticated",
+      );
+    }
+  });
+});
+
+test("Access JWT issuer, audience, and signature validation remain fail closed", async () => {
+  const { privateKey, jwk, kid } = await createAccessKeyPair();
+  const { privateKey: unrelatedPrivateKey } = await createAccessKeyPair("unrelated-key");
+  const assertions = [
+    await signAccessJwt({ privateKey, kid, email: "maxim@example.test", subject: "user", issuer: "https://wrong.cloudflareaccess.com" }),
+    await signAccessJwt({ privateKey, kid, email: "maxim@example.test", subject: "user", audience: "wrong-audience" }),
+    await signAccessJwt({ privateKey: unrelatedPrivateKey, kid, email: "maxim@example.test", subject: "user" }),
+  ];
+  await withAccessJwks(jwk, async () => {
+    for (const assertion of assertions) {
+      await assert.rejects(
+        () => authenticateRequest(accessRequest(assertion), accessEnv),
+        (error) => error.code === "unauthenticated",
+      );
+    }
+  });
 });
 
 test("write endpoint rejects cross-origin JSON before any GitHub operation", async () => {
