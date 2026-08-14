@@ -72,7 +72,7 @@ export class GitHubRepository implements GitRepository {
 
   constructor(options: GitHubRepositoryOptions) {
     this.options = options;
-    this.#fetch = options.fetchImpl ?? fetch;
+    this.#fetch = options.fetchImpl ?? globalThis.fetch.bind(globalThis);
     this.#now = options.now ?? Date.now;
     this.#owner = options.env.GITHUB_OWNER?.trim() || "montenegrocg-oss";
     this.#repo = options.env.GITHUB_REPO?.trim() || "svetinje";

@@ -466,6 +466,47 @@ test("GitHub authentication error serialization allows only approved diagnostic 
   assert.equal(body.error.message, "GitHub App аутентификација није успјела.");
 });
 
+test("default GitHub transport binds receiver-sensitive fetch to globalThis", async () => {
+  const { privateKeyPem } = createGitHubAppKeyPair("pkcs8");
+  const originalFetch = globalThis.fetch;
+  const receivers = [];
+  globalThis.fetch = async function receiverSensitiveFetch(url) {
+    receivers.push(this);
+    if (this !== globalThis) throw new TypeError("Illegal invocation");
+    const pathname = new URL(url).pathname;
+    if (pathname === "/app/installations/456/access_tokens") {
+      return Response.json({ token: "installation-token" }, { status: 201 });
+    }
+    if (pathname.endsWith("/git/ref/heads/editorial%2Fwork")) {
+      return Response.json({ object: { sha: "a".repeat(40) } });
+    }
+    if (pathname.endsWith(`/git/commits/${"a".repeat(40)}`)) {
+      return Response.json({ tree: { sha: "b".repeat(40) } });
+    }
+    throw new Error(`Unexpected request ${pathname}`);
+  };
+
+  try {
+    const repository = new GitHubRepository({
+      env: {
+        ...env,
+        GITHUB_APP_ID: "123",
+        GITHUB_APP_INSTALLATION_ID: "456",
+        GITHUB_APP_PRIVATE_KEY: privateKeyPem,
+      },
+    });
+    assert.deepEqual(await repository.readBranchState("editorial/work"), {
+      headSha: "a".repeat(40),
+      treeSha: "b".repeat(40),
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+
+  assert.equal(receivers.length, 3);
+  assert.equal(receivers.every((receiver) => receiver === globalThis), true);
+});
+
 test("GitHub transport creates one tree and commit, checks HEAD twice, and updates ref without force", async () => {
   const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
   const privateKeyPem = privateKey.export({ type: "pkcs8", format: "pem" });
