@@ -557,6 +557,7 @@ test("post-load internal diagnostic stages remain private", async () => {
     "catalog_blob_decode_failed",
     "catalog_yaml_parse_failed",
     "schema_compile_failed",
+    "canonical_schema_fingerprint_mismatch",
     "dashboard_render_failed",
   ]) {
     const response = errorResponse(new AdminError("internal_error", 502, "unsafe detail", {

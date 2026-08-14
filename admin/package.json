@@ -4,10 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/*.test.mjs",
-    "typecheck": "tsc --noEmit",
+    "generate:validators": "node scripts/generate-canonical-validators.mjs",
+    "test": "pnpm run generate:validators && node --test tests/*.test.mjs",
+    "typecheck": "pnpm run generate:validators && tsc --noEmit",
     "build:client": "node scripts/build-client.mjs",
-    "build": "pnpm run build:client && wrangler deploy --dry-run --outdir dist"
+    "verify:worker-bundle": "node scripts/verify-worker-bundle.mjs dist",
+    "build": "pnpm run generate:validators && pnpm run build:client && wrangler deploy --dry-run --outdir dist && pnpm run verify:worker-bundle"
   },
   "dependencies": {
     "jose": "6.1.2",

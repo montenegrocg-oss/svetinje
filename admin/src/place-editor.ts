@@ -1,10 +1,14 @@
 import { parse, stringify } from "yaml";
-import Ajv2020 from "ajv/dist/2020.js";
-import addFormats from "ajv-formats";
 import { isPlaceAreaId } from "../../src/lib/place-areas.ts";
-import { AdminError } from "./errors.ts";
+import {
+  CANONICAL_SCHEMA_FINGERPRINT,
+  validateNarrative,
+  validatePlace,
+} from "./generated/canonical-validators.js";
+import { AdminError, internalFailure } from "./errors.ts";
 import type { CanonicalOptions, EditablePlaceRecord, NarrativeSection } from "./repository-content.ts";
 import { parseNarrative, serializeNarrative, serializeNarrativeSections } from "./repository-content.ts";
+import { fingerprintCanonicalSchemas } from "./schema-fingerprint.ts";
 
 export interface UpdatePlaceBody {
   expectedHeadSha?: unknown;
@@ -118,7 +122,7 @@ function assertSafeMarkdown(body: string, errors: Record<string, string>): void 
   }
 }
 
-export function updateCanonicalPlace(record: EditablePlaceRecord, body: UpdatePlaceBody, actor: string, now: Date): UpdatedCanonicalFiles {
+export async function updateCanonicalPlace(record: EditablePlaceRecord, body: UpdatePlaceBody, actor: string, now: Date): Promise<UpdatedCanonicalFiles> {
   const errors: Record<string, string> = {};
   const preferredName = requiredText(body.preferredName, "preferredName", errors);
   const slug = requiredText(body.slug, "slug", errors);
@@ -188,11 +192,10 @@ export function updateCanonicalPlace(record: EditablePlaceRecord, body: UpdatePl
   const placeYaml = stringify(place, { lineWidth: 0 });
   const narrativeMarkdown = serializeNarrative(narrative, narrativeBody);
   if (!parse(placeYaml) || !parseNarrative(narrativeMarkdown).frontMatter) throw new AdminError("invalid_form_data", 400, "Serialized content is invalid");
-  const ajv = new Ajv2020({ allErrors: true, strict: true, strictRequired: false });
-  addFormats(ajv);
-  ajv.addSchema(record.schemas.common);
-  const validatePlace = ajv.compile(record.schemas.place);
-  const validateNarrative = ajv.compile(record.schemas.narrative);
+  const loadedSchemaFingerprint = await fingerprintCanonicalSchemas(record.schemas);
+  if (loadedSchemaFingerprint !== CANONICAL_SCHEMA_FINGERPRINT) {
+    throw internalFailure("canonical_schema_fingerprint_mismatch");
+  }
   const canonicalErrors: Record<string, string> = {};
   if (!validatePlace(place)) for (const error of validatePlace.errors ?? []) canonicalErrors[`place${error.instancePath || "/"}`] = error.message ?? "Није важеће.";
   if (!validateNarrative(narrative)) for (const error of validateNarrative.errors ?? []) canonicalErrors[`narrative${error.instancePath || "/"}`] = error.message ?? "Није важеће.";

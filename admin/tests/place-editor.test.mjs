@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { parse } from "yaml";
 import { updateCanonicalPlace } from "../src/place-editor.ts";
@@ -7,9 +8,9 @@ import { updatePlace } from "../src/service.ts";
 
 const HEAD = "a".repeat(40);
 const TREE = "b".repeat(40);
-const PLACE_SCHEMA = JSON.stringify({ $defs: { placeType: { enum: ["monastery", "church"] }, coordinateAccuracy: { enum: ["exact-entrance", "complex-centroid"] } } });
-const NARRATIVE_SCHEMA = JSON.stringify({ $defs: { sectionKey: { enum: ["introduction", "history", "location"] } } });
-const COMMON_SCHEMA = JSON.stringify({ $defs: { publicationSafety: { enum: ["public", "review-required"] }, verificationStatus: { enum: ["verified", "requires-verification", "unknown"] } } });
+const PLACE_SCHEMA = await readFile(new URL("../../schemas/place.schema.json", import.meta.url), "utf8");
+const NARRATIVE_SCHEMA = await readFile(new URL("../../schemas/narrative.schema.json", import.meta.url), "utf8");
+const COMMON_SCHEMA = await readFile(new URL("../../schemas/common.schema.json", import.meta.url), "utf8");
 const PLACE = `schema_version: 1
 id: existing-place
 editorial_status: research
@@ -107,7 +108,8 @@ test("GET editable model derives schema options and preserves narrative structur
   const model = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
   assert.equal(model.place.preferredName, "Постојећи објекат");
   assert.deepEqual(model.place.sections.map(({ id }) => id), ["introduction", "history"]);
-  assert.deepEqual(model.options.placeTypes, ["monastery", "church"]);
+  assert.deepEqual(model.options.placeTypes.slice(0, 2), ["monastery", "church"]);
+  assert.equal(model.options.placeTypes.includes("cathedral"), true);
   assert.equal(model.place.inPreview, true);
   assert.deepEqual(model.place.placeSourceIds, ["source-one", "source-map"]);
 });
@@ -151,11 +153,32 @@ test("PATCH round trip updates basic, location, coordinates and narrative in one
 test("unchanged facts retain verification exactly and coordinates can be cleared", async () => {
   const loaded = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
   const update = body(loaded.place);
-  const unchanged = updateCanonicalPlace(loaded, update, "editor-user", new Date("2026-08-13T12:00:00Z"));
+  const unchanged = await updateCanonicalPlace(loaded, update, "editor-user", new Date("2026-08-13T12:00:00Z"));
   assert.deepEqual(unchanged.place.place_type.verification, parse(PLACE).place_type.verification);
   assert.deepEqual(unchanged.place.location.coordinates.verification, parse(PLACE).location.coordinates.verification);
-  const cleared = updateCanonicalPlace(loaded, { ...update, latitude: "", longitude: "" }, "editor-user", new Date("2026-08-13T12:00:00Z"));
+  const cleared = await updateCanonicalPlace(loaded, { ...update, latitude: "", longitude: "" }, "editor-user", new Date("2026-08-13T12:00:00Z"));
   assert.equal(cleared.place.location.coordinates, undefined);
+});
+
+test("canonical schema violations return invalid_form_data instead of internal_error", async () => {
+  const repository = new Repository();
+  const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  await assert.rejects(
+    () => updatePlace(repository, env, session, "existing-place", { ...body(loaded.place), slug: "a".repeat(81) }),
+    (error) => error.code === "invalid_form_data" && error.status === 400 && Boolean(error.fields?.["narrative/slug"]),
+  );
+  assert.equal(repository.committed, undefined);
+});
+
+test("canonical schema fingerprint mismatch fails closed before validation or commit", async () => {
+  const repository = new Repository();
+  repository.blobs.commonSchema = JSON.stringify({ ...JSON.parse(COMMON_SCHEMA), title: "Changed after Worker build" });
+  const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  await assert.rejects(
+    () => updatePlace(repository, env, session, "existing-place", body(loaded.place)),
+    (error) => error.code === "internal_error" && error.status === 502,
+  );
+  assert.equal(repository.committed, undefined);
 });
 
 test("unsupported type, area, coordinates, section and stale HEAD are rejected without commits", async () => {

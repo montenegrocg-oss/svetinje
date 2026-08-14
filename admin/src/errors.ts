@@ -36,6 +36,7 @@ export type InternalDiagnosticStage =
   | "catalog_blob_decode_failed"
   | "catalog_yaml_parse_failed"
   | "schema_compile_failed"
+  | "canonical_schema_fingerprint_mismatch"
   | "dashboard_render_failed";
 
 export function internalFailure(

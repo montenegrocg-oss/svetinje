@@ -115,7 +115,7 @@ export async function updatePlace(
     throw new AdminError("invalid_form_data", 400, "Expected branch HEAD is invalid", { expectedHeadSha: "HEAD ревизија није важећа." });
   }
   if (expectedHeadSha !== record.state.headSha) throw new AdminError("git_conflict", 409, "Editorial branch moved before save validation");
-  const updated = updateCanonicalPlace(record, body, session.actor, now);
+  const updated = await updateCanonicalPlace(record, body, session.actor, now);
   const result = await repository.commitFilesAtomic({
     branch,
     expectedHeadSha,
