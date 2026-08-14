@@ -136,6 +136,7 @@ const photoDrop = form.querySelector<HTMLElement>("[data-photo-drop]");
 const photoLocalList = form.querySelector<HTMLElement>("[data-photo-local-list]");
 const photoStatus = form.querySelector<HTMLElement>("[data-photo-status]");
 const uploadPhotosButton = form.querySelector<HTMLButtonElement>("[data-upload-photos]");
+const photoStatusStorageKey = "svetinje.admin.photo-status";
 type PreparedPhoto = { file: File; previewUrl: string; width: number; height: number; originalName: string };
 let preparedPhotos: PreparedPhoto[] = [];
 
@@ -143,6 +144,27 @@ const setPhotoStatus = (message: string, isError = false) => {
   if (!photoStatus) return;
   photoStatus.textContent = message;
   photoStatus.className = isError ? "error" : "help";
+};
+
+try {
+  const restoredPhotoStatus = sessionStorage.getItem(photoStatusStorageKey);
+  if (restoredPhotoStatus) {
+    sessionStorage.removeItem(photoStatusStorageKey);
+    setPhotoStatus(restoredPhotoStatus);
+  }
+} catch {
+  // Storage is optional; the upload itself remains functional when unavailable.
+}
+
+const rememberPhotoStatus = (message: string) => {
+  try { sessionStorage.setItem(photoStatusStorageKey, message); } catch { /* Optional enhancement only. */ }
+};
+
+const uploadButtonLabel = (count: number) => {
+  if (count === 1) return "Отпреми 1 фотографију";
+  if (count > 1 && count < 5) return `Отпреми ${count} фотографије`;
+  if (count >= 5) return `Отпреми ${count} фотографија`;
+  return "Отпреми фотографије";
 };
 
 const canvasBlob = (canvas: HTMLCanvasElement, type: string, quality?: number) => new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, quality));
@@ -231,7 +253,10 @@ function renderPreparedPhotos() {
     card.appendChild(image); card.appendChild(meta);
     return card;
   }));
-  if (uploadPhotosButton) uploadPhotosButton.disabled = preparedPhotos.length === 0;
+  if (uploadPhotosButton) {
+    uploadPhotosButton.disabled = preparedPhotos.length === 0;
+    uploadPhotosButton.textContent = uploadButtonLabel(preparedPhotos.length);
+  }
 }
 
 async function addPhotoFiles(files: File[]) {
@@ -279,15 +304,16 @@ uploadPhotosButton?.addEventListener("click", async () => {
   form.dataset.headSha = result.commitSha;
   for (const photo of preparedPhotos) URL.revokeObjectURL(photo.previewUrl);
   preparedPhotos = [];
-  setPhotoStatus("Фотографије су сачуване.");
+  rememberPhotoStatus(result.mediaIds?.length === 1 ? "Фотографија је отпремљена и сачувана." : "Фотографије су отпремљене и сачуване.");
   location.reload();
 });
 
-form.addEventListener("change", async (event) => {
-  const primary = (event.target as HTMLElement).closest<HTMLInputElement>("[data-primary-photo]");
-  if (!primary?.checked) return;
+form.addEventListener("click", async (event) => {
+  const primary = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-set-primary-photo]");
+  if (!primary) return;
   const card = primary.closest<HTMLElement>("[data-existing-photo]");
   if (!card?.dataset.mediaId) return;
+  primary.disabled = true;
   setPhotoStatus("Постављање главне фотографије…");
   const response = await fetch(`/api/places/${encodeURIComponent(form.dataset.placeId ?? "")}/photos/${encodeURIComponent(card.dataset.mediaId)}`, {
     method: "PATCH",
@@ -295,9 +321,10 @@ form.addEventListener("change", async (event) => {
     body: JSON.stringify({ expectedHeadSha: form.dataset.headSha, primary: true }),
   });
   const result = await response.json() as any;
-  if (!response.ok) { setPhotoStatus(result.error?.message ?? "Главна фотографија није промијењена.", true); return; }
+  if (!response.ok) { primary.disabled = false; setPhotoStatus(result.error?.message ?? "Главна фотографија није промијењена.", true); return; }
   form.dataset.headSha = result.commitSha;
-  setPhotoStatus(result.unchanged ? "Фотографија је већ главна." : "Главна фотографија је промијењена.");
+  rememberPhotoStatus(result.unchanged ? "Фотографија је већ главна." : "Главна фотографија је промијењена.");
+  location.reload();
 });
 
 form.addEventListener("click", async (event) => {
@@ -342,20 +369,8 @@ form.addEventListener("click", async (event) => {
   const result = await response.json() as any;
   if (!response.ok) { remove.disabled = false; setPhotoStatus(result.error?.message ?? "Фотографија није уклоњена.", true); return; }
   form.dataset.headSha = result.commitSha;
-  const wasPrimary = Boolean(card.querySelector<HTMLInputElement>("[data-primary-photo]")?.checked);
-  card.remove();
-  const remainingCards = [...form.querySelectorAll<HTMLElement>("[data-existing-photo]")];
-  if (wasPrimary) {
-    const nextPrimary = remainingCards[0]?.querySelector<HTMLInputElement>("[data-primary-photo]");
-    if (nextPrimary) nextPrimary.checked = true;
-  }
-  if (!remainingCards.length) {
-    const empty = document.createElement("p");
-    empty.dataset.photoEmpty = "";
-    empty.textContent = "Још нема фотографија.";
-    form.querySelector("[data-existing-photo-list]")?.appendChild(empty);
-  }
-  setPhotoStatus("Фотографија је уклоњена.");
+  rememberPhotoStatus("Фотографија је уклоњена.");
+  location.reload();
 });
 
 const mapContainer = form.querySelector<HTMLElement>("[data-coordinate-map]");

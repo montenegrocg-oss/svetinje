@@ -5,6 +5,7 @@ import { parse } from "yaml";
 import { updateCanonicalPlace } from "../src/place-editor.ts";
 import { loadEditablePlace, parseNarrative } from "../src/repository-content.ts";
 import { updatePlace } from "../src/service.ts";
+import { editPlacePage } from "../src/ui.ts";
 
 const HEAD = "a".repeat(40);
 const TREE = "b".repeat(40);
@@ -215,11 +216,62 @@ test("place editor exposes the photo workflow and no source-registry controls", 
   assert.match(uiSource, /Још нема фотографија\./);
   assert.match(uiSource, /data-photo-alt/);
   assert.match(uiSource, /data-save-photo-alt>Сачувај опис/);
+  assert.match(uiSource, /Додај фотографије/);
+  assert.match(uiSource, /Изаберите фотографије са рачунара или телефона, или их превуците овдје\./);
+  assert.match(clientSource, /Отпреми 1 фотографију/);
+  assert.match(clientSource, /Отпреми \$\{count\} фотографије/);
+  assert.match(clientSource, /Фотографија је отпремљена и сачувана\./);
+  assert.doesNotMatch(uiSource, /type="radio" name="primaryPhoto"/);
   assert.doesNotMatch(uiSource, /href="#izvori"|data-alt-sources|Постојеће референце|section_sources/);
   assert.match(clientSource, /2400/);
   assert.match(clientSource, /0\.85/);
   assert.match(clientSource, /FormData/);
   assert.doesNotMatch(clientSource, /sourceIds|data-alt-sources/);
+});
+
+test("admin media thumbnails use the scoped R2 CSP and relationship-order controls", async () => {
+  const record = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
+  record.place.media = [
+    {
+      id: "photo-existing-random-a1",
+      objectKey: "places/existing-place/photo-existing-random-a1.jpg",
+      src: "https://media.svetinje.me/places/existing-place/photo-existing-random-a1.jpg",
+      mimeType: "image/jpeg",
+      width: 1280,
+      height: 960,
+      altText: "Прва фотографија",
+      isPrimary: true,
+    },
+    {
+      id: "photo-existing-random-b2",
+      objectKey: "places/existing-place/photo-existing-random-b2.jpg",
+      src: "https://media.svetinje.me/places/existing-place/photo-existing-random-b2.jpg",
+      mimeType: "image/jpeg",
+      width: 1024,
+      height: 768,
+      altText: "Друга фотографија",
+      isPrimary: false,
+    },
+  ];
+  const response = editPlacePage(session, record);
+  const html = await response.text();
+  const csp = response.headers.get("content-security-policy") ?? "";
+  const imgDirective = csp.split(";").find((directive) => directive.trim().startsWith("img-src")) ?? "";
+  assert.match(imgDirective, /https:\/\/media\.svetinje\.me/);
+  assert.doesNotMatch(csp.split(";").find((directive) => directive.trim().startsWith("default-src")) ?? "", /media\.svetinje\.me|\*/);
+  assert.doesNotMatch(csp.split(";").find((directive) => directive.trim().startsWith("connect-src")) ?? "", /media\.svetinje\.me/);
+  assert.doesNotMatch(csp, /https:\/\/images\.example\.com/);
+  assert.match(html, /src="https:\/\/media\.svetinje\.me\/places\/existing-place\/photo-existing-random-a1\.jpg"/);
+  assert.match(html, /<strong>Главна фотографија<\/strong><span class="badge" data-primary-photo>Главна<\/span>/);
+  assert.match(html, /<strong>Фотографија 2<\/strong>/);
+  assert.match(html, /data-set-primary-photo>Постави као главну/);
+  assert.match(html, /<summary>Технички подаци<\/summary>/);
+  assert.doesNotMatch(html, /name="primaryPhoto"|-main/);
+
+  record.place.media = [record.place.media[0]];
+  const singleHtml = await editPlacePage(session, record).text();
+  assert.match(singleHtml, /Главна фотографија/);
+  assert.doesNotMatch(singleHtml, /data-set-primary-photo|name="primaryPhoto"/);
 });
 
 test("canonical schema violations return invalid_form_data instead of internal_error", async () => {

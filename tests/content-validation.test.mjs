@@ -287,7 +287,7 @@ test("approved media without rights metadata is rejected", async (t) => {
   assert.ok(has(errors, "missing approved media-rights review"));
 });
 
-test("an owner-approved original photograph validates for editorial preview without a media-rights assignment", async (t) => {
+test("an admin-uploaded owner-approved original photograph validates for editorial preview", async (t) => {
   const root = await project(t);
   await yamlFile(root, "content/places/validation-subject/place.yaml", place());
   await yamlFile(root, "content/media/validation-owner-original.yaml", {
@@ -295,8 +295,8 @@ test("an owner-approved original photograph validates for editorial preview with
     id: "validation-owner-original",
     editorial_status: "approved",
     media_type: "image",
-    storage_provider: "local-public",
-    object_key: "public/images/places/validation-owner-original.jpg",
+    storage_provider: "cloudflare-r2",
+    object_key: "places/validation-subject/validation-owner-original.jpg",
     checksum_sha256: "a".repeat(64),
     mime_type: "image/jpeg",
     width: 1,
@@ -313,7 +313,7 @@ test("an owner-approved original photograph validates for editorial preview with
     },
     approvals: [{
       role: "project-owner",
-      reviewer_id: "maxim",
+      reviewer_id: "montenegro-cg",
       outcome: "approved",
       reviewed_at: "2026-08-04T00:00:00Z",
       reviewed_revision: "a".repeat(40),
