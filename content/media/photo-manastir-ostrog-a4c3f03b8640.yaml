@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-manastir-ostrog-a4c3f03b8640
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/manastir-ostrog/photo-manastir-ostrog-a4c3f03b8640.jpg
+checksum_sha256: b8c26b6bc5a8b87e3b4d0b1fd554e6a511ecc34669acac286ce3e1f01661a744
+mime_type: image/jpeg
+width: 1800
+height: 2400
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - manastir-ostrog
+localized_text:
+  sr:
+    alt_text: Манастир Острог
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-14T21:29:28Z
+    reviewed_revision: 9c2d9d0b6b0ba16de1a0d73d6761299644d47bca
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-14T21:29:28Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-14T21:29:28Z
+  updated_by: montenegro-cg
