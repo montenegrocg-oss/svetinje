@@ -32,7 +32,7 @@ location:
     latitude: 42.43828
     longitude: 19.258303
     accuracy: complex-centroid
-    publication_safety: review-required
+    publication_safety: public
     crs: EPSG:4326
     verification:
       status: requires-verification

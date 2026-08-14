@@ -1,6 +1,9 @@
 name: Preview on Cloudflare
 
 on:
+  push:
+    branches:
+      - feature/podmaine-pilot
   workflow_dispatch:
 
 permissions:

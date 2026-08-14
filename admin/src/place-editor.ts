@@ -36,6 +36,7 @@ export interface UpdatedCanonicalFiles {
   narrativeMarkdown: string;
   place: Record<string, any>;
   narrative: Record<string, any>;
+  unchanged: boolean;
 }
 
 const text = (value: unknown) => typeof value === "string" ? value.trim() : undefined;
@@ -141,6 +142,9 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   const publicationSafety = text(body.publicationSafety);
   if (latitude !== undefined && (!coordinateAccuracy || !record.options.coordinateAccuracy.includes(coordinateAccuracy))) errors.coordinateAccuracy = "Изаберите подржану тачност.";
   if (latitude !== undefined && (!publicationSafety || !record.options.publicationSafety.includes(publicationSafety))) errors.publicationSafety = "Изаберите подржан ниво јавне безбједности.";
+  if (record.place.inPreview && latitude !== undefined && longitude !== undefined && publicationSafety !== "public") {
+    errors.publicationSafety = "Координате објекта у радном приказу морају бити означене као јавне.";
+  }
   const alternateNames = validateAlternateNames(body.alternateNames ?? [], record.options, errors);
   const sections = validateSections(body.sections ?? [], record.place.sections, record.options, errors);
   const narrativeBody = serializeNarrativeSections(sections, record.narrativeBody);
@@ -185,9 +189,14 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   const shortName = text(body.shortName);
   if (shortName) narrative.short_name = shortName; else delete narrative.short_name;
   if (alternateNames.length > 0) narrative.alternate_names = alternateNames; else delete narrative.alternate_names;
-  const timestamp = now.toISOString().replace(/\.\d{3}Z$/, "Z");
-  place.audit = { ...place.audit, updated_at: timestamp, updated_by: actor };
-  narrative.audit = { ...narrative.audit, updated_at: timestamp, updated_by: actor };
+  const unchanged = same(place, record.rawPlace)
+    && same(narrative, record.rawNarrative)
+    && narrativeBody === record.narrativeBody;
+  if (!unchanged) {
+    const timestamp = now.toISOString().replace(/\.\d{3}Z$/, "Z");
+    place.audit = { ...place.audit, updated_at: timestamp, updated_by: actor };
+    narrative.audit = { ...narrative.audit, updated_at: timestamp, updated_by: actor };
+  }
 
   const placeYaml = stringify(place, { lineWidth: 0 });
   const narrativeMarkdown = serializeNarrative(narrative, narrativeBody);
@@ -200,5 +209,5 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   if (!validatePlace(place)) for (const error of validatePlace.errors ?? []) canonicalErrors[`place${error.instancePath || "/"}`] = error.message ?? "Није важеће.";
   if (!validateNarrative(narrative)) for (const error of validateNarrative.errors ?? []) canonicalErrors[`narrative${error.instancePath || "/"}`] = error.message ?? "Није важеће.";
   if (Object.keys(canonicalErrors).length > 0) throw new AdminError("invalid_form_data", 400, "Canonical schema validation failed", canonicalErrors);
-  return { placeYaml, narrativeMarkdown, place, narrative };
+  return { placeYaml, narrativeMarkdown, place, narrative, unchanged };
 }

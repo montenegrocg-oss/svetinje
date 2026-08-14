@@ -207,15 +207,16 @@ test("mobile map and panel filters expose distinct responsive sets with one shar
   assert.match(explorer, /filterButtons\.forEach\(\(button\) => \{[\s\S]*?aria-pressed[\s\S]*?activeFilter/);
   assert.match(explorer, /filterButtons\.forEach\(\(button\) => \{[\s\S]*?activeFilter = filter;[\s\S]*?applyExplorerState\(true\)/);
 
-  const mobileRules = styles.match(/@media \(max-width: 47\.99rem\) \{([\s\S]*?)\n  \}\n\n  @media \(min-width: 48rem\)/)?.[1] ?? "";
+  const mobileRules = styles.match(/@media \(max-width: 47\.99rem\) \{([\s\S]*?)\r?\n  \}\r?\n\r?\n  @media \(min-width: 48rem\)/)?.[1] ?? "";
   assert.match(mobileRules, /\.map-actions\s*\{[\s\S]*?grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);[\s\S]*?overflow: visible/);
   assert.match(mobileRules, /\.map-action--mobile-hidden\s*\{[\s\S]*?display: none/);
   assert.match(mobileRules, /\.explorer-sidebar \.filter-chips\s*\{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);[\s\S]*?overflow: visible/);
   assert.match(mobileRules, /\.map-action\s*\{[\s\S]*?min-height: 2\.75rem/);
   assert.match(mobileRules, /\.explorer-sidebar \.filter-chip\s*\{[\s\S]*?min-height: 2\.75rem/);
 
-  const desktopRules = styles.match(/@media \(min-width: 48rem\) \{([\s\S]*?)\n  \}\n\n  @media \(min-width: 64rem\)/)?.[1] ?? "";
-  assert.doesNotMatch(desktopRules, /map-action--mobile-hidden/);
+  assert.match(styles, /@media \(min-width: 48rem\) and \(max-width: 67\.99rem\)/);
+  assert.match(styles, /@media \(min-width: 68rem\)/);
+  assert.equal([...styles.matchAll(/\.map-action--mobile-hidden\s*\{[\s\S]*?display: none;[\s\S]*?\}/g)].length, 1);
 });
 
 test("filtering has accessible preview feedback and catalogue pagination remains reusable", async () => {

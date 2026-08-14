@@ -154,10 +154,53 @@ test("unchanged facts retain verification exactly and coordinates can be cleared
   const loaded = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
   const update = body(loaded.place);
   const unchanged = await updateCanonicalPlace(loaded, update, "editor-user", new Date("2026-08-13T12:00:00Z"));
+  assert.equal(unchanged.unchanged, true);
   assert.deepEqual(unchanged.place.place_type.verification, parse(PLACE).place_type.verification);
   assert.deepEqual(unchanged.place.location.coordinates.verification, parse(PLACE).location.coordinates.verification);
+  assert.deepEqual(unchanged.place.audit, parse(PLACE).audit);
+  assert.deepEqual(unchanged.narrative.audit, parseNarrative(NARRATIVE).frontMatter.audit);
   const cleared = await updateCanonicalPlace(loaded, { ...update, latitude: "", longitude: "" }, "editor-user", new Date("2026-08-13T12:00:00Z"));
+  assert.equal(cleared.unchanged, false);
   assert.equal(cleared.place.location.coordinates, undefined);
+});
+
+test("no-op PATCH succeeds without changing audit timestamps or creating a Git commit", async () => {
+  const repository = new Repository();
+  const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  const result = await updatePlace(repository, env, session, "existing-place", body(loaded.place), new Date("2026-08-13T12:00:00Z"));
+  assert.equal(result.unchanged, true);
+  assert.equal(result.commitSha, HEAD);
+  assert.equal(repository.committed, undefined);
+});
+
+test("preview coordinates require explicit public safety while non-preview records retain canonical options", async () => {
+  const previewRepository = new Repository();
+  const previewRecord = await loadEditablePlace(previewRepository, "editorial/work", "existing-place");
+  await assert.rejects(
+    () => updatePlace(previewRepository, env, session, "existing-place", { ...body(previewRecord.place), publicationSafety: "review-required" }),
+    (error) => error.code === "invalid_form_data"
+      && error.status === 400
+      && error.fields?.publicationSafety === "Координате објекта у радном приказу морају бити означене као јавне.",
+  );
+  assert.equal(previewRepository.committed, undefined);
+
+  const nonPreviewRepository = new Repository();
+  nonPreviewRepository.blobs.preview = JSON.stringify({ place_ids: [] });
+  const nonPreviewRecord = await loadEditablePlace(nonPreviewRepository, "editorial/work", "existing-place");
+  const result = await updatePlace(
+    nonPreviewRepository,
+    env,
+    session,
+    "existing-place",
+    { ...body(nonPreviewRecord.place), publicationSafety: "review-required" },
+  );
+  assert.equal(result.unchanged, false);
+  assert.equal(nonPreviewRepository.committed.files.length, 2);
+});
+
+test("place editor explains preview coordinate safety next to the field", async () => {
+  const uiSource = await readFile(new URL("../src/ui.ts", import.meta.url), "utf8");
+  assert.match(uiSource, /За објекат у радном приказу координате морају бити означене као јавне\./);
 });
 
 test("canonical schema violations return invalid_form_data instead of internal_error", async () => {

@@ -116,6 +116,9 @@ export async function updatePlace(
   }
   if (expectedHeadSha !== record.state.headSha) throw new AdminError("git_conflict", 409, "Editorial branch moved before save validation");
   const updated = await updateCanonicalPlace(record, body, session.actor, now);
+  if (updated.unchanged) {
+    return { commitSha: expectedHeadSha, branch, placeId: id, unchanged: true };
+  }
   const result = await repository.commitFilesAtomic({
     branch,
     expectedHeadSha,
@@ -126,5 +129,5 @@ export async function updatePlace(
     ],
     message: `Update research place ${id}`,
   });
-  return { commitSha: result.commitSha, branch: result.branch, placeId: id };
+  return { commitSha: result.commitSha, branch: result.branch, placeId: id, unchanged: false };
 }

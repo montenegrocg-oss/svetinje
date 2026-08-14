@@ -124,8 +124,11 @@ form.addEventListener("submit", async (event) => {
     if (status) status.textContent = response.status === 409 ? "Конфликт: освјежите страницу." : "Чување није успјело.";
   } else {
     dirty = false; form.dataset.headSha = result.commitSha;
-    if (dirtyStatus) { dirtyStatus.textContent = "Све измјене су сачуване."; dirtyStatus.className = "is-clean"; }
-    if (status) { status.replaceChildren("Commit "); const code = document.createElement("code"); code.textContent = result.commitSha; status.appendChild(code); }
+    if (dirtyStatus) { dirtyStatus.textContent = result.unchanged ? "Нема измјена за чување." : "Све измјене су сачуване."; dirtyStatus.className = "is-clean"; }
+    if (status) {
+      if (result.unchanged) status.textContent = "Нема измјена за чување.";
+      else { status.replaceChildren("Commit "); const code = document.createElement("code"); code.textContent = result.commitSha; status.appendChild(code); }
+    }
   }
   if (saveButton) saveButton.disabled = false;
 });
