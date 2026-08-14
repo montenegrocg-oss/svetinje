@@ -7,10 +7,21 @@ translation_status: source
 slug: manastir-bijelici
 preferred_name: Манастир Бијелићи
 summary: Манастир Бијелићи је новији манастирски комплекс на брду наспрам Михољске Превлаке.
-source_ids: [mitropolija-muski-manastiri]
-section_sources: { introduction: [mitropolija-muski-manastiri], history: [mitropolija-muski-manastiri], location: [mitropolija-muski-manastiri] }
+source_ids:
+  - mitropolija-muski-manastiri
+section_sources:
+  introduction:
+    - mitropolija-muski-manastiri
+  history:
+    - mitropolija-muski-manastiri
+  location:
+    - mitropolija-muski-manastiri
 approvals: []
-audit: { created_at: 2026-08-07T12:00:00Z, created_by: codex, updated_at: 2026-08-07T12:00:00Z, updated_by: codex }
+audit:
+  created_at: 2026-08-07T12:00:00Z
+  created_by: codex
+  updated_at: 2026-08-14T16:45:11Z
+  updated_by: montenegro-cg
 ---
 
 ## Основни подаци {#introduction}
