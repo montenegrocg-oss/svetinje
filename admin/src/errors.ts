@@ -37,6 +37,9 @@ export type InternalDiagnosticStage =
   | "catalog_yaml_parse_failed"
   | "schema_compile_failed"
   | "canonical_schema_fingerprint_mismatch"
+  | "media_bucket_binding_missing"
+  | "media_object_key_invalid"
+  | "media_object_already_exists"
   | "dashboard_render_failed";
 
 export function internalFailure(

@@ -2,8 +2,8 @@ schema_version: 1
 id: photo-manastir-dajbabe-main
 editorial_status: approved
 media_type: image
-storage_provider: local-public
-object_key: public/images/places/manastir_dajbabe.jpg
+storage_provider: cloudflare-r2
+object_key: places/dajbabe/photo-manastir-dajbabe-main.jpg
 checksum_sha256: f4c29d03347264a0e591155250efaf9f0f76b8f88b7a7237c616b5a7854c984e
 mime_type: image/jpeg
 width: 3024

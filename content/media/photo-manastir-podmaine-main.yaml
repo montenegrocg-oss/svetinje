@@ -2,8 +2,8 @@ schema_version: 1
 id: photo-manastir-podmaine-main
 editorial_status: approved
 media_type: image
-storage_provider: local-public
-object_key: public/images/places/manastir_podmaine.jpg
+storage_provider: cloudflare-r2
+object_key: places/podmaine/photo-manastir-podmaine-main.jpg
 checksum_sha256: a9d9630d46c558af7e7c87416a8ee28550f860c296c5b16f5ebb02a85426629f
 mime_type: image/jpeg
 width: 960

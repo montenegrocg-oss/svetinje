@@ -1,4 +1,5 @@
 import { parse, stringify } from "yaml";
+import { resolveMediaUrl } from "../../src/lib/media-url.ts";
 import { PLACE_AREAS } from "../../src/lib/place-areas.ts";
 import { AdminError, internalFailure } from "./errors.ts";
 import type { BranchState, GitRepository, TreeEntry } from "./types.ts";
@@ -277,12 +278,16 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
   });
   const media = orderedMedia.flatMap(({ record }) => {
     const objectKey = typeof record.object_key === "string" ? record.object_key.replaceAll("\\", "/") : "";
-    if (!objectKey.startsWith("public/images/") || objectKey.includes("../")) return [];
+    const src = resolveMediaUrl(
+      { storageProvider: record.storage_provider, objectKey },
+      { localPublicOrigin: "https://staging-svetinje.montenegro-cg.workers.dev" },
+    );
+    if (!src) return [];
     const localized = record.localized_text?.sr;
     return [{
       id: String(record.id),
       objectKey,
-      src: `/${objectKey.slice("public/".length)}`,
+      src,
       mimeType: typeof record.mime_type === "string" ? record.mime_type : "application/octet-stream",
       ...(Number.isInteger(record.width) ? { width: record.width } : {}),
       ...(Number.isInteger(record.height) ? { height: record.height } : {}),

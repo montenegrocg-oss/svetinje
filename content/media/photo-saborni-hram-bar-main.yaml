@@ -2,8 +2,8 @@ schema_version: 1
 id: photo-saborni-hram-bar-main
 editorial_status: approved
 media_type: image
-storage_provider: local-public
-object_key: public/images/places/saborni_hram_bar.jpg
+storage_provider: cloudflare-r2
+object_key: places/saborni-hram-bar/photo-saborni-hram-bar-main.jpg
 checksum_sha256: 252859429db17534d963e47aae006fc9f8a4d4508a4055c6d9bc42586f18b861
 mime_type: image/jpeg
 width: 960

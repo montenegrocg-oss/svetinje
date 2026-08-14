@@ -88,17 +88,27 @@ export function imageDimensions(bytes: Uint8Array, mimeType: string): { width: n
   return undefined;
 }
 
-function bytesToBase64(bytes: Uint8Array): string {
-  let binary = "";
-  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
-    binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
-  }
-  return btoa(binary);
-}
-
 async function checksum(bytes: Uint8Array): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", bytes.slice().buffer as ArrayBuffer);
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function mediaBucket(env: AdminEnv): R2Bucket {
+  if (!env.MEDIA_BUCKET) throw internalFailure("media_bucket_binding_missing");
+  return env.MEDIA_BUCKET;
+}
+
+function isSafeR2ObjectKey(value: string): boolean {
+  return value.startsWith("places/") && !value.startsWith("/") && !value.includes("../") && !value.includes("/..");
+}
+
+async function rollbackR2Objects(bucket: R2Bucket, objectKeys: string[], event: string): Promise<void> {
+  if (!objectKeys.length) return;
+  try {
+    await bucket.delete(objectKeys);
+  } catch {
+    console.warn(JSON.stringify({ event, object_count: objectKeys.length }));
+  }
 }
 
 function orderedMediaIds(record: Awaited<ReturnType<typeof loadEditablePlace>>): string[] {
@@ -138,10 +148,14 @@ export async function uploadPlacePhotos(
   const record = await loadEditablePlace(repository, branch, placeId);
   const expected = requireExpectedHead(expectedHeadSha, record.state.headSha);
   if (photos.length < 1 || photos.length > MAX_PHOTO_COUNT) throw new AdminError("invalid_form_data", 400, `Upload must contain 1-${MAX_PHOTO_COUNT} photographs`);
+  if (photos.reduce((total, photo) => total + photo.bytes.byteLength, 0) > MAX_UPLOAD_BYTES) {
+    throw new AdminError("invalid_form_data", 413, "Photograph batch exceeds the 50 MB server limit");
+  }
 
   const createdAt = timestamp(now);
   const records: Record<string, any>[] = [];
   const files: RepositoryFile[] = [];
+  const uploads: Array<{ objectKey: string; mediaId: string; mimeType: string; checksum: string; bytes: Uint8Array }> = [];
   const usedIds = new Set(record.rawMedia.map(({ record: media }) => String(media.id)));
   for (const photo of photos) {
     if (photo.bytes.byteLength < 1 || photo.bytes.byteLength > MAX_PHOTO_BYTES) throw new AdminError("invalid_form_data", 413, "Photograph exceeds the 20 MB server limit");
@@ -154,15 +168,17 @@ export async function uploadPlacePhotos(
       mediaId = `photo-${placeId.slice(0, Math.max(2, 86 - suffix.length))}-${suffix}`;
     } while (usedIds.has(mediaId));
     usedIds.add(mediaId);
-    const objectKey = `public/images/places/${placeId}/${mediaId}.${extension}`;
+    const objectKey = `places/${placeId}/${mediaId}.${extension}`;
+    if (!isSafeR2ObjectKey(objectKey)) throw internalFailure("media_object_key_invalid");
+    const sha256 = await checksum(photo.bytes);
     const media = {
       schema_version: 1,
       id: mediaId,
       editorial_status: "approved",
       media_type: "image",
-      storage_provider: "local-public",
+      storage_provider: "cloudflare-r2",
       object_key: objectKey,
-      checksum_sha256: await checksum(photo.bytes),
+      checksum_sha256: sha256,
       mime_type: photo.mimeType,
       width: dimensions.width,
       height: dimensions.height,
@@ -178,7 +194,7 @@ export async function uploadPlacePhotos(
       audit: { created_at: createdAt, created_by: session.actor, updated_at: createdAt, updated_by: session.actor },
     };
     records.push(media);
-    files.push({ path: objectKey, base64: bytesToBase64(photo.bytes) });
+    uploads.push({ objectKey, mediaId, mimeType: photo.mimeType, checksum: sha256, bytes: photo.bytes });
     files.push({ path: `content/media/${mediaId}.yaml`, content: stringify(media, { lineWidth: 0 }) });
   }
 
@@ -188,8 +204,36 @@ export async function uploadPlacePhotos(
   place.audit = { ...place.audit, updated_at: createdAt, updated_by: session.actor };
   await assertCanonical(record, place, records);
   files.push({ path: `content/places/${placeId}/place.yaml`, content: stringify(place, { lineWidth: 0 }) });
-  const result = await repository.commitFilesAtomic({ branch, expectedHeadSha: expected, baseTreeSha: record.state.treeSha, files, message: `Add photographs for ${placeId}` });
-  return { commitSha: result.commitSha, branch: result.branch, placeId, mediaIds: records.map(({ id }) => id), unchanged: false };
+  const bucket = mediaBucket(env);
+  const createdObjectKeys: string[] = [];
+  try {
+    for (const upload of uploads) {
+      const stored = await bucket.put(upload.objectKey, upload.bytes, {
+        onlyIf: { etagDoesNotMatch: "*" },
+        httpMetadata: {
+          contentType: upload.mimeType,
+          cacheControl: "public, max-age=31536000, immutable",
+        },
+        customMetadata: {
+          "media-id": upload.mediaId,
+          "place-id": placeId,
+          sha256: upload.checksum,
+        },
+      });
+      if (!stored) throw internalFailure("media_object_already_exists");
+      createdObjectKeys.push(upload.objectKey);
+    }
+  } catch (error) {
+    await rollbackR2Objects(bucket, createdObjectKeys, "media.r2.upload_rollback_failed");
+    throw error;
+  }
+  try {
+    const result = await repository.commitFilesAtomic({ branch, expectedHeadSha: expected, baseTreeSha: record.state.treeSha, files, message: `Add photographs for ${placeId}` });
+    return { commitSha: result.commitSha, branch: result.branch, placeId, mediaIds: records.map(({ id }) => id), unchanged: false };
+  } catch (error) {
+    await rollbackR2Objects(bucket, createdObjectKeys, "media.r2.git_rollback_failed");
+    throw error;
+  }
 }
 
 export async function updatePlacePhoto(
@@ -261,6 +305,10 @@ export async function deletePlacePhoto(
   const remainingPlaceIds = target.record.related_place_ids.filter((id: unknown) => id !== placeId);
   const objectKey = String(target.record.object_key ?? "");
   const sharedObject = record.rawMedia.some(({ path, record: media }) => path !== target.path && media.object_key === objectKey);
+  const usesR2 = target.record.storage_provider === "cloudflare-r2";
+  const shouldDeleteR2 = usesR2 && remainingPlaceIds.length === 0 && !sharedObject;
+  const bucket = shouldDeleteR2 ? mediaBucket(env) : undefined;
+  if (usesR2 && !isSafeR2ObjectKey(objectKey)) throw internalFailure("media_object_key_invalid");
   const files: RepositoryFile[] = [{ path: `content/places/${placeId}/place.yaml`, content: stringify(place, { lineWidth: 0 }) }];
   if (remainingPlaceIds.length) {
     const media = structuredClone(target.record);
@@ -271,8 +319,15 @@ export async function deletePlacePhoto(
   } else {
     await assertCanonical(record, place);
     files.push({ path: target.path, delete: true });
-    if (!sharedObject && objectKey.startsWith("public/images/") && !objectKey.includes("../")) files.push({ path: objectKey, delete: true });
+    if (target.record.storage_provider === "local-public" && !sharedObject && objectKey.startsWith("public/images/") && !objectKey.includes("../")) files.push({ path: objectKey, delete: true });
   }
   const result = await repository.commitFilesAtomic({ branch, expectedHeadSha: expected, baseTreeSha: record.state.treeSha, files, message: `Remove photograph ${mediaId}` });
+  if (bucket) {
+    try {
+      await bucket.delete(objectKey);
+    } catch {
+      console.warn(JSON.stringify({ event: "media.r2.delete_failed", object_count: 1 }));
+    }
+  }
   return { commitSha: result.commitSha, branch: result.branch, placeId, mediaId, unchanged: false };
 }

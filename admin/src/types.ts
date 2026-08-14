@@ -12,6 +12,7 @@ export interface AdminEnv {
   DEV_AUTH_EMAIL?: string;
   PUBLIC_MAPTILER_KEY?: string;
   ASSETS?: Fetcher;
+  MEDIA_BUCKET?: R2Bucket;
 }
 
 export interface AdminSession {

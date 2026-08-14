@@ -16,5 +16,11 @@
     "directory": "./public",
     "binding": "ASSETS",
     "run_worker_first": true
-  }
+  },
+  "r2_buckets": [
+    {
+      "binding": "MEDIA_BUCKET",
+      "bucket_name": "svetinje-media"
+    }
+  ]
 }

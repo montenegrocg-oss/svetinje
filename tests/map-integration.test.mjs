@@ -333,7 +333,8 @@ test("one accessible marker preview preserves desktop navigation and pins touch 
   assert.match(publication, /media\.related_place_ids\.includes\(placeId\)/);
   assert.match(publication, /media\.allowed_uses\?\.includes\("web-display"\)/);
   assert.match(publication, /\["approved", "published"\]\.includes\(media\.editorial_status\)/);
-  assert.match(publication, /normalized\.startsWith\("public\/"\)/);
+  assert.match(publication, /resolveMediaUrl\(\{ storageProvider: media\.storage_provider, objectKey: media\.object_key \}\)/);
+  assert.match(publication, /media\.storage_provider !== "local-public"/);
   assert.match(publication, /await access\(absolute\)/);
   assert.match(publication, /media\.editorial_status === "published"[\s\S]*?\["media-rights", "publishing"\]/);
   assert.match(styles, /\.map-place-preview\s*\{[\s\S]*?width: min\(15rem, calc\(100vw - 2rem\)\)/);

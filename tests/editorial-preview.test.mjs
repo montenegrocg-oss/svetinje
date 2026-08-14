@@ -56,7 +56,7 @@ test("editorial preview inventory is driven by the canonical allowlist", async (
     assert.ok(place.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length === 0)));
     assert.ok(Array.isArray(place.galleryImages));
     if (place.previewImageSrc) {
-      assert.match(place.previewImageSrc, /^\/images\/places\//);
+      assert.match(place.previewImageSrc, /^https:\/\/media\.svetinje\.me\/places\//);
       assert.ok(place.previewImageAlt?.trim());
     }
   }

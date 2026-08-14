@@ -2,6 +2,7 @@ import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { parseDocument } from "yaml";
 import { buildCatalogueSearchText } from "../catalogue-search.ts";
+import { resolveMediaUrl } from "../media-url.ts";
 import type { PlaceAreaId } from "../place-areas.ts";
 import { getPlaceArea, isPlaceAreaId } from "../place-areas.ts";
 
@@ -83,6 +84,7 @@ interface MediaRecord {
   id: string;
   editorial_status: string;
   media_type: string;
+  storage_provider?: string;
   object_key?: string;
   width?: number;
   height?: number;
@@ -295,10 +297,11 @@ function mediaRightsMetadataIsComplete(media: MediaRecord): boolean {
   );
 }
 
-async function localMediaSrc(root: string, objectKey: string | undefined): Promise<string | undefined> {
-  if (!objectKey) return undefined;
-  const normalized = objectKey.replaceAll("\\", "/");
-  if (!normalized.startsWith("public/") || normalized.includes("../")) return undefined;
+async function mediaSrc(root: string, media: MediaRecord): Promise<string | undefined> {
+  const src = resolveMediaUrl({ storageProvider: media.storage_provider, objectKey: media.object_key });
+  if (!src || media.storage_provider !== "local-public") return src;
+  const normalized = media.object_key?.replaceAll("\\", "/");
+  if (!normalized) return undefined;
   const publicRoot = path.resolve(root, "public");
   const absolute = path.resolve(root, ...normalized.split("/"));
   const relative = path.relative(publicRoot, absolute);
@@ -308,7 +311,7 @@ async function localMediaSrc(root: string, objectKey: string | undefined): Promi
   } catch {
     return undefined;
   }
-  return `/${normalized.slice("public/".length)}`;
+  return src;
 }
 
 async function previewMediaForPlace(
@@ -337,7 +340,7 @@ async function previewMediaForPlace(
     ) {
       continue;
     }
-    const src = await localMediaSrc(root, media.object_key);
+    const src = await mediaSrc(root, media);
     if (src) {
       images.push({
         id: media.id,

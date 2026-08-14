@@ -2,8 +2,8 @@ schema_version: 1
 id: photo-saborni-hram-podgorica-main
 editorial_status: approved
 media_type: image
-storage_provider: local-public
-object_key: public/images/places/saborni_hram_podgorica.jpg
+storage_provider: cloudflare-r2
+object_key: places/saborni-hram-podgorica/photo-saborni-hram-podgorica-main.jpg
 checksum_sha256: 16345d45d93df1a30471198604839d59b32064457bf4e6ca103ecb02f090adcd
 mime_type: image/jpeg
 width: 960

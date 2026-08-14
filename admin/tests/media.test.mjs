@@ -11,8 +11,34 @@ const schemas = {
   common: await readFile(new URL("../../schemas/common.schema.json", import.meta.url), "utf8"),
   media: await readFile(new URL("../../schemas/media.schema.json", import.meta.url), "utf8"),
 };
-const env = { GITHUB_EDITORIAL_BRANCH: "feature/media-test" };
+const baseEnv = { GITHUB_EDITORIAL_BRANCH: "feature/media-test" };
 const session = { subject: "user", email: "maxim@example.test", actor: "maxim", developmentBypass: false };
+
+class MediaBucket {
+  constructor(events = []) {
+    this.events = events;
+    this.objects = new Map();
+    this.puts = [];
+    this.deletes = [];
+    this.failPutAt = undefined;
+  }
+  async put(key, bytes, options) {
+    this.events.push(`r2-put:${key}`);
+    this.puts.push({ key, bytes: new Uint8Array(bytes), options });
+    if (this.failPutAt === this.puts.length) throw new Error("simulated R2 put failure");
+    if (options?.onlyIf?.etagDoesNotMatch === "*" && this.objects.has(key)) return null;
+    this.objects.set(key, { bytes: new Uint8Array(bytes), options });
+    return { key };
+  }
+  async delete(keys) {
+    const list = Array.isArray(keys) ? keys : [keys];
+    this.events.push(`r2-delete:${list.join(",")}`);
+    this.deletes.push(list);
+    for (const key of list) this.objects.delete(key);
+  }
+}
+
+const envWith = (bucket) => ({ ...baseEnv, MEDIA_BUCKET: bucket });
 
 function png(width = 2, height = 3) {
   const bytes = new Uint8Array(24);
@@ -38,13 +64,15 @@ function webp(width = 6, height = 7) {
 }
 
 class MediaRepository {
-  constructor() {
+  constructor(events = []) {
+    this.events = events;
     this.head = "a".repeat(40);
     this.treeSha = "b".repeat(40);
     this.counter = 12;
     this.blobCounter = 0;
     this.entries = new Map();
     this.commits = [];
+    this.failCommit = false;
     this.addText("schemas/place.schema.json", schemas.place);
     this.addText("schemas/narrative.schema.json", schemas.narrative);
     this.addText("schemas/common.schema.json", schemas.common);
@@ -67,6 +95,8 @@ class MediaRepository {
   async readBlobs(shas) { return new Map(shas.map((sha) => [sha, [...this.entries.values()].find((entry) => entry.sha === sha)?.content])); }
   async commitFilesAtomic(input) {
     assert.equal(input.expectedHeadSha, this.head);
+    this.events.push("git-commit");
+    if (this.failCommit) throw new Error("simulated Git conflict");
     this.commits.push(input);
     for (const file of input.files) {
       if ("delete" in file) this.entries.delete(file.path);
@@ -89,23 +119,32 @@ test("JPEG, PNG, and WebP dimensions are read from validated image signatures", 
   assert.equal(imageDimensions(png(), "image/jpeg"), undefined);
 });
 
-test("multi-photo upload writes binary blobs, schema-valid YAML, and one canonical commit", async () => {
+test("multi-photo upload writes R2 objects, schema-valid YAML, and one Git commit without binaries", async () => {
+  const bucket = new MediaBucket();
   const repository = new MediaRepository();
   const ids = ["first0000001", "second000002"];
-  const result = await uploadPlacePhotos(repository, env, session, "test-place", repository.head, [
+  const result = await uploadPlacePhotos(repository, envWith(bucket), session, "test-place", repository.head, [
     { name: "first.jpg", mimeType: "image/jpeg", bytes: jpeg() },
     { name: "second.webp", mimeType: "image/webp", bytes: webp() },
   ], new Date("2026-08-14T09:00:00Z"), () => ids.shift());
   assert.equal(result.mediaIds.length, 2);
   assert.equal(repository.commits.length, 1);
   const commit = repository.commits[0];
-  assert.equal(commit.files.filter((file) => "base64" in file).length, 2);
+  assert.equal(commit.files.filter((file) => "base64" in file).length, 0);
   assert.equal(commit.files.filter((file) => file.path.startsWith("content/media/")).length, 2);
+  assert.equal(bucket.puts.length, 2);
   for (const file of commit.files.filter((item) => item.path.startsWith("content/media/"))) {
     const media = parse(file.content);
     assert.equal(media.rights_basis, "project-original");
+    assert.equal(media.storage_provider, "cloudflare-r2");
+    assert.match(media.object_key, /^places\/test-place\/photo-test-place-[a-z0-9]+\.(?:jpg|webp)$/);
     assert.equal(media.related_place_ids[0], "test-place");
     assert.equal(media.localized_text.sr.alt_text, "Тест светиња");
+    const put = bucket.puts.find(({ key }) => key === media.object_key);
+    assert.ok(put);
+    assert.equal(put.options.httpMetadata.contentType, media.mime_type);
+    assert.equal(put.options.httpMetadata.cacheControl, "public, max-age=31536000, immutable");
+    assert.equal(put.options.customMetadata["media-id"], media.id);
   }
   const place = parse(commit.files.find((file) => file.path.endsWith("/place.yaml")).content);
   assert.deepEqual(place.relationships.media_ids, result.mediaIds);
@@ -117,15 +156,22 @@ test("invalid MIME, oversized images, and stale HEAD fail closed before a commit
     [{ name: "large.jpg", mimeType: "image/jpeg", bytes: new Uint8Array(MAX_PHOTO_BYTES + 1) }, "invalid_form_data"],
   ]) {
     const repository = new MediaRepository();
-    await assert.rejects(() => uploadPlacePhotos(repository, env, session, "test-place", repository.head, [photo]), (error) => error.code === expectedCode);
+    await assert.rejects(() => uploadPlacePhotos(repository, envWith(new MediaBucket()), session, "test-place", repository.head, [photo]), (error) => error.code === expectedCode);
     assert.equal(repository.commits.length, 0);
   }
   const repository = new MediaRepository();
-  await assert.rejects(() => uploadPlacePhotos(repository, env, session, "test-place", "f".repeat(40), [{ name: "ok.jpg", mimeType: "image/jpeg", bytes: jpeg() }]), (error) => error.code === "git_conflict");
+  await assert.rejects(() => uploadPlacePhotos(repository, envWith(new MediaBucket()), session, "test-place", "f".repeat(40), [{ name: "ok.jpg", mimeType: "image/jpeg", bytes: jpeg() }]), (error) => error.code === "git_conflict");
+  await assert.rejects(
+    () => uploadPlacePhotos(new MediaRepository(), baseEnv, session, "test-place", "a".repeat(40), [{ name: "ok.jpg", mimeType: "image/jpeg", bytes: jpeg() }]),
+    (error) => error.code === "internal_error",
+  );
 });
 
 test("primary selection, no-op selection, and confirmed deletion each preserve atomic HEAD protection", async () => {
-  const repository = new MediaRepository();
+  const events = [];
+  const repository = new MediaRepository(events);
+  const bucket = new MediaBucket(events);
+  const env = envWith(bucket);
   const ids = ["first0000001", "second000002"];
   const uploaded = await uploadPlacePhotos(repository, env, session, "test-place", repository.head, [
     { name: "first.jpg", mimeType: "image/jpeg", bytes: jpeg() },
@@ -136,17 +182,64 @@ test("primary selection, no-op selection, and confirmed deletion each preserve a
     [...repository.entries.entries()].filter(([path]) => path.startsWith("content/media/")).map(([, entry]) => parse(entry.content).id),
     uploaded.mediaIds,
   );
-  const loaded = await loadEditablePlace(repository, env.GITHUB_EDITORIAL_BRANCH, "test-place");
+  const loaded = await loadEditablePlace(repository, baseEnv.GITHUB_EDITORIAL_BRANCH, "test-place");
   assert.deepEqual(loaded.rawMedia.map(({ record }) => ({ id: record.id, related: record.related_place_ids })), uploaded.mediaIds.map((id) => ({ id, related: ["test-place"] })));
   const selected = await updatePlacePhoto(repository, env, session, "test-place", second, { expectedHeadSha: repository.head, primary: true }, new Date("2026-08-14T09:01:00Z"));
   assert.equal(selected.unchanged, false);
   assert.equal(parse(repository.entries.get("content/places/test-place/place.yaml").content).relationships.media_ids[0], second);
   const commitCount = repository.commits.length;
+  const putCount = bucket.puts.length;
   const noop = await updatePlacePhoto(repository, env, session, "test-place", second, { expectedHeadSha: repository.head, primary: true });
   assert.equal(noop.unchanged, true);
   assert.equal(repository.commits.length, commitCount);
+  await updatePlacePhoto(repository, env, session, "test-place", second, { expectedHeadSha: repository.head, altText: "Нови опис" });
+  assert.equal(bucket.puts.length, putCount);
   await assert.rejects(() => deletePlacePhoto(repository, env, session, "test-place", uploaded.mediaIds[0], { expectedHeadSha: repository.head }), (error) => error.code === "invalid_form_data");
+  events.length = 0;
   await deletePlacePhoto(repository, env, session, "test-place", uploaded.mediaIds[0], { expectedHeadSha: repository.head, confirmed: true }, new Date("2026-08-14T09:02:00Z"));
   assert.equal(repository.entries.has(`content/media/${uploaded.mediaIds[0]}.yaml`), false);
-  assert.equal([...repository.entries.keys()].some((path) => path.includes(`${uploaded.mediaIds[0]}.jpg`)), false);
+  assert.equal(bucket.objects.has(`places/test-place/${uploaded.mediaIds[0]}.jpg`), false);
+  assert.equal(events[0], "git-commit");
+  assert.match(events[1], /^r2-delete:/);
+});
+
+test("R2 put failure and Git failure roll back only objects created by the upload", async () => {
+  const failedPutBucket = new MediaBucket();
+  failedPutBucket.failPutAt = 2;
+  const firstRepository = new MediaRepository();
+  const firstIds = ["first0000001", "second000002"];
+  await assert.rejects(() => uploadPlacePhotos(firstRepository, envWith(failedPutBucket), session, "test-place", firstRepository.head, [
+    { name: "first.jpg", mimeType: "image/jpeg", bytes: jpeg() },
+    { name: "second.png", mimeType: "image/png", bytes: png() },
+  ], new Date("2026-08-14T09:00:00Z"), () => firstIds.shift()), /simulated R2 put failure/);
+  assert.equal(firstRepository.commits.length, 0);
+  assert.equal(failedPutBucket.objects.size, 0);
+  assert.equal(failedPutBucket.deletes.length, 1);
+
+  const gitFailureBucket = new MediaBucket();
+  const secondRepository = new MediaRepository();
+  secondRepository.failCommit = true;
+  await assert.rejects(() => uploadPlacePhotos(secondRepository, envWith(gitFailureBucket), session, "test-place", secondRepository.head, [
+    { name: "first.jpg", mimeType: "image/jpeg", bytes: jpeg() },
+  ], new Date("2026-08-14T09:00:00Z"), () => "first0000001"), /simulated Git conflict/);
+  assert.equal(secondRepository.commits.length, 0);
+  assert.equal(gitFailureBucket.objects.size, 0);
+  assert.equal(gitFailureBucket.deletes.length, 1);
+});
+
+test("shared R2 objects are retained when one media record is removed", async () => {
+  const bucket = new MediaBucket();
+  const repository = new MediaRepository();
+  const env = envWith(bucket);
+  const uploaded = await uploadPlacePhotos(repository, env, session, "test-place", repository.head, [
+    { name: "first.jpg", mimeType: "image/jpeg", bytes: jpeg() },
+  ], new Date("2026-08-14T09:00:00Z"), () => "first0000001");
+  const mediaId = uploaded.mediaIds[0];
+  const mediaPath = `content/media/${mediaId}.yaml`;
+  const media = parse(repository.entries.get(mediaPath).content);
+  repository.addText("content/media/shared-copy.yaml", `${repository.entries.get(mediaPath).content.replace(`id: ${mediaId}`, "id: shared-copy")}`);
+  assert.ok(bucket.objects.has(media.object_key));
+  await deletePlacePhoto(repository, env, session, "test-place", mediaId, { expectedHeadSha: repository.head, confirmed: true });
+  assert.ok(bucket.objects.has(media.object_key));
+  assert.equal(bucket.deletes.length, 0);
 });
