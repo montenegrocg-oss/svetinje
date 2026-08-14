@@ -2146,6 +2146,20 @@
     transition: transform 160ms ease, filter 160ms ease;
   }
 
+  .holy-place-marker.is-selected::before {
+    position: absolute;
+    bottom: 0.05rem;
+    left: 50%;
+    width: 2.05rem;
+    height: 2.05rem;
+    border: 2px solid rgba(208, 171, 97, 0.9);
+    border-radius: 50%;
+    box-shadow: 0 0 0 0.22rem rgba(255, 253, 247, 0.78), 0 0.2rem 0.6rem rgba(10, 41, 68, 0.24);
+    content: "";
+    pointer-events: none;
+    transform: translateX(-50%);
+  }
+
   .holy-place-marker:hover .holy-place-marker__image,
   .holy-place-marker:focus-visible .holy-place-marker__image {
     transform: translateX(-50%) scale(1.06);
@@ -2165,6 +2179,48 @@
     outline: 3px solid var(--white);
     outline-offset: 2px;
     box-shadow: 0 0 0 0.32rem var(--navy-900), 0 0 0 0.48rem rgba(208, 171, 97, 0.85);
+  }
+
+  .holy-place-cluster {
+    position: relative;
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 0;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--navy-950);
+    background: transparent;
+    cursor: zoom-in;
+  }
+
+  .holy-place-cluster__count {
+    display: grid;
+    width: 2.15rem;
+    height: 2.15rem;
+    border: 1px solid rgba(139, 103, 46, 0.72);
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(255, 253, 247, 0.94);
+    box-shadow: 0 0 0 0.2rem rgba(10, 41, 68, 0.12), 0 0.22rem 0.55rem rgba(10, 41, 68, 0.2);
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    font-weight: 850;
+    line-height: 1;
+  }
+
+  .holy-place-cluster:hover .holy-place-cluster__count,
+  .holy-place-cluster:focus-visible .holy-place-cluster__count {
+    border-color: var(--gold);
+    background: var(--white);
+    box-shadow: 0 0 0 0.22rem rgba(208, 171, 97, 0.24), 0 0.28rem 0.65rem rgba(10, 41, 68, 0.24);
+  }
+
+  .holy-place-cluster:focus-visible {
+    outline: 3px solid var(--white);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 0.32rem var(--navy-900);
   }
 
   .holy-place-marker__fallback {

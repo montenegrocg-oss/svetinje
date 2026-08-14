@@ -6,6 +6,7 @@ import { parse } from "yaml";
 import { loadVisiblePlaces } from "../src/lib/content/publication.ts";
 import { categoryForPlaceType } from "../src/lib/place-filters.ts";
 import { MARKER_ASSETS, resolveMarkerAsset } from "../src/lib/map-marker-assets.ts";
+import { clusterProjectedMarkers, getClusterExpansionZoom } from "../src/lib/map-marker-clustering.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -149,13 +150,68 @@ test("the map accepts only server-selected marker data and adds no route geometr
   assert.match(mapSource, /category: categoryForPlaceType\(place\.placeType\)/);
   assert.match(mapSource, /link\.dataset\.placeCategory = place\.category \?\? ""/);
   assert.match(mapSource, /new maplibregl\.Marker/);
-  assert.match(mapSource, /new maplibregl\.Marker\(\{ element: link, anchor: "bottom" \}\)/);
+  assert.match(mapSource, /const marker = new maplibregl\.Marker\(\{ element: link, anchor: "bottom" \}\)/);
   assert.match(mapSource, /dataset\.mapMarker/);
   assert.match(mapSource, /const link = document\.createElement\("a"\)/);
   assert.match(mapSource, /link\.href = `\/svetinje\/\$\{encodeURIComponent\(place\.slug\)\}\/`/);
   assert.match(mapSource, /link\.setAttribute\("aria-label", `\$\{place\.name\} — отвори страницу`\)/);
   assert.doesNotMatch(mapSource, /addSource\s*\(|addLayer\s*\(|FeatureCollection|LineString|routeCoordinates/i);
   assert.doesNotMatch(mapSource, /42\.29799|18\.84452|Манастир Подмаине/iu);
+});
+
+test("nearby visible places cluster with an accurate count and separate after zoom-in", () => {
+  const points = [
+    { item: "budva", x: 100, y: 100 },
+    { item: "podmaine", x: 132, y: 112 },
+    { item: "cetinje", x: 240, y: 210 },
+  ];
+  const overviewGroups = clusterProjectedMarkers(points, 52);
+
+  assert.deepEqual(overviewGroups.map((group) => group.map(({ item }) => item)), [
+    ["budva", "podmaine"],
+    ["cetinje"],
+  ]);
+  assert.equal(overviewGroups[0]?.length, 2);
+  assert.deepEqual(clusterProjectedMarkers(points.map((point) => ({
+    ...point,
+    x: point.x * 4,
+    y: point.y * 4,
+  })), 52).map((group) => group.length), [1, 1, 1]);
+});
+
+test("cluster expansion chooses the first zoom where nearby places divide", () => {
+  const clustered = [
+    { item: "budva", x: 100, y: 100 },
+    { item: "podmaine", x: 124, y: 100 },
+  ];
+
+  assert.equal(getClusterExpansionZoom(clustered, 8, 12, 52), 10);
+  assert.equal(getClusterExpansionZoom(clustered, 11.4, 12, 52), 12);
+});
+
+test("cluster activation zooms without selecting a place or opening its popup", async () => {
+  const mapCanvas = await source("src/components/MapCanvas.astro");
+  const clusterClick = mapCanvas.match(/button\.addEventListener\("click", \(\) => \{([\s\S]*?)\n        \}\);/)?.[1] ?? "";
+
+  assert.match(mapCanvas, /const MARKER_CLUSTER_RADIUS = 52;/);
+  assert.match(mapCanvas, /const MARKER_CLUSTER_MAX_ZOOM = 12;/);
+  assert.match(mapCanvas, /button\.dataset\.clusterCount = String\(group\.length\)/);
+  assert.match(mapCanvas, /button\.setAttribute\("aria-label", `\$\{group\.length\} светиње — приближи карту`\)/);
+  assert.match(clusterClick, /closePreview\(\)/);
+  assert.match(clusterClick, /map\.easeTo\(\{/);
+  assert.match(clusterClick, /getClusterExpansionZoom/);
+  assert.doesNotMatch(clusterClick, /openPreview|is-selected|dataset\.selected|place\.id/);
+});
+
+test("cluster refresh preserves individual marker visibility and sidebar synchronization", async () => {
+  const mapCanvas = await source("src/components/MapCanvas.astro");
+
+  assert.match(mapCanvas, /map\.on\("moveend", updateMarkerClusters\)/);
+  assert.match(mapCanvas, /if \(map\.getZoom\(\) >= MARKER_CLUSTER_MAX_ZOOM \|\| visibleRecords\.length < 2\) return;/);
+  assert.match(mapCanvas, /visibleMarkerIds = visibleIds;[\s\S]*?link\.hidden = !visible;[\s\S]*?updateMarkerClusters\(\);/);
+  assert.match(mapCanvas, /window\.addEventListener\("svetinje:place-visibility-change", handlePlaceVisibilityChange\)/);
+  assert.match(mapCanvas, /link\.addEventListener\("focus", \(\) => openPreview\(place, link\)\)/);
+  assert.match(mapCanvas, /link\.addEventListener\("pointerup", \(event\) => \{[\s\S]*?openPreview\(place, link, true\)/);
 });
 
 test("marker artwork follows one shared place-category taxonomy", async () => {
@@ -199,6 +255,7 @@ test("marker artwork follows one shared place-category taxonomy", async () => {
   assert.match(styles, /\.holy-place-marker\s*\{[\s\S]*?width: 2\.75rem;[\s\S]*?height: 2\.75rem;/);
   assert.match(styles, /\.holy-place-marker__image\s*\{[\s\S]*?bottom: 0;[\s\S]*?height: 2\.625rem;[\s\S]*?transform-origin: 50% 100%;/);
   assert.match(styles, /\.holy-place-marker\.is-selected \.holy-place-marker__image\s*\{[\s\S]*?scale\(1\.142857\)/);
+  assert.match(styles, /\.holy-place-marker\.is-selected::before\s*\{[\s\S]*?border: 2px solid rgba\(208, 171, 97, 0\.9\);[\s\S]*?box-shadow:/);
   assert.match(styles, /@media \(min-width: 48rem\)[\s\S]*?\.holy-place-marker__image\s*\{[\s\S]*?height: 2\.875rem;[\s\S]*?\.holy-place-marker\.is-selected \.holy-place-marker__image\s*\{[\s\S]*?scale\(1\.173913\)/);
   assert.match(styles, /\.holy-place-marker:focus-visible\s*\{[\s\S]*?outline: 3px solid/);
 });

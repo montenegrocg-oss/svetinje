@@ -150,10 +150,13 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
   import maplibregl from "maplibre-gl";
   import "maplibre-gl/dist/maplibre-gl.css";
   import type { LngLatBoundsLike, Map as MapLibreMap, Marker as MapLibreMarker, PaddingOptions } from "maplibre-gl";
+  import { clusterProjectedMarkers, getClusterExpansionZoom, type ProjectedMarker } from "../lib/map-marker-clustering";
   import { resolveMarkerAsset } from "../lib/map-marker-assets";
 
   const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY?.trim();
   const MAP_LOAD_TIMEOUT_MS = 10_000;
+  const MARKER_CLUSTER_RADIUS = 52;
+  const MARKER_CLUSTER_MAX_ZOOM = 12;
   interface MarkerPlace {
     id: string;
     slug: string;
@@ -273,6 +276,9 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     let resizeTimer: number | undefined;
     const markers: MapLibreMarker[] = [];
     const markerLinks: HTMLAnchorElement[] = [];
+    const markerRecords: { place: MarkerPlace; link: HTMLAnchorElement }[] = [];
+    let clusterMarkers: MapLibreMarker[] = [];
+    let visibleMarkerIds = new Set(markerPlaces.map(({ id }) => id));
     const previewPopup = new maplibregl.Popup({
       closeButton: false,
       closeOnClick: false,
@@ -458,14 +464,63 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
         schedulePreviewClose();
       });
       markerLinks.push(link);
-      markers.push(
-        new maplibregl.Marker({ element: link, anchor: "bottom" })
-          .setLngLat([place.longitude, place.latitude])
-          .addTo(map),
-      );
+      const marker = new maplibregl.Marker({ element: link, anchor: "bottom" })
+        .setLngLat([place.longitude, place.latitude])
+        .addTo(map);
+      markers.push(marker);
+      markerRecords.push({ place, link });
     });
 
     const animationDuration = () => (reducedMotion.matches ? 0 : 420);
+    const removeClusterMarkers = () => {
+      clusterMarkers.forEach((marker) => marker.remove());
+      clusterMarkers = [];
+    };
+    const updateMarkerClusters = () => {
+      removeClusterMarkers();
+      const visibleRecords = markerRecords.filter(({ place }) => visibleMarkerIds.has(place.id));
+      markerRecords.forEach(({ place, link }) => { link.hidden = !visibleMarkerIds.has(place.id); });
+      if (map.getZoom() >= MARKER_CLUSTER_MAX_ZOOM || visibleRecords.length < 2) return;
+
+      const projectedRecords: ProjectedMarker<(typeof markerRecords)[number]>[] = visibleRecords.map((record) => {
+        const point = map.project([record.place.longitude, record.place.latitude]);
+        return { item: record, x: point.x, y: point.y };
+      });
+
+      clusterProjectedMarkers(projectedRecords, MARKER_CLUSTER_RADIUS).forEach((group) => {
+        if (group.length < 2) return;
+        group.forEach(({ item }) => { item.link.hidden = true; });
+        if (activePreview && group.some(({ item }) => item.place.id === activePreview?.place.id)) closePreview();
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "holy-place-cluster";
+        button.dataset.mapCluster = "true";
+        button.dataset.clusterCount = String(group.length);
+        button.setAttribute("aria-label", `${group.length} светиње — приближи карту`);
+        const count = document.createElement("span");
+        count.className = "holy-place-cluster__count";
+        count.textContent = String(group.length);
+        count.setAttribute("aria-hidden", "true");
+        button.append(count);
+
+        const longitude = group.reduce((sum, { item }) => sum + item.place.longitude, 0) / group.length;
+        const latitude = group.reduce((sum, { item }) => sum + item.place.latitude, 0) / group.length;
+        button.addEventListener("click", () => {
+          closePreview();
+          map.easeTo({
+            center: [longitude, latitude],
+            zoom: getClusterExpansionZoom(group, map.getZoom(), MARKER_CLUSTER_MAX_ZOOM, MARKER_CLUSTER_RADIUS),
+            duration: animationDuration(),
+          });
+        });
+        clusterMarkers.push(
+          new maplibregl.Marker({ element: button, anchor: "center" })
+            .setLngLat([longitude, latitude])
+            .addTo(map),
+        );
+      });
+    };
     const fitMontenegro = (animate: boolean) => {
       map.fitBounds(MONTENEGRO_BOUNDS, {
         padding: getInitialPadding(root.clientWidth, mapLayout),
@@ -508,9 +563,11 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       setControlsEnabled(true);
       map.resize();
       fitMontenegro(false);
+      updateMarkerClusters();
     };
 
     const setMarkerVisibility = (visibleIds: Set<string>) => {
+      visibleMarkerIds = visibleIds;
       markerLinks.forEach((link) => {
         const id = link.dataset.mapMarker ?? "";
         const visible = visibleIds.has(id);
@@ -519,6 +576,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
           if (activePreview?.place.id === id) closePreview();
         }
       });
+      updateMarkerClusters();
     };
 
     const handlePreviewEscape = (event: KeyboardEvent) => {
@@ -564,6 +622,8 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       resetButton?.removeEventListener("click", resetView);
       window.removeEventListener("svetinje:filter-change", handleFilterChange);
       window.removeEventListener("svetinje:place-visibility-change", handlePlaceVisibilityChange);
+      map.off("moveend", updateMarkerClusters);
+      removeClusterMarkers();
       markers.forEach((marker) => marker.remove());
       map.remove();
     };
@@ -578,6 +638,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     document.addEventListener("pointerdown", handleOutsidePreviewPointer);
     window.addEventListener("svetinje:filter-change", handleFilterChange);
     window.addEventListener("svetinje:place-visibility-change", handlePlaceVisibilityChange);
+    map.on("moveend", updateMarkerClusters);
     document.addEventListener("astro:before-swap", removeActiveMap, { once: true });
 
     // Individual tile, glyph, sprite, or terrain errors can be transient; only a missing initial load reaches fallback.
