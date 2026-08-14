@@ -21,6 +21,14 @@ location:
       source_ids:
         - openstreetmap-manastir-moraca-way-206609465
       qualification: Координате представљају центроид манастирског комплекса Морача према OpenStreetMap way 206609465, а не центар истоименог села или путни прилаз.
+  country_code:
+    value: ME
+    verification:
+      status: requires-verification
+  municipality:
+    value: Колашин
+    verification:
+      status: requires-verification
 relationships:
   media_ids:
     - photo-manastir-moraca-83eacfc16332
@@ -30,5 +38,10 @@ approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-14T20:50:07Z
+  updated_at: 2026-08-14T20:50:53Z
   updated_by: montenegro-cg
+ecclesiastical:
+  jurisdiction:
+    value: Митрополија црногорско-приморска
+    verification:
+      status: requires-verification
