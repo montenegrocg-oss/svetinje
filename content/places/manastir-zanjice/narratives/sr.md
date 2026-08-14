@@ -7,10 +7,21 @@ translation_status: source
 slug: manastir-zanjice
 preferred_name: Манастир Жањице
 summary: Манастир Жањице је утврђени комплекс са храмом Ваведења Пресвете Богородице на малом острву уз Луштицу.
-source_ids: [mitropolija-muski-manastiri]
-section_sources: { introduction: [mitropolija-muski-manastiri], history: [mitropolija-muski-manastiri], location: [mitropolija-muski-manastiri] }
+source_ids:
+  - mitropolija-muski-manastiri
+section_sources:
+  introduction:
+    - mitropolija-muski-manastiri
+  history:
+    - mitropolija-muski-manastiri
+  location:
+    - mitropolija-muski-manastiri
 approvals: []
-audit: { created_at: 2026-08-07T12:00:00Z, created_by: codex, updated_at: 2026-08-07T12:00:00Z, updated_by: codex }
+audit:
+  created_at: 2026-08-07T12:00:00Z
+  created_by: codex
+  updated_at: 2026-08-14T19:44:02Z
+  updated_by: montenegro-cg
 ---
 
 ## Основни подаци {#introduction}
