@@ -40,6 +40,7 @@ class Repository {
     this.files = new Map(Object.entries({
       ...schemas,
       "validation/editorial-preview.json": JSON.stringify({ place_ids: [ID, "other-place"] }),
+      "content/README.md": "# Editorial content\n\nThis is documentation, not structured entity front matter.\n",
       [`content/places/${ID}/place.yaml`]: placeYaml(),
       ...extraFiles,
     }));

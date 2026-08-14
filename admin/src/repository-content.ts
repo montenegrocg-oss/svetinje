@@ -423,7 +423,7 @@ export async function loadPlaceDeletionRecord(repository: GitRepository, branch:
     if (entry.path.startsWith(placePrefix) || entry.path.startsWith(practicalPrefix)) return false;
     if (entry.path.startsWith("content/media/") || entry.path.startsWith("content/sources/")) return false;
     if (/^content\/places\/[^/]+\/(?!place\.yaml$)/.test(entry.path)) return false;
-    return /\.(?:ya?ml|json|md)$/i.test(entry.path);
+    return /\.(?:ya?ml|json)$/i.test(entry.path) || /^content\/news\/[^/]+\.md$/i.test(entry.path);
   });
   const contents = await readBlobContents(repository, [placeEntry, ...mediaEntries, ...dependencyEntries]);
   const rawPlace = parseCatalogYaml(contentFor(contents, placeEntry));
