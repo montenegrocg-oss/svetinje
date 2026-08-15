@@ -71,7 +71,10 @@ const mapData = JSON.stringify({ trackUrl: route.trackUrl, start: { latitude: ro
         }
         fallback?.setAttribute("hidden", "");
         map.resize();
-        map.fitBounds(bounds, { padding: 48, duration: matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 600 });
+        map.fitBounds(bounds, {
+          padding: { top: 72, right: 56, bottom: 64, left: 56 },
+          duration: matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 600,
+        });
         requestAnimationFrame(() => map.resize());
       });
     } catch { fallback?.querySelector("p")?.replaceChildren("Карта није могла бити учитана. Покушајте поново или преузмите GPX."); }

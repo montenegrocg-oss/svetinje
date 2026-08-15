@@ -96,6 +96,7 @@ test("pilot route public composition remains loader-driven and key-safe", async 
   assert.match(map, /setTerrain\(null\)/);
   assert.match(map, /addSource\("route-track"/);
   assert.match(map, /new maplibregl\.Marker\(\{ element, anchor: "bottom" \}\)/);
+  assert.match(map, /padding: \{ top: 72, right: 56, bottom: 64, left: 56 \}/);
   assert.match(css, /\.route-map > \.route-map__canvas[^\{]*\{[^}]*position: absolute;[^}]*height: 100%;/s);
   assert.match(css, /\.route-map \{[^}]*height: 26rem;[^}]*min-height: 26rem;/s);
   assert.match(routePage, /Једносмјерна рута/);
