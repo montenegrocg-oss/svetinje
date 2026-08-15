@@ -89,6 +89,23 @@ test("route practical editor exposes the canonical planning fields", async () =>
     assert.match(html, new RegExp(`name="${field}"`));
   }
   assert.match(html, /Приступ полазишту/); assert.match(html, /Последња провјера руте/);
+  assert.match(html, /Објављено|Нацрт/); assert.match(html, /Врати у нацрт|Објави/);
+  assert.doesNotMatch(html, /Радни приказ|радном приказу|preview-on|preview-off|preview-control/);
+});
+
+test("new route defaults to draft and failed immediate publication keeps it", async () => {
+  const repo = await repository();
+  const state = await repo.readBranchState();
+  const created = await createRoute(repo, env, session, { expectedHeadSha: state.headSha, id: "draft-route", slug: "draft-route", preferredName: "Нацрт руте", startPlaceId: "manastir-svetog-sergija-radonjeskog", endPlaceId: "crkva-svete-trojice-na-rumiji" });
+  assert.equal(created.published, false);
+  assert.doesNotMatch(repo.files.get("validation/editorial-preview-routes.json"), /draft-route/);
+
+  const next = await repo.readBranchState();
+  const attempted = await createRoute(repo, env, session, { expectedHeadSha: next.headSha, id: "incomplete-route", slug: "incomplete-route", preferredName: "Непотпуна рута", startPlaceId: "manastir-svetog-sergija-radonjeskog", endPlaceId: "crkva-svete-trojice-na-rumiji", published: true });
+  assert.equal(attempted.published, false);
+  assert.equal(attempted.publicationErrors.track, "GPS траса није додата.");
+  assert.equal(repo.files.has("content/routes/incomplete-route/route.yaml"), true);
+  assert.doesNotMatch(repo.files.get("validation/editorial-preview-routes.json"), /incomplete-route/);
 });
 
 test("generic route lifecycle creates, uploads, previews, removes track, and deletes atomically", async () => {

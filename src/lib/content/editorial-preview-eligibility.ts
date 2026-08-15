@@ -40,13 +40,13 @@ export function editorialPreviewEligibilityErrors({
 }: EditorialPreviewEligibilityInput): Record<string, string> {
   const errors: Record<string, string> = {};
   if (!ENTITY_ID.test(id) || place.id !== id) errors.id = "Објекат нема важећи технички ID.";
-  if (["archived", "rejected"].includes(place.editorial_status)) errors.editorialStatus = "Архивиран или одбијен објекат не може бити у радном приказу.";
+  if (["archived", "rejected"].includes(place.editorial_status)) errors.editorialStatus = "Архивиран или одбијен објекат не може бити објављен.";
   if (narrative.place_id !== id || narrative.locale !== "sr") errors.narrative = "Објекат нема важећи српски текст.";
-  if (["archived", "rejected"].includes(narrative.editorial_status)) errors.narrativeStatus = "Архивиран или одбијен српски текст не може бити у радном приказу.";
+  if (["archived", "rejected"].includes(narrative.editorial_status)) errors.narrativeStatus = "Архивиран или одбијен српски текст не може бити објављен.";
   if (narrative.translation_status !== "source") errors.translationStatus = "Српски текст мора бити изворни текст.";
-  if (!nonEmpty(narrative.slug) || !SERBIAN_SLUG.test(narrative.slug)) errors.slug = "Унесите важећи српски slug прије додавања у радни приказ.";
-  if (!nonEmpty(narrative.preferred_name)) errors.preferredName = "Попуните пожељни назив прије додавања у радни приказ.";
-  if (!nonEmpty(place.place_type?.value)) errors.placeType = "Изаберите врсту објекта прије додавања у радни приказ.";
+  if (!nonEmpty(narrative.slug) || !SERBIAN_SLUG.test(narrative.slug)) errors.slug = "Унесите важећи српски slug прије објављивања.";
+  if (!nonEmpty(narrative.preferred_name)) errors.preferredName = "Попуните пожељни назив прије објављивања.";
+  if (!nonEmpty(place.place_type?.value)) errors.placeType = "Изаберите врсту објекта прије објављивања.";
 
   const coordinates = place.location?.coordinates;
   if (coordinates !== undefined) {
@@ -73,7 +73,7 @@ export function editorialPreviewEligibilityErrors({
       continue;
     }
     if (!["approved", "published"].includes(media.editorial_status)) {
-      errors[field] = "Медиј мора бити одобрен за радни приказ.";
+      errors[field] = "Медиј мора бити одобрен за објављивање.";
       continue;
     }
     if (!mediaRightsAreComplete(media)) {

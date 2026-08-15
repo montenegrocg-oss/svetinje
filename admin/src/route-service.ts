@@ -50,7 +50,17 @@ export async function createRoute(repository: GitRepository, env: AdminEnv, sess
   const result = await repository.commitFilesAtomic({ branch: data.branch, expectedHeadSha, baseTreeSha: data.state.treeSha, message: `Add research route ${id}`, files: [
     { path: `content/routes/${id}/route.yaml`, content: yaml(route) }, { path: `content/routes/${id}/narratives/sr.md`, content: serializeNarrative(narrative, "") },
   ] });
-  return { commitSha: result.commitSha, branch: result.branch, routeId: id };
+  const created = { commitSha: result.commitSha, branch: result.branch, routeId: id, published: false };
+  if (body.published !== true) return created;
+  try {
+    const visibility = await updateRoutePreview(repository, env, id, { expectedHeadSha: result.commitSha, enabled: true });
+    return { ...created, commitSha: visibility.commitSha, published: true };
+  } catch (error) {
+    if (error instanceof AdminError && (error.code === "invalid_form_data" || error.code === "git_conflict")) {
+      return { ...created, publicationErrors: error.fields ?? { publication: "Рута још није спремна за објављивање." } };
+    }
+    throw error;
+  }
 }
 
 export async function updateRoute(repository: GitRepository, env: AdminEnv, session: AdminSession, id: string, body: Record<string, unknown>, now = new Date()) {
@@ -134,11 +144,16 @@ export async function removeRouteTrack(repository: GitRepository, env: AdminEnv,
 }
 
 export async function updateRoutePreview(repository: GitRepository, env: AdminEnv, id: string, body: Record<string, unknown>) {
-  const data = await getEditableRoute(repository, env, id); const expectedHeadSha = assertHead(body.expectedHeadSha, data.state.headSha); if (typeof body.enabled !== "boolean") throw new AdminError("invalid_form_data", 400, "Статус радног приказа није важећи.");
+  const data = await getEditableRoute(repository, env, id); const expectedHeadSha = assertHead(body.expectedHeadSha, data.state.headSha); if (typeof body.enabled !== "boolean") throw new AdminError("invalid_form_data", 400, "Статус објављивања није важећи.");
   const current = data.previewRouteIds.includes(id); if (current === body.enabled) return { commitSha: expectedHeadSha, branch: data.branch, routeId: id, inPreview: current, unchanged: true };
   if (body.enabled) {
     if (await fingerprintRouteSchemas(data.schemas) !== ROUTE_SCHEMA_FINGERPRINT) throw new AdminError("internal_error", 500, "Canonical route schema fingerprint mismatch; redeploy Worker");
-    if (!validateRoute(data.raw.route) || !validateRouteNarrative(data.raw.narrative) || !data.raw.track || !data.previewPlaceIds.includes(data.route.startPlaceId) || !data.previewPlaceIds.includes(data.route.endPlaceId)) throw new AdminError("invalid_form_data", 400, "Рута није спремна за радни приказ.");
+    const errors: Record<string, string> = {};
+    if (!validateRoute(data.raw.route) || !validateRouteNarrative(data.raw.narrative)) errors.schema = "Рута није у складу са канонском шемом.";
+    if (!data.raw.track) errors.track = "GPS траса није додата.";
+    if (!data.previewPlaceIds.includes(data.route.startPlaceId)) errors.startPlace = "Полазна светиња није објављена.";
+    if (!data.previewPlaceIds.includes(data.route.endPlaceId)) errors.endPlace = "Крајња светиња није објављена.";
+    if (Object.keys(errors).length > 0) throw new AdminError("invalid_form_data", 400, "Рута још није спремна за објављивање.", errors);
   }
   const ids = body.enabled ? [...data.previewRouteIds, id] : data.previewRouteIds.filter((routeId) => routeId !== id);
   const result = await repository.commitFilesAtomic({ branch: data.branch, expectedHeadSha, baseTreeSha: data.state.treeSha, message: `${body.enabled ? "Add" : "Remove"} ${id} ${body.enabled ? "to" : "from"} route preview`, files: [{ path: "validation/editorial-preview-routes.json", content: jsonRegistry(ids) }] });

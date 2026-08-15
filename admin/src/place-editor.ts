@@ -157,7 +157,7 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   if (latitude !== undefined && (!coordinateAccuracy || !record.options.coordinateAccuracy.includes(coordinateAccuracy))) errors.coordinateAccuracy = "Изаберите подржану тачност.";
   if (latitude !== undefined && (!publicationSafety || !record.options.publicationSafety.includes(publicationSafety))) errors.publicationSafety = "Изаберите подржан ниво јавне безбједности.";
   if (record.place.inPreview && latitude !== undefined && longitude !== undefined && publicationSafety !== "public") {
-    errors.publicationSafety = "Координате објекта у радном приказу морају бити означене као јавне.";
+    errors.publicationSafety = "Координате објављеног објекта морају бити означене као јавне.";
   }
   const alternateNames = validateAlternateNames(body.alternateNames ?? [], record.rawNarrative.alternate_names, record.options, errors);
   const sections = validateSections(body.sections ?? [], record.place.sections, record.options, errors);

@@ -146,7 +146,7 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(recommended, /data-testid="recommended-place-card"/);
   assert.match(recommended, /data-testid="recommended-placeholder"/);
   assert.match(recommended, /length: placeholderCount/);
-  assert.match(recommended, /Радни приказ/);
+  assert.doesNotMatch(recommended, /Радни приказ|preview-badge/);
   assert.match(recommended, /Отвори страницу/);
   assert.match(recommended, /place\.previewImageSrc/);
   assert.match(recommended, /class="place-preview__record-image"/);

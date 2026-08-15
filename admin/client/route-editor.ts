@@ -15,7 +15,10 @@ window.addEventListener("beforeunload", (event) => { if (dirty) event.preventDef
 
 const request = async (url: string, init: RequestInit): Promise<any> => {
   const response = await fetch(url, init); const body = await response.json() as any;
-  if (!response.ok) throw new Error(body.error?.message ?? "Захтјев није успио.");
+  if (!response.ok) {
+    const details = body.error?.fields && typeof body.error.fields === "object" ? Object.values(body.error.fields).join(" ") : "";
+    throw new Error(details || body.error?.message || "Захтјев није успио.");
+  }
   if (typeof body.commitSha === "string") setHead(body.commitSha);
   return body;
 };
@@ -40,11 +43,31 @@ form.addEventListener("submit", async (event) => {
   catch (error) { if (status) status.textContent = ""; if (summary) summary.textContent = error instanceof Error ? error.message : "Грешка"; }
 });
 
-const preview = document.querySelector<HTMLElement>("[data-route-preview]");
-preview?.querySelector<HTMLButtonElement>("[data-preview-toggle]")?.addEventListener("click", async () => {
-  const enabled = preview.dataset.enabled !== "true"; const output = preview.querySelector<HTMLElement>("[data-preview-status]");
-  try { const result = await request(`/api/routes/${encodeURIComponent(routeId)}/preview`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedHeadSha: head(), enabled }) }); preview.dataset.enabled = String(enabled); const badge = preview.querySelector<HTMLElement>("[data-preview-badge]"); if (badge) { badge.textContent = enabled ? "У радном приказу" : "Није у радном приказу"; badge.className = `badge ${enabled ? "preview-on" : "preview-off"}`; } if (output) output.textContent = result.unchanged ? "Без измјена." : "Радни приказ је ажуриран."; }
-  catch (error) { if (output) output.textContent = error instanceof Error ? error.message : "Грешка"; }
+const visibility = document.querySelector<HTMLElement>("[data-route-visibility]");
+const visibilityButton = visibility?.querySelector<HTMLButtonElement>("[data-visibility-toggle]");
+const visibilityDialog = visibility?.querySelector<HTMLDialogElement>("[data-visibility-dialog]");
+const updateVisibility = async (published: boolean) => {
+  const output = visibility?.querySelector<HTMLElement>("[data-visibility-status]");
+  if (!visibility || !visibilityButton) return;
+  visibilityButton.disabled = true;
+  try {
+    const result = await request(`/api/routes/${encodeURIComponent(routeId)}/visibility`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedHeadSha: head(), published }) });
+    visibility.dataset.published = String(published);
+    const badge = visibility.querySelector<HTMLElement>("[data-visibility-badge]");
+    if (badge) { badge.textContent = published ? "Објављено" : "Нацрт"; badge.className = `badge ${published ? "status-published" : "status-draft"}`; }
+    visibilityButton.textContent = published ? "Врати у нацрт" : "Објави";
+    visibilityButton.classList.toggle("secondary", published);
+    if (output) output.textContent = result.unchanged ? "Нема промјена." : published ? "Рута је објављена. Сајт се ажурира аутоматски." : "Рута је враћена у нацрт.";
+  } catch (error) { if (output) output.textContent = error instanceof Error ? error.message : "Садржај још није спреман за објављивање."; }
+  visibilityButton.disabled = false;
+};
+visibilityButton?.addEventListener("click", () => {
+  if (visibility?.dataset.published === "true") visibilityDialog?.showModal();
+  else void updateVisibility(true);
+});
+visibilityDialog?.addEventListener("close", () => {
+  if (visibilityDialog.returnValue === "confirm") void updateVisibility(false);
+  visibilityDialog.returnValue = "";
 });
 
 const gpxInput = document.querySelector<HTMLInputElement>("[data-route-gpx]");

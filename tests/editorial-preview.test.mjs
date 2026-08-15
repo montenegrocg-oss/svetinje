@@ -382,7 +382,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.match(homepage, /loadVisibleRoutes/);
   assert.match(homepage, /<MapExplorer places=\{places\} routes=\{routes\} \/>/);
   assert.doesNotMatch(explorer, /loadVisiblePlaces/);
-  assert.match(card, /Радни приказ/);
+  assert.doesNotMatch(card, /Радни приказ|У радном приказу|Није у радном приказу/);
   assert.match(card, /place\.previewImageSrc/);
   assert.match(card, /class="editorial-place-card__image"/);
   assert.match(card, /alt=\{place\.previewImageAlt \?\? place\.name\}/);

@@ -422,6 +422,9 @@ for (const route of model.allExpectedRoutes) {
 for (const page of pages) {
   if (!model.allExpectedRoutes.includes(page.relative)) failures.push(`unexpected output route was generated: ${page.relative}`);
   if (editorialPreview && !page.html.includes('<meta name="robots" content="noindex,nofollow,noarchive">')) failures.push(`${page.relative} is missing editorial-preview noindex metadata`);
+  for (const forbidden of ["Радни приказ", "У радном приказу", "Није у радном приказу"]) {
+    if (page.html.includes(forbidden)) failures.push(`${page.relative} exposes internal visibility terminology: ${forbidden}`);
+  }
 }
 
 const homepage = pagesByRoute.get("index.html");

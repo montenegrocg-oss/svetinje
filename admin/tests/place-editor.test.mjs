@@ -4,7 +4,7 @@ import test from "node:test";
 import { parse } from "yaml";
 import { updateCanonicalPlace } from "../src/place-editor.ts";
 import { loadEditablePlace, parseNarrative } from "../src/repository-content.ts";
-import { updatePlace, updatePlacePreview } from "../src/service.ts";
+import { createPlace, updatePlace, updatePlacePreview } from "../src/service.ts";
 import { editPlacePage } from "../src/ui.ts";
 
 const HEAD = "a".repeat(40);
@@ -142,12 +142,72 @@ class PreviewRoundTripRepository extends Repository {
   }
 }
 
+class CreateLifecycleRepository {
+  headSha = HEAD;
+  commitCount = 0;
+  constructor({ breakAfterCreate = false } = {}) {
+    this.breakAfterCreate = breakAfterCreate;
+    this.files = new Map([
+      ["schemas/place.schema.json", PLACE_SCHEMA],
+      ["schemas/narrative.schema.json", NARRATIVE_SCHEMA],
+      ["schemas/common.schema.json", COMMON_SCHEMA],
+      ["schemas/media.schema.json", MEDIA_SCHEMA],
+      ["validation/editorial-preview.json", JSON.stringify({ place_ids: ["existing-place"] })],
+      ["content/places/existing-place/place.yaml", PLACE],
+      ["content/places/existing-place/narratives/sr.md", NARRATIVE],
+      ["content/sources/source-one.yaml", "id: source-one\n"],
+      ["content/sources/source-map.yaml", "id: source-map\n"],
+    ]);
+    this.commits = [];
+  }
+  tree() { let index = 1; return [...this.files.keys()].sort().map((path) => ({ path, mode: "100644", type: "blob", sha: (index++).toString(16).padStart(40, "0") })); }
+  async readBranchState() { return { headSha: this.headSha, treeSha: TREE }; }
+  async readTree() { return this.tree(); }
+  async readBlob(sha) { const entry = this.tree().find((item) => item.sha === sha); return this.files.get(entry.path); }
+  async readBlobs(shas) { const tree = this.tree(); return new Map(shas.map((sha) => { const entry = tree.find((item) => item.sha === sha); return [sha, this.files.get(entry.path)]; })); }
+  async commitFilesAtomic(input) {
+    assert.equal(input.expectedHeadSha, this.headSha);
+    for (const file of input.files) this.files.set(file.path, file.content);
+    this.commitCount += 1;
+    if (this.breakAfterCreate && this.commitCount === 1) {
+      const narrativePath = "content/places/novi-objekat/narratives/sr.md";
+      this.files.set(narrativePath, this.files.get(narrativePath).replace(/^preferred_name:.*\n/m, ""));
+    }
+    this.headSha = this.commitCount.toString(16).padStart(40, "0");
+    this.commits.push(input);
+    return { commitSha: this.headSha, branch: input.branch };
+  }
+}
+
 const env = { GITHUB_EDITORIAL_BRANCH: "editorial/work" };
 const session = { subject: "user", email: "editor@example.com", actor: "editor-user", developmentBypass: false };
+const newPlaceBody = { preferredName: "Нови објекат", id: "novi-objekat", slug: "novi-objekat", placeType: "monastery", expectedHeadSha: HEAD };
 const body = (place) => ({
   expectedHeadSha: HEAD, preferredName: place.preferredName, shortName: place.shortName ?? "", slug: place.slug, placeType: place.placeType, browseAreaId: place.browseAreaId, summary: place.summary,
   jurisdiction: place.jurisdiction ?? "", countryCode: place.countryCode ?? "", municipality: place.municipality ?? "", settlement: place.settlement ?? "", postalAddress: place.postalAddress ?? "",
   latitude: place.latitude, longitude: place.longitude, coordinateAccuracy: place.coordinateAccuracy, publicationSafety: place.publicationSafety, alternateNames: place.alternateNames, sections: place.sections,
+});
+
+test("new place defaults to draft and immediate publication is safe", async () => {
+  const draftRepository = new CreateLifecycleRepository();
+  const draft = await createPlace(draftRepository, env, session, newPlaceBody, new Date("2026-08-15T12:00:00Z"));
+  assert.equal(draft.published, false);
+  assert.equal(draftRepository.commits.length, 1);
+  assert.deepEqual(JSON.parse(draftRepository.files.get("validation/editorial-preview.json")).place_ids, ["existing-place"]);
+
+  const publishedRepository = new CreateLifecycleRepository();
+  const published = await createPlace(publishedRepository, env, session, { ...newPlaceBody, published: true }, new Date("2026-08-15T12:00:00Z"));
+  assert.equal(published.published, true);
+  assert.equal(publishedRepository.commits.length, 2);
+  assert.deepEqual(JSON.parse(publishedRepository.files.get("validation/editorial-preview.json")).place_ids, ["existing-place", "novi-objekat"]);
+
+  const incompleteRepository = new CreateLifecycleRepository({ breakAfterCreate: true });
+  const incomplete = await createPlace(incompleteRepository, env, session, { ...newPlaceBody, published: true }, new Date("2026-08-15T12:00:00Z"));
+  assert.equal(incomplete.published, false);
+  assert.match(incomplete.publicationErrors.preferredName, /пожељни назив/);
+  assert.equal(incompleteRepository.files.has("content/places/novi-objekat/place.yaml"), true);
+  assert.equal(incompleteRepository.commits.length, 1);
+  assert.deepEqual(JSON.parse(incompleteRepository.files.get("validation/editorial-preview.json")).place_ids, ["existing-place"]);
 });
 
 test("GET editable model derives schema options and preserves narrative structure", async () => {
@@ -330,14 +390,14 @@ test("a repeated PATCH after serialization and readback does not create an audit
   assert.deepEqual(parseNarrative(repository.blobs.narrative).frontMatter.audit, savedNarrative.audit);
 });
 
-test("preview coordinates require explicit public safety while non-preview records retain canonical options", async () => {
+test("published coordinates require explicit public safety while drafts retain canonical options", async () => {
   const previewRepository = new Repository();
   const previewRecord = await loadEditablePlace(previewRepository, "editorial/work", "existing-place");
   await assert.rejects(
     () => updatePlace(previewRepository, env, session, "existing-place", { ...body(previewRecord.place), publicationSafety: "review-required" }),
     (error) => error.code === "invalid_form_data"
       && error.status === 400
-      && error.fields?.publicationSafety === "Координате објекта у радном приказу морају бити означене као јавне.",
+      && error.fields?.publicationSafety === "Координате објављеног објекта морају бити означене као јавне.",
   );
   assert.equal(previewRepository.committed, undefined);
 
@@ -355,9 +415,9 @@ test("preview coordinates require explicit public safety while non-preview recor
   assert.equal(nonPreviewRepository.committed.files.length, 2);
 });
 
-test("place editor explains preview coordinate safety next to the field", async () => {
+test("place editor explains published coordinate safety next to the field", async () => {
   const uiSource = await readFile(new URL("../src/ui.ts", import.meta.url), "utf8");
-  assert.match(uiSource, /За објекат у радном приказу координате морају бити означене као јавне\./);
+  assert.match(uiSource, /Координате објављеног објекта морају бити означене као јавне\./);
 });
 
 test("place editor exposes the photo workflow and no source-registry controls", async () => {
@@ -383,31 +443,32 @@ test("place editor exposes the photo workflow and no source-registry controls", 
   assert.doesNotMatch(clientSource, /sourceIds|data-alt-sources/);
 });
 
-test("place editor exposes explicit editorial-preview management without production wording", async () => {
+test("place editor exposes compact draft and published visibility management", async () => {
   const record = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
   const previewHtml = await editPlacePage(session, record).text();
-  assert.match(previewHtml, /data-preview-enabled="true"/);
-  assert.match(previewHtml, /У радном приказу/);
-  assert.match(previewHtml, /Уклони из радног приказа/);
-  assert.match(previewHtml, /Објекат ће нестати са радне верзије сајта, али његови подаци и фотографије остају сачувани у администрацији./);
+  assert.match(previewHtml, /data-published="true"/);
+  assert.match(previewHtml, /Објављено/);
+  assert.match(previewHtml, /Врати у нацрт/);
+  assert.match(previewHtml, /Објекат више неће бити видљив на сајту\. Подаци и фотографије остају сачувани у администрацији\./);
 
   const repository = new Repository();
   repository.blobs.preview = JSON.stringify({ place_ids: [] });
   const nonPreview = await loadEditablePlace(repository, "editorial/work", "existing-place");
   const nonPreviewHtml = await editPlacePage(session, nonPreview).text();
-  assert.match(nonPreviewHtml, /Објекат још није видљив на радној верзији сајта./);
-  assert.match(nonPreviewHtml, /Додај у радни приказ/);
-  assert.match(nonPreviewHtml, /Промјена ће бити видљива након завршетка радне изградње./);
-  const previewBlock = nonPreviewHtml.match(/<section class="panel preview-control"[\s\S]+?<\/section>/)?.[0] ?? "";
-  assert.doesNotMatch(previewBlock, /production|publication/i);
+  assert.match(nonPreviewHtml, /data-published="false"/);
+  assert.match(nonPreviewHtml, />Нацрт</);
+  assert.match(nonPreviewHtml, />Објави</);
+  assert.doesNotMatch(nonPreviewHtml, /Радни приказ|радном приказу|preview-control|preview-on|preview-off/);
 
   const [uiSource, clientSource] = await Promise.all([
     readFile(new URL("../src/ui.ts", import.meta.url), "utf8"),
     readFile(new URL("../client/editor.ts", import.meta.url), "utf8"),
   ]);
-  assert.match(uiSource, /У радном приказу/);
-  assert.match(uiSource, /Није у радном приказу/);
+  assert.doesNotMatch(uiSource, /Радни приказ|радном приказу|Research scaffold/);
+  assert.match(uiSource, /status-published/);
+  assert.match(uiSource, /status-draft/);
   assert.match(clientSource, /\/api\/places\/\$\{encodeURIComponent\(form\.dataset\.placeId/);
+  assert.match(clientSource, /\/visibility/);
   assert.match(clientSource, /Садржај је у међувремену измијењен\. Освјежите страницу и покушајте поново\./);
   assert.match(clientSource, /Нема промјена\./);
   assert.match(previewHtml, /<textarea name="summary">/);

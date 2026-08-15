@@ -24,6 +24,7 @@ interface CreatePlaceBody {
   slug?: unknown;
   placeType?: unknown;
   expectedHeadSha?: unknown;
+  published?: unknown;
 }
 
 export interface UpdatePlacePreviewBody {
@@ -81,6 +82,7 @@ export async function createPlace(
   const slug = asString(body.slug);
   const placeType = asString(body.placeType);
   const expectedHeadSha = asString(body.expectedHeadSha);
+  const publishImmediately = body.published === true;
   if (!id || !preferredName || !slug || !placeType || !expectedHeadSha) {
     throw new AdminError("invalid_form_data", 400, "Required fields are missing");
   }
@@ -121,7 +123,7 @@ export async function createPlace(
     files: scaffold.files,
     message: `Add research place ${scaffold.id}`,
   });
-  return {
+  const created = {
     commitSha: result.commitSha,
     branch: result.branch,
     place: {
@@ -133,6 +135,29 @@ export async function createPlace(
       inPreview: false,
     },
   };
+  if (!publishImmediately) return { ...created, published: false };
+
+  try {
+    const visibility = await updatePlacePreview(repository, env, session, scaffold.id, {
+      expectedHeadSha: result.commitSha,
+      enabled: true,
+    });
+    return {
+      ...created,
+      commitSha: visibility.commitSha,
+      published: true,
+      place: { ...created.place, inPreview: true },
+    };
+  } catch (error) {
+    if (error instanceof AdminError && (error.code === "invalid_form_data" || error.code === "git_conflict")) {
+      return {
+        ...created,
+        published: false,
+        publicationErrors: error.fields ?? { publication: "Садржај још није спреман за објављивање." },
+      };
+    }
+    throw error;
+  }
 }
 
 export async function updatePlace(
@@ -178,12 +203,12 @@ export async function updatePlacePreview(
   const record = await loadEditablePlace(repository, branch, id);
   const expectedHeadSha = asString(body.expectedHeadSha);
   if (!expectedHeadSha || !/^[0-9a-f]{40}$/.test(expectedHeadSha) || typeof body.enabled !== "boolean") {
-    throw new AdminError("invalid_form_data", 400, "Preview update is invalid", {
+    throw new AdminError("invalid_form_data", 400, "Промјена видљивости није важећа.", {
       ...(!expectedHeadSha || !/^[0-9a-f]{40}$/.test(expectedHeadSha) ? { expectedHeadSha: "HEAD ревизија није важећа." } : {}),
-      ...(typeof body.enabled !== "boolean" ? { enabled: "Статус радног приказа није важећи." } : {}),
+      ...(typeof body.enabled !== "boolean" ? { enabled: "Статус објављивања није важећи." } : {}),
     });
   }
-  if (expectedHeadSha !== record.state.headSha) throw new AdminError("git_conflict", 409, "Editorial branch moved before preview update");
+  if (expectedHeadSha !== record.state.headSha) throw new AdminError("git_conflict", 409, "Уређивачка грана је промијењена прије објављивања.");
 
   const currentlyEnabled = record.previewPlaceIds.includes(id);
   if (currentlyEnabled === body.enabled) {
@@ -204,7 +229,7 @@ export async function updatePlacePreview(
     });
     if (!validatePlace(record.rawPlace)) errors.place = "Објекат није у складу са канонском шемом.";
     if (!validateNarrative(record.rawNarrative)) errors.narrative = "Српски текст није у складу са канонском шемом.";
-    if (Object.keys(errors).length > 0) throw new AdminError("invalid_form_data", 400, "Place is not eligible for editorial preview", errors);
+    if (Object.keys(errors).length > 0) throw new AdminError("invalid_form_data", 400, "Садржај још није спреман за објављивање.", errors);
   }
 
   const previewPlaceIds = body.enabled

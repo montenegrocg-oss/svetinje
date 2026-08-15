@@ -33,66 +33,64 @@ const renderValidationErrors = (result: any) => {
   summary.appendChild(list);
 };
 
-const previewControl = document.querySelector<HTMLElement>("[data-preview-control]");
-const previewToggle = previewControl?.querySelector<HTMLButtonElement>("[data-preview-toggle]");
-const previewBadge = previewControl?.querySelector<HTMLElement>("[data-preview-badge]");
-const previewDescription = previewControl?.querySelector<HTMLElement>("[data-preview-description]");
-const previewStatus = previewControl?.querySelector<HTMLElement>("[data-preview-status]");
-const previewDialog = previewControl?.querySelector<HTMLDialogElement>("[data-preview-dialog]");
-let previewEnabled = previewControl?.dataset.previewEnabled === "true";
+const visibilityControl = document.querySelector<HTMLElement>("[data-visibility-control]");
+const visibilityToggle = visibilityControl?.querySelector<HTMLButtonElement>("[data-visibility-toggle]");
+const visibilityBadge = visibilityControl?.querySelector<HTMLElement>("[data-visibility-badge]");
+const visibilityStatus = visibilityControl?.querySelector<HTMLElement>("[data-visibility-status]");
+const visibilityDialog = visibilityControl?.querySelector<HTMLDialogElement>("[data-visibility-dialog]");
+let published = visibilityControl?.dataset.published === "true";
 
-const renderPreviewState = (enabled: boolean) => {
-  previewEnabled = enabled;
-  if (previewControl) previewControl.dataset.previewEnabled = String(enabled);
-  if (previewBadge) previewBadge.hidden = !enabled;
-  if (previewDescription) {
-    previewDescription.hidden = enabled;
-    previewDescription.textContent = enabled ? "" : "Објекат још није видљив на радној верзији сајта.";
+const renderVisibilityState = (enabled: boolean) => {
+  published = enabled;
+  if (visibilityControl) visibilityControl.dataset.published = String(enabled);
+  if (visibilityBadge) {
+    visibilityBadge.textContent = enabled ? "Објављено" : "Нацрт";
+    visibilityBadge.className = `badge ${enabled ? "status-published" : "status-draft"}`;
   }
-  if (previewToggle) {
-    previewToggle.textContent = enabled ? "Уклони из радног приказа" : "Додај у радни приказ";
-    previewToggle.classList.toggle("secondary", enabled);
+  if (visibilityToggle) {
+    visibilityToggle.textContent = enabled ? "Врати у нацрт" : "Објави";
+    visibilityToggle.classList.toggle("secondary", enabled);
   }
 };
 
-async function updatePreview(enabled: boolean) {
-  if (!previewToggle) return;
-  previewToggle.disabled = true;
-  if (previewStatus) previewStatus.textContent = enabled ? "Додавање у радни приказ…" : "Уклањање из радног приказа…";
+async function updateVisibility(enabled: boolean) {
+  if (!visibilityToggle) return;
+  visibilityToggle.disabled = true;
+  if (visibilityStatus) visibilityStatus.textContent = enabled ? "Објављивање…" : "Враћање у нацрт…";
   if (summary) summary.textContent = "";
-  const response = await fetch(`/api/places/${encodeURIComponent(form!.dataset.placeId ?? "")}/preview`, {
+  const response = await fetch(`/api/places/${encodeURIComponent(form!.dataset.placeId ?? "")}/visibility`, {
     method: "PATCH",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ expectedHeadSha: form!.dataset.headSha, enabled }),
+    body: JSON.stringify({ expectedHeadSha: form!.dataset.headSha, published: enabled }),
   });
   const result = await response.json() as any;
   if (!response.ok) {
     renderValidationErrors(result);
-    if (previewStatus) previewStatus.textContent = response.status === 409
+    if (visibilityStatus) visibilityStatus.textContent = response.status === 409
       ? "Садржај је у међувремену измијењен. Освјежите страницу и покушајте поново."
-      : "Промјена радног приказа није успјела.";
+      : "Садржај још није спреман за објављивање.";
   } else {
     form!.dataset.headSha = result.commitSha;
-    renderPreviewState(result.inPreview === true);
-    if (previewStatus) previewStatus.textContent = result.unchanged
+    renderVisibilityState(result.inPreview === true);
+    if (visibilityStatus) visibilityStatus.textContent = result.unchanged
       ? "Нема промјена."
       : enabled
-        ? "Објекат је додат у радни приказ."
-        : "Објекат је уклоњен из радног приказа.";
+        ? "Објекат је објављен. Сајт се ажурира аутоматски."
+        : "Објекат је враћен у нацрт.";
   }
-  previewToggle.disabled = false;
+  visibilityToggle.disabled = false;
 }
 
-previewToggle?.addEventListener("click", () => {
-  if (!previewEnabled) {
-    void updatePreview(true);
+visibilityToggle?.addEventListener("click", () => {
+  if (!published) {
+    void updateVisibility(true);
     return;
   }
-  previewDialog?.showModal();
+  visibilityDialog?.showModal();
 });
-previewDialog?.addEventListener("close", () => {
-  if (previewDialog.returnValue === "confirm") void updatePreview(false);
-  previewDialog.returnValue = "";
+visibilityDialog?.addEventListener("close", () => {
+  if (visibilityDialog.returnValue === "confirm") void updateVisibility(false);
+  visibilityDialog.returnValue = "";
 });
 
 const deleteOpen = document.querySelector<HTMLButtonElement>("[data-delete-place-open]");

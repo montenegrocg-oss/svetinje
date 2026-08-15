@@ -12,7 +12,7 @@ const difficulty = { easy: "Лака", moderate: "Средње захтјевн�
 <article class:list={["route-card", compact && "route-card--compact"]} data-route-id={route.id}>
   <div class="route-card__visual" aria-hidden="true"><InterfaceIcon name="route" size={28} /></div>
   <div class="route-card__body">
-    <p class="route-card__type">Пјешачка рута {route.preview && <span>Радни приказ</span>}</p>
+    <p class="route-card__type">Пјешачка рута</p>
     <h3><a href={`/rute/${route.slug}/`}>{route.shortName}</a></h3>
     {!compact && <p>{route.summary}</p>}
     <dl class="route-card__metrics">

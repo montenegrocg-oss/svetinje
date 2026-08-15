@@ -54,6 +54,13 @@ async function photoUpload(request: Request) {
   };
 }
 
+function visibilityBody(body: Record<string, unknown>): Record<string, unknown> {
+  return {
+    expectedHeadSha: body.expectedHeadSha,
+    enabled: body.published,
+  };
+}
+
 async function routeGpxUpload(request: Request) {
   if (!request.headers.get("content-type")?.toLowerCase().startsWith("multipart/form-data")) throw new AdminError("invalid_form_data", 415, "GPX upload must use multipart/form-data");
   const contentLength = Number(request.headers.get("content-length"));
@@ -105,6 +112,11 @@ export async function handleRequest(request: Request, env: AdminEnv): Promise<Re
       requireSameOrigin(request);
       return Response.json(await updatePlace(repository, env, session, apiPlaceMatch[1], await jsonBody(request)), { headers: JSON_HEADERS });
     }
+    const apiVisibilityMatch = url.pathname.match(/^\/api\/places\/([a-z0-9]+(?:-[a-z0-9]+)*)\/visibility$/);
+    if (request.method === "PATCH" && apiVisibilityMatch?.[1]) {
+      requireSameOrigin(request);
+      return Response.json(await updatePlacePreview(repository, env, session, apiVisibilityMatch[1], visibilityBody(await jsonBody(request))), { headers: JSON_HEADERS });
+    }
     if (request.method === "GET" && url.pathname === "/api/routes") {
       const result = await listRoutes(repository, env); return Response.json({ routes: result.routes, branch: result.branch, headSha: result.state.headSha }, { headers: JSON_HEADERS });
     }
@@ -114,6 +126,8 @@ export async function handleRequest(request: Request, env: AdminEnv): Promise<Re
     if (request.method === "DELETE" && apiRouteTrack?.[1]) { requireSameOrigin(request); return Response.json(await removeRouteTrack(repository, env, session, apiRouteTrack[1], await jsonBody(request)), { headers: JSON_HEADERS }); }
     const apiRoutePreview = url.pathname.match(/^\/api\/routes\/([a-z0-9]+(?:-[a-z0-9]+)*)\/preview$/);
     if (request.method === "PATCH" && apiRoutePreview?.[1]) { requireSameOrigin(request); return Response.json(await updateRoutePreview(repository, env, apiRoutePreview[1], await jsonBody(request)), { headers: JSON_HEADERS }); }
+    const apiRouteVisibility = url.pathname.match(/^\/api\/routes\/([a-z0-9]+(?:-[a-z0-9]+)*)\/visibility$/);
+    if (request.method === "PATCH" && apiRouteVisibility?.[1]) { requireSameOrigin(request); return Response.json(await updateRoutePreview(repository, env, apiRouteVisibility[1], visibilityBody(await jsonBody(request))), { headers: JSON_HEADERS }); }
     const apiRoute = url.pathname.match(/^\/api\/routes\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
     if (request.method === "GET" && apiRoute?.[1]) { const result = await getEditableRoute(repository, env, apiRoute[1]); return Response.json({ route: result.route, places: result.places, branch: result.branch, headSha: result.state.headSha }, { headers: JSON_HEADERS }); }
     if (request.method === "PATCH" && apiRoute?.[1]) { requireSameOrigin(request); return Response.json(await updateRoute(repository, env, session, apiRoute[1], await jsonBody(request)), { headers: JSON_HEADERS }); }

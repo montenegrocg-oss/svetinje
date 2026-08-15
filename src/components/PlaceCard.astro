@@ -41,7 +41,6 @@ const location = [place.municipality, place.settlement].filter(Boolean).join(" �
   )}
   <div class="editorial-place-card__topline">
     <p class="eyebrow">{place.typeLabel}</p>
-    {place.preview && <span class="preview-badge">Радни приказ</span>}
   </div>
   <h2>{place.name}</h2>
   {location && <p class="editorial-place-card__location">{location}</p>}
