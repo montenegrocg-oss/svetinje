@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-manastir-svetog-sergija-radonjeskog-083539e2596c
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/manastir-svetog-sergija-radonjeskog/photo-manastir-svetog-sergija-radonjeskog-083539e2596c.jpg
+checksum_sha256: b5811c2055f2a1df1cd284b29cd1716e12a180107c2d45e91d99c9b1fb48ace6
+mime_type: image/jpeg
+width: 2400
+height: 1800
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - manastir-svetog-sergija-radonjeskog
+localized_text:
+  sr:
+    alt_text: Манастир светог Сергија Радоњешког
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-15T10:29:02Z
+    reviewed_revision: 48b1d9e8f9d53e02b23b389348ecc6bf4c053ce6
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-15T10:29:02Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-15T10:29:02Z
+  updated_by: montenegro-cg
