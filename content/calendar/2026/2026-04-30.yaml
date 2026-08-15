@@ -1,0 +1,18 @@
+schema_version: 1
+date: 2026-04-30
+julian_date: 2026-04-17
+title: Трећа седмица по Пасхи
+commemorations:
+  - Свети свештеномученик Симеон, Епископ Персијски
+  - Свети Акакије, Епископ Мелитински
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 22
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 6
+          verses:
+            - 40-44

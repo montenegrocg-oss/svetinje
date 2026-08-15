@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-09-04
+julian_date: 2026-08-22
+title: Попразништво Успења Пресвете Богородице
+commemorations:
+  - Свети мученик Агатоник
+  - И Свети мученик Луп
+  - "8"
+  - И Свети свештеномученик Горазд, Епископ Чешки
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 20
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 5
+          verses:
+            - 21-24
+        - chapter: 5
+          verses:
+            - 35-43
+        - chapter: 6
+          verses:
+            - "1"

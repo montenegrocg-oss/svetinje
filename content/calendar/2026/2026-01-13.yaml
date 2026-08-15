@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-01-13
+julian_date: 2025-12-31
+title: Оданије Празника Телесног рођења Господа Бога и Спаса нашег Исуса Христа
+commemorations:
+  - Свети Доситеј Загребачки, Исповедник
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 50
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 11
+          verses:
+            - 11-23

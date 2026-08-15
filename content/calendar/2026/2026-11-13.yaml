@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-11-13
+julian_date: 2026-10-31
+title: Свети апостоли Стахије, Амплије, Урван и остали
+commemorations:
+  - И Свети мученик Епимах
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 63
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 12
+          verses:
+            - 2-12

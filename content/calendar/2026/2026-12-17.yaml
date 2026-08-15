@@ -1,0 +1,25 @@
+schema_version: 1
+date: 2026-12-17
+julian_date: 2026-12-04
+title: Света великомученица Варвара
+commemorations:
+  - И Преподобни отац наш Јован Дамаскин
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 107
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 21
+          verses:
+            - 28-33
+    - book: mk
+      zachalo: 21
+      scope: unknown
+      label: Варвари
+      ranges:
+        - chapter: 5
+          verses:
+            - 24-34

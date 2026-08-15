@@ -13,9 +13,8 @@ import { PLACES_PER_PAGE } from "../src/lib/explorer-pagination.ts";
 import { pageCountForHomepagePreview } from "../src/lib/explorer-preview.ts";
 import { selectFeaturedCataloguePlaces } from "../src/lib/category-catalogue.ts";
 import { getPlaceAboutLabel } from "../src/lib/place-content.ts";
+import { MOST_VISITED_PLACE_IDS } from "../src/lib/homepage-selections.ts";
 
-const RECOMMENDED_PLACE_IDS = ["saborni-hram-podgorica", "dajbabe"];
-const TOTAL_RECOMMENDATION_SLOTS = 10;
 const EMPTY_STATES = {
   monasteries: "Још нема манастира спремних за јавно објављивање.",
   churches: "Још нема храмова спремних за јавно објављивање.",
@@ -371,24 +370,21 @@ function verifyFixedHomepageContracts(homepageHtml, model, failures) {
     failures.push("homepage accessible result status must distinguish shown cards from full matches");
   }
 
-  const visibleRecommendations = RECOMMENDED_PLACE_IDS.flatMap((id) => {
+  const visibleRecommendations = MOST_VISITED_PLACE_IDS.flatMap((id) => {
     const place = model.placesById.get(id);
     return place ? [place] : [];
   });
   const realCount = countMatches(homepageHtml, /data-recommended-place=/g);
   const placeholderCount = countMatches(homepageHtml, /data-testid="recommended-placeholder"/g);
-  if (realCount !== visibleRecommendations.length || placeholderCount !== TOTAL_RECOMMENDATION_SLOTS - visibleRecommendations.length) {
-    failures.push("homepage recommendations do not preserve the intentional visible-ID selection and ten-slot contract");
-  }
-  if (realCount + placeholderCount !== TOTAL_RECOMMENDATION_SLOTS) failures.push("homepage recommendations must contain exactly ten total slots");
+  if (realCount !== visibleRecommendations.length || placeholderCount !== 0) failures.push("homepage most-visited places must contain only the canonical visible selection");
   for (const place of visibleRecommendations) {
     const card = elementContaining(homepageHtml, "article", `data-recommended-place="${place.id}"`);
     if (!card.includes(`href="/svetinje/${place.slug}/"`)) failures.push(`recommended place ${place.id} has the wrong detail route`);
     if (place.previewImageSrc && !card.includes(`src="${place.previewImageSrc}"`)) failures.push(`recommended place ${place.id} is missing its eligible image`);
   }
   const recommendationIds = [...homepageHtml.matchAll(/data-recommended-place="([^"]+)"/g)].map((match) => match[1]);
-  if (recommendationIds.some((id) => !RECOMMENDED_PLACE_IDS.includes(id))) failures.push("homepage recommends a place outside the intentional recommendation list");
-  if (homepageHtml.includes("<b>010</b>")) failures.push("homepage must never format recommendation slot 10 as 010");
+  if (JSON.stringify(recommendationIds) !== JSON.stringify(visibleRecommendations.map((place) => place.id))) failures.push("homepage most-visited places are outside canonical order");
+  if (!homepageHtml.includes("Најпосјећеније светиње") || !homepageHtml.includes("data-today-calendar")) failures.push("homepage is missing its most-visited or Today section");
 }
 
 const root = process.cwd();
@@ -403,6 +399,22 @@ const pages = await Promise.all(files.map(async (file) => ({
 const pagesByRoute = new Map(pages.map((page) => [page.relative, page]));
 const failures = [];
 const model = await createOutputExpectations(root, { editorialPreview });
+
+try {
+  const calendarJson = await readFile(path.join(distRoot, "calendar", "2026.json"), "utf8");
+  const calendarPayload = JSON.parse(calendarJson);
+  if (calendarPayload.year !== 2026 || calendarPayload.time_zone !== "Europe/Podgorica" || calendarPayload.days?.length !== 365) {
+    failures.push("calendar/2026.json must contain 365 compact Podgorica calendar days");
+  }
+  const publicCalendarOutput = `${calendarJson}\n${pages.filter((page) => page.relative.startsWith("kalendar/")).map((page) => page.html).join("\n")}`;
+  for (const forbidden of ["APKPure", ".xapk", "com.tipik.app.apk", "data_data.zip", "Microsoft Word 15", "mso-", "svetosavlje.org", "ebible.org", "_provenance", "srp1865", "Типик"]) {
+    if (publicCalendarOutput.toLocaleLowerCase("sr").includes(forbidden.toLocaleLowerCase("sr"))) {
+      failures.push(`public calendar output exposes forbidden source material: ${forbidden}`);
+    }
+  }
+} catch {
+  failures.push("calendar/2026.json is missing or invalid");
+}
 
 if (files.length !== model.expectedPageCount) failures.push(`${editorialPreview ? "editorial preview" : "production"} must generate ${model.expectedPageCount} data-derived HTML page(s), found ${files.length}`);
 for (const route of model.allExpectedRoutes) {

@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-12-31
+julian_date: 2026-12-18
+title: Свети мученик Севастијан и дружина његова
+commemorations:
+  - И Светитељ (=Јерарх) Христов Модест, Патријарх Јерусалимски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 45
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 10
+          verses:
+            - 17-27

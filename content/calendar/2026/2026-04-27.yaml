@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-04-27
+julian_date: 2026-04-14
+title: Трећа седмица по Пасхи
+commemorations:
+  - Свети отац наш Мартин Исповедник, папа Римски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 13
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 4
+          verses:
+            - 47-54

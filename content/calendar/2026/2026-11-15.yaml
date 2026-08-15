@@ -1,0 +1,25 @@
+schema_version: 1
+date: 2026-11-15
+julian_date: 2026-11-02
+title: НЕДЕЉА ДВАДЕСЕТ ЧЕТВРТА ПО ПЕДЕСЕТНИЦИ
+commemorations:
+  - Свети мученици Акиндин, Афтоније, Пигасије, Елпидифор и Анембодист
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 39
+      scope: sunday
+      label: Недеље 24. по Педесетници
+      ranges:
+        - chapter: 8
+          verses:
+            - 40-56
+    - book: mt
+      zachalo: 36
+      scope: saint
+      label: Мученицима
+      ranges:
+        - chapter: 10
+          verses:
+            - 16-22

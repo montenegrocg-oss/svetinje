@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-06-11
+julian_date: 2026-05-29
+title: Света преподобномученица Теодосија, девојка
+commemorations:
+  - Свети Лука, Архиепископ Симферопољски и Кримски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 27
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 8
+          verses:
+            - 23-27

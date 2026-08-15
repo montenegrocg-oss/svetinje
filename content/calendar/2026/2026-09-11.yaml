@@ -1,0 +1,16 @@
+schema_version: 1
+date: 2026-09-11
+julian_date: 2026-08-29
+title: Усековање часне главе часног славног Пророка, Претече и Крститеља Јована
+commemorations: []
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 24
+      scope: day
+      label: Претечи. Апостол и Јеванђеље дана читати 28
+      ranges:
+        - chapter: 6
+          verses:
+            - 14-30

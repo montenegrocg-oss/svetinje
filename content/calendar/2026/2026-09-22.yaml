@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-09-22
+julian_date: 2026-09-09
+title: Попразништво Рођења Пресвете Богородице
+commemorations:
+  - Свети и праведни Јоаким и Ана
+  - И Свети мученик Северијан
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 48
+      scope: day
+      label: Дана и од понедељка и Богооцима
+      ranges:
+        - chapter: 10
+          verses:
+            - 46-52
+    - book: lk
+      zachalo: 36
+      scope: day
+      label: Дана и од понедељка и Богооцима
+      ranges:
+        - chapter: 8
+          verses:
+            - 16-21

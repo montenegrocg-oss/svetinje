@@ -1,0 +1,27 @@
+schema_version: 1
+date: 2026-09-13
+julian_date: 2026-08-31
+title: НЕДЕЉА ПЕТНАЕСТА ПО ПЕДЕСЕТНИЦИ
+commemorations:
+  - Полагање часног Појаса Пресвете владичице наше Богородице у Халкопатији
+  - Сабор Светих српских просветитеља и учитеља
+  - Свети мученици Јасеновачки
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 92
+      scope: sunday
+      label: Недеље 15. по Педесетници
+      ranges:
+        - chapter: 22
+          verses:
+            - 34-46
+    - book: mt
+      zachalo: 11
+      scope: saint
+      label: Светима
+      ranges:
+        - chapter: 5
+          verses:
+            - 14-19

@@ -1,0 +1,27 @@
+schema_version: 1
+date: 2026-12-12
+julian_date: 2026-11-29
+title: Свети мученик Парамон
+commemorations:
+  - И Свети мученик Филумен
+  - И преподобни отац наш Акакије Синајски
+  - Свети Мардарије, Епископ Америчко-канадски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 67
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 12
+          verses:
+            - 32-40
+    - book: jn
+      zachalo: 16
+      scope: unknown
+      label: упокојенима
+      ranges:
+        - chapter: 5
+          verses:
+            - 24-30

@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-10-18
+julian_date: 2026-10-05
+title: НЕДЕЉА ДВАДЕСЕТА ПО ПЕДЕСЕТНИЦИ
+commemorations:
+  - Света мученица Харитина
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 30
+      scope: sunday
+      label: Недеље 20. по Педесетници
+      ranges:
+        - chapter: 7
+          verses:
+            - 11-16

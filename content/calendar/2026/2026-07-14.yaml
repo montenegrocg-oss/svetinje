@@ -1,0 +1,27 @@
+schema_version: 1
+date: 2026-07-14
+julian_date: 2026-07-01
+title: Свети бесребреници и чудотворци Козма и Дамјан, родом из Рима
+commemorations: []
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 57
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 14
+          verses:
+            - 1-13
+    - book: mt
+      zachalo: 34
+      scope: saint
+      label: Светима
+      ranges:
+        - chapter: 9
+          verses:
+            - 36-38
+        - chapter: 10
+          verses:
+            - 1-8

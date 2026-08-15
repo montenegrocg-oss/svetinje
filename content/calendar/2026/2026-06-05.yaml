@@ -1,0 +1,28 @@
+schema_version: 1
+date: 2026-06-05
+julian_date: 2026-05-23
+title: Седмица по Педесетници
+commemorations:
+  - Треће обретење ( проналажење ) часне главе Светог славног Пророка, Претече и Крститеља Јована ( од 25
+  - "5"
+  - )
+  - Свети отац наш Михаило Исповедник, Епископ Синадски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 14
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 5
+          verses:
+            - 33-41
+    - book: mt
+      zachalo: 40
+      scope: unknown
+      label: Претечи
+      ranges:
+        - chapter: 11
+          verses:
+            - 2-15

@@ -1,0 +1,21 @@
+schema_version: 1
+date: 2026-08-08
+julian_date: 2026-07-26
+title: Свети свештеномученик Ермолај и они са њиме пострадали
+commemorations:
+  - И Света мученица Параскева
+  - И Свети отац наш Сава III Архиепископ Српски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 73
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 17
+          verses:
+            - 24-27
+        - chapter: 18
+          verses:
+            - 1-4

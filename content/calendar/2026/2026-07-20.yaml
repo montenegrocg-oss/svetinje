@@ -1,0 +1,18 @@
+schema_version: 1
+date: 2026-07-20
+julian_date: 2026-07-07
+title: Преподобни отац наш Тома Малеин
+commemorations:
+  - И Света великомученица Недеља
+  - И преподобни отац наш Акакије, из „ Лествице“
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 65
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 16
+          verses:
+            - 1-6

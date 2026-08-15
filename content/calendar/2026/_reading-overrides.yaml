@@ -1,0 +1,43 @@
+schema_version: 1
+overrides:
+  "2026-02-16":
+    - reading: 1
+      variant: б
+  "2026-02-17":
+    - reading: 0
+      book: lk
+      zachalo: 109
+  "2026-04-05":
+    - reading: 0
+      variant: а
+  "2026-04-19":
+    - reading: 0
+      variant: null
+  "2026-04-26":
+    - reading: 0
+      variant: б
+  "2026-05-03":
+    - reading: 0
+      variant: б
+  "2026-05-21":
+    - reading: 1
+      variant: б
+  "2026-07-12":
+    - reading: 1
+      variant: б
+  "2026-08-29":
+    - reading: 0
+      variant: б
+    - reading: 1
+      book: mt
+      zachalo: 90
+  "2026-09-05":
+    - reading: 1
+      book: mt
+      zachalo: 93
+  "2026-09-26":
+    - reading: 0
+      variant: а
+  "2026-10-09":
+    - reading: 0
+      variant: б

@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-12-11
+julian_date: 2026-11-28
+title: Свети преподобномученик Стефан Нови
+commemorations:
+  - И Свети мученик Иринарх
+  - И Свети мученик Христо
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 101
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 20
+          verses:
+            - 19-26
+    - book: mt
+      zachalo: 37
+      scope: saint
+      label: Стефану
+      ranges:
+        - chapter: 10
+          verses:
+            - 23-31

@@ -1,0 +1,34 @@
+schema_version: 1
+date: 2026-12-03
+julian_date: 2026-11-20
+title: Претпразништво Ваведења Пресвете Богородице
+commemorations:
+  - И преподобни Григорије Декаполит
+  - И Свети отац наш Прокло, Архиепископ Цариградски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 92
+      scope: day
+      label: Дана, од петка [1] и Светима
+      ranges:
+        - chapter: 18
+          verses:
+            - 31-34
+    - book: lk
+      zachalo: 95
+      scope: day
+      label: Дана, од петка [1] и Светима
+      ranges:
+        - chapter: 19
+          verses:
+            - 12-28
+    - book: jn
+      zachalo: 36
+      scope: day
+      label: Дана, од петка [1] и Светима
+      ranges:
+        - chapter: 10
+          verses:
+            - 9-16

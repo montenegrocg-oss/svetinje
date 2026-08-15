@@ -1,0 +1,16 @@
+schema_version: 1
+date: 2026-10-10
+julian_date: 2026-09-27
+title: Свети мученик Калистрат и са њим пострадали
+commemorations: []
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 19
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 5
+          verses:
+            - 17-26

@@ -1,0 +1,30 @@
+schema_version: 1
+date: 2026-02-16
+julian_date: 2026-02-03
+title: Сирна седмица
+commemorations:
+  - Попразништво Сретења Господњег
+  - Свети и праведни Симеон Богопримац и Ана пророчица
+  - И Свети отац наш Јаков, Архиепископ Српски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 96
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 19
+          verses:
+            - 29-40
+        - chapter: 22
+          verses:
+            - 7-39
+    - book: lk
+      zachalo: 8
+      scope: saint
+      label: Светоме
+      ranges:
+        - chapter: 2
+          verses:
+            - 25-38

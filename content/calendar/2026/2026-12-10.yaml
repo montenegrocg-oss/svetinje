@@ -1,0 +1,25 @@
+schema_version: 1
+date: 2026-12-10
+julian_date: 2026-11-27
+title: Свети мученик Јаков Персенин ( Персијанац )
+commemorations:
+  - И преподобни отац наш Паладије
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 100
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 20
+          verses:
+            - 9-18
+    - book: jn
+      zachalo: 50
+      scope: saint
+      label: Мученику
+      ranges:
+        - chapter: 15
+          verses:
+            - 1-7

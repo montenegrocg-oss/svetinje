@@ -1,0 +1,29 @@
+schema_version: 1
+date: 2026-06-14
+julian_date: 2026-06-01
+title: НЕДЕЉА ДРУГА ПО ПЕДЕСЕТНИЦИ - СВИ СВЕТИ КОЈИ СУ У ЗЕМЉИ СРПСКОЈ ПРОСИЈАЛИ
+commemorations:
+  - Свети Јустин Мученик и Философ, и други мученик Јустин и они са њима пострадали
+  - И преподобни отац наш Јустин Ћелијски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 9
+      scope: sunday
+      label: Недеље 2. по Педесетници
+      ranges:
+        - chapter: 4
+          verses:
+            - 18-23
+    - book: mt
+      zachalo: 10
+      scope: saint
+      label: Светима
+      ranges:
+        - chapter: 4
+          verses:
+            - "25"
+        - chapter: 5
+          verses:
+            - 1-13

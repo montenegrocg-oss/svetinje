@@ -1,0 +1,27 @@
+schema_version: 1
+date: 2026-01-10
+julian_date: 2025-12-28
+title: Светих 20
+commemorations:
+  - 000 мученика у Никомидији спаљених
+  - Субота по Рођењу Христовом
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 46
+      scope: unknown
+      label: Суботе по Рођењу Христовом
+      ranges:
+        - chapter: 12
+          verses:
+            - 14-16
+            - 22-30
+    - book: lk
+      zachalo: 51
+      scope: saint
+      label: Мученицима
+      ranges:
+        - chapter: 10
+          verses:
+            - 19-21

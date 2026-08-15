@@ -1,0 +1,28 @@
+schema_version: 1
+date: 2026-07-12
+julian_date: 2026-06-29
+title: НЕДЕЉА ШЕСТА ПО ПЕДЕСЕТНИЦИ
+commemorations:
+  - Свети славни, свехвални и врховни апостоли Петар и Павле
+  - Пренос моштију Светог Стефана Уроша III ( Дечанског ) из Звечена у своју обитељ
+  - Пренос моштију Светог Петра Коришког из Кориша у манастир Црна Река
+  - Преподобни Пајсије Светогорац
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 29
+      scope: sunday
+      label: Недеље 6. по Педесетници
+      ranges:
+        - chapter: 9
+          verses:
+            - 1-8
+    - book: mt
+      zachalo: 67
+      scope: saint
+      label: Апостолима
+      ranges:
+        - chapter: 16
+          verses:
+            - 13-19

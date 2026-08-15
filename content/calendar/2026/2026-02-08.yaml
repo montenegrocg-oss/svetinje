@@ -1,0 +1,18 @@
+schema_version: 1
+date: 2026-02-08
+julian_date: 2026-01-26
+title: НЕДЕЉА У КОЈУ СЕ ЧИТА СВЕШТЕНО И СВЕТО ЈЕВАНЂЕЉЕ О ЗАБЛУДЕЛОМ СИНУ
+commemorations:
+  - Преподобни отац наш Ксенофонт и породица његова
+  - "1"
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 79
+      scope: sunday
+      label: Недеље 34. по Педесетници
+      ranges:
+        - chapter: 15
+          verses:
+            - 11-32

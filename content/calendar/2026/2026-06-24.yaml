@@ -1,0 +1,25 @@
+schema_version: 1
+date: 2026-06-24
+julian_date: 2026-06-11
+title: Свети и свехвални апостоли Вартоломеј и Варнава
+commemorations:
+  - "Празновање Пресвете Богородице у част њене чудотворне иконе, назване Д ост0йно є4сть: у спомен на чудо архангела Гаврила, који је изрекао и написао на камену ову песму, у близини Кареје, на Светој гори"
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 42
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 11
+          verses:
+            - 20-26
+    - book: lk
+      zachalo: 51
+      scope: saint
+      label: Апостолима
+      ranges:
+        - chapter: 10
+          verses:
+            - 19-21

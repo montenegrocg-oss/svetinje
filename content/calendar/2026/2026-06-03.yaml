@@ -1,0 +1,29 @@
+schema_version: 1
+date: 2026-06-03
+julian_date: 2026-05-21
+title: Седмица по Педесетници
+commemorations:
+  - Свети цар Константин Велики и мајка његова царица Јелена
+  - Преподобна мати наша Јелена Дечанска
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 12
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 5
+          verses:
+            - 20-26
+    - book: jn
+      zachalo: 35
+      scope: unknown
+      label: Царевима
+      ranges:
+        - chapter: 9
+          verses:
+            - 39-41
+        - chapter: 10
+          verses:
+            - 1-9

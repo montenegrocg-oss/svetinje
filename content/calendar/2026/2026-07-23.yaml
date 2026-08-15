@@ -1,0 +1,16 @@
+schema_version: 1
+date: 2026-07-23
+julian_date: 2026-07-10
+title: Светих 45 мученика пострадалих у Никопољу Јерменском
+commemorations: []
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 69
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 16
+          verses:
+            - 24-28

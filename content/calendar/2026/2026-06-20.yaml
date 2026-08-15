@@ -1,0 +1,19 @@
+schema_version: 1
+date: 2026-06-20
+julian_date: 2026-06-07
+title: Свети свештеномученик Теодот, Епископ Анкирски
+commemorations: []
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 24
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 7
+          verses:
+            - 24-29
+        - chapter: 8
+          verses:
+            - 1-4

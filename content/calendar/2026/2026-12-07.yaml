@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-12-07
+julian_date: 2026-11-24
+title: Попразништво Ваведења Пресвете Богородице
+commemorations:
+  - Света великомученица Екатерина
+  - И Свети великомученик Меркурије
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 97
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 19
+          verses:
+            - 37-44
+    - book: lk
+      zachalo: 106
+      scope: unknown
+      label: Екатерини
+      ranges:
+        - chapter: 21
+          verses:
+            - 12-19

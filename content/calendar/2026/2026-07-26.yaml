@@ -1,0 +1,28 @@
+schema_version: 1
+date: 2026-07-26
+julian_date: 2026-07-13
+title: НЕДЕЉА ОСМА ПО ПЕДЕСЕТНИЦИ
+commemorations:
+  - Недеља у којој се сећамо Светих и богоносних отаца наших првих шест Васељенских сабора
+  - Сабор Светог архангела Гаврила
+  - И преподобни отац наш Стефан Саваит
+  - Сабор светих и преподобних отаца наших у манастиру Хиландару, на Светој Гори просијалих
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 58
+      scope: sunday
+      label: Недеље 8. по Педесетници
+      ranges:
+        - chapter: 14
+          verses:
+            - 14-22
+    - book: jn
+      zachalo: 56
+      scope: saint
+      label: Оцима
+      ranges:
+        - chapter: 17
+          verses:
+            - 1-13

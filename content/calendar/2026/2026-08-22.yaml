@@ -1,0 +1,25 @@
+schema_version: 1
+date: 2026-08-22
+julian_date: 2026-08-09
+title: Попразништво Преображења
+commemorations:
+  - Свети и свехвални апостол Матија
+gospel:
+  primary_reading: 1
+  readings:
+    - book: lk
+      zachalo: 40
+      scope: saint
+      label: Апостолу
+      ranges:
+        - chapter: 9
+          verses:
+            - 1-6
+    - book: mt
+      zachalo: 82
+      scope: day
+      label: дана
+      ranges:
+        - chapter: 20
+          verses:
+            - 29-34

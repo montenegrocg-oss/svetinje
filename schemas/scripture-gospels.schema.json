@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://svetinje.me/schemas/scripture-gospels.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "translation_id", "language", "licence", "books"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "translation_id": { "const": "vuk-karadzic-1847" },
+    "language": { "const": "sr-Cyrl" },
+    "licence": { "const": "public-domain" },
+    "books": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mt", "mk", "lk", "jn"],
+      "properties": {
+        "mt": { "$ref": "#/$defs/book" }, "mk": { "$ref": "#/$defs/book" },
+        "lk": { "$ref": "#/$defs/book" }, "jn": { "$ref": "#/$defs/book" }
+      }
+    }
+  },
+  "$defs": {
+    "book": {
+      "type": "object",
+      "patternProperties": {
+        "^[1-9][0-9]*$": {
+          "type": "object",
+          "patternProperties": { "^[1-9][0-9]*$": { "type": "string", "minLength": 1 } },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

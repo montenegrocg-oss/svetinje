@@ -1,0 +1,83 @@
+---
+import { localizedCalendarDate, type CalendarDay } from "../lib/calendar/content";
+import { createTodayCalendarModel } from "../lib/calendar/today-calendar";
+
+interface Props { days: CalendarDay[]; corpus: any }
+const { days, corpus } = Astro.props;
+const model = createTodayCalendarModel(days, corpus, new Date());
+const fallback = model?.day;
+const reading = model?.reading;
+---
+
+<section class="today-calendar" aria-labelledby="today-calendar-title" data-today-calendar data-calendar-year="2026">
+  <p class="today-calendar__label">ДАНАС</p>
+  <div class="today-calendar__date">
+    <p class="map-eyebrow">ПРАВОСЛАВНИ КАЛЕНДАР</p>
+    <p class="today-calendar__day" data-calendar-date>{fallback ? localizedCalendarDate(fallback.date, { day: "numeric", month: "long", year: "numeric" }) : "Календар је у припреми"}</p>
+    <h2 id="today-calendar-title" data-calendar-title>{fallback?.title ?? "Календар је у припреми"}</h2>
+    <ul data-calendar-commemorations>
+      {fallback?.commemorations.slice(0, 2).map((item) => <li>{item}</li>)}
+    </ul>
+    <a data-calendar-day-link href={fallback ? `/kalendar/${fallback.date}/` : "/kalendar/"}>Отвори календар <span aria-hidden="true">→</span></a>
+  </div>
+  <article class="today-calendar__gospel" data-calendar-gospel>
+    <p class="map-eyebrow">ИЗ ДАНАШЊЕГ ЈЕВАНЂЕЉА</p>
+    {reading && fallback ? (
+      <>
+        <h3 data-calendar-reading>{model?.reference}</h3>
+        <p class="today-calendar__excerpt" data-calendar-excerpt>{model?.excerpt}</p>
+        <a data-calendar-gospel-link href={`/kalendar/${fallback.date}/#jevandjelje`}>Прочитај читање <span aria-hidden="true">→</span></a>
+      </>
+    ) : <p data-calendar-empty>За овај дан литургијско јеванђељско читање није наведено.</p>}
+  </article>
+</section>
+
+<script>
+  import { podgoricaDateKey } from "../lib/calendar/today-calendar";
+
+  const root = document.querySelector<HTMLElement>("[data-today-calendar]");
+  if (root) {
+    const year = root.dataset.calendarYear;
+    const dateKey = podgoricaDateKey(new Date());
+    if (year === dateKey.slice(0, 4)) {
+      fetch(`/calendar/${year}.json`)
+        .then((response) => response.ok ? response.json() : Promise.reject(new Error("calendar unavailable")))
+        .then((payload) => {
+          const day = payload.days.find((candidate: any) => candidate.date === dateKey);
+          if (!day) return;
+          const date = new Intl.DateTimeFormat("sr-Cyrl-ME", { timeZone: "Europe/Podgorica", day: "numeric", month: "long", year: "numeric" }).format(new Date(`${day.date}T12:00:00Z`));
+          const dateNode = root.querySelector<HTMLElement>("[data-calendar-date]");
+          const titleNode = root.querySelector<HTMLElement>("[data-calendar-title]");
+          const list = root.querySelector<HTMLUListElement>("[data-calendar-commemorations]");
+          const link = root.querySelector<HTMLAnchorElement>("[data-calendar-day-link]");
+          const gospel = root.querySelector<HTMLElement>("[data-calendar-gospel]");
+          if (dateNode) dateNode.textContent = date;
+          if (titleNode) titleNode.textContent = day.title;
+          if (list) list.replaceChildren(...day.commemorations.slice(0, 2).map((item: string) => Object.assign(document.createElement("li"), { textContent: item })));
+          if (link) link.href = `/kalendar/${day.date}/`;
+          if (gospel) {
+            const eyebrow = Object.assign(document.createElement("p"), { className: "map-eyebrow", textContent: "ИЗ ДАНАШЊЕГ ЈЕВАНЂЕЉА" });
+            if (day.gospel?.reference && day.gospel?.excerpt) {
+              const heading = Object.assign(document.createElement("h3"), { textContent: day.gospel.reference });
+              heading.dataset.calendarReading = "";
+              const excerpt = Object.assign(document.createElement("p"), { className: "today-calendar__excerpt", textContent: day.gospel.excerpt });
+              excerpt.dataset.calendarExcerpt = "";
+              const gospelLink = Object.assign(document.createElement("a"), { href: `/kalendar/${day.date}/#jevandjelje`, textContent: "Прочитај читање →" });
+              gospelLink.dataset.calendarGospelLink = "";
+              gospel.replaceChildren(eyebrow, heading, excerpt, gospelLink);
+            } else {
+              const empty = Object.assign(document.createElement("p"), { textContent: "За овај дан литургијско јеванђељско читање није наведено." });
+              empty.dataset.calendarEmpty = "";
+              gospel.replaceChildren(eyebrow, empty);
+            }
+          }
+        })
+        .catch(() => undefined);
+    } else {
+      const title = root.querySelector<HTMLElement>("[data-calendar-title]");
+      const gospel = root.querySelector<HTMLElement>("[data-calendar-gospel]");
+      if (title) title.textContent = "Календар за ову годину је у припреми";
+      if (gospel) gospel.innerHTML = "<p>Подаци за изабрани датум још нису припремљени.</p>";
+    }
+  }
+</script>

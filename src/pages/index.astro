@@ -4,8 +4,14 @@ import PlaceAreas from "../components/PlaceAreas.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { loadVisiblePlaces } from "../lib/content/publication";
 import { loadVisibleRoutes } from "../lib/content/routes";
+import { loadCalendarDays, loadScriptureCorpus } from "../lib/calendar/content";
 
-const [places, routes] = await Promise.all([loadVisiblePlaces(), loadVisibleRoutes()]);
+const [places, routes, calendarDays, scriptureCorpus] = await Promise.all([
+  loadVisiblePlaces(),
+  loadVisibleRoutes(),
+  loadCalendarDays(),
+  loadScriptureCorpus(),
+]);
 ---
 
 <BaseLayout
@@ -13,6 +19,6 @@ const [places, routes] = await Promise.all([loadVisiblePlaces(), loadVisibleRout
   description="Дигитални водич кроз православне светиње, поклоничке руте и духовно насљеђе Црне Горе."
   canonicalPath="/"
 >
-  <MapExplorer places={places} routes={routes} />
+  <MapExplorer places={places} routes={routes} calendarDays={calendarDays} scriptureCorpus={scriptureCorpus} />
   <PlaceAreas places={places} />
 </BaseLayout>

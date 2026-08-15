@@ -1,0 +1,19 @@
+schema_version: 1
+date: 2026-05-07
+julian_date: 2026-04-24
+title: Четврта седмица по Пасхи
+commemorations:
+  - Свети мученик Сава Стратилат
+  - И Свети отац наш Сава II, Митрополит Алба Јулије, у Ердељу
+  - Свети свештеномученик Бранко, парох вељунски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 29
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 8
+          verses:
+            - 12-20

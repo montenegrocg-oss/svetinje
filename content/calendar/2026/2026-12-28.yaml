@@ -1,0 +1,20 @@
+schema_version: 1
+date: 2026-12-28
+julian_date: 2026-12-15
+title: Свети свештеномученик Елевтерије
+commemorations:
+  - И преподобни отац наш Павле на Латријској гори, Чудотворац
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 42
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 9
+          verses:
+            - 42-50
+        - chapter: 10
+          verses:
+            - "1"

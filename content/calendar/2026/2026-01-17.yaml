@@ -1,0 +1,28 @@
+schema_version: 1
+date: 2026-01-17
+julian_date: 2026-01-04
+title: Претпразништво Богојављења
+commemorations:
+  - Сабор Светих 70 Апостола
+  - И преподобни Теоктист, игуман обитељи у Куми Сикилијској
+  - И Свети Евстатије, Архиепископ Српски
+  - Субота пред Богојављење
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 5
+      scope: unknown
+      label: Суботе пред Богојављење
+      ranges:
+        - chapter: 3
+          verses:
+            - 1-11
+    - book: lk
+      zachalo: 50
+      scope: saint
+      label: Апостолима
+      ranges:
+        - chapter: 10
+          verses:
+            - 1-15

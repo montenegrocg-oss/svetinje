@@ -122,6 +122,9 @@ test("the repository summary reports actual validated record counts", async () =
     routes: await countFiles(path.join(contentRoot, "routes"), (file) => path.basename(file) === "route.yaml"),
     routeNarratives: await countFiles(path.join(contentRoot, "routes"), (file) => file.endsWith(".md") && path.basename(path.dirname(file)) === "narratives"),
     routeTracks: await countFiles(path.join(contentRoot, "routes"), (file) => path.basename(file) === "track.geojson"),
+    calendarDays: await countFiles(path.join(contentRoot, "calendar", "2026"), (file) => /^2026-\d{2}-\d{2}\.yaml$/.test(path.basename(file))),
+    scriptureCorpora: await countFiles(path.join(contentRoot, "scripture"), (file) => path.basename(file) === "gospels.json"),
+    lectionaryMaps: await countFiles(path.join(contentRoot, "lectionary"), (file) => path.basename(file) === "gospel-zachalo-map.json"),
   };
   assert.deepEqual(result.errors, []);
   assert.deepEqual(result.counts, actualCounts);

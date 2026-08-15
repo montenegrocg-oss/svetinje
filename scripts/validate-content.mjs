@@ -13,6 +13,9 @@ const summary = [
   `${counts.routes} route record(s)`,
   `${counts.routeNarratives} route narrative(s)`,
   `${counts.routeTracks} route track(s)`,
+  `${counts.calendarDays} calendar day(s)`,
+  `${counts.scriptureCorpora} Scripture corpus file(s)`,
+  `${counts.lectionaryMaps} lectionary map(s)`,
 ].join(", ");
 if (errors.length > 0) {
   console.error(`Content validation failed with ${errors.length} error(s):`);

@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-10-03
+julian_date: 2026-09-20
+title: Попразништво Воздвижења Часног Крста
+commemorations:
+  - Свети великомученик Евастатије и са њиме пострадали
+  - Субота по Воздвижењу ( Узношењу ) Часног Крста
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 30
+      scope: unknown
+      label: Субота по Воздвижењу
+      ranges:
+        - chapter: 8
+          verses:
+            - 21-30
+    - book: lk
+      zachalo: 106
+      scope: saint
+      label: Мученицима
+      ranges:
+        - chapter: 21
+          verses:
+            - 12-19

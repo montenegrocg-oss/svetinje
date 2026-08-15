@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-04-25
+julian_date: 2026-04-12
+title: Седмица Антипасхе
+commemorations:
+  - Свети отац наш и исповедник Василије, Епископ Паријски (Мала Азија )
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 19
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 6
+          verses:
+            - 14-27

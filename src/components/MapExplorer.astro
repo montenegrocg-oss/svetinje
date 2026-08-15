@@ -5,16 +5,20 @@ import MapControls from "./MapControls.astro";
 import PlaceCard from "./PlaceCard.astro";
 import PopularRoutes from "./PopularRoutes.astro";
 import RecommendedPlaces from "./RecommendedPlaces.astro";
+import TodayCalendar from "./TodayCalendar.astro";
 import { HOMEPAGE_PREVIEW_LIMIT } from "../lib/explorer-preview";
 import type { VisiblePlace } from "../lib/content/publication";
 import type { VisibleRoute } from "../lib/content/routes";
+import type { CalendarDay } from "../lib/calendar/content";
 
 interface Props {
   places: VisiblePlace[];
   routes: VisibleRoute[];
+  calendarDays: CalendarDay[];
+  scriptureCorpus: any;
 }
 
-const { places, routes } = Astro.props;
+const { places, routes, calendarDays, scriptureCorpus } = Astro.props;
 const initialPlaces = places.slice(0, HOMEPAGE_PREVIEW_LIMIT);
 const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
 ---
@@ -36,6 +40,7 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
     <ExplorerSidebar places={initialPlaces} totalPlaces={places.length} />
     <div class="map-explorer__secondary">
       <RecommendedPlaces places={places} />
+      <TodayCalendar days={calendarDays} corpus={scriptureCorpus} />
       <PopularRoutes routes={routes} />
     </div>
   </div>

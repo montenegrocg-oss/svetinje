@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-04-20
+julian_date: 2026-04-07
+title: Седмица Антипасхе
+commemorations:
+  - Свети отац наш Георгије, Епископ Мелитински
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 6
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 2
+          verses:
+            - 1-11

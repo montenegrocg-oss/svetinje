@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-07-24
+julian_date: 2026-07-11
+title: Света великомученица Ефимија, Свехвална
+commemorations:
+  - И преподобни отац наш Михаило Малеин
+  - "7"
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 71
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 17
+          verses:
+            - 10-18
+    - book: lk
+      zachalo: 33
+      scope: unknown
+      label: Ефимији
+      ranges:
+        - chapter: 7
+          verses:
+            - 36-50

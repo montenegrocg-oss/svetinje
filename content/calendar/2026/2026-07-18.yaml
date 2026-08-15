@@ -1,0 +1,29 @@
+schema_version: 1
+date: 2026-07-18
+julian_date: 2026-07-05
+title: Преподобни отац наш Атанасије Атонски
+commemorations:
+  - Обретење моштију Светог Сергија Радоњешког
+  - Свети мученици Дабробосански
+gospel:
+  primary_reading: 1
+  readings:
+    - book: lk
+      zachalo: 24
+      scope: saint
+      label: Преподобноме
+      ranges:
+        - chapter: 6
+          verses:
+            - 17-23
+    - book: mt
+      zachalo: 39
+      scope: day
+      label: дана
+      ranges:
+        - chapter: 10
+          verses:
+            - 37-42
+        - chapter: 11
+          verses:
+            - "1"

@@ -1,0 +1,32 @@
+schema_version: 1
+date: 2026-11-24
+julian_date: 2026-11-11
+title: Свети мученици Мина, Виктор и Викентије
+commemorations:
+  - И преподобни отац наш и исповедник Теодор Студит
+  - Свети великомученик Стефан Дечански, Краљ Српски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 38
+      scope: day
+      label: Мученицима и Стефану. Апостол и Јеванђеље дана читати сутрадан
+      ranges:
+        - chapter: 10
+          verses:
+            - 32-36
+        - chapter: 11
+          verses:
+            - "1"
+    - book: jn
+      zachalo: 52
+      scope: day
+      label: Мученицима и Стефану. Апостол и Јеванђеље дана читати сутрадан
+      ranges:
+        - chapter: 15
+          verses:
+            - 17-27
+        - chapter: 16
+          verses:
+            - 1-2

@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-12-05
+julian_date: 2026-11-22
+title: Попразништво Ваведења Пресвете Богородице
+commemorations:
+  - Свети апостол Филимон и они с њиме
+  - Преподобни и богоносни оци наши Симеон и Сава, ктитори свештене обитељи Хиландарске
+gospel:
+  primary_reading: 1
+  readings:
+    - book: lk
+      zachalo: 50
+      scope: saint
+      label: Апостолима
+      ranges:
+        - chapter: 10
+          verses:
+            - 1-15
+    - book: lk
+      zachalo: 51
+      scope: day
+      label: дана
+      ranges:
+        - chapter: 10
+          verses:
+            - 19-21

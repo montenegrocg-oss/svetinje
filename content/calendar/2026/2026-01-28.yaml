@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-01-28
+julian_date: 2026-01-15
+title: Преподобни оци наши Павле Тивејски и Јован Колибар
+commemorations:
+  - И спомен погибли, преподобних отаца наших Синајских и Раитских
+  - Преподобни отац наш Гаврило Лесновски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 56
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 12
+          verses:
+            - 28-37
+    - book: mt
+      zachalo: 43
+      scope: saint
+      label: Преподобнима
+      ranges:
+        - chapter: 11
+          verses:
+            - 27-30

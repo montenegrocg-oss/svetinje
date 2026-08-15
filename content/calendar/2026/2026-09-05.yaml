@@ -1,0 +1,28 @@
+schema_version: 1
+date: 2026-09-05
+julian_date: 2026-08-23
+title: Оданије Празника Успења Пресвете Богородице
+commemorations:
+  - Свети свештеномученик Иринеј, Епископ Лионски
+gospel:
+  primary_reading: 1
+  readings:
+    - book: lk
+      zachalo: 54
+      scope: feast
+      label: Празника
+      ranges:
+        - chapter: 10
+          verses:
+            - 38-42
+        - chapter: 11
+          verses:
+            - 27-28
+    - book: mt
+      zachalo: 93
+      scope: day
+      label: дана
+      ranges:
+        - chapter: 23
+          verses:
+            - 1-12

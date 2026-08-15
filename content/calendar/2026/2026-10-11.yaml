@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-10-11
+julian_date: 2026-09-28
+title: НЕДЕЉА ДЕВЕТНАЕСТА ПО ПЕДЕСЕТНИЦИ
+commemorations:
+  - Преподобни отац наш Харитон Исповедник
+  - И Свети преподобномученици медљански, игуман Серафим, монаси Авакум и Мардарије
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 26
+      scope: sunday
+      label: Недеље 19. по Педесетници
+      ranges:
+        - chapter: 6
+          verses:
+            - 31-36
+    - book: lk
+      zachalo: 24
+      scope: saint
+      label: Преподобноме
+      ranges:
+        - chapter: 6
+          verses:
+            - 17-23

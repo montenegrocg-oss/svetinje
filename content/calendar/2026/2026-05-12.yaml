@@ -1,0 +1,30 @@
+schema_version: 1
+date: 2026-05-12
+julian_date: 2026-04-29
+title: Пета седмица по Пасхи
+commemorations:
+  - Свети отац наш Василије, Митрополит Захумски, који нетљено почива у Острогу
+  - Свети мученик Василије, пекар из Пећи
+  - Светих девет мученика пострадалих у Кизику
+  - И преподобни Мемнон Чудотворац
+  - о
+  - м
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 33
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 8
+          verses:
+            - 51-59
+    - book: lk
+      zachalo: 24
+      scope: saint
+      label: Василију
+      ranges:
+        - chapter: 6
+          verses:
+            - 17-23

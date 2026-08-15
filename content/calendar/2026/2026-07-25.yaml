@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-07-25
+julian_date: 2026-07-12
+title: Празновање Пресвете Богородице у част њене чудотворне иконе, назване „ Тројеручица “
+commemorations:
+  - И Свети мученици Прокло и Иларије
+gospel:
+  primary_reading: 1
+  readings:
+    - book: lk
+      zachalo: 4
+      scope: unknown
+      label: Богородици
+      ranges:
+        - chapter: 1
+          verses:
+            - 39-49
+            - "56"
+    - book: mt
+      zachalo: 47
+      scope: day
+      label: дана
+      ranges:
+        - chapter: 12
+          verses:
+            - 30-37

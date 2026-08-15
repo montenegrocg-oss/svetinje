@@ -1,0 +1,25 @@
+schema_version: 1
+date: 2026-03-14
+julian_date: 2026-03-01
+title: Трећа седмица поста
+commemorations:
+  - Света преподобномученица Евдокија
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 8
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 2
+          verses:
+            - 13-17
+    - book: jn
+      zachalo: 16
+      scope: unknown
+      label: упокојенима
+      ranges:
+        - chapter: 5
+          verses:
+            - 24-30

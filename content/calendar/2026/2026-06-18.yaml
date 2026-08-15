@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-06-18
+julian_date: 2026-06-05
+title: Свети отац наш Доротеј, Епископ Тирски
+commemorations:
+  - И преподобни отац наш Петар Коришки
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 37
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 10
+          verses:
+            - 23-31

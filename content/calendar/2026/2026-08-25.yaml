@@ -1,0 +1,19 @@
+schema_version: 1
+date: 2026-08-25
+julian_date: 2026-08-12
+title: Попразништво Преображења
+commemorations:
+  - Свети мученици Фотије и Аникит
+  - И пренос моштију преподобног оца нашег Максима Исповедника
+  - "8"
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 12
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 3
+          verses:
+            - 13-19

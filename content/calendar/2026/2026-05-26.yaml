@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-05-26
+julian_date: 2026-05-13
+title: Седма седмица по Пасхи
+commemorations:
+  - Свети мученица Гликерија
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 53
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 16
+          verses:
+            - 2-13

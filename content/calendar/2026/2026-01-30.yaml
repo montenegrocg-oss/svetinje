@@ -1,0 +1,24 @@
+schema_version: 1
+date: 2026-01-30
+julian_date: 2026-01-17
+title: Преподобни и богоносни отац наш Антоније Велики
+commemorations: []
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 58
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 13
+          verses:
+            - 1-8
+    - book: lk
+      zachalo: 24
+      scope: saint
+      label: Преподобноме
+      ranges:
+        - chapter: 6
+          verses:
+            - 17-23

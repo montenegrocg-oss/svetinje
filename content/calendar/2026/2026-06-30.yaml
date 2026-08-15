@@ -1,0 +1,25 @@
+schema_version: 1
+date: 2026-06-30
+julian_date: 2026-06-17
+title: Свети мученици Мануил, Савел и Исмаил
+commemorations: []
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 46
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 12
+          verses:
+            - 14-16
+            - 22-30
+    - book: lk
+      zachalo: 106
+      scope: saint
+      label: Мученицима
+      ranges:
+        - chapter: 21
+          verses:
+            - 12-19

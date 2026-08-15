@@ -1,0 +1,24 @@
+schema_version: 1
+date: 2026-10-13
+julian_date: 2026-09-30
+title: Свети свештеномученик Григорије, Епископ и просветитељ Велике Јерменије
+commemorations: []
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 27
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 6
+          verses:
+            - 37-45
+    - book: mt
+      zachalo: 103
+      scope: unknown
+      label: Григорију
+      ranges:
+        - chapter: 24
+          verses:
+            - 42-47

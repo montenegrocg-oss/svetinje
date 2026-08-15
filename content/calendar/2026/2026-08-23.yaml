@@ -1,0 +1,18 @@
+schema_version: 1
+date: 2026-08-23
+julian_date: 2026-08-10
+title: НЕДЕЉА ДВАНАЕСТА ПО ПЕДЕСЕТНИЦИ
+commemorations:
+  - Попразништво Преображења
+  - Свети мученик и архиђакон Лаврентије
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 79
+      scope: sunday
+      label: Недеље 12. по Педесетници
+      ranges:
+        - chapter: 19
+          verses:
+            - 16-26

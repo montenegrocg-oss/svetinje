@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-07-19
+julian_date: 2026-07-06
+title: НЕДЕЉА СЕДМА ПО ПЕДЕСЕТНИЦИ
+commemorations:
+  - Преподобни отац наш Сисоје Велики
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 33
+      scope: sunday
+      label: Недеље 7. по Педесетници
+      ranges:
+        - chapter: 9
+          verses:
+            - 27-35

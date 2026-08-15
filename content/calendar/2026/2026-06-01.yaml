@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-06-01
+julian_date: 2026-05-19
+title: ПОНЕДЕЉАК ПЕДЕСЕТНИЦЕ - ДАН СВЕТОГА ДУХА
+commemorations:
+  - Свети свештеномученик Патрикије, Епископ Пруски, и са њим три презвитера
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 75
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 18
+          verses:
+            - 10-20

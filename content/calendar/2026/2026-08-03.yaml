@@ -1,0 +1,18 @@
+schema_version: 1
+date: 2026-08-03
+julian_date: 2026-07-21
+title: Преподобни отац наш Симеон, Христа ради јуродиви и Јован, саподвижник његов
+commemorations:
+  - И Свети пророк Језекиљ
+  - Свети свештеномученици гламочки Сима и Мирко
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 84
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 21
+          verses:
+            - 18-22

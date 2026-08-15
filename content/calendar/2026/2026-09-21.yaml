@@ -1,0 +1,19 @@
+schema_version: 1
+date: 2026-09-21
+julian_date: 2026-09-08
+title: РОЂЕЊЕ ПРЕСВЕТЕ ВЛАДИЧИЦЕ НАШЕ БОГОРОДИЦЕ И УВЕК ДЈЕВЕ МАРИЈЕ
+commemorations: []
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 54
+      scope: day
+      label: Празника. Апостол и Јеванђеље дана читати сутрадан
+      ranges:
+        - chapter: 10
+          verses:
+            - 38-42
+        - chapter: 11
+          verses:
+            - 27-28

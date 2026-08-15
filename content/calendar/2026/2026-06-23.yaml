@@ -1,0 +1,16 @@
+schema_version: 1
+date: 2026-06-23
+julian_date: 2026-06-10
+title: Свети свештемомученик Тимотеј, Епископ Пруски
+commemorations: []
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 41
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 11
+          verses:
+            - 16-20

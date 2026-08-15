@@ -1,0 +1,24 @@
+schema_version: 1
+date: 2026-12-19
+julian_date: 2026-12-06
+title: Свети отац наш Николај, Архиепископ Мире Ликијске
+commemorations: []
+gospel:
+  primary_reading: 1
+  readings:
+    - book: lk
+      zachalo: 24
+      scope: unknown
+      label: Николају
+      ranges:
+        - chapter: 6
+          verses:
+            - 17-23
+    - book: lk
+      zachalo: 72
+      scope: day
+      label: дана
+      ranges:
+        - chapter: 13
+          verses:
+            - 18-29

@@ -17,7 +17,15 @@ export const STATIC_HTML_ROUTES = Object.freeze([
   "izvori/index.html",
   "novosti/index.html",
   "rute/index.html",
+  "kalendar/index.html",
 ]);
+
+export const CALENDAR_HTML_ROUTES = Object.freeze(
+  Array.from({ length: 365 }, (_, index) => {
+    const date = new Date(Date.UTC(2026, 0, index + 1));
+    return `kalendar/${date.toISOString().slice(0, 10)}/index.html`;
+  }),
+);
 
 export const CATEGORY_HTML_ROUTES = Object.freeze({
   monasteries: "manastiri/index.html",
@@ -79,8 +87,9 @@ export function createOutputModel(places, news = [], routes = []) {
       ...detailRoutes.map(({ route }) => route),
       ...newsDetailRoutes.map(({ route }) => route),
       ...routeDetailRoutes.map(({ path }) => path),
+      ...CALENDAR_HTML_ROUTES,
     ],
-    expectedPageCount: STATIC_HTML_ROUTES.length + normalizedPlaces.length + newsDetailRoutes.length + routeDetailRoutes.length,
+    expectedPageCount: STATIC_HTML_ROUTES.length + normalizedPlaces.length + newsDetailRoutes.length + routeDetailRoutes.length + CALENDAR_HTML_ROUTES.length,
     categoryMembership,
     areaMembership,
     placesById: new Map(normalizedPlaces.map((place) => [place.id, place])),

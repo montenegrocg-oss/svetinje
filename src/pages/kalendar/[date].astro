@@ -1,0 +1,60 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { assembleReading, loadCalendarDays, loadScriptureCorpus, localizedCalendarDate, readingReference, type CalendarDay } from "../../lib/calendar/content";
+
+export async function getStaticPaths() {
+  const days = await loadCalendarDays();
+  return days.map((day) => ({ params: { date: day.date }, props: { day, days } }));
+}
+
+interface Props { day: CalendarDay; days: CalendarDay[] }
+const { day, days } = Astro.props;
+const corpus = await loadScriptureCorpus();
+const index = days.findIndex((candidate) => candidate.date === day.date);
+const previous = days[index - 1];
+const next = days[index + 1];
+const readings = (day.gospel?.readings ?? []).map((reading) => ({ reading, verses: assembleReading(corpus, reading) }));
+---
+
+<BaseLayout title={`${day.title} — Православни календар`} description={`Спомени и јеванђелско читање за ${localizedCalendarDate(day.date, { day: "numeric", month: "long", year: "numeric" })}.`} canonicalPath={`/kalendar/${day.date}/`}>
+  <article class="calendar-day shell" data-calendar-day={day.date}>
+    <nav class="calendar-day__nav" aria-label="Кретање кроз календар">
+      {previous ? <a rel="prev" href={`/kalendar/${previous.date}/`}>← Претходни дан</a> : <span></span>}
+      <a href="/kalendar/">Календар 2026</a>
+      {next ? <a rel="next" href={`/kalendar/${next.date}/`}>Сљедећи дан →</a> : <span></span>}
+    </nav>
+    <header class="calendar-day__header">
+      <p class="page-eyebrow">{localizedCalendarDate(day.date, { weekday: "long" })}</p>
+      <time datetime={day.date}>{localizedCalendarDate(day.date, { day: "numeric", month: "long", year: "numeric" })}</time>
+      <p class="calendar-day__julian">По јулијанском календару: {localizedCalendarDate(day.julian_date, { day: "numeric", month: "long", year: "numeric" })}</p>
+      <h1>{day.title}</h1>
+      {day.commemorations.length > 0 && <ul>{day.commemorations.map((item) => <li>{item}</li>)}</ul>}
+      <form class="calendar-picker calendar-day__picker" action="/kalendar/" data-calendar-picker>
+        <label for="calendar-day-date">Изаберите други датум</label>
+        <input id="calendar-day-date" name="date" type="date" min="2026-01-01" max="2026-12-31" value={day.date} />
+        <button type="submit">Отвори дан</button>
+      </form>
+    </header>
+    <section class="calendar-day__readings" id="jevandjelje" aria-labelledby="gospel-title">
+      <h2 id="gospel-title">Јеванђелска читања</h2>
+      {readings.length ? readings.map(({ reading, verses }, readingIndex) => (
+        <article class:list={["gospel-reading", day.gospel?.primary_reading === readingIndex && "gospel-reading--primary"]}>
+          <p class="placeholder-label">{reading.label}</p>
+          <h3>{readingReference(reading)}</h3>
+          <div class="gospel-reading__text">
+            {verses.map((verse) => <p><sup>{verse.chapter}:{verse.verse}</sup> {verse.text}</p>)}
+          </div>
+        </article>
+      )) : <p class="calendar-day__empty">За овај дан литургијско јеванђелско читање није наведено.</p>}
+    </section>
+  </article>
+</BaseLayout>
+
+<script>
+  const picker = document.querySelector<HTMLFormElement>("[data-calendar-picker]");
+  picker?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const input = picker.querySelector<HTMLInputElement>('input[type="date"]');
+    if (input?.value) window.location.href = `/kalendar/${input.value}/`;
+  });
+</script>

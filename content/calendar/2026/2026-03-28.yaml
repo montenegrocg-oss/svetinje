@@ -1,0 +1,30 @@
+schema_version: 1
+date: 2026-03-28
+julian_date: 2026-03-15
+title: Пета седмица поста
+commemorations:
+  - Акатистна субота - Похвала Одигитрији Пресвете Богородице
+  - Свети мученик Агапије и они са њиме пострадали
+  - "3"
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 35
+      scope: unknown
+      label: Суботе пете седмице Великог поста
+      ranges:
+        - chapter: 8
+          verses:
+            - 27-31
+    - book: lk
+      zachalo: 54
+      scope: unknown
+      label: Богородици
+      ranges:
+        - chapter: 10
+          verses:
+            - 38-42
+        - chapter: 11
+          verses:
+            - 27-28

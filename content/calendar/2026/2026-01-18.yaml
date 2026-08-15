@@ -1,0 +1,19 @@
+schema_version: 1
+date: 2026-01-18
+julian_date: 2026-01-05
+title: НЕДЕЉА ТРИДЕСЕТ ДРУГА ПО ПЕДЕСЕТНИЦИ Претпразништво Богојављења
+commemorations:
+  - Свети мученици Теопемт и Теона
+  - И преподобна Синклитикија
+  - Недеља пред Богојављење
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 1
+      scope: sunday
+      label: Недеље пред Богојављењем
+      ranges:
+        - chapter: 1
+          verses:
+            - 1-8

@@ -1,0 +1,25 @@
+schema_version: 1
+date: 2026-11-25
+julian_date: 2026-11-12
+title: Свети отац наш Јован Милостиви, Архиепископ Александријски
+commemorations:
+  - И преподобни отац наш Нил
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 77
+      scope: day
+      label: Дана, од уторка
+      ranges:
+        - chapter: 14
+          verses:
+            - 25-35
+    - book: lk
+      zachalo: 24
+      scope: unknown
+      label: Јовану
+      ranges:
+        - chapter: 6
+          verses:
+            - 17-23

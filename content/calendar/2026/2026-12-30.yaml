@@ -1,0 +1,29 @@
+schema_version: 1
+date: 2026-12-30
+julian_date: 2026-12-17
+title: Свети пророк Данило
+commemorations:
+  - "И Света Три Младића: Ананија, Азарија и Мисаило"
+  - И преподобни новомученици Пајсије и Авакум, и са њима пострадали у Београду
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 44
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 10
+          verses:
+            - 12-16
+    - book: lk
+      zachalo: 62
+      scope: saint
+      label: Светима
+      ranges:
+        - chapter: 11
+          verses:
+            - 47-54
+        - chapter: 12
+          verses:
+            - "1"

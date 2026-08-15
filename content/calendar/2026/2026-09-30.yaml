@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-09-30
+julian_date: 2026-09-17
+title: Попразништво Воздвижења Часног Крста
+commemorations:
+  - "Света Софија (Мудрост) и њене три кћери: Писта (Вера), Елпида (Нада) и Агапија (Љуба(в))"
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 12
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 4
+          verses:
+            - 1-15

@@ -1,0 +1,24 @@
+schema_version: 1
+date: 2026-02-02
+julian_date: 2026-01-20
+title: Преподобни и богоносни отац наш Јефтимије Велики
+commemorations: []
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 59
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 13
+          verses:
+            - 9-13
+    - book: lk
+      zachalo: 24
+      scope: saint
+      label: Преподобноме
+      ranges:
+        - chapter: 6
+          verses:
+            - 17-23

@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-08-31
+julian_date: 2026-08-18
+title: Попразништво Успења Пресвете Богородице
+commemorations:
+  - Свети мученици Флор и Лавр
+  - И Преподобни Јован Рилски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 16
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 4
+          verses:
+            - 10-23
+    - book: lk
+      zachalo: 63
+      scope: saint
+      label: Мученицима
+      ranges:
+        - chapter: 12
+          verses:
+            - 2-12

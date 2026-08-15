@@ -1,0 +1,34 @@
+schema_version: 1
+date: 2026-11-12
+julian_date: 2026-10-30
+title: Свети мученици Зиновија и Зиновије
+commemorations:
+  - Свети и благочестиви, велики и богоносни Стефан Милутин, Краљ Српски
+  - И преподобни отац наш Теоктист, бивши Драгутин, краљ Српски
+  - И преподобна Јелисавета, бивша краљица српска Јелена ( Анжујска )
+  - Свети Варнава Исповедник, Епископ Хвостански
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 62
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 11
+          verses:
+            - 47-54
+        - chapter: 12
+          verses:
+            - "1"
+    - book: jn
+      zachalo: 35
+      scope: unknown
+      label: Милутину
+      ranges:
+        - chapter: 9
+          verses:
+            - 39-41
+        - chapter: 10
+          verses:
+            - 1-9

@@ -1,0 +1,28 @@
+schema_version: 1
+date: 2026-03-22
+julian_date: 2026-03-09
+title: ЧЕТВРТА НЕДЕЉА ВЕЛИКОГ ПОСТА
+commemorations:
+  - Светих 40 мученика Севастијских
+  - Спомен и служба преподобном оцу нашем Јовану Лествичнику
+  - "3"
+  - Света 42 мученика Момишићка
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 40
+      scope: sunday
+      label: Недеља 4. Великог поста
+      ranges:
+        - chapter: 9
+          verses:
+            - 17-31
+    - book: mt
+      zachalo: 80
+      scope: saint
+      label: Мученицима
+      ranges:
+        - chapter: 20
+          verses:
+            - 1-16

@@ -1,0 +1,28 @@
+schema_version: 1
+date: 2026-11-20
+julian_date: 2026-11-07
+title: Света тридесет и три мученика у Мелитини
+commemorations:
+  - И преподобни отац наш Лазар Нови, Чудотворац, који је просијао на Галисијској Гори
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 73
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 13
+          verses:
+            - 31-35
+    - book: mt
+      zachalo: 10
+      scope: saint
+      label: Преподобноме
+      ranges:
+        - chapter: 4
+          verses:
+            - "25"
+        - chapter: 5
+          verses:
+            - 1-13

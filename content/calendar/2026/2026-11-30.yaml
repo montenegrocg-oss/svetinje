@@ -1,0 +1,28 @@
+schema_version: 1
+date: 2026-11-30
+julian_date: 2026-11-17
+title: Свети отац наш Григорије, Епископ Неокесаријски, Чудотворац
+commemorations:
+  - Преподобни Севастијан Џексонски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 86
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 17
+          verses:
+            - 20-25
+    - book: mt
+      zachalo: 34
+      scope: unknown
+      label: Григорију
+      ranges:
+        - chapter: 9
+          verses:
+            - 36-38
+        - chapter: 10
+          verses:
+            - 1-8

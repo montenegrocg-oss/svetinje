@@ -1,0 +1,18 @@
+schema_version: 1
+date: 2026-01-03
+julian_date: 2025-12-21
+title: Претпразништво Рођења Христовог
+commemorations:
+  - Света мученица Јулијана, која беше у Никомидији
+  - Субота пред Рођење Христово
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 74
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 14
+          verses:
+            - 1-11

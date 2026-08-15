@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-02-12
+julian_date: 2026-01-30
+title: Међу Светим оцима нашим и великим јерарсима, Василије Велики, Григорије Богослов и Јован Златоусти
+commemorations:
+  - И Свети свештеномученик Иполит, Папа Римски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 11
+      scope: saint
+      label: Светима
+      ranges:
+        - chapter: 5
+          verses:
+            - 14-19

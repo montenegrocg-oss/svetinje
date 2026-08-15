@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-03-29
+julian_date: 2026-03-16
+title: ПЕТА НЕДЕЉА ВЕЛИКОГ ПОСТА
+commemorations:
+  - Преподобна мати наша Марија Египћанка
+  - Свети мученик Савин (и Папа )
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 47
+      scope: sunday
+      label: Недеља 5. Великог поста
+      ranges:
+        - chapter: 10
+          verses:
+            - 33-45
+    - book: lk
+      zachalo: 33
+      scope: saint
+      label: Преподобној
+      ranges:
+        - chapter: 7
+          verses:
+            - 36-50

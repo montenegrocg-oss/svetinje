@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-04-23
+julian_date: 2026-04-10
+title: Седмица Антипасхе
+commemorations:
+  - Свети мученици Терентије, Помпије и са њима пострадали
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 16
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 5
+          verses:
+            - 24-30

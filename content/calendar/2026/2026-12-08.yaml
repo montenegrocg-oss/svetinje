@@ -1,0 +1,29 @@
+schema_version: 1
+date: 2026-12-08
+julian_date: 2026-11-25
+title: Оданије Празника Увођења у Храм Пресвете Владичице наше Богородице
+commemorations:
+  - Свети отац наш, свештеномученик Климент, Папа Римски
+  - И Свети отац наш, свештеномученик Петар Александријски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 54
+      scope: feast
+      label: Празника
+      ranges:
+        - chapter: 10
+          verses:
+            - 38-42
+        - chapter: 11
+          verses:
+            - 27-28
+    - book: mt
+      zachalo: 11
+      scope: saint
+      label: Светима
+      ranges:
+        - chapter: 5
+          verses:
+            - 14-19

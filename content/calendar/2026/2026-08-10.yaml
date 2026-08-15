@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-08-10
+julian_date: 2026-07-28
+title: Свети апостоли и ђакони Прохор, Никанор, Тимон и Пармен
+commemorations:
+  - Свети свештеномученкик Милош, Грковачко-црнолушки
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 94
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 23
+          verses:
+            - 13-22

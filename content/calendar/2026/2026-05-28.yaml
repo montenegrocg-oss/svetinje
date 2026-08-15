@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-05-28
+julian_date: 2026-05-15
+title: Седма седмица по Пасхи
+commemorations:
+  - Преподобни Пахомије Велики
+  - И Свети Ахилије, Епископ Лариски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 55
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 16
+          verses:
+            - 23-33
+    - book: lk
+      zachalo: 77
+      scope: unknown
+      label: Пахомију
+      ranges:
+        - chapter: 14
+          verses:
+            - 25-35

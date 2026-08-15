@@ -1,30 +1,24 @@
 ---
 import type { VisiblePlace } from "../lib/content/publication";
+import { MOST_VISITED_PLACE_IDS } from "../lib/homepage-selections";
 
 interface Props {
   places: VisiblePlace[];
 }
 
 const { places } = Astro.props;
-const TOTAL_RECOMMENDATION_SLOTS = 10;
-const RECOMMENDED_PLACE_IDS = ["saborni-hram-podgorica", "dajbabe"] as const;
-const recommendations = RECOMMENDED_PLACE_IDS.flatMap((id) => {
+const recommendations = MOST_VISITED_PLACE_IDS.flatMap((id) => {
   const place = places.find((candidate) => candidate.id === id);
   return place ? [place] : [];
 });
-const placeholderCount = Math.max(
-  0,
-  TOTAL_RECOMMENDATION_SLOTS - recommendations.length,
-);
-const formatSlotNumber = (number: number) => String(number).padStart(2, "0");
 ---
 
 <section class="recommended-shelf map-explorer__recommended" aria-labelledby="recommended-title" data-testid="recommended-places">
   <header class="shelf-heading">
-    <h2 id="recommended-title">Препоручене светиње</h2>
+    <h2 id="recommended-title">Најпосјећеније светиње</h2>
     <a href="/svetinje/">Прикажи све</a>
   </header>
-  <div class="place-previews" role="list" aria-label="Препоручени и будући провјерени записи">
+  <div class="place-previews" role="list" aria-label="Најпосјећеније светиње">
     {recommendations.map((place) => {
       const location = [place.municipality, place.settlement].filter(Boolean).join(" · ");
 
@@ -56,15 +50,5 @@ const formatSlotNumber = (number: number) => String(number).padStart(2, "0");
         </article>
       );
     })}
-
-    {Array.from({ length: placeholderCount }).map((_, index) => (
-      <article class="place-preview place-preview--placeholder" role="listitem" data-testid="recommended-placeholder">
-        <div class="place-preview__media" aria-hidden="true">
-          <span></span><i></i><b>{formatSlotNumber(recommendations.length + index + 1)}</b>
-        </div>
-        <p>Провјерени запис у припреми</p>
-        <small>Фотографија након провјере права</small>
-      </article>
-    ))}
   </div>
 </section>

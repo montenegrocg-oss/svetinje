@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-10-28
+julian_date: 2026-10-15
+title: Преподобни отац наш Евтимије Нови
+commemorations:
+  - И Свети преподобномученик Лукијан, презвитер Велике Антиохије
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 47
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 9
+          verses:
+            - 44-50

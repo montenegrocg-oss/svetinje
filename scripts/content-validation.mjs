@@ -16,6 +16,9 @@ const SCHEMA_FILES = {
   route: "route.schema.json",
   routeNarrative: "route-narrative.schema.json",
   policy: "publication-policy.schema.json",
+  calendarDay: "calendar-day.schema.json",
+  scripture: "scripture-gospels.schema.json",
+  lectionary: "lectionary-map.schema.json",
 };
 
 const ALLOWED_ROUTE_SECTION_KEYS = new Set(["about-route", "route-course", "water-rest", "safety", "equipment", "notes"]);
@@ -30,6 +33,9 @@ const ENTITY_PATHS = [
   { kind: "route", pattern: /^content\/routes\/([^/]+)\/route\.yaml$/ },
   { kind: "routeNarrative", pattern: /^content\/routes\/([^/]+)\/narratives\/(sr|ru|en)\.md$/ },
   { kind: "routeTrack", pattern: /^content\/routes\/([^/]+)\/track\.geojson$/ },
+  { kind: "calendarDay", pattern: /^content\/calendar\/2026\/(2026-\d{2}-\d{2})\.yaml$/ },
+  { kind: "scripture", pattern: /^content\/scripture\/sr-vuk-karadzic-1847\/gospels\.json$/ },
+  { kind: "lectionary", pattern: /^content\/lectionary\/gospel-zachalo-map\.json$/ },
 ];
 
 const COUNT_KEY = {
@@ -42,6 +48,9 @@ const COUNT_KEY = {
   route: "routes",
   routeNarrative: "routeNarratives",
   routeTrack: "routeTracks",
+  calendarDay: "calendarDays",
+  scripture: "scriptureCorpora",
+  lectionary: "lectionaryMaps",
 };
 
 const PUBLIC_STATUSES = new Set(["approved", "published"]);
@@ -165,6 +174,7 @@ function validatePath(record) {
     if (data.route_id !== match[1]) errors.push(issue(file, "/route_id", `route_id must match directory ${match[1]}`));
     if (data.locale !== match[2]) errors.push(issue(file, "/locale", `locale must match filename ${match[2]}.md`));
   }
+  if (kind === "calendarDay" && data.date !== match[1]) errors.push(issue(file, "/date", `date must match filename ${match[1]}.yaml`));
   return errors;
 }
 
@@ -496,7 +506,7 @@ function validatePolicyState(records, policy, policyFile) {
 
 export async function validateRepositoryWithSummary(root) {
   const errors = [];
-  const counts = { places: 0, narratives: 0, sources: 0, practical: 0, media: 0, news: 0, routes: 0, routeNarratives: 0, routeTracks: 0 };
+  const counts = { places: 0, narratives: 0, sources: 0, practical: 0, media: 0, news: 0, routes: 0, routeNarratives: 0, routeTracks: 0, calendarDays: 0, scriptureCorpora: 0, lectionaryMaps: 0 };
   let validators;
   try {
     validators = await buildValidators(root);
@@ -526,7 +536,7 @@ export async function validateRepositoryWithSummary(root) {
   const records = [];
   for (const absoluteFile of files) {
     const file = path.relative(root, absoluteFile).replaceAll("\\", "/");
-    if (file === "content/README.md") continue;
+    if (file === "content/README.md" || file === "content/calendar/2026/_provenance.yaml" || file === "content/calendar/2026/_reading-overrides.yaml") continue;
     const classification = classify(file);
     if (!classification) {
       errors.push(issue(file, "/", "file is not in an allowed content path"));
@@ -542,6 +552,11 @@ export async function validateRepositoryWithSummary(root) {
       try { data = JSON.parse(text); } catch { trackErrors.push(issue(file, "/", "track must be valid JSON")); }
       if (data && !validateRouteGeoJson(data, classification.match[1])) trackErrors.push(issue(file, "/", "track must be a valid route GeoJSON LineString"));
       parsed = { data, errors: trackErrors };
+    } else if (["scripture", "lectionary"].includes(classification.kind)) {
+      const jsonErrors = sourceTextChecks(text, file);
+      let data;
+      try { data = JSON.parse(text); } catch { jsonErrors.push(issue(file, "/", "file must be valid JSON")); }
+      parsed = { data, errors: jsonErrors };
     } else parsed = parseYaml(text, file);
     errors.push(...parsed.errors);
     const record = { file, kind: classification.kind, match: classification.match, data: parsed.data, body: parsed.body ?? "" };
@@ -562,6 +577,33 @@ export async function validateRepositoryWithSummary(root) {
     errors.push(...validatePolicyState(records, policy, policyFile));
   }
   errors.push(...validateUniqueness(records), ...validateReferences(records));
+
+  const calendarDays = records.filter((record) => record.kind === "calendarDay" && record.data);
+  const corpus = records.find((record) => record.kind === "scripture" && record.data)?.data;
+  const hasCalendarPlatform = records.some((record) => ["calendarDay", "scripture", "lectionary"].includes(record.kind));
+  if (hasCalendarPlatform && calendarDays.length !== 365) errors.push(issue("content/calendar/2026", "/", `calendar must contain exactly 365 days, found ${calendarDays.length}`));
+  const seenCalendarDates = new Set();
+  for (const record of calendarDays) {
+    const day = record.data;
+    if (seenCalendarDates.has(day.date)) errors.push(issue(record.file, "/date", "calendar dates must be unique"));
+    seenCalendarDates.add(day.date);
+    const expectedJulian = new Date(`${day.date}T00:00:00Z`);
+    expectedJulian.setUTCDate(expectedJulian.getUTCDate() - 13);
+    if (day.julian_date !== expectedJulian.toISOString().slice(0, 10)) errors.push(issue(record.file, "/julian_date", "Julian date must be 13 days before the Gregorian date"));
+    if (day.gospel && day.gospel.primary_reading >= day.gospel.readings.length) errors.push(issue(record.file, "/gospel/primary_reading", "primary_reading must reference an existing reading"));
+    for (const [readingIndex, reading] of (day.gospel?.readings ?? []).entries()) {
+      for (const range of reading.ranges) {
+        for (const verseSpec of range.verses) {
+          const [start, end = start] = verseSpec.split("-").map(Number);
+          for (let verse = start; verse <= end; verse += 1) {
+            if (!corpus?.books?.[reading.book]?.[String(range.chapter)]?.[String(verse)]) {
+              errors.push(issue(record.file, `/gospel/readings/${readingIndex}/ranges`, `missing Scripture verse ${reading.book} ${range.chapter}:${verse}`));
+            }
+          }
+        }
+      }
+    }
+  }
 
   const routes = new Map(records.filter((record) => record.kind === "route" && record.data).map((record) => [record.data.id, record]));
   const tracks = new Map(records.filter((record) => record.kind === "routeTrack" && record.data).map((record) => [record.match[1], record]));

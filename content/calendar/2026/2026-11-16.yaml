@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-11-16
+julian_date: 2026-11-03
+title: Свети мученици Акепсим, Јосиф и Аитал
+commemorations:
+  - И освећење цркве Светог мученика Георгија у Лиди, где је положено његово тело
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 65
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 12
+          verses:
+            - 13-15
+            - 22-31
+    - book: lk
+      zachalo: 106
+      scope: saint
+      label: Мученицима
+      ranges:
+        - chapter: 21
+          verses:
+            - 12-19

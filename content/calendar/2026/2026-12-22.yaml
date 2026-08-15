@@ -1,0 +1,24 @@
+schema_version: 1
+date: 2026-12-22
+julian_date: 2026-12-09
+title: Зачеће Свете Ане, када заче Пресвету Богородицу
+commemorations: []
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 34
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 8
+          verses:
+            - 22-26
+    - book: mk
+      zachalo: 36
+      scope: unknown
+      label: Ани
+      ranges:
+        - chapter: 8
+          verses:
+            - 30-34

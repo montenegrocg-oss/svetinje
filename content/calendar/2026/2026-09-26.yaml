@@ -1,0 +1,30 @@
+schema_version: 1
+date: 2026-09-26
+julian_date: 2026-09-13
+title: Спомен освећења храма Светог Васкрсења Христа Бога нашега
+commemorations:
+  - Претпразништво Воздвижења ( Уздизања ) Часнога и Животворнога Крста
+  - И Свети свештеномученик Корнилије Сотник (= Капетан )
+  - Субота пред Воздвижење ( Узношење ) Часног Крста
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 67
+      scope: unknown
+      label: Обновљења
+      ranges:
+        - chapter: 16
+          verses:
+            - 13-18
+    - book: mt
+      zachalo: 39
+      scope: unknown
+      label: Суботе пред Воздвижење
+      ranges:
+        - chapter: 10
+          verses:
+            - 37-42
+        - chapter: 11
+          verses:
+            - "1"

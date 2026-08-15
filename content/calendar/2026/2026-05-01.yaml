@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-05-01
+julian_date: 2026-04-18
+title: Трећа седмица по Пасхи
+commemorations:
+  - Преподобни Јован, ученик Светог Григорија Декаполита
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 23
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 6
+          verses:
+            - 48-54

@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-04-21
+julian_date: 2026-04-08
+title: Седмица Антипасхе
+commemorations:
+  - "Спомен Светих апостола од Седамдесеторице: Иродион, Агав, Руф, Асинкрит, Флегонт и Ермија"
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 10
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 3
+          verses:
+            - 16-21

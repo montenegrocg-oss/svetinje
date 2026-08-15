@@ -1,0 +1,16 @@
+schema_version: 1
+date: 2026-05-17
+julian_date: 2026-05-04
+title: НЕДЕЉА ШЕСТА ПО ПАСХИ - О СЛЕПОРОЂЕНОМ Света преподобномученица Пелагија
+commemorations: []
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 34
+      scope: sunday
+      label: Недеље 6. по Пасхи
+      ranges:
+        - chapter: 9
+          verses:
+            - 1-38

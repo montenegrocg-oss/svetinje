@@ -1,0 +1,25 @@
+schema_version: 1
+date: 2026-10-30
+julian_date: 2026-10-17
+title: Свети пророк Осија
+commemorations:
+  - И Свети преподобномученик Андреј са Крита
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 50
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 10
+          verses:
+            - 1-15
+    - book: lk
+      zachalo: 29
+      scope: unknown
+      label: од суботе
+      ranges:
+        - chapter: 7
+          verses:
+            - 1-10

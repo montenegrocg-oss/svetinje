@@ -1,0 +1,28 @@
+schema_version: 1
+date: 2026-08-20
+julian_date: 2026-08-07
+title: Попразништво Преображења
+commemorations:
+  - Свети преподобномученик Дометије
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 5
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 1
+          verses:
+            - 29-35
+    - book: jn
+      zachalo: 52
+      scope: unknown
+      label: Дометију
+      ranges:
+        - chapter: 15
+          verses:
+            - 17-27
+        - chapter: 16
+          verses:
+            - 1-2

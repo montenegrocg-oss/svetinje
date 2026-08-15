@@ -1,0 +1,27 @@
+schema_version: 1
+date: 2026-09-17
+julian_date: 2026-09-04
+title: Свети свештеномученик Вавила, Архиепископ Велике Антиохије
+commemorations:
+  - И пророк и боговидац Мојсије
+  - И Свети свештеномученик Петар, Митрополит Дабробосански
+  - Преподобни Стефан Троношки
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 30
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 7
+          verses:
+            - 24-30
+    - book: lk
+      zachalo: 67
+      scope: unknown
+      label: Вавили
+      ranges:
+        - chapter: 12
+          verses:
+            - 32-40

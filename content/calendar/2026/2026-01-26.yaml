@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-01-26
+julian_date: 2026-01-13
+title: Оданије Празника Богојављења (у нашој помесној Цркви)
+commemorations:
+  - Свети мученици Ермил и Стратоник
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 54
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 12
+          verses:
+            - 13-17

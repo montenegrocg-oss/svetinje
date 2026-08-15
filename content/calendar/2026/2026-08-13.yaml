@@ -1,0 +1,25 @@
+schema_version: 1
+date: 2026-08-13
+julian_date: 2026-07-31
+title: Претпразништво Изношења Часног и Животворног Крста Господњег
+commemorations:
+  - Свети и праведни Евдоким
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 99
+      scope: day
+      label: Дана (и од петка)
+      ranges:
+        - chapter: 24
+          verses:
+            - 13-28
+    - book: mt
+      zachalo: 43
+      scope: unknown
+      label: Евдокиму
+      ranges:
+        - chapter: 11
+          verses:
+            - 27-30

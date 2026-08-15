@@ -1,0 +1,18 @@
+schema_version: 1
+date: 2026-05-11
+julian_date: 2026-04-28
+title: Пета седмица по Пасхи
+commemorations:
+  - Свети апостоли Јасон и Сосипатар
+  - И мученици Дад, Максим и Квинтилијан
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 32
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 8
+          verses:
+            - 42-51

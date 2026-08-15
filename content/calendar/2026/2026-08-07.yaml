@@ -1,0 +1,25 @@
+schema_version: 1
+date: 2026-08-07
+julian_date: 2026-07-25
+title: Успеније Свете Ане, мајке Пресвете Богородице
+commemorations:
+  - И Свете жене Олимпијада и Евпраксија
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 91
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 22
+          verses:
+            - 23-33
+    - book: lk
+      zachalo: 36
+      scope: unknown
+      label: Ани
+      ranges:
+        - chapter: 8
+          verses:
+            - 16-21

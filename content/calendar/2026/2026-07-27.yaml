@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-07-27
+julian_date: 2026-07-14
+title: Свети апостол Акила
+commemorations:
+  - Преподобни отац наш Никодим Светогорац
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 74
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 18
+          verses:
+            - 1-11

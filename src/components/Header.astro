@@ -55,7 +55,6 @@ const isActive = (href: string) => !href.includes("#") && currentPath.startsWith
         <summary>Српски <InterfaceIcon name="chevron" size={15} /></summary>
         <div class="header-language__panel"><LanguageSwitcher currentLocale="sr" /></div>
       </details>
-      <a class="header-search" href="/#pretraga" aria-label="Претрага светиња"><InterfaceIcon name="search" size={22} /></a>
     </div>
 
     <details class="mobile-navigation">
@@ -75,9 +74,8 @@ const isActive = (href: string) => !href.includes("#") && currentPath.startsWith
             ))}
           </ul>
         </nav>
-        <div class="mobile-tool-row">
+        <div class="mobile-tool-row mobile-tool-row--single">
           <span><InterfaceIcon name="heart" size={19} /> Омиљено 0</span>
-          <a href="/#pretraga"><InterfaceIcon name="search" size={19} /> Претрага</a>
         </div>
         <LanguageSwitcher currentLocale="sr" />
       </div>

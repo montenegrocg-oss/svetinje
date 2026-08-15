@@ -1,0 +1,16 @@
+schema_version: 1
+date: 2026-11-18
+julian_date: 2026-11-05
+title: Свети мученици Галактион и Епистима
+commemorations: []
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 69
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 12
+          verses:
+            - 48-59

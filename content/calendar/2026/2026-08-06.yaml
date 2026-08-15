@@ -1,0 +1,25 @@
+schema_version: 1
+date: 2026-08-06
+julian_date: 2026-07-24
+title: Света мученица Христина
+commemorations:
+  - Свети мученици Пребиловачки и остали Херцеговачки мученици
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 88
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 21
+          verses:
+            - 43-46
+    - book: lk
+      zachalo: 33
+      scope: saint
+      label: Мученици
+      ranges:
+        - chapter: 7
+          verses:
+            - 36-50

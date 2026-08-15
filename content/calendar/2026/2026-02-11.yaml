@@ -1,0 +1,27 @@
+schema_version: 1
+date: 2026-02-11
+julian_date: 2026-01-29
+title: Пренос моштију Светог свештеномученика Игнатија Богоносца
+commemorations: []
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 65
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 14
+          verses:
+            - 43-72
+        - chapter: 15
+          verses:
+            - "1"
+    - book: mk
+      zachalo: 41
+      scope: unknown
+      label: Игнатију
+      ranges:
+        - chapter: 9
+          verses:
+            - 33-41

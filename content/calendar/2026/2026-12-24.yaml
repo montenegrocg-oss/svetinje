@@ -1,0 +1,16 @@
+schema_version: 1
+date: 2026-12-24
+julian_date: 2026-12-11
+title: Преподобни отац наш Данило Столпник
+commemorations: []
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 39
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 9
+          verses:
+            - 10-16

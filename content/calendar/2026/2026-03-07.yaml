@@ -1,0 +1,25 @@
+schema_version: 1
+date: 2026-03-07
+julian_date: 2026-02-22
+title: Друга седмица поста
+commemorations:
+  - Обретење моштију Светих мученика у Евгенији
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 6
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 1
+          verses:
+            - 35-44
+    - book: jn
+      zachalo: 16
+      scope: unknown
+      label: упокојенима
+      ranges:
+        - chapter: 5
+          verses:
+            - 24-30

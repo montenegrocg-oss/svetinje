@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-03-08
+julian_date: 2026-02-23
+title: ДРУГА НЕДЕЉА ВЕЛИКОГ ПОСТА
+commemorations:
+  - Поје се и служба Светом оцу нашем Григорију Палами, Архиепископу Солунском
+  - Свети свештеномученик Поликарп Смирски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 7
+      scope: sunday
+      label: Недеља 2. Великог поста
+      ranges:
+        - chapter: 2
+          verses:
+            - 1-12
+    - book: jn
+      zachalo: 36
+      scope: unknown
+      label: Григорију
+      ranges:
+        - chapter: 10
+          verses:
+            - 9-16

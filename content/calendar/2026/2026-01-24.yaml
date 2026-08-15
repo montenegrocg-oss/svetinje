@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-01-24
+julian_date: 2026-01-11
+title: Попразништво Богојављења
+commemorations:
+  - Преподобни отац наш Теодосије Велики, зачетник општежића
+  - Субота по Богојављењу
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 7
+      scope: unknown
+      label: Суботе по Богојављењу
+      ranges:
+        - chapter: 4
+          verses:
+            - 1-11
+    - book: mt
+      zachalo: 43
+      scope: saint
+      label: Преподобноме
+      ranges:
+        - chapter: 11
+          verses:
+            - 27-30

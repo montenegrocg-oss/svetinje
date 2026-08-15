@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-05-16
+julian_date: 2026-05-03
+title: Пета седмица по Пасхи
+commemorations:
+  - Свети мученици Тимотеј и Мавра
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 38
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 10
+          verses:
+            - 27-38

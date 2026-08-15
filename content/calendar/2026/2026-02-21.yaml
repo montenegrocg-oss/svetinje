@@ -1,0 +1,28 @@
+schema_version: 1
+date: 2026-02-21
+julian_date: 2026-02-08
+title: Сирна седмица
+commemorations:
+  - СУБОТА „ СИРНА“ У КОЈОЈ СЕ ПРОСЛАВЉА УСПОМЕНА НА СВЕТЕ, ПРЕПОДОБНЕ И БОГОНОСНЕ ОЦЕ НАШЕ КОЈИ СУ ЗАСИЈАЛИ ПОСТОМ
+  - И великомученик Теодор Стратилат
+  - И пророк Захарија Срповидац
+  - И Свети отац наш Сава II Архиепископ Српски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 16
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 6
+          verses:
+            - 1-13
+    - book: mt
+      zachalo: 43
+      scope: saint
+      label: Оцима
+      ranges:
+        - chapter: 11
+          verses:
+            - 27-30

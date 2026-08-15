@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-05-13
+julian_date: 2026-04-30
+title: Пета седмица по Пасхи
+commemorations:
+  - Оданије Празника Преполовљења Педесетнице
+  - Свети и свехвали апостол Јаков / Заведејев /, брат апостола Јована Богослова
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 18
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 6
+          verses:
+            - 5-14
+    - book: lk
+      zachalo: 17
+      scope: unknown
+      label: Јакову
+      ranges:
+        - chapter: 5
+          verses:
+            - 1-11

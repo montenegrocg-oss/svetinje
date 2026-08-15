@@ -1,0 +1,24 @@
+schema_version: 1
+date: 2026-02-17
+julian_date: 2026-02-04
+title: Сирна седмица
+commemorations:
+  - Попразништво Сретења Господњег
+  - Преподобни отац наш Исидор Пелусиот
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 109
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 22
+          verses:
+            - 39-42
+        - chapter: 22
+          verses:
+            - 45-71
+        - chapter: 23
+          verses:
+            - "1"

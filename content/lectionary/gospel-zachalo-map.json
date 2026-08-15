@@ -1,0 +1,5219 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "book": "jn",
+      "zachalo": 1,
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "1-17"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 2,
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "18-28"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 3,
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "29-34"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 4,
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "35-51"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 5,
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "43-51"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 6,
+      "ranges": [
+        {
+          "chapter": 2,
+          "verses": [
+            "1-11"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 7,
+      "ranges": [
+        {
+          "chapter": 2,
+          "verses": [
+            "12-22"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 8,
+      "ranges": [
+        {
+          "chapter": 3,
+          "verses": [
+            "1-15"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 9,
+      "ranges": [
+        {
+          "chapter": 3,
+          "verses": [
+            "13-17"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 10,
+      "ranges": [
+        {
+          "chapter": 3,
+          "verses": [
+            "16-21"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 11,
+      "ranges": [
+        {
+          "chapter": 3,
+          "verses": [
+            "22-33"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 12,
+      "ranges": [
+        {
+          "chapter": 4,
+          "verses": [
+            "5-42"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 13,
+      "ranges": [
+        {
+          "chapter": 4,
+          "verses": [
+            "47-54"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 14,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "1-4"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "jn",
+      "zachalo": 14,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "1-15"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "jn",
+      "zachalo": 15,
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "18-24"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 16,
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "24-30"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 17,
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "30-47"
+          ]
+        },
+        {
+          "chapter": 6,
+          "verses": [
+            "1-2"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 18,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "5-14"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 19,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "14-27"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 20,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "27-33"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 21,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "35-39"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 22,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "40-44"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 23,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "48-54"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 24,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "56-69"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 25,
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "1-13"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 26,
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "14-30"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 27,
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "37-52"
+          ]
+        },
+        {
+          "chapter": 8,
+          "verses": [
+            "12"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 28,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "3-11"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 29,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "12-20"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 30,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "21-30"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 31,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "31-42"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 32,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "42-51"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 33,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "51-59"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 34,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "1-38"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 35,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "39-41"
+          ]
+        },
+        {
+          "chapter": 10,
+          "verses": [
+            "1-9"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "jn",
+      "zachalo": 35,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "1-9"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "jn",
+      "zachalo": 36,
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "9-16"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 37,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "17-28"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "jn",
+      "zachalo": 37,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "22-28"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "jn",
+      "zachalo": 38,
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "27-38"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 39,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "1-45"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 40,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "47-57"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 41,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "1-18"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "jn",
+      "zachalo": 41,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "17-50"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "jn",
+      "zachalo": 42,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "19-36"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "jn",
+      "zachalo": 42,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "28-36"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "jn",
+      "zachalo": 43,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "36-47"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 44,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "1-11"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 45,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "12-17"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 46,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "32-38"
+          ]
+        },
+        {
+          "chapter": 14,
+          "verses": [
+            "1-31"
+          ]
+        },
+        {
+          "chapter": 15,
+          "verses": [
+            "1-27"
+          ]
+        },
+        {
+          "chapter": 16,
+          "verses": [
+            "1-33"
+          ]
+        },
+        {
+          "chapter": 17,
+          "verses": [
+            "1-26"
+          ]
+        },
+        {
+          "chapter": 18,
+          "verses": [
+            "1"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 47,
+      "ranges": [
+        {
+          "chapter": 14,
+          "verses": [
+            "1-11"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 48,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 14,
+          "verses": [
+            "11-21"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "jn",
+      "zachalo": 48,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 14,
+          "verses": [
+            "21-24"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "jn",
+      "zachalo": 49,
+      "ranges": [
+        {
+          "chapter": 14,
+          "verses": [
+            "28-31"
+          ]
+        },
+        {
+          "chapter": 15,
+          "verses": [
+            "1-7"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 50,
+      "ranges": [
+        {
+          "chapter": 15,
+          "verses": [
+            "1-7"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 51,
+      "ranges": [
+        {
+          "chapter": 15,
+          "verses": [
+            "9-16"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 52,
+      "ranges": [
+        {
+          "chapter": 15,
+          "verses": [
+            "17-27"
+          ]
+        },
+        {
+          "chapter": 16,
+          "verses": [
+            "1-2"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 53,
+      "ranges": [
+        {
+          "chapter": 16,
+          "verses": [
+            "2-13"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 54,
+      "ranges": [
+        {
+          "chapter": 16,
+          "verses": [
+            "15-23"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 55,
+      "ranges": [
+        {
+          "chapter": 16,
+          "verses": [
+            "23-33"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 56,
+      "ranges": [
+        {
+          "chapter": 17,
+          "verses": [
+            "1-13"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 57,
+      "ranges": [
+        {
+          "chapter": 17,
+          "verses": [
+            "18-26"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 58,
+      "ranges": [
+        {
+          "chapter": 18,
+          "verses": [
+            "1-28"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 59,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 18,
+          "verses": [
+            "28-40"
+          ]
+        },
+        {
+          "chapter": 19,
+          "verses": [
+            "1-16"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "jn",
+      "zachalo": 59,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 18,
+          "verses": [
+            "28-40"
+          ]
+        },
+        {
+          "chapter": 19,
+          "verses": [
+            "1-37"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "jn",
+      "zachalo": 60,
+      "ranges": [
+        {
+          "chapter": 19,
+          "verses": [
+            "6-11",
+            "13-20",
+            "25-28",
+            "30-35"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 61,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 19,
+          "verses": [
+            "25-37"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "jn",
+      "zachalo": 61,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 19,
+          "verses": [
+            "25-27"
+          ]
+        },
+        {
+          "chapter": 21,
+          "verses": [
+            "24-25"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "jn",
+      "zachalo": 62,
+      "ranges": [
+        {
+          "chapter": 19,
+          "verses": [
+            "38-42"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 63,
+      "ranges": [
+        {
+          "chapter": 20,
+          "verses": [
+            "1-10"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 64,
+      "ranges": [
+        {
+          "chapter": 20,
+          "verses": [
+            "11-18"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 65,
+      "ranges": [
+        {
+          "chapter": 20,
+          "verses": [
+            "19-31"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 65,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 20,
+          "verses": [
+            "19-23"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "jn",
+      "zachalo": 65,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 20,
+          "verses": [
+            "19-25"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "jn",
+      "zachalo": 66,
+      "ranges": [
+        {
+          "chapter": 21,
+          "verses": [
+            "1-14"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "jn",
+      "zachalo": 67,
+      "ranges": [
+        {
+          "chapter": 21,
+          "verses": [
+            "15-25"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 1,
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "1-25",
+            "57-68",
+            "76",
+            "80"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 2,
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "5-25"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 3,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "24-38"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "lk",
+      "zachalo": 3,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "24-25",
+            "57-68",
+            "76",
+            "80"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "lk",
+      "zachalo": 4,
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "39-49",
+            "56"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 5,
+      "ranges": [
+        {
+          "chapter": 2,
+          "verses": [
+            "1-20"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 6,
+      "ranges": [
+        {
+          "chapter": 2,
+          "verses": [
+            "20-21",
+            "40-52"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 7,
+      "ranges": [
+        {
+          "chapter": 2,
+          "verses": [
+            "23-40"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 8,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 2,
+          "verses": [
+            "25-32"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "lk",
+      "zachalo": 8,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 2,
+          "verses": [
+            "25-38"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "lk",
+      "zachalo": 9,
+      "ranges": [
+        {
+          "chapter": 3,
+          "verses": [
+            "1-18"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 10,
+      "ranges": [
+        {
+          "chapter": 3,
+          "verses": [
+            "19-22"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 11,
+      "ranges": [
+        {
+          "chapter": 3,
+          "verses": [
+            "23-38"
+          ]
+        },
+        {
+          "chapter": 4,
+          "verses": [
+            "1"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 12,
+      "ranges": [
+        {
+          "chapter": 4,
+          "verses": [
+            "1-15"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 13,
+      "ranges": [
+        {
+          "chapter": 4,
+          "verses": [
+            "16-22"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 14,
+      "ranges": [
+        {
+          "chapter": 4,
+          "verses": [
+            "22-30"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 15,
+      "ranges": [
+        {
+          "chapter": 4,
+          "verses": [
+            "31-36"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 16,
+      "ranges": [
+        {
+          "chapter": 4,
+          "verses": [
+            "37-44"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 17,
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "1-11"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 18,
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "12-16"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 19,
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "17-26"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 20,
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "27-32"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 21,
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "33-39"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 22,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "1-10"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 23,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "12-19"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 24,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "17-23"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 25,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "24-30"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 26,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "31-36"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 27,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "37-45"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 28,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "46-49"
+          ]
+        },
+        {
+          "chapter": 7,
+          "verses": [
+            "1"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 29,
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "1-10"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 30,
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "11-16"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 31,
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "17-30"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 32,
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "31-35"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 33,
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "36-50"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 34,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "1-3"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 35,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "5-15"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 36,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "16-21"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 37,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "22-25"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 38,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "26-39"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 39,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "40-56"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 40,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "1-6"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 41,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "7-11"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 42,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "12-18"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 43,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "18-22"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 44,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "23-27"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 45,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "28-36"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 46,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "37-43"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 47,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "44-50"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 48,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "49-56"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "lk",
+      "zachalo": 48,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "51-56"
+          ]
+        },
+        {
+          "chapter": 10,
+          "verses": [
+            "22-24"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "lk",
+      "zachalo": 49,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "57-62"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 50,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "1-15"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "lk",
+      "zachalo": 50,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "1-21"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "lk",
+      "zachalo": 51,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "16-21"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "lk",
+      "zachalo": 51,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "19-21"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "lk",
+      "zachalo": 52,
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "22-24"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 53,
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "25-37"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 54,
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "38-42"
+          ]
+        },
+        {
+          "chapter": 11,
+          "verses": [
+            "27-28"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 55,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "1-10"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 56,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "9-13"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 57,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "14-23"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 58,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "23-26"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 59,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "29-33"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 60,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "34-41"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 61,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "42-46"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 62,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "47-54"
+          ]
+        },
+        {
+          "chapter": 12,
+          "verses": [
+            "1"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 63,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "2-12"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 64,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "8-12"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 65,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "13-15",
+            "22-31"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 66,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "16-21"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 67,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "32-40"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 68,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "42-48"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 69,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "48-59"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 70,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "1-9"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 71,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "10-17"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 72,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "18-29"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 73,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "31-35"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 74,
+      "ranges": [
+        {
+          "chapter": 14,
+          "verses": [
+            "1-11"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 75,
+      "ranges": [
+        {
+          "chapter": 14,
+          "verses": [
+            "12-15"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 76,
+      "ranges": [
+        {
+          "chapter": 14,
+          "verses": [
+            "16-24"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 77,
+      "ranges": [
+        {
+          "chapter": 14,
+          "verses": [
+            "25-35"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 78,
+      "ranges": [
+        {
+          "chapter": 15,
+          "verses": [
+            "1-10"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 79,
+      "ranges": [
+        {
+          "chapter": 15,
+          "verses": [
+            "11-32"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 80,
+      "ranges": [
+        {
+          "chapter": 16,
+          "verses": [
+            "1-9"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 81,
+      "ranges": [
+        {
+          "chapter": 16,
+          "verses": [
+            "10-15"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 82,
+      "ranges": [
+        {
+          "chapter": 16,
+          "verses": [
+            "15-18"
+          ]
+        },
+        {
+          "chapter": 17,
+          "verses": [
+            "1-4"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 83,
+      "ranges": [
+        {
+          "chapter": 16,
+          "verses": [
+            "19-31"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 84,
+      "ranges": [
+        {
+          "chapter": 17,
+          "verses": [
+            "3-10"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 85,
+      "ranges": [
+        {
+          "chapter": 17,
+          "verses": [
+            "12-19"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 86,
+      "ranges": [
+        {
+          "chapter": 17,
+          "verses": [
+            "20-25"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 87,
+      "ranges": [
+        {
+          "chapter": 17,
+          "verses": [
+            "26-37"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 88,
+      "ranges": [
+        {
+          "chapter": 18,
+          "verses": [
+            "2-8"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 89,
+      "ranges": [
+        {
+          "chapter": 18,
+          "verses": [
+            "10-14"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 90,
+      "ranges": [
+        {
+          "chapter": 18,
+          "verses": [
+            "15-17",
+            "26-30"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 91,
+      "ranges": [
+        {
+          "chapter": 18,
+          "verses": [
+            "18-27"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 92,
+      "ranges": [
+        {
+          "chapter": 18,
+          "verses": [
+            "31-34"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 93,
+      "ranges": [
+        {
+          "chapter": 18,
+          "verses": [
+            "35-43"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 94,
+      "ranges": [
+        {
+          "chapter": 19,
+          "verses": [
+            "1-10"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 95,
+      "ranges": [
+        {
+          "chapter": 19,
+          "verses": [
+            "12-28"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 96,
+      "ranges": [
+        {
+          "chapter": 19,
+          "verses": [
+            "29-40"
+          ]
+        },
+        {
+          "chapter": 22,
+          "verses": [
+            "7-39"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 97,
+      "ranges": [
+        {
+          "chapter": 19,
+          "verses": [
+            "37-44"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 98,
+      "ranges": [
+        {
+          "chapter": 19,
+          "verses": [
+            "45-48"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 99,
+      "ranges": [
+        {
+          "chapter": 20,
+          "verses": [
+            "1-8"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 100,
+      "ranges": [
+        {
+          "chapter": 20,
+          "verses": [
+            "9-18"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 101,
+      "ranges": [
+        {
+          "chapter": 20,
+          "verses": [
+            "19-26"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 102,
+      "ranges": [
+        {
+          "chapter": 20,
+          "verses": [
+            "27-44"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 103,
+      "ranges": [
+        {
+          "chapter": 20,
+          "verses": [
+            "45-47"
+          ]
+        },
+        {
+          "chapter": 21,
+          "verses": [
+            "1-4"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 104,
+      "ranges": [
+        {
+          "chapter": 21,
+          "verses": [
+            "5-7",
+            "10-11",
+            "20-24"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 105,
+      "ranges": [
+        {
+          "chapter": 21,
+          "verses": [
+            "8-9",
+            "25-27",
+            "33-36"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 106,
+      "ranges": [
+        {
+          "chapter": 21,
+          "verses": [
+            "12-19"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 107,
+      "ranges": [
+        {
+          "chapter": 21,
+          "verses": [
+            "28-33"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 108,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 21,
+          "verses": [
+            "37-38"
+          ]
+        },
+        {
+          "chapter": 22,
+          "verses": [
+            "1-8"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "lk",
+      "zachalo": 108,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 22,
+          "verses": [
+            "1-39"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "lk",
+      "zachalo": 109,
+      "ranges": [
+        {
+          "chapter": 22,
+          "verses": [
+            "39-42"
+          ]
+        },
+        {
+          "chapter": 22,
+          "verses": [
+            "45-71"
+          ]
+        },
+        {
+          "chapter": 23,
+          "verses": [
+            "1"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 110,
+      "ranges": [
+        {
+          "chapter": 23,
+          "verses": [
+            "1-34",
+            "44-56"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 111,
+      "ranges": [
+        {
+          "chapter": 23,
+          "verses": [
+            "32-49"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 112,
+      "ranges": [
+        {
+          "chapter": 24,
+          "verses": [
+            "1-12"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 113,
+      "ranges": [
+        {
+          "chapter": 24,
+          "verses": [
+            "12-35"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "lk",
+      "zachalo": 114,
+      "ranges": [
+        {
+          "chapter": 24,
+          "verses": [
+            "36-53"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 1,
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "1-8"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 2,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "9-11"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mk",
+      "zachalo": 2,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "9-15"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "mk",
+      "zachalo": 3,
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "16-22"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 4,
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "23-28"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 5,
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "29-35"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 6,
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "35-44"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 7,
+      "ranges": [
+        {
+          "chapter": 2,
+          "verses": [
+            "1-12"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 8,
+      "ranges": [
+        {
+          "chapter": 2,
+          "verses": [
+            "13-17"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 9,
+      "ranges": [
+        {
+          "chapter": 2,
+          "verses": [
+            "18-22"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 10,
+      "ranges": [
+        {
+          "chapter": 2,
+          "verses": [
+            "23-28"
+          ]
+        },
+        {
+          "chapter": 3,
+          "verses": [
+            "1-5"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 11,
+      "ranges": [
+        {
+          "chapter": 3,
+          "verses": [
+            "6-12"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 12,
+      "ranges": [
+        {
+          "chapter": 3,
+          "verses": [
+            "13-19"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 13,
+      "ranges": [
+        {
+          "chapter": 3,
+          "verses": [
+            "20-27"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 14,
+      "ranges": [
+        {
+          "chapter": 3,
+          "verses": [
+            "28-35"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 15,
+      "ranges": [
+        {
+          "chapter": 4,
+          "verses": [
+            "1-9"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 16,
+      "ranges": [
+        {
+          "chapter": 4,
+          "verses": [
+            "10-23"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 17,
+      "ranges": [
+        {
+          "chapter": 4,
+          "verses": [
+            "24-34"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 18,
+      "ranges": [
+        {
+          "chapter": 4,
+          "verses": [
+            "35-41"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 19,
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "1-20"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 20,
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "21-24"
+          ]
+        },
+        {
+          "chapter": 5,
+          "verses": [
+            "35-43"
+          ]
+        },
+        {
+          "chapter": 6,
+          "verses": [
+            "1"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 21,
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "24-34"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 22,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "1-7"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 23,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "7-13"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 24,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "14-30"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 25,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "30-45"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 26,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "45-53"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 27,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "54-56"
+          ]
+        },
+        {
+          "chapter": 7,
+          "verses": [
+            "1-8"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 28,
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "5-16"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 29,
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "14-24"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 30,
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "24-30"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 31,
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "31-37"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 32,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "1-10"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 33,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "11-21"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 34,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "22-26"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 35,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "27-31"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 36,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "30-34"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 37,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "34-38"
+          ]
+        },
+        {
+          "chapter": 9,
+          "verses": [
+            "1"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 38,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "2-9"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 39,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "10-16"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 40,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "17-31"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 41,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "33-41"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 42,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "42-50"
+          ]
+        },
+        {
+          "chapter": 10,
+          "verses": [
+            "1"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 43,
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "2-12"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 44,
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "12-16"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 45,
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "17-27"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 46,
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "24-32"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 47,
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "33-45"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 48,
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "46-52"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 49,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "1-11"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 50,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "11-23"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 51,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "23-26"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 52,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "27-33"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 53,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "1-12"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 54,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "13-17"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 55,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "18-27"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 56,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "28-37"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 57,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "38-44"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 58,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "1-8"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 59,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "9-13"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 60,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "14-23"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 61,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "24-31"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 62,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "31-37"
+          ]
+        },
+        {
+          "chapter": 14,
+          "verses": [
+            "1-2"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 63,
+      "ranges": [
+        {
+          "chapter": 14,
+          "verses": [
+            "3-9"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 64,
+      "ranges": [
+        {
+          "chapter": 14,
+          "verses": [
+            "10-42"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 65,
+      "ranges": [
+        {
+          "chapter": 14,
+          "verses": [
+            "43-72"
+          ]
+        },
+        {
+          "chapter": 15,
+          "verses": [
+            "1"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 66,
+      "ranges": [
+        {
+          "chapter": 15,
+          "verses": [
+            "1-15"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 67,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 15,
+          "verses": [
+            "16-32"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mk",
+      "zachalo": 67,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 15,
+          "verses": [
+            "16-41"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mk",
+      "zachalo": 68,
+      "ranges": [
+        {
+          "chapter": 15,
+          "verses": [
+            "22",
+            "25",
+            "33-41"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 69,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 15,
+          "verses": [
+            "43-47"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mk",
+      "zachalo": 69,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 15,
+          "verses": [
+            "43-47"
+          ]
+        },
+        {
+          "chapter": 16,
+          "verses": [
+            "1-8"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mk",
+      "zachalo": 70,
+      "ranges": [
+        {
+          "chapter": 16,
+          "verses": [
+            "1-8"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mk",
+      "zachalo": 71,
+      "ranges": [
+        {
+          "chapter": 16,
+          "verses": [
+            "9-20"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 1,
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "1-25"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 2,
+      "ranges": [
+        {
+          "chapter": 1,
+          "verses": [
+            "18-25"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 3,
+      "ranges": [
+        {
+          "chapter": 2,
+          "verses": [
+            "1-12"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 4,
+      "ranges": [
+        {
+          "chapter": 2,
+          "verses": [
+            "13-23"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 5,
+      "ranges": [
+        {
+          "chapter": 3,
+          "verses": [
+            "1-11"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 6,
+      "ranges": [
+        {
+          "chapter": 3,
+          "verses": [
+            "13-17"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 7,
+      "ranges": [
+        {
+          "chapter": 4,
+          "verses": [
+            "1-11"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 8,
+      "ranges": [
+        {
+          "chapter": 4,
+          "verses": [
+            "12-17"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 9,
+      "ranges": [
+        {
+          "chapter": 4,
+          "verses": [
+            "18-23"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 10,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 4,
+          "verses": [
+            "25"
+          ]
+        },
+        {
+          "chapter": 5,
+          "verses": [
+            "1-12"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mt",
+      "zachalo": 10,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 4,
+          "verses": [
+            "25"
+          ]
+        },
+        {
+          "chapter": 5,
+          "verses": [
+            "1-13"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "mt",
+      "zachalo": 11,
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "14-19"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 12,
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "20-26"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 13,
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "27-32"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 14,
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "33-41"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 15,
+      "ranges": [
+        {
+          "chapter": 5,
+          "verses": [
+            "42-48"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 16,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "1-13"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 17,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "14-21"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 18,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "22-33"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 19,
+      "ranges": [
+        {
+          "chapter": 6,
+          "verses": [
+            "31-34"
+          ]
+        },
+        {
+          "chapter": 7,
+          "verses": [
+            "9-11"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 20,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "1-8"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "mt",
+      "zachalo": 20,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "7-11"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mt",
+      "zachalo": 21,
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "12-21"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 22,
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "15-21"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 23,
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "21-23"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 24,
+      "ranges": [
+        {
+          "chapter": 7,
+          "verses": [
+            "24-29"
+          ]
+        },
+        {
+          "chapter": 8,
+          "verses": [
+            "1-4"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 25,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "5-13"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 26,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "14-23"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 27,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "23-27"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 28,
+      "ranges": [
+        {
+          "chapter": 8,
+          "verses": [
+            "28-34"
+          ]
+        },
+        {
+          "chapter": 9,
+          "verses": [
+            "1"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 29,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "1-8"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 30,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "9-13"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 31,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "14-17"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 32,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "18-26"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 33,
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "27-35"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 34,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 9,
+          "verses": [
+            "36-38"
+          ]
+        },
+        {
+          "chapter": 10,
+          "verses": [
+            "1-8"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "mt",
+      "zachalo": 34,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "1",
+            "5-8"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mt",
+      "zachalo": 35,
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "9-15"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 36,
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "16-22"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 37,
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "23-31"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 38,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "32-33",
+            "37-38"
+          ]
+        },
+        {
+          "chapter": 19,
+          "verses": [
+            "27-30"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mt",
+      "zachalo": 38,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "32-36"
+          ]
+        },
+        {
+          "chapter": 11,
+          "verses": [
+            "1"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "mt",
+      "zachalo": 39,
+      "ranges": [
+        {
+          "chapter": 10,
+          "verses": [
+            "37-42"
+          ]
+        },
+        {
+          "chapter": 11,
+          "verses": [
+            "1"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 40,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "2-15"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 41,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "16-20"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 42,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "20-26"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 43,
+      "ranges": [
+        {
+          "chapter": 11,
+          "verses": [
+            "27-30"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 44,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "1-8"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 45,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "9-13"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 46,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "14-16",
+            "22-30"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "mt",
+      "zachalo": 46,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "15-21"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mt",
+      "zachalo": 47,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "30-37"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 48,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "38-45"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 49,
+      "ranges": [
+        {
+          "chapter": 12,
+          "verses": [
+            "46-50"
+          ]
+        },
+        {
+          "chapter": 13,
+          "verses": [
+            "1-3"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 50,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "3-9"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 51,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "10-23"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 52,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "24-30"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "mt",
+      "zachalo": 52,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "24-30",
+            "37-43"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mt",
+      "zachalo": 53,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "31-36"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 54,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "37-43"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 55,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "44-54"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 56,
+      "ranges": [
+        {
+          "chapter": 13,
+          "verses": [
+            "53-58"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 57,
+      "ranges": [
+        {
+          "chapter": 14,
+          "verses": [
+            "1-13"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 58,
+      "ranges": [
+        {
+          "chapter": 14,
+          "verses": [
+            "14-22"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 59,
+      "ranges": [
+        {
+          "chapter": 14,
+          "verses": [
+            "22-34"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 60,
+      "ranges": [
+        {
+          "chapter": 14,
+          "verses": [
+            "35-36"
+          ]
+        },
+        {
+          "chapter": 15,
+          "verses": [
+            "1-11"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 61,
+      "ranges": [
+        {
+          "chapter": 15,
+          "verses": [
+            "12-21"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 62,
+      "ranges": [
+        {
+          "chapter": 15,
+          "verses": [
+            "21-28"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 63,
+      "ranges": [
+        {
+          "chapter": 15,
+          "verses": [
+            "29-31"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 64,
+      "ranges": [
+        {
+          "chapter": 15,
+          "verses": [
+            "32-39"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 65,
+      "ranges": [
+        {
+          "chapter": 16,
+          "verses": [
+            "1-6"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 66,
+      "ranges": [
+        {
+          "chapter": 16,
+          "verses": [
+            "6-12"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 67,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 16,
+          "verses": [
+            "13-18"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mt",
+      "zachalo": 67,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 16,
+          "verses": [
+            "13-19"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mt",
+      "zachalo": 68,
+      "ranges": [
+        {
+          "chapter": 16,
+          "verses": [
+            "20-24"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 69,
+      "ranges": [
+        {
+          "chapter": 16,
+          "verses": [
+            "24-28"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 70,
+      "ranges": [
+        {
+          "chapter": 17,
+          "verses": [
+            "1-9"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 71,
+      "ranges": [
+        {
+          "chapter": 17,
+          "verses": [
+            "10-18"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 72,
+      "ranges": [
+        {
+          "chapter": 17,
+          "verses": [
+            "14-23"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 73,
+      "ranges": [
+        {
+          "chapter": 17,
+          "verses": [
+            "24-27"
+          ]
+        },
+        {
+          "chapter": 18,
+          "verses": [
+            "1-4"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 74,
+      "ranges": [
+        {
+          "chapter": 18,
+          "verses": [
+            "1-11"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 75,
+      "ranges": [
+        {
+          "chapter": 18,
+          "verses": [
+            "10-20"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 76,
+      "ranges": [
+        {
+          "chapter": 18,
+          "verses": [
+            "18-22"
+          ]
+        },
+        {
+          "chapter": 19,
+          "verses": [
+            "1-2",
+            "13-15"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 77,
+      "ranges": [
+        {
+          "chapter": 18,
+          "verses": [
+            "23-35"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 78,
+      "ranges": [
+        {
+          "chapter": 19,
+          "verses": [
+            "3-12"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 79,
+      "ranges": [
+        {
+          "chapter": 19,
+          "verses": [
+            "16-26"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 80,
+      "ranges": [
+        {
+          "chapter": 20,
+          "verses": [
+            "1-16"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 81,
+      "ranges": [
+        {
+          "chapter": 20,
+          "verses": [
+            "17-28"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 82,
+      "ranges": [
+        {
+          "chapter": 20,
+          "verses": [
+            "29-34"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 83,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 21,
+          "verses": [
+            "1-11",
+            "15-17"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mt",
+      "zachalo": 83,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 21,
+          "verses": [
+            "12-14",
+            "17-20"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "mt",
+      "zachalo": 84,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 21,
+          "verses": [
+            "18-22"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "mt",
+      "zachalo": 84,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 21,
+          "verses": [
+            "18-43"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mt",
+      "zachalo": 85,
+      "ranges": [
+        {
+          "chapter": 21,
+          "verses": [
+            "23-27"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 86,
+      "ranges": [
+        {
+          "chapter": 21,
+          "verses": [
+            "28-32"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 87,
+      "ranges": [
+        {
+          "chapter": 21,
+          "verses": [
+            "33-42"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 88,
+      "ranges": [
+        {
+          "chapter": 21,
+          "verses": [
+            "43-46"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 89,
+      "ranges": [
+        {
+          "chapter": 22,
+          "verses": [
+            "1-14"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 90,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 22,
+          "verses": [
+            "15-22"
+          ]
+        }
+      ],
+      "default_for_calendar": true
+    },
+    {
+      "book": "mt",
+      "zachalo": 90,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 22,
+          "verses": [
+            "15-46"
+          ]
+        },
+        {
+          "chapter": 23,
+          "verses": [
+            "1-39"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mt",
+      "zachalo": 91,
+      "ranges": [
+        {
+          "chapter": 22,
+          "verses": [
+            "23-33"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 92,
+      "ranges": [
+        {
+          "chapter": 22,
+          "verses": [
+            "34-46"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 93,
+      "ranges": [
+        {
+          "chapter": 23,
+          "verses": [
+            "1-12"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 94,
+      "ranges": [
+        {
+          "chapter": 23,
+          "verses": [
+            "13-22"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 95,
+      "ranges": [
+        {
+          "chapter": 23,
+          "verses": [
+            "23-28"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 96,
+      "ranges": [
+        {
+          "chapter": 23,
+          "verses": [
+            "29-39"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 97,
+      "ranges": [
+        {
+          "chapter": 24,
+          "verses": [
+            "1-13"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 98,
+      "ranges": [
+        {
+          "chapter": 24,
+          "verses": [
+            "3-35"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 99,
+      "ranges": [
+        {
+          "chapter": 24,
+          "verses": [
+            "13-28"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 100,
+      "ranges": [
+        {
+          "chapter": 24,
+          "verses": [
+            "27-33",
+            "42-51"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 101,
+      "ranges": [
+        {
+          "chapter": 24,
+          "verses": [
+            "34-44"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 102,
+      "ranges": [
+        {
+          "chapter": 24,
+          "verses": [
+            "36-51"
+          ]
+        },
+        {
+          "chapter": 25,
+          "verses": [
+            "1-46"
+          ]
+        },
+        {
+          "chapter": 26,
+          "verses": [
+            "1-2"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 103,
+      "ranges": [
+        {
+          "chapter": 24,
+          "verses": [
+            "42-47"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 104,
+      "ranges": [
+        {
+          "chapter": 25,
+          "verses": [
+            "1-13"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 105,
+      "ranges": [
+        {
+          "chapter": 25,
+          "verses": [
+            "14-30"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 106,
+      "ranges": [
+        {
+          "chapter": 25,
+          "verses": [
+            "31-46"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 107,
+      "ranges": [
+        {
+          "chapter": 26,
+          "verses": [
+            "1-20"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 108,
+      "ranges": [
+        {
+          "chapter": 26,
+          "verses": [
+            "6-16"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 109,
+      "ranges": [
+        {
+          "chapter": 26,
+          "verses": [
+            "57-75"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 110,
+      "variant": "а",
+      "ranges": [
+        {
+          "chapter": 27,
+          "verses": [
+            "1-56"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mt",
+      "zachalo": 110,
+      "variant": "б",
+      "ranges": [
+        {
+          "chapter": 27,
+          "verses": [
+            "1-38"
+          ]
+        }
+      ],
+      "default_for_calendar": false
+    },
+    {
+      "book": "mt",
+      "zachalo": 111,
+      "ranges": [
+        {
+          "chapter": 27,
+          "verses": [
+            "3-32"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 112,
+      "ranges": [
+        {
+          "chapter": 27,
+          "verses": [
+            "27-32"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 113,
+      "ranges": [
+        {
+          "chapter": 27,
+          "verses": [
+            "33-54"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 114,
+      "ranges": [
+        {
+          "chapter": 27,
+          "verses": [
+            "62-66"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 115,
+      "ranges": [
+        {
+          "chapter": 28,
+          "verses": [
+            "1-20"
+          ]
+        }
+      ]
+    },
+    {
+      "book": "mt",
+      "zachalo": 116,
+      "ranges": [
+        {
+          "chapter": 28,
+          "verses": [
+            "16-20"
+          ]
+        }
+      ]
+    }
+  ]
+}

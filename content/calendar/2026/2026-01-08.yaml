@@ -1,0 +1,18 @@
+schema_version: 1
+date: 2026-01-08
+julian_date: 2025-12-26
+title: Сабор Пресвете Богородице и Светог Јосифа Обручника
+commemorations:
+  - Свети свештеномученик Евтимије, Епископ Сардски
+  - децембра
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 4
+      scope: unknown
+      label: Сабору Богородице
+      ranges:
+        - chapter: 2
+          verses:
+            - 13-23

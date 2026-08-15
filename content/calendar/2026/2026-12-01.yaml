@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-12-01
+julian_date: 2026-11-18
+title: Свети мученик Платон
+commemorations:
+  - И Свети мученик Роман
+gospel:
+  primary_reading: 0
+  readings:
+    - book: lk
+      zachalo: 87
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 17
+          verses:
+            - 26-37

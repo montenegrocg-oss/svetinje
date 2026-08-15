@@ -1,0 +1,28 @@
+schema_version: 1
+date: 2026-05-24
+julian_date: 2026-05-11
+title: НЕДЕЉА СЕДМА ПО ПАСХИ - САБОР СВЕТИХ 318 БОГОНОСНИХ ОТАЦА (ПРВОГ ВАСЕЉЕНСКОГ САБОРА) У НИКЕЈИ
+commemorations:
+  - Свети равноапостолни Методије и Кирило, учитељи словенски
+  - Свети отац наш Никодим, Архиепископ Пећки и Српски
+  - "5"
+  - Свети свештеномученик Мокије
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 56
+      scope: sunday
+      label: Недеље 7. по Пасхи
+      ranges:
+        - chapter: 17
+          verses:
+            - 1-13
+    - book: mt
+      zachalo: 11
+      scope: saint
+      label: Светима
+      ranges:
+        - chapter: 5
+          verses:
+            - 14-19

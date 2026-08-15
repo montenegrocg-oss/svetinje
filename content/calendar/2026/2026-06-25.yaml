@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-06-25
+julian_date: 2026-06-12
+title: Преподобни отац наш Онуфрије Велики
+commemorations:
+  - И преподобни отац наш Петар Атонски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 43
+      scope: day
+      label: Дана и Преподобнима
+      ranges:
+        - chapter: 11
+          verses:
+            - 27-30

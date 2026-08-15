@@ -1,0 +1,29 @@
+schema_version: 1
+date: 2026-08-01
+julian_date: 2026-07-19
+title: Свети и праведни Стефан Високи (Лазаревић), деспот српски
+commemorations:
+  - Преподобна мати наша Евгенија, у великој схими Ефросинија (пре монашења кнегиња српска Милица)
+  - И преподобна мати наша Макрина, сестра Св
+  - Василија Великог
+  - И преподобни отац наш Дије
+  - "7"
+gospel:
+  primary_reading: 1
+  readings:
+    - book: lk
+      zachalo: 24
+      scope: saint
+      label: Стефану
+      ranges:
+        - chapter: 6
+          verses:
+            - 17-23
+    - book: mt
+      zachalo: 64
+      scope: day
+      label: дана
+      ranges:
+        - chapter: 15
+          verses:
+            - 32-39

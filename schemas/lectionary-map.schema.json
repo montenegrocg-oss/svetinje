@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://svetinje.me/schemas/lectionary-map.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "entries"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "entries": {
+      "type": "array", "minItems": 350,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["book", "zachalo", "ranges"],
+        "properties": {
+          "book": { "enum": ["mt", "mk", "lk", "jn"] },
+          "zachalo": { "type": "integer", "minimum": 1 },
+          "variant": { "enum": ["а", "б"] },
+          "ranges": { "type": "array", "minItems": 1 },
+          "default_for_calendar": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

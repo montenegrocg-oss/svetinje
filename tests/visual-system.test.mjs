@@ -84,7 +84,7 @@ test("desktop and mobile navigation expose the required Serbian guide sections",
   assert.match(header, /<details class="mobile-navigation">/);
   assert.match(header, /aria-label="Отвори главни мени"/);
   assert.match(header, /Омиљене светиње — 0/);
-  assert.match(header, /aria-label="Претрага светиња"/);
+  assert.doesNotMatch(header, /header-search|aria-label="Претрага светиња"|> Претрага</);
   assert.match(header, /\{ href: "\/manastiri\/", label: "Манастири" \}/);
   assert.match(header, /\{ href: "\/crkve\/", label: "Цркве" \}/);
   assert.match(header, /\{ href: "\/sveta-mjesta\/", label: "Света мјеста" \}/);
@@ -100,11 +100,14 @@ test("unavailable locales remain visibly unavailable rather than becoming links"
 });
 
 test("the homepage is composed from reusable map-explorer components", async () => {
-  const homepage = await source("src/pages/index.astro");
+  const [homepage, selection] = await Promise.all([
+    source("src/pages/index.astro"),
+    source("src/lib/homepage-selections.ts"),
+  ]);
   assert.match(homepage, /import MapExplorer/);
   assert.match(homepage, /import PlaceAreas/);
   assert.match(homepage, /loadVisibleRoutes/);
-  assert.match(homepage, /<MapExplorer places=\{places\} routes=\{routes\} \/>/);
+  assert.match(homepage, /<MapExplorer places=\{places\} routes=\{routes\} calendarDays=\{calendarDays\} scriptureCorpus=\{scriptureCorpus\} \/>/);
   assert.match(homepage, /<PlaceAreas places=\{places\} \/>/);
   assert.doesNotMatch(homepage, /PopularRoutes/);
   assert.doesNotMatch(homepage, /HomepagePreviews/);
@@ -121,12 +124,14 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(explorer, /const inventoryPlaces = places\.slice\(HOMEPAGE_PREVIEW_LIMIT\)/);
   assert.match(explorer, /<ExplorerSidebar places=\{initialPlaces\} totalPlaces=\{places\.length\} \/>/);
   assert.match(explorer, /<RecommendedPlaces places=\{places\} \/>/);
+  assert.match(explorer, /<TodayCalendar days=\{calendarDays\} corpus=\{scriptureCorpus\} \/>/);
   assert.match(explorer, /import PopularRoutes from "\.\/PopularRoutes\.astro"/);
   assert.match(explorer, /<PopularRoutes routes=\{routes\} \/>/);
   assert.ok(
     explorer.indexOf("<ExplorerSidebar places={initialPlaces} totalPlaces={places.length} />") < explorer.indexOf("<RecommendedPlaces places={places} />")
-      && explorer.indexOf("<RecommendedPlaces places={places} />") < explorer.indexOf("<PopularRoutes routes={routes} />"),
-    "homepage preview, recommendations, and routes must retain their editorial order",
+      && explorer.indexOf("<RecommendedPlaces places={places} />") < explorer.indexOf("<TodayCalendar days={calendarDays} corpus={scriptureCorpus} />")
+      && explorer.indexOf("<TodayCalendar days={calendarDays} corpus={scriptureCorpus} />") < explorer.indexOf("<PopularRoutes routes={routes} />"),
+    "homepage preview, recommendations, Today, and routes must retain their editorial order",
   );
   assert.doesNotMatch(explorer, /ExplorerContinuation|ExplorerPagination|data-continuation|data-explorer-pagination/);
   assert.match(sidebar, /data-homepage-pagination/);
@@ -135,17 +140,15 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(sidebar, /data-homepage-pagination-status/);
   assert.doesNotMatch(sidebar, /data-explorer-catalogue-link/);
   assert.match(explorer, /data-testid="map-explorer"/);
-  assert.match(recommended, /Препоручене светиње/);
+  assert.match(recommended, /Најпосјећеније светиње/);
   assert.match(recommended, /data-testid="recommended-places"/);
-  assert.match(recommended, /const TOTAL_RECOMMENDATION_SLOTS = 10/);
-  assert.match(recommended, /RECOMMENDED_PLACE_IDS = \["saborni-hram-podgorica", "dajbabe"\]/);
+  assert.match(recommended, /MOST_VISITED_PLACE_IDS/);
+  const selectedIds = [...selection.matchAll(/^\s*"([a-z0-9-]+)",?$/gm)].map((match) => match[1]);
+  assert.deepEqual(selectedIds, ["manastir-ostrog", "cetinjski-manastir", "manastir-moraca", "dajbabe", "saborni-hram-podgorica"]);
   assert.match(recommended, /places\.find\(\(candidate\) => candidate\.id === id\)/);
-  assert.match(recommended, /TOTAL_RECOMMENDATION_SLOTS - recommendations\.length/);
-  assert.match(recommended, /String\(number\)\.padStart\(2, "0"\)/);
   assert.match(recommended, /href=\{`\/svetinje\/\$\{place\.slug\}\/`\}/);
   assert.match(recommended, /data-testid="recommended-place-card"/);
-  assert.match(recommended, /data-testid="recommended-placeholder"/);
-  assert.match(recommended, /length: placeholderCount/);
+  assert.doesNotMatch(recommended, /recommended-placeholder|placeholderCount|TOTAL_RECOMMENDATION_SLOTS/);
   assert.doesNotMatch(recommended, /Радни приказ|preview-badge/);
   assert.match(recommended, /Отвори страницу/);
   assert.match(recommended, /place\.previewImageSrc/);
@@ -278,11 +281,12 @@ test("catalogue pages share category mapping, featured selection, filters, and e
 });
 
 test("map controls, search, and filters expose accessible states and honest feedback", async () => {
-  const [controls, sidebar, filters, explorer] = await Promise.all([
+  const [controls, sidebar, filters, explorer, styles] = await Promise.all([
     source("src/components/MapControls.astro"),
     source("src/components/ExplorerSidebar.astro"),
     source("src/components/FilterChips.astro"),
     source("src/components/MapExplorer.astro"),
+    source("src/styles/global.css"),
   ]);
   assert.match(sidebar, /<label class="sr-only" for="holy-place-search">/);
   assert.match(sidebar, /placeholder="Претражите светиње…"/);
@@ -295,6 +299,13 @@ test("map controls, search, and filters expose accessible states and honest feed
   assert.match(controls, /data-map-reset/);
   assert.match(controls, /aria-label="Прикажи поново Црну Гору"/);
   assert.match(explorer, /querySelectorAll<HTMLButtonElement>\("button\[data-filter\]"\)/);
+  assert.ok(
+    controls.indexOf("map-layers") < controls.indexOf("data-map-zoom-in")
+      && controls.indexOf("data-map-zoom-in") < controls.indexOf("data-map-zoom-out")
+      && controls.indexOf("data-map-zoom-out") < controls.indexOf("data-map-reset"),
+    "map controls must remain layers, zoom in, zoom out, and recenter",
+  );
+  assert.match(styles, /\.map-popover summary,[\s\S]*?\.map-zoom button\s*\{[\s\S]*?width: 2\.75rem;[\s\S]*?height: 2\.75rem;/);
 });
 
 test("the required Serbian interface labels are present", async () => {
@@ -316,7 +327,7 @@ test("the required Serbian interface labels are present", async () => {
     "Слојеви",
     "Како користити карту?",
     "Популарне руте",
-    "Препоручене светиње",
+    "Најпосјећеније светиње",
     "Прикажи све",
   ]) {
     assert.match(content, new RegExp(label.replace(/[?]/g, "\\?")));

@@ -1,0 +1,17 @@
+schema_version: 1
+date: 2026-01-20
+julian_date: 2026-01-07
+title: Попразништво Богојављења
+commemorations:
+  - Сабор Светог славног Пророка и Претече и Kрститеља Јована
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 3
+      scope: unknown
+      label: Претечи
+      ranges:
+        - chapter: 1
+          verses:
+            - 29-34

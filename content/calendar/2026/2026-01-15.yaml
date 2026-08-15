@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-01-15
+julian_date: 2026-01-02
+title: Претпразништво Богојављења
+commemorations:
+  - Свети отац наш Силвестар, Папа Римски
+  - Преподобни отац наш Серафим Саровски, Чудотворац
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 52
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 11
+          verses:
+            - 27-33
+    - book: jn
+      zachalo: 50
+      scope: unknown
+      label: Силвестру
+      ranges:
+        - chapter: 15
+          verses:
+            - 1-7

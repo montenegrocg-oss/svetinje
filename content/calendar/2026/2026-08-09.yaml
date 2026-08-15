@@ -1,0 +1,29 @@
+schema_version: 1
+date: 2026-08-09
+julian_date: 2026-07-27
+title: НЕДЕЉА ДЕСЕТА ПО ПЕДЕСЕТНИЦИ
+commemorations:
+  - Свети великомученик и исцелитељ Пантелејмон
+  - И Свети отац наш Климент, Архиепископ Охридски, Чудотворац
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 72
+      scope: sunday
+      label: Недеље 10. по Педесетници
+      ranges:
+        - chapter: 17
+          verses:
+            - 14-23
+    - book: jn
+      zachalo: 52
+      scope: unknown
+      label: Пантелејмону
+      ranges:
+        - chapter: 15
+          verses:
+            - 17-27
+        - chapter: 16
+          verses:
+            - 1-2

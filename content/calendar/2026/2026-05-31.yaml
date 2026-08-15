@@ -1,0 +1,21 @@
+schema_version: 1
+date: 2026-05-31
+julian_date: 2026-05-18
+title: ПРАЗНИК СИЛАСКА СВЕТОГ ДУХА НА АПОСТОЛЕ - ПЕДЕСЕТНИЦА Свети мученик Теодот Анкирски
+commemorations:
+  - И свети мученици Петар и Дионисије, и они са њима пострадали
+  - И светих седам девојака мученица
+gospel:
+  primary_reading: 0
+  readings:
+    - book: jn
+      zachalo: 27
+      scope: feast
+      label: Празника
+      ranges:
+        - chapter: 7
+          verses:
+            - 37-52
+        - chapter: 8
+          verses:
+            - "12"

@@ -1,0 +1,26 @@
+schema_version: 1
+date: 2026-07-30
+julian_date: 2026-07-17
+title: Света великомученица Марина
+commemorations:
+  - И спомен Светих равноапостолних Седмочисленика, (Седморица) словенских просветитеља Методија, Кирила, Климента, Наума, Саве, Ангелара и Горазда
+  - И Свети свештеномученици и мученици Ливањски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mt
+      zachalo: 81
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 20
+          verses:
+            - 17-28
+    - book: lk
+      zachalo: 33
+      scope: unknown
+      label: Марини
+      ranges:
+        - chapter: 7
+          verses:
+            - 36-50

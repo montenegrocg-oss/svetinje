@@ -1,0 +1,18 @@
+schema_version: 1
+date: 2026-01-22
+julian_date: 2026-01-09
+title: Попразништво Богојављења
+commemorations:
+  - Свети мученик Полиевкт
+  - Свети Филип, Митрополит Московски
+gospel:
+  primary_reading: 0
+  readings:
+    - book: mk
+      zachalo: 57
+      scope: day
+      label: Дана
+      ranges:
+        - chapter: 12
+          verses:
+            - 38-44
