@@ -143,7 +143,7 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   const slug = requiredText(body.slug, "slug", errors);
   const placeType = requiredText(body.placeType, "placeType", errors);
   const browseAreaId = text(body.browseAreaId);
-  const summary = requiredText(body.summary, "summary", errors);
+  const summary = text(body.summary);
   if (slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) errors.slug = "Slug мора бити lowercase ASCII kebab-case.";
   if (placeType && !record.options.placeTypes.includes(placeType)) errors.placeType = "Врста објекта није подржана.";
   if (browseAreaId && !isPlaceAreaId(browseAreaId)) errors.browseAreaId = "Област није дио важећег каталога.";
@@ -188,7 +188,7 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
 
   narrative.preferred_name = preferredName;
   narrative.slug = slug;
-  narrative.summary = summary;
+  if (summary) narrative.summary = summary; else delete narrative.summary;
   const shortName = text(body.shortName);
   if (shortName) narrative.short_name = shortName; else delete narrative.short_name;
   if (alternateNames.length > 0) narrative.alternate_names = alternateNames; else delete narrative.alternate_names;

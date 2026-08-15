@@ -83,6 +83,18 @@ audit: { created_at: 2026-08-01T00:00:00Z, created_by: maxim, updated_at: 2026-0
 
 [^source-one]: Регистар извора: source-one.
 `;
+const TEXTLESS_NARRATIVE = `---
+schema_version: 1
+place_id: existing-place
+locale: sr
+editorial_status: research
+translation_status: source
+slug: existing-place
+preferred_name: Постојећи објекат
+approvals: []
+audit: { created_at: 2026-08-01T00:00:00Z, created_by: maxim, updated_at: 2026-08-01T00:00:00Z, updated_by: maxim }
+---
+`;
 
 class Repository {
   committed;
@@ -175,14 +187,12 @@ test("editorial preview add, duplicate add, remove, and duplicate remove stay at
   assert.equal(repository.commitCount, 2);
 });
 
-test("editorial preview eligibility rejects incomplete and public-unsafe records", async () => {
-  const incomplete = new PreviewRoundTripRepository();
-  incomplete.blobs.narrative = NARRATIVE.replace("summary: Existing summary\n", "");
-  await assert.rejects(
-    () => updatePlacePreview(incomplete, env, session, "existing-place", { expectedHeadSha: HEAD, enabled: true }),
-    (error) => error.code === "invalid_form_data" && Boolean(error.fields?.summary),
-  );
-  assert.equal(incomplete.commitCount, 0);
+test("editorial preview accepts a textless research narrative but still rejects public-unsafe coordinates", async () => {
+  const textless = new PreviewRoundTripRepository();
+  textless.blobs.narrative = TEXTLESS_NARRATIVE;
+  const added = await updatePlacePreview(textless, env, session, "existing-place", { expectedHeadSha: HEAD, enabled: true });
+  assert.equal(added.inPreview, true);
+  assert.equal(textless.commitCount, 1);
 
   const unsafe = new PreviewRoundTripRepository();
   unsafe.blobs.place = PLACE.replace("publication_safety: public", "publication_safety: review-required");
@@ -191,6 +201,28 @@ test("editorial preview eligibility rejects incomplete and public-unsafe records
     (error) => error.code === "invalid_form_data" && Boolean(error.fields?.publicationSafety),
   );
   assert.equal(unsafe.commitCount, 0);
+});
+
+test("research place saves with no summary, sources, or narrative sections", async () => {
+  const repository = new Repository();
+  repository.blobs.narrative = TEXTLESS_NARRATIVE;
+  const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  assert.equal(loaded.place.summary, undefined);
+  assert.deepEqual(loaded.place.sections, []);
+
+  const result = await updatePlace(
+    repository,
+    env,
+    session,
+    "existing-place",
+    { ...body(loaded.place), shortName: "Кратко име" },
+    new Date("2026-08-13T12:00:00Z"),
+  );
+  assert.equal(result.unchanged, false);
+  const saved = parseNarrative(repository.committed.files.find(({ path }) => path.endsWith("/narratives/sr.md")).content);
+  assert.equal(saved.frontMatter.summary, undefined);
+  assert.equal(saved.frontMatter.source_ids, undefined);
+  assert.equal(saved.body.trim(), "");
 });
 
 test("editorial preview updates reject stale HEAD and unknown places", async () => {
@@ -378,6 +410,8 @@ test("place editor exposes explicit editorial-preview management without product
   assert.match(clientSource, /\/api\/places\/\$\{encodeURIComponent\(form\.dataset\.placeId/);
   assert.match(clientSource, /Садржај је у међувремену измијењен\. Освјежите страницу и покушајте поново\./);
   assert.match(clientSource, /Нема промјена\./);
+  assert.match(previewHtml, /<textarea name="summary">/);
+  assert.doesNotMatch(previewHtml, /<textarea name="summary" required/);
 });
 
 test("admin media thumbnails use the scoped R2 CSP and relationship-order controls", async () => {

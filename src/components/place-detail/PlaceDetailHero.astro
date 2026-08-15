@@ -44,7 +44,7 @@ const hasCoordinates = place.latitude !== undefined && place.longitude !== undef
 
     <div class="place-profile-hero__copy">
       <h1>{place.name}</h1>
-      <p>{place.summary}</p>
+      {place.summary && <p>{place.summary}</p>}
       <ul class="place-profile-chips" aria-label="Основни подаци">
         {location && <li><InterfaceIcon name="place" size={16} />{location}</li>}
         <li><InterfaceIcon name={category === "monasteries" ? "monastery" : category === "churches" ? "church" : "place"} size={16} />{place.typeLabel}</li>

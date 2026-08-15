@@ -50,9 +50,9 @@ test("editorial preview inventory is driven by the canonical allowlist", async (
     assert.equal(place.preview, true);
     assert.match(place.slug, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
     assert.ok(place.name.trim());
-    assert.ok(place.summary.trim());
+    assert.equal(typeof place.summary, "string");
     assert.ok(place.placeType);
-    assert.ok(place.narrativeSections.length > 0);
+    assert.ok(Array.isArray(place.narrativeSections));
     assert.ok(place.narrativeSections.every((section) => section.paragraphs.every((paragraph) => paragraph.sourceIds.length === 0)));
     assert.ok(Array.isArray(place.galleryImages));
     if (place.previewImageSrc) {
@@ -79,7 +79,7 @@ test("editorial preview accepts canonical place and narrative records without so
   const place = parse(await readFile(placeFile, "utf8"));
   delete place.source_ids;
   await writeFile(placeFile, stringify(place), "utf8");
-  const markdown = await readFile(narrativeFile, "utf8");
+  const markdown = (await readFile(narrativeFile, "utf8")).replaceAll("\r\n", "\n");
   const closing = markdown.indexOf("\n---\n", 4);
   const frontMatter = parse(markdown.slice(4, closing));
   delete frontMatter.source_ids;
@@ -88,6 +88,49 @@ test("editorial preview accepts canonical place and narrative records without so
   await writeFile(narrativeFile, `---\n${stringify(frontMatter)}---\n${markdown.slice(closing + 5)}`, "utf8");
   const visible = await loadEditorialPreviewPlaces(root);
   assert.ok(visible.some(({ id }) => id === "podmaine"));
+});
+
+test("editorial preview loads a research place without summary, sections, or narrative sources", async (t) => {
+  const root = await previewProject(t);
+  const id = "manastir-svetog-sergija-radonjeskog";
+  const placeFile = path.join(root, "content", "places", id, "place.yaml");
+  const narrativeFile = path.join(root, "content", "places", id, "narratives", "sr.md");
+  const allowlistFile = path.join(root, "validation", "editorial-preview.json");
+
+  const place = parse(await readFile(placeFile, "utf8"));
+  place.location.coordinates.publication_safety = "public";
+  await writeFile(placeFile, stringify(place), "utf8");
+
+  const markdown = (await readFile(narrativeFile, "utf8")).replaceAll("\r\n", "\n");
+  const closing = markdown.indexOf("\n---\n", 4);
+  const frontMatter = parse(markdown.slice(4, closing));
+  delete frontMatter.summary;
+  delete frontMatter.source_ids;
+  delete frontMatter.section_sources;
+  await writeFile(narrativeFile, `---\n${stringify(frontMatter)}---\n`, "utf8");
+
+  const allowlist = JSON.parse(await readFile(allowlistFile, "utf8"));
+  allowlist.place_ids.push(id);
+  await writeFile(allowlistFile, `${JSON.stringify(allowlist, null, 2)}\n`, "utf8");
+
+  const visible = await loadEditorialPreviewPlaces(root);
+  const textless = visible.find((candidate) => candidate.id === id);
+  assert.ok(textless);
+  assert.equal(textless.summary, "");
+  assert.deepEqual(textless.narrativeSections, []);
+  assert.deepEqual(textless.sourceIds, []);
+  assert.equal(textless.preview, true);
+  assert.deepEqual(await loadVisiblePlaces(root, { editorialPreview: false }), []);
+
+  const [card, hero, detail] = await Promise.all([
+    source("src/components/PlaceCard.astro"),
+    source("src/components/place-detail/PlaceDetailHero.astro"),
+    source("src/pages/svetinje/[slug].astro"),
+  ]);
+  assert.match(card, /\{place\.summary && <p class="editorial-place-card__summary">/);
+  assert.match(hero, /\{place\.summary && <p>\{place\.summary\}<\/p>\}/);
+  assert.match(detail, /aboutSections\.length > 0[\s\S]*Општи подаци о светињи су у припреми\./);
+  assert.match(detail, /historySections\.length > 0[\s\S]*Историјски подаци су у припреми\./);
 });
 
 test("preview allowlist rejects duplicates and unknown place IDs", async (t) => {

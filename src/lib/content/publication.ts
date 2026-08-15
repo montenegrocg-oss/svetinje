@@ -504,7 +504,6 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       id,
       place,
       narrative,
-      narrativeBody: narrative.body,
       mediaRecords: media,
       knownSourceIds,
     });
@@ -514,11 +513,12 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
     );
     const slug = narrative.slug;
     const preferredName = narrative.preferred_name;
-    const summary = narrative.summary;
+    const summary = typeof narrative.summary === "string"
+      ? narrative.summary.trim()
+      : "";
     const placeType = place.place_type?.value;
     assertPreviewField(typeof slug === "string", `${id} requires a valid Serbian slug`);
     assertPreviewField(typeof preferredName === "string", `${id} requires a preferred Serbian name`);
-    assertPreviewField(typeof summary === "string", `${id} requires a Serbian summary`);
     assertPreviewField(typeof placeType === "string", `${id} requires a place type`);
 
     const coordinates = place.location?.coordinates;
@@ -529,7 +529,6 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       return { id: source.id, title: source.title };
     });
     const narrativeSections = parseNarrativeSections(narrative.body);
-    assertPreviewField(narrativeSections.length > 0, `${id} requires narrative sections`);
 
     const municipality = place.location?.municipality?.value;
     const settlement = place.location?.settlement?.value;

@@ -197,7 +197,6 @@ export async function updatePlacePreview(
       id,
       place: record.rawPlace,
       narrative: record.rawNarrative,
-      narrativeBody: record.narrativeBody,
       mediaRecords: record.rawMedia.map(({ record: media }) => media),
       knownSourceIds: record.knownSourceIds,
       repositoryPaths: record.repositoryPaths,

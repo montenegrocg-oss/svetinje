@@ -9,7 +9,6 @@ export interface EditorialPreviewEligibilityInput {
   id: string;
   place: UnknownRecord;
   narrative: UnknownRecord;
-  narrativeBody: string;
   mediaRecords?: UnknownRecord[];
   knownSourceIds?: ReadonlySet<string>;
   repositoryPaths?: ReadonlySet<string>;
@@ -30,15 +29,10 @@ function mediaRightsAreComplete(media: UnknownRecord): boolean {
     && media.publication_safety === "public";
 }
 
-function narrativeHasSection(body: string): boolean {
-  return /^##\s+.+?\s+\{#[a-z0-9-]+\}\s*$/m.test(body);
-}
-
 export function editorialPreviewEligibilityErrors({
   id,
   place,
   narrative,
-  narrativeBody,
   mediaRecords = [],
   knownSourceIds,
   repositoryPaths,
@@ -52,9 +46,7 @@ export function editorialPreviewEligibilityErrors({
   if (narrative.translation_status !== "source") errors.translationStatus = "Српски текст мора бити изворни текст.";
   if (!nonEmpty(narrative.slug) || !SERBIAN_SLUG.test(narrative.slug)) errors.slug = "Унесите важећи српски slug прије додавања у радни приказ.";
   if (!nonEmpty(narrative.preferred_name)) errors.preferredName = "Попуните пожељни назив прије додавања у радни приказ.";
-  if (!nonEmpty(narrative.summary)) errors.summary = "Попуните сажетак прије додавања у радни приказ.";
   if (!nonEmpty(place.place_type?.value)) errors.placeType = "Изаберите врсту објекта прије додавања у радни приказ.";
-  if (!narrativeHasSection(narrativeBody)) errors.sections = "Објекат нема важеће одјељке српског текста.";
 
   const coordinates = place.location?.coordinates;
   if (coordinates !== undefined) {
