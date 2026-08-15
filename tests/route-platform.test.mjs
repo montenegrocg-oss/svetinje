@@ -122,8 +122,11 @@ test("pilot route public composition remains loader-driven and key-safe", async 
 
 test("route practical schema is optional and validates supported planning enums", async () => {
   const routeYaml = parse(await readFile(new URL("../content/routes/manastir-sergija-rumija/route.yaml", import.meta.url), "utf8"));
-  assert.equal(routeYaml.practical, undefined); assert.equal(validateRoute(routeYaml), true, JSON.stringify(validateRoute.errors));
-  const withPractical = structuredClone(routeYaml);
+  assert.equal(validateRoute(routeYaml), true, JSON.stringify(validateRoute.errors));
+  const withoutPractical = structuredClone(routeYaml);
+  delete withoutPractical.practical;
+  assert.equal(validateRoute(withoutPractical), true, JSON.stringify(validateRoute.errors));
+  const withPractical = structuredClone(withoutPractical);
   withPractical.practical = {
     start_access: { note: "Провјерити приступ." }, parking: { status: "limited" }, trail_marking: { status: "partially-marked" },
     difficult_sections: { status: "present" }, footwear: { recommendation: "Планинарске ципеле." }, mobile_signal: { status: "variable" },
@@ -136,9 +139,11 @@ test("route practical schema is optional and validates supported planning enums"
 
 test("route highlights are optional, canonical, and rendered only when present", async () => {
   const routeYaml = parse(await readFile(new URL("../content/routes/manastir-sergija-rumija/route.yaml", import.meta.url), "utf8"));
-  assert.equal(routeYaml.highlights, undefined);
   assert.equal(validateRoute(routeYaml), true, JSON.stringify(validateRoute.errors));
-  const withHighlight = structuredClone(routeYaml);
+  const withoutHighlights = structuredClone(routeYaml);
+  delete withoutHighlights.highlights;
+  assert.equal(validateRoute(withoutHighlights), true, JSON.stringify(validateRoute.errors));
+  const withHighlight = structuredClone(withoutHighlights);
   withHighlight.highlights = [{
     id: "verified-stop",
     title: "Провјерена тачка",
