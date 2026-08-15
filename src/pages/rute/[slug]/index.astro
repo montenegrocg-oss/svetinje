@@ -14,10 +14,12 @@ const durationText = duration === undefined ? undefined : `${Math.floor(duration
 const difficulty = { easy: "Лака", moderate: "Средње захтјевна", demanding: "Захтјевна" }[route.difficulty];
 const surfaces: Record<string,string> = { paved: "Асфалт", gravel: "Макадам", trail: "Стаза", rock: "Камен", steps: "Степенице", other: "Остало" };
 const seasons: Record<string,string> = { spring: "Прољеће", summer: "Љето", autumn: "Јесен", winter: "Зима" };
+const [heroStart, ...heroEndParts] = route.name.split(" — ");
+const heroEnd = heroEndParts.join(" — ");
 ---
 
 <BaseLayout title={route.name} description={route.summary} canonicalPath={`/rute/${route.slug}/`} noindex={route.preview}>
-  <header class="route-detail-hero"><div class="shell"><p class="section-eyebrow">Пјешачка рута</p><h1>{route.startPlace.name}<span aria-hidden="true">→</span>{route.endPlace.name}</h1><p>{route.summary}</p><dl>
+  <header class="route-detail-hero"><div class="shell"><p class="section-eyebrow">Пјешачка рута</p><h1>{heroEnd ? <><span>{heroStart}</span><span aria-hidden="true">→</span><span>{heroEnd}</span></> : route.name}</h1><p>{route.summary}</p><dl>
     <div><dt>Дужина</dt><dd>{(route.metrics.distance_m! / 1000).toLocaleString("sr-ME", { maximumFractionDigits: 1 })} km</dd></div>
     {durationText && <div><dt>Вријеме</dt><dd>{durationText}</dd></div>}
     <div><dt>Успон</dt><dd>+{route.metrics.ascent_m} m</dd></div>
@@ -30,7 +32,7 @@ const seasons: Record<string,string> = { spring: "Прољеће", summer: "Ље
       <div><dt>Дужина</dt><dd>{(route.metrics.distance_m! / 1000).toLocaleString("sr-ME", { maximumFractionDigits: 1 })} km</dd></div>
       {durationText && <div><dt>Вријеме</dt><dd>{durationText}</dd></div>}
       {route.metrics.ascent_m !== undefined && <div><dt>Успон</dt><dd>+{route.metrics.ascent_m} m</dd></div>}
-      {route.metrics.descent_m !== undefined && <div><dt>Спуст</dt><dd>−{route.metrics.descent_m} m</dd></div>}
+      {route.metrics.descent_m !== undefined && <div><dt>Спуст</dt><dd>{route.metrics.descent_m} m</dd></div>}
       {route.metrics.min_elevation_m !== undefined && <div><dt>Најнижа тачка</dt><dd>{route.metrics.min_elevation_m} m</dd></div>}
       {route.metrics.max_elevation_m !== undefined && <div><dt>Највиша тачка</dt><dd>{route.metrics.max_elevation_m} m</dd></div>}
       <div><dt>Тежина</dt><dd>{difficulty}</dd></div>
