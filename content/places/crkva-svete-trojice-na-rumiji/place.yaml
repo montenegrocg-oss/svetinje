@@ -10,7 +10,7 @@ approvals: []
 audit:
   created_at: 2026-08-15T10:54:56.943Z
   created_by: montenegro-cg
-  updated_at: 2026-08-15T10:59:34Z
+  updated_at: 2026-08-15T11:00:12Z
   updated_by: montenegro-cg
 browse_area_id: bar-crmnica-skadarsko-jezero
 ecclesiastical:
@@ -25,5 +25,13 @@ location:
       status: requires-verification
   municipality:
     value: Бар
+    verification:
+      status: requires-verification
+  coordinates:
+    latitude: 42.103055
+    longitude: 18.188564
+    accuracy: complex-centroid
+    publication_safety: public
+    crs: EPSG:4326
     verification:
       status: requires-verification
