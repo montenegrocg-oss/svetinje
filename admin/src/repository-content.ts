@@ -22,12 +22,6 @@ export interface AdminPlace {
   inPreview: boolean;
 }
 
-export interface NarrativeSection {
-  id: string;
-  title: string;
-  paragraphs: string[];
-}
-
 export interface EditablePlace extends AdminPlace {
   shortName?: string;
   alternateNames: Array<{ name: string; context: string; verificationStatus: string }>;
@@ -36,7 +30,9 @@ export interface EditablePlace extends AdminPlace {
   postalAddress?: string;
   coordinateAccuracy?: string;
   publicationSafety?: string;
-  sections: NarrativeSection[];
+  narrativeBody: string;
+  patronalFeast?: string;
+  youtubeUrl?: string;
   media: AdminMedia[];
 }
 
@@ -56,7 +52,6 @@ export interface CanonicalOptions {
   browseAreas: typeof PLACE_AREAS;
   coordinateAccuracy: string[];
   publicationSafety: string[];
-  narrativeSectionIds: string[];
   verificationStatuses: string[];
 }
 
@@ -112,42 +107,6 @@ export function serializeNarrative(frontMatter: Record<string, any>, body: strin
   return `---\n${stringify(frontMatter, { lineWidth: 0 })}---\n${body.startsWith("\n") ? body : `\n${body}`}`.replace(/\n*$/, "\n");
 }
 
-export function parseNarrativeSections(body: string): NarrativeSection[] {
-  const headings = [...body.matchAll(/^##\s+(.+?)\s+\{#([a-z0-9-]+)\}\s*$/gm)];
-  return headings.map((heading, index) => {
-    const start = (heading.index ?? 0) + heading[0].length;
-    const end = headings[index + 1]?.index ?? body.length;
-    const content = body.slice(start, end).trim();
-    return {
-      title: heading[1] ?? "",
-      id: heading[2] ?? "",
-      paragraphs: content ? content.split(/\n\s*\n/).map((paragraph) => paragraph.trim()) : [],
-    };
-  });
-}
-
-export function serializeNarrativeSections(sections: NarrativeSection[], originalBody = ""): string {
-  const firstHeading = originalBody.search(/^##\s+/m);
-  const originalPrefix = firstHeading > 0 ? originalBody.slice(0, firstHeading) : "";
-  const prefix = originalPrefix.trimEnd();
-  const headings = [...originalBody.matchAll(/^##\s+(.+?)\s+\{#([a-z0-9-]+)\}\s*$/gm)];
-  const originalBlocks = new Map(headings.map((heading, index) => {
-    const start = heading.index ?? 0;
-    const end = headings[index + 1]?.index ?? originalBody.length;
-    return [heading[2] ?? "", originalBody.slice(start, end).trimEnd()];
-  }));
-  const originalSections = new Map(parseNarrativeSections(originalBody).map((section) => [section.id, section]));
-  const rendered = sections.map((section) => {
-    const original = originalSections.get(section.id);
-    const block = originalBlocks.get(section.id);
-    return block && original && JSON.stringify(original) === JSON.stringify(section)
-      ? block
-      : `## ${section.title} {#${section.id}}\n\n${section.paragraphs.join("\n\n")}`;
-  }).join("\n\n");
-  const leading = prefix ? `${prefix}\n\n` : originalPrefix;
-  return `${leading}${rendered}${rendered ? "\n" : ""}`;
-}
-
 const factValue = (record: unknown): string | undefined => {
   if (!record || typeof record !== "object") return undefined;
   const value = (record as { value?: unknown }).value;
@@ -177,7 +136,7 @@ function parseCatalogYaml(content: string): Record<string, any> {
   }
 }
 
-function schemaEnums(placeSchema: any, narrativeSchema: any, commonSchema: any): CanonicalOptions {
+function schemaEnums(placeSchema: any, _narrativeSchema: any, commonSchema: any): CanonicalOptions {
   const stringArray = (value: unknown, label: string): string[] => {
     if (!Array.isArray(value) || value.some((entry) => typeof entry !== "string")) throw new Error(`Cannot read ${label} from canonical schema`);
     return value as string[];
@@ -187,7 +146,6 @@ function schemaEnums(placeSchema: any, narrativeSchema: any, commonSchema: any):
     browseAreas: PLACE_AREAS,
     coordinateAccuracy: stringArray(placeSchema.$defs?.coordinateAccuracy?.enum, "coordinate accuracy"),
     publicationSafety: stringArray(commonSchema.$defs?.publicationSafety?.enum, "publication safety"),
-    narrativeSectionIds: stringArray(narrativeSchema.$defs?.sectionKey?.enum, "narrative sections"),
     verificationStatuses: stringArray(commonSchema.$defs?.verificationStatus?.enum, "verification statuses"),
   };
 }
@@ -352,8 +310,10 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
       ...(typeof coordinates?.accuracy === "string" ? { coordinateAccuracy: coordinates.accuracy } : {}),
       ...(typeof coordinates?.publication_safety === "string" ? { publicationSafety: coordinates.publication_safety } : {}),
       ...(typeof rawNarrative.summary === "string" ? { summary: rawNarrative.summary } : {}),
+      ...(typeof rawPlace.patronal_feast?.name === "string" ? { patronalFeast: rawPlace.patronal_feast.name } : {}),
+      ...(typeof rawPlace.video?.youtube_url === "string" ? { youtubeUrl: rawPlace.video.youtube_url } : {}),
       alternateNames,
-      sections: parseNarrativeSections(parsedNarrative.body),
+      narrativeBody: parsedNarrative.body.replaceAll("\r\n", "\n").replaceAll("\r", "\n").trimEnd(),
       media,
       sourcesCount: new Set([...placeSourceIds, ...narrativeSourceIds]).size,
       mediaCount: media.length,

@@ -185,7 +185,8 @@ const newPlaceBody = { preferredName: "Нови објекат", id: "novi-objek
 const body = (place) => ({
   expectedHeadSha: HEAD, preferredName: place.preferredName, shortName: place.shortName ?? "", slug: place.slug, placeType: place.placeType, browseAreaId: place.browseAreaId, summary: place.summary,
   jurisdiction: place.jurisdiction ?? "", countryCode: place.countryCode ?? "", municipality: place.municipality ?? "", settlement: place.settlement ?? "", postalAddress: place.postalAddress ?? "",
-  latitude: place.latitude, longitude: place.longitude, coordinateAccuracy: place.coordinateAccuracy, publicationSafety: place.publicationSafety, alternateNames: place.alternateNames, sections: place.sections,
+  latitude: place.latitude, longitude: place.longitude, coordinateAccuracy: place.coordinateAccuracy, publicationSafety: place.publicationSafety, alternateNames: place.alternateNames,
+  narrativeBody: place.narrativeBody, patronalFeast: place.patronalFeast ?? "", youtubeUrl: place.youtubeUrl ?? "",
 });
 
 test("new place defaults to draft and immediate publication is safe", async () => {
@@ -210,10 +211,10 @@ test("new place defaults to draft and immediate publication is safe", async () =
   assert.deepEqual(JSON.parse(incompleteRepository.files.get("validation/editorial-preview.json")).place_ids, ["existing-place"]);
 });
 
-test("GET editable model derives schema options and preserves narrative structure", async () => {
+test("GET editable model exposes one unified narrative body", async () => {
   const model = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
   assert.equal(model.place.preferredName, "Постојећи објекат");
-  assert.deepEqual(model.place.sections.map(({ id }) => id), ["introduction", "history"]);
+  assert.match(model.place.narrativeBody, /## Увод \{#introduction\}[\s\S]*## Историја \{#history\}/);
   assert.deepEqual(model.options.placeTypes.slice(0, 2), ["monastery", "church"]);
   assert.equal(model.options.placeTypes.includes("cathedral"), true);
   assert.equal(model.place.inPreview, true);
@@ -268,7 +269,7 @@ test("research place saves with no summary, sources, or narrative sections", asy
   repository.blobs.narrative = TEXTLESS_NARRATIVE;
   const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
   assert.equal(loaded.place.summary, undefined);
-  assert.deepEqual(loaded.place.sections, []);
+  assert.equal(loaded.place.narrativeBody, "");
 
   const result = await updatePlace(
     repository,
@@ -306,8 +307,7 @@ test("PATCH round trip updates basic, location, coordinates and narrative in one
   update.municipality = "Котор";
   update.latitude = 42.2;
   update.longitude = 18.8;
-  update.sections = loaded.place.sections.map((section) => section.id === "history" ? { ...section, paragraphs: ["Нови текст.[^source-one]", section.paragraphs[1]] .filter(Boolean) } : section);
-  update.sections.reverse();
+  update.narrativeBody = loaded.place.narrativeBody.replace("Стара историја", "Нови текст");
   const result = await updatePlace(repository, env, session, "existing-place", update, new Date("2026-08-13T12:00:00Z"));
   assert.equal(result.commitSha, "d".repeat(40));
   assert.equal(repository.committed.files.length, 2);
@@ -321,7 +321,8 @@ test("PATCH round trip updates basic, location, coordinates and narrative in one
   assert.equal(nextNarrative.frontMatter.approvals.length, 1);
   assert.deepEqual(nextNarrative.frontMatter.section_sources, { introduction: ["source-one"], history: ["source-one"] });
   assert.match(nextNarrative.body, /\[\^source-one\]/);
-  assert.ok(nextNarrative.body.indexOf("{#history}") < nextNarrative.body.indexOf("{#introduction}"));
+  assert.ok(nextNarrative.body.indexOf("{#introduction}") < nextNarrative.body.indexOf("{#history}"));
+  assert.match(nextNarrative.body, /Нови текст/);
   assert.equal(nextPlace.audit.created_at, "2026-08-01T00:00:00Z");
   assert.equal(nextPlace.audit.created_by, "maxim");
   assert.equal(nextPlace.audit.updated_by, "editor-user");
@@ -443,6 +444,64 @@ test("place editor exposes the photo workflow and no source-registry controls", 
   assert.doesNotMatch(clientSource, /sourceIds|data-alt-sources/);
 });
 
+test("place editor saves one narrative body, YouTube video, and patronal feast", async () => {
+  const repository = new RoundTripRepository();
+  const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  const update = {
+    ...body(loaded.place),
+    narrativeBody: "## О манастиру\n\nЈединствени текст у више пасуса.\n\nДруги пасус.",
+    patronalFeast: "Света Тројица",
+    youtubeUrl: "https://youtu.be/dQw4w9WgXcQ",
+  };
+  await updatePlace(repository, env, session, "existing-place", update, new Date("2026-08-15T14:00:00Z"));
+  const savedPlace = parse(repository.blobs.place);
+  const savedNarrative = parseNarrative(repository.blobs.narrative);
+  assert.equal(savedPlace.patronal_feast.name, "Света Тројица");
+  assert.equal(savedPlace.video.youtube_url, "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+  assert.match(savedNarrative.body, /Јединствени текст у више пасуса\.[\s\S]*Други пасус\./);
+
+  const reopened = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  assert.equal(reopened.place.patronalFeast, "Света Тројица");
+  assert.equal(reopened.place.youtubeUrl, "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+  assert.match(reopened.place.narrativeBody, /Други пасус/);
+
+  await updatePlace(repository, env, session, "existing-place", {
+    ...body(reopened.place), expectedHeadSha: repository.headSha,
+    patronalFeast: "Свети Никола", youtubeUrl: "https://www.youtube.com/shorts/9bZkp7q19f0",
+  }, new Date("2026-08-15T14:03:00Z"));
+  const edited = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  assert.equal(edited.place.patronalFeast, "Свети Никола");
+  assert.equal(edited.place.youtubeUrl, "https://www.youtube.com/watch?v=9bZkp7q19f0");
+
+  await updatePlace(repository, env, session, "existing-place", {
+    ...body(edited.place), expectedHeadSha: repository.headSha, patronalFeast: "", youtubeUrl: "",
+  }, new Date("2026-08-15T14:05:00Z"));
+  assert.equal(parse(repository.blobs.place).patronal_feast, undefined);
+  assert.equal(parse(repository.blobs.place).video, undefined);
+});
+
+test("place editor rejects unsafe video URLs without weakening optional fields", async () => {
+  const repository = new Repository();
+  const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  await assert.rejects(
+    () => updatePlace(repository, env, session, "existing-place", { ...body(loaded.place), youtubeUrl: "https://youtube.example.com/watch?v=dQw4w9WgXcQ" }),
+    (error) => error.code === "invalid_form_data" && error.fields?.youtubeUrl === "Унесите важећи YouTube линк.",
+  );
+  const optional = await updateCanonicalPlace(loaded, { ...body(loaded.place), youtubeUrl: "", patronalFeast: "" }, "editor-user", new Date("2026-08-15T14:00:00Z"));
+  assert.equal(optional.unchanged, true);
+});
+
+test("place editor UI has one dynamic narrative field and no section controls", async () => {
+  const record = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
+  const html = await editPlacePage(session, record).text();
+  assert.match(html, /<h2>О манастиру<\/h2>/);
+  assert.match(html, /<textarea name="narrativeBody"/);
+  assert.equal((html.match(/name="narrativeBody"/g) ?? []).length, 1);
+  assert.match(html, /name="youtubeUrl"/);
+  assert.match(html, /name="patronalFeast"/);
+  assert.doesNotMatch(html, /data-add-section|data-section-title|data-remove-paragraph|Додај канонски одјељак/);
+});
+
 test("place editor exposes compact draft and published visibility management", async () => {
   const record = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
   const previewHtml = await editPlacePage(session, record).text();
@@ -541,7 +600,7 @@ test("canonical schema fingerprint mismatch fails closed before validation or co
   assert.equal(repository.committed, undefined);
 });
 
-test("unsupported type, area, coordinates, section and stale HEAD are rejected without commits", async () => {
+test("unsupported type, area, coordinates and stale HEAD are rejected without commits", async () => {
   const cases = [
     { placeType: "unsupported" }, { browseAreaId: "unknown-area" }, { latitude: 100 },
   ];
@@ -551,7 +610,6 @@ test("unsupported type, area, coordinates, section and stale HEAD are rejected w
     assert.equal(repository.committed, undefined);
   }
   const repository = new Repository(); const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
-  await assert.rejects(() => updatePlace(repository, env, session, "existing-place", { ...body(loaded.place), sections: [{ id: "unsupported", title: "Не", paragraphs: [] }] }), (error) => error.code === "invalid_form_data");
   await assert.rejects(() => updatePlace(repository, env, session, "existing-place", { ...body(loaded.place), expectedHeadSha: "f".repeat(40) }), (error) => error.code === "git_conflict");
   assert.equal(repository.committed, undefined);
 });

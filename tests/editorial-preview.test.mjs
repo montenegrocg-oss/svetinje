@@ -90,6 +90,27 @@ test("editorial preview accepts canonical place and narrative records without so
   assert.ok(visible.some(({ id }) => id === "podmaine"));
 });
 
+test("editorial preview exposes optional canonical video and feast only when present", async (t) => {
+  const root = await previewProject(t);
+  const placeFile = path.join(root, "content", "places", "podmaine", "place.yaml");
+  const place = parse(await readFile(placeFile, "utf8"));
+  place.patronal_feast = { name: "Тестна слава" };
+  place.video = { youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" };
+  await writeFile(placeFile, stringify(place), "utf8");
+
+  const visible = await loadEditorialPreviewPlaces(root);
+  const podmaine = visible.find(({ id }) => id === "podmaine");
+  assert.equal(podmaine?.patronalFeast, "Тестна слава");
+  assert.equal(podmaine?.youtubeVideoId, "dQw4w9WgXcQ");
+
+  delete place.patronal_feast;
+  delete place.video;
+  await writeFile(placeFile, stringify(place), "utf8");
+  const withoutOptionalData = (await loadEditorialPreviewPlaces(root)).find(({ id }) => id === "podmaine");
+  assert.equal(withoutOptionalData?.youtubeVideoId, undefined);
+  assert.equal(withoutOptionalData?.patronalFeast, undefined);
+});
+
 test("editorial preview loads a research place without summary, sections, or narrative sources", async (t) => {
   const root = await previewProject(t);
   const id = "manastir-svetog-sergija-radonjeskog";
@@ -131,8 +152,8 @@ test("editorial preview loads a research place without summary, sections, or nar
   ]);
   assert.match(card, /\{place\.summary && <p class="editorial-place-card__summary">/);
   assert.match(hero, /\{place\.summary && <p>\{place\.summary\}<\/p>\}/);
-  assert.match(detail, /aboutSections\.length > 0[\s\S]*Општи подаци о светињи су у припреми\./);
-  assert.match(detail, /historySections\.length > 0[\s\S]*Историјски подаци су у припреми\./);
+  assert.match(detail, /place\.narrativeBody\.trim\(\)[\s\S]*Општи подаци о светињи су у припреми\./);
+  assert.doesNotMatch(detail, /historySections|Историјски подаци су у припреми\./);
 });
 
 test("preview allowlist rejects duplicates and unknown place IDs", async (t) => {
@@ -305,8 +326,7 @@ test("a research monastery without coordinates gets a detail route but no marker
   assert.equal(noCoordinates.longitude, undefined);
   assert.equal(withCoordinates?.latitude, 42.29799);
   assert.match(mapCanvas, /Number\.isFinite\(place\.latitude\)/);
-  assert.match(detail, /Тачан положај на интерактивној карти биће додат након географске провјере/);
-  assert.match(detail, /\{hasCoordinates && \([\s\S]*Прикажи на главној карти/);
+  assert.match(practicalPanel, /\{hasCoordinates && \([\s\S]*<PlaceMiniMap/);
   assert.match(card, /\{location && <p class="editorial-place-card__location"/);
   assert.match(practicalPanel, /\.filter\(\(row\) => Boolean\(row\.value\)\)/);
 });
@@ -345,7 +365,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
     detail,
     detailHero,
     detailGallery,
-    narrativeSegments,
+    narrativeArticle,
     practicalPanel,
     miniMap,
     relatedShelf,
@@ -362,7 +382,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
     source("src/pages/svetinje/[slug].astro"),
     source("src/components/place-detail/PlaceDetailHero.astro"),
     source("src/components/place-detail/PlaceDetailGallery.astro"),
-    source("src/components/place-detail/PlaceNarrativeSegments.astro"),
+    source("src/components/place-detail/PlaceNarrativeArticle.astro"),
     source("src/components/place-detail/PlacePracticalPanel.astro"),
     source("src/components/place-detail/PlaceMiniMap.astro"),
     source("src/components/place-detail/PlaceRelatedShelf.astro"),
@@ -372,7 +392,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
     source(".github/workflows/preview-cloudflare.yml"),
     source(".github/workflows/deploy-cloudflare.yml"),
   ]);
-  const detailSources = [detail, detailHero, detailGallery, narrativeSegments, practicalPanel, miniMap, relatedShelf].join("\n");
+  const detailSources = [detail, detailHero, detailGallery, narrativeArticle, practicalPanel, miniMap, relatedShelf].join("\n");
   const combined = [mapCanvas, explorer, card, detailSources].join("\n");
 
   assert.match(mapCanvas, /new maplibregl\.Marker/);
@@ -391,12 +411,9 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.match(detail, /coordinateDistance/);
   assert.match(detail, /candidate\.id !== place\.id/);
   assert.match(detail, /hasCoordinates: candidate\.latitude !== undefined/);
-  assert.match(detail, /const HISTORY_SECTION_IDS = new Set\(\[[\s\S]*?"history"[\s\S]*?"canonization"[\s\S]*?\]\)/);
-  assert.match(detail, /const ARRIVAL_SECTION_IDS = new Set\(\["location"\]\)/);
-  assert.match(detail, /const PRACTICAL_SECTION_IDS = new Set\(\["services", "visitor-information", "verification-notes"\]\)/);
-  assert.match(detail, /<PlaceNarrativeSegments sections=\{aboutSections\}/);
-  assert.match(detail, /<PlaceNarrativeSegments sections=\{historySections\}/);
-  assert.match(detail, /<PlaceNarrativeSegments sections=\{arrivalSections\}/);
+  assert.match(detail, /getPlaceAboutLabel\(place\.placeType\)/);
+  assert.match(detail, /<PlaceNarrativeArticle body=\{place\.narrativeBody\} heading=\{aboutLabel\}/);
+  assert.doesNotMatch(detail, /place-history-title|place-arrival-title|PlaceNarrativeSegments/);
   assert.match(detail, /<PlacePracticalPanel place=\{place\}/);
   assert.doesNotMatch(detail, /Уређивачки преглед|Траг извора|Извори и напомене|place-profile-sources/);
   assert.doesNotMatch(detail, /introSection|remainingNarrativeSections|place-profile-about__original-title/);
@@ -406,14 +423,18 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.doesNotMatch(detailHero, /Радни приказ|Центар комплекса|accuracyLabel/);
   assert.match(detailGallery, /const placeholderSlots = \[1, 2, 3, 4\]/);
   assert.match(detailGallery, /place\.galleryImages/);
-  assert.equal((detailGallery.match(/<img\b/g) ?? []).length, 2);
+  assert.match(detailGallery, /data-gallery-open/);
+  assert.match(detailGallery, /<dialog class="place-gallery-lightbox"/);
+  assert.match(detailGallery, /ArrowLeft|ArrowRight/);
+  assert.match(detailGallery, /youtube-nocookie\.com\/embed/);
   assert.doesNotMatch(detailGallery, /Ауторски медији/);
-  assert.match(narrativeSegments, /data-narrative-source-section=\{section\.id\}/);
-  assert.doesNotMatch(narrativeSegments, /paragraph\.sourceIds\.map|<sup\b|#source-/);
-  assert.doesNotMatch(narrativeSegments, /<h[23]\b/);
+  assert.match(narrativeArticle, /parsePlaceNarrativeBlocks/);
+  assert.match(narrativeArticle, /<h3 id=\{block\.id\}>/);
+  assert.doesNotMatch(narrativeArticle, /sourceIds|<sup\b|#source-/);
   assert.match(practicalPanel, /data-copy-coordinates/);
   assert.match(practicalPanel, /aria-live="polite"/);
   assert.match(practicalPanel, /label: "Епархија"/);
+  assert.match(practicalPanel, /label: "Слава"/);
   assert.doesNotMatch(practicalPanel, /Црквена припадност|Тачност положаја|Статус записа|Напомена о подацима|practicalSections/);
   assert.match(miniMap, /import\.meta\.env\.PUBLIC_MAPTILER_KEY/);
   assert.match(miniMap, /019fc7d8-717c-701d-9ca5-a53d9438d3ce/);
@@ -429,13 +450,12 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.doesNotMatch(miniMap, /hasRenderableCanvas|map\.on\("render"|handleRender/);
   assert.match(miniMap, /data-place-mini-map-attribution[\s\S]*?hidden/);
   assert.match(miniMap, /if \(attribution\) attribution\.hidden = false/);
-  assert.match(styles, /\.place-profile-cards\s*\{[\s\S]*?align-items: start;/);
-  assert.match(styles, /\.place-arrival-card\s*\{[\s\S]*?align-self: start;/);
+  assert.doesNotMatch(styles, /\.place-profile-cards\s*\{|\.place-arrival-card\s*\{/);
   assert.match(styles, /\.place-mini-map__viewport,[\s\S]*?\.place-mini-map__fallback\s*\{[\s\S]*?height: 12rem;/);
   assert.match(styles, /\.place-mini-map__canvas\s*\{[\s\S]*?width: 100%;[\s\S]*?height: 100%;/);
   assert.match(styles, /--ink-reading: #4f5d69/);
   assert.match(styles, /\.place-profile-about p\s*\{[\s\S]*?color: var\(--ink-reading\)/);
-  assert.match(styles, /\.place-editorial-card p\s*\{[\s\S]*?color: var\(--ink-reading\)/);
+  assert.match(styles, /\.place-profile-about h3\s*\{[\s\S]*?color: var\(--navy-950\)/);
   assert.match(relatedShelf, /data-current-place/);
   assert.match(relatedShelf, /data-related-place/);
   assert.doesNotMatch(detail, /1630|1747|1869|1979|1995|2007/);

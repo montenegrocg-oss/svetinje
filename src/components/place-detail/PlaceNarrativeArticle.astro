@@ -1,0 +1,22 @@
+---
+import { parsePlaceNarrativeBlocks } from "../../lib/place-content.ts";
+
+interface Props {
+  body: string;
+  heading: string;
+}
+
+const { body, heading } = Astro.props;
+const parsedBlocks = parsePlaceNarrativeBlocks(body);
+const blocks = parsedBlocks.filter((block, index) => !(
+  index === 0
+  && block.kind === "heading"
+  && (block.text === heading || block.text === "О светињи")
+));
+---
+
+{blocks.map((block) => block.kind === "heading" ? (
+  <h3 id={block.id}>{block.text}</h3>
+) : (
+  <p>{block.text}</p>
+))}

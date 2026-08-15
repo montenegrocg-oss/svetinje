@@ -12,13 +12,8 @@ import { PLACE_AREAS } from "../src/lib/place-areas.ts";
 import { PLACES_PER_PAGE } from "../src/lib/explorer-pagination.ts";
 import { pageCountForHomepagePreview } from "../src/lib/explorer-preview.ts";
 import { selectFeaturedCataloguePlaces } from "../src/lib/category-catalogue.ts";
+import { getPlaceAboutLabel } from "../src/lib/place-content.ts";
 
-const HISTORY_SECTION_IDS = new Set([
-  "history", "discovery", "foundation", "consecration", "saint-simeon", "relics", "canonization",
-]);
-const ARRIVAL_SECTION_IDS = new Set(["location"]);
-const PRACTICAL_SECTION_IDS = new Set(["services", "visitor-information", "verification-notes"]);
-const FIXED_DETAIL_HEADINGS = ["О светињи", "Историја", "Како стићи", "Практичне информације"];
 const RECOMMENDED_PLACE_IDS = ["saborni-hram-podgorica", "dajbabe"];
 const TOTAL_RECOMMENDATION_SLOTS = 10;
 const EMPTY_STATES = {
@@ -214,50 +209,41 @@ function verifyAreaNavigation(homepage, model, failures) {
 
 function verifyNarrative(detail, place, failures) {
   const html = detail.html;
-  for (const heading of FIXED_DETAIL_HEADINGS) {
-    const headingPattern = new RegExp(`<h[23][^>]*>${escapeRegExp(heading)}</h[23]>`, "g");
-    if (countMatches(html, headingPattern) !== 1) failures.push(`${place.id} detail page must contain exactly one ${heading} heading`);
+  const aboutHeading = getPlaceAboutLabel(place.placeType);
+  const aboutHeadingPattern = new RegExp(`<h2[^>]*id="place-about-title"[^>]*>${escapeRegExp(aboutHeading)}</h2>`, "g");
+  if (countMatches(html, aboutHeadingPattern) !== 1) {
+    failures.push(`${place.id} detail page must contain exactly one ${aboutHeading} heading`);
+  }
+  if (/id="place-history-title"|id="place-arrival-title"|class="[^"]*place-profile-cards/.test(html)) {
+    failures.push(`${place.id} detail page still renders a retired standalone narrative card`);
   }
 
-  const blockBoundaries = {
-    about: [html.indexOf('id="place-about-title"'), html.indexOf('data-testid="place-detail-gallery"')],
-    history: [html.indexOf('id="place-history-title"'), html.indexOf('id="place-arrival-title"')],
-    arrival: [html.indexOf('id="place-arrival-title"'), html.indexOf('data-testid="place-related-shelf"')],
-  };
-  if (Object.values(blockBoundaries).some(([start, end]) => start < 0 || end < 0 || start >= end)) {
-    failures.push(`${place.id} detail page is missing a stable four-block narrative boundary`);
+  const articleStart = html.indexOf('id="place-about-title"');
+  const articleEnd = html.indexOf('data-testid="place-detail-gallery"');
+  if (articleStart < 0 || articleEnd < 0 || articleStart >= articleEnd) {
+    failures.push(`${place.id} detail page is missing its unified narrative boundary`);
     return;
   }
 
   const pageText = htmlToPlainText(html);
-  const lastSectionIndexByGroup = { about: -1, history: -1, arrival: -1 };
-  for (const section of place.narrativeSections) {
-    const marker = `data-narrative-source-section="${section.id}"`;
-    if (PRACTICAL_SECTION_IDS.has(section.id)) {
-      if (html.includes(marker)) failures.push(`${place.id} exposes internal practical note section ${section.id}`);
-      continue;
+  let lastSectionIndex = articleStart;
+  for (const [sectionIndex, section] of place.narrativeSections.entries()) {
+    const mergedIntoMainHeading = sectionIndex === 0
+      && (section.title === aboutHeading || section.title === "О светињи");
+    const marker = `id="${section.id}"`;
+    if (!mergedIntoMainHeading) {
+      if (countMatches(html, new RegExp(escapeRegExp(marker), "g")) !== 1) {
+        failures.push(`${place.id} unified narrative section ${section.id} must be rendered exactly once`);
+        continue;
+      }
+      const markerIndex = html.indexOf(marker);
+      if (markerIndex < articleStart || markerIndex >= articleEnd) failures.push(`${place.id} narrative section ${section.id} is outside the unified article`);
+      if (markerIndex <= lastSectionIndex) failures.push(`${place.id} narrative section ${section.id} is outside its original order`);
+      lastSectionIndex = markerIndex;
     }
-    if (countMatches(html, new RegExp(escapeRegExp(marker), "g")) !== 1) {
-      failures.push(`${place.id} narrative section ${section.id} must be rendered exactly once`);
-      continue;
-    }
-    const group = HISTORY_SECTION_IDS.has(section.id)
-      ? "history"
-      : ARRIVAL_SECTION_IDS.has(section.id)
-        ? "arrival"
-        : "about";
-    const markerIndex = html.indexOf(marker);
-    const [start, end] = blockBoundaries[group];
-    if (markerIndex < start || markerIndex >= end) failures.push(`${place.id} narrative section ${section.id} is outside its ${group} block`);
-    if (markerIndex <= lastSectionIndexByGroup[group]) failures.push(`${place.id} narrative section ${section.id} is outside its original ${group} order`);
-    lastSectionIndexByGroup[group] = markerIndex;
     for (const paragraph of section.paragraphs) {
       const paragraphText = paragraph.text.replace(/\s+/g, " ").trim();
       if (!pageText.includes(paragraphText)) failures.push(`${place.id} is missing narrative text from section ${section.id}`);
-    }
-    if (!FIXED_DETAIL_HEADINGS.includes(section.title)) {
-      const originalHeadingPattern = new RegExp(`<h[23][^>]*>${escapeRegExp(section.title)}</h[23]>`, "g");
-      if (countMatches(html, originalHeadingPattern) !== 0) failures.push(`${place.id} exposes original narrative heading ${section.title}`);
     }
   }
   if (/href="#source-|<sup\b[^>]*>\s*\[\d+\]/.test(html)) failures.push(`${place.id} detail page exposes inline source footnotes`);
@@ -294,11 +280,8 @@ function verifyDetail(detailCase, model, pagesByRoute, failures) {
     failures.push(`${place.id} detail page is missing its loaded mini-map coordinates`);
   }
   if (!hasCoordinates) {
-    const arrival = elementContaining(html, "section", 'id="place-arrival-title"');
-    if (!html.includes("Тачан положај на интерактивној карти биће додат након географске провјере.")) {
-      failures.push(`${place.id} detail page is missing the neutral unverified-location message`);
-    }
-    if (arrival.includes('href="/#mapa"') || hero.includes('href="/#mapa"')) {
+    if (html.includes("data-place-mini-map")) failures.push(`${place.id} detail page exposes a mini-map without verified coordinates`);
+    if (hero.includes('href="/#mapa"')) {
       failures.push(`${place.id} detail page exposes a contextual map link without verified coordinates`);
     }
     if (html.includes("Локација је означена на главној карти")) failures.push(`${place.id} detail page makes a false map-location claim`);
@@ -322,6 +305,12 @@ function verifyDetail(detailCase, model, pagesByRoute, failures) {
     failures.push(`${place.id} detail page exposes retired practical-information labels`);
   }
   if (place.ecclesiasticalJurisdiction && !html.includes("Епархија")) failures.push(`${place.id} detail page is missing the Eparchy label`);
+  if (place.patronalFeast && !html.includes(`<dd>${place.patronalFeast}</dd>`)) failures.push(`${place.id} detail page is missing its patronal feast`);
+  if (!place.patronalFeast && /<dt[^>]*>[^<]*Слава/.test(html)) failures.push(`${place.id} detail page renders an empty patronal-feast row`);
+  if (place.youtubeVideoId && !gallery.includes(`https://www.youtube-nocookie.com/embed/${place.youtubeVideoId}`)) {
+    failures.push(`${place.id} detail page is missing its privacy-enhanced YouTube embed`);
+  }
+  if (!place.youtubeVideoId && gallery.includes("youtube-nocookie.com/embed/")) failures.push(`${place.id} detail page renders an empty video embed`);
   verifyNarrative(detail, place, failures);
 }
 
@@ -422,7 +411,7 @@ for (const route of model.allExpectedRoutes) {
 for (const page of pages) {
   if (!model.allExpectedRoutes.includes(page.relative)) failures.push(`unexpected output route was generated: ${page.relative}`);
   if (editorialPreview && !page.html.includes('<meta name="robots" content="noindex,nofollow,noarchive">')) failures.push(`${page.relative} is missing editorial-preview noindex metadata`);
-  for (const forbidden of ["Радни приказ", "У радном приказу", "Није у радном приказу"]) {
+  for (const forbidden of ["Радни приказ", "Није у радном приказу"]) {
     if (page.html.includes(forbidden)) failures.push(`${page.relative} exposes internal visibility terminology: ${forbidden}`);
   }
 }

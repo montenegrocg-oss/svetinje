@@ -3,6 +3,7 @@ import path from "node:path";
 import { parseDocument } from "yaml";
 import { buildCatalogueSearchText } from "../catalogue-search.ts";
 import { resolveMediaUrl } from "../media-url.ts";
+import { parseYoutubeVideoId } from "../place-content.ts";
 import type { PlaceAreaId } from "../place-areas.ts";
 import { getPlaceArea, isPlaceAreaId } from "../place-areas.ts";
 import {
@@ -45,6 +46,8 @@ interface PlaceRecord {
   ecclesiastical?: {
     jurisdiction?: StringFact;
   };
+  patronal_feast?: { name?: string };
+  video?: { youtube_url?: string };
   location?: {
     municipality?: StringFact;
     settlement?: StringFact;
@@ -117,6 +120,9 @@ export interface PublishablePlace {
   browseAreaId?: PlaceAreaId;
   catalogueSearchText: string;
   mediaIds?: string[];
+  narrativeBody: string;
+  patronalFeast?: string;
+  youtubeVideoId?: string;
 }
 
 export interface NarrativeParagraph {
@@ -397,12 +403,16 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
     }
 
     const browseAreaId = isPlaceAreaId(place.browse_area_id) ? place.browse_area_id : undefined;
+    const youtubeVideoId = parseYoutubeVideoId(place.video?.youtube_url);
     return [{
       id: place.id,
       slug: narrative.slug,
       name: narrative.preferred_name,
       summary: narrative.summary,
       placeType: place.place_type.value,
+      narrativeBody: narrative.body,
+      ...(typeof place.patronal_feast?.name === "string" ? { patronalFeast: place.patronal_feast.name } : {}),
+      ...(youtubeVideoId ? { youtubeVideoId } : {}),
       ...(Array.isArray((place.relationships as { media_ids?: unknown } | undefined)?.media_ids)
         ? { mediaIds: (place.relationships as { media_ids: unknown[] }).media_ids.filter((value): value is string => typeof value === "string") }
         : {}),
@@ -537,6 +547,8 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
     const longitude = coordinates?.longitude;
     const coordinateAccuracy = coordinates?.accuracy;
     const ecclesiasticalJurisdiction = place.ecclesiastical?.jurisdiction?.value;
+    const patronalFeast = place.patronal_feast?.name;
+    const youtubeVideoId = parseYoutubeVideoId(place.video?.youtube_url);
     const mediaOrder = Array.isArray((place.relationships as { media_ids?: unknown } | undefined)?.media_ids)
       ? (place.relationships as { media_ids: unknown[] }).media_ids.filter((value): value is string => typeof value === "string")
       : [];
@@ -564,10 +576,13 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       ...(longitude !== undefined ? { longitude } : {}),
       ...(coordinateAccuracy !== undefined ? { coordinateAccuracy } : {}),
       ...(ecclesiasticalJurisdiction !== undefined ? { ecclesiasticalJurisdiction } : {}),
+      ...(patronalFeast !== undefined ? { patronalFeast } : {}),
+      ...(youtubeVideoId !== undefined ? { youtubeVideoId } : {}),
       ...previewMedia,
       preview: true,
       previewStatus: place.editorial_status,
       narrativeSections,
+      narrativeBody: narrative.body,
       sourceIds,
       sources: registeredSources,
       searchText: [
@@ -595,7 +610,7 @@ export async function loadVisiblePlaces(
       typeLabel: placeTypeLabel(place.placeType),
       ...(await previewMediaForPlace(root, place.id, place.name, media, "production", policy, place.mediaIds ?? [])),
       preview: false,
-      narrativeSections: [],
+      narrativeSections: parseNarrativeSections(place.narrativeBody),
       sourceIds: [],
       sources: [],
       searchText: [place.name, place.summary].join(" "),

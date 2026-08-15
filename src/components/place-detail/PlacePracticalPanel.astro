@@ -21,6 +21,7 @@ const practicalRows = [
   { label: "Адреса", value: place.address, icon: "info" as const },
   { label: "Тип", value: place.typeLabel, icon: typeIcon },
   { label: "Епархија", value: place.ecclesiasticalJurisdiction, icon: "church" as const },
+  { label: "Слава", value: place.patronalFeast, icon: "church" as const },
 ].filter((row) => Boolean(row.value));
 const coordinateQualification = place.placeType === "cathedral"
   ? "Координате означавају центар храмовног комплекса, а не тачан главни улаз."

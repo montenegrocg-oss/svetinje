@@ -2,13 +2,14 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PlaceDetailGallery from "../../components/place-detail/PlaceDetailGallery.astro";
 import PlaceDetailHero from "../../components/place-detail/PlaceDetailHero.astro";
-import PlaceNarrativeSegments from "../../components/place-detail/PlaceNarrativeSegments.astro";
+import PlaceNarrativeArticle from "../../components/place-detail/PlaceNarrativeArticle.astro";
 import PlacePracticalPanel from "../../components/place-detail/PlacePracticalPanel.astro";
 import PlaceRelatedShelf from "../../components/place-detail/PlaceRelatedShelf.astro";
 import type { VisiblePlace } from "../../lib/content/publication";
 import { loadVisiblePlaces } from "../../lib/content/publication";
 import PlaceRouteBacklinks from "../../components/routes/PlaceRouteBacklinks.astro";
 import { loadVisibleRoutes, routesForPlace, type VisibleRoute } from "../../lib/content/routes";
+import { getPlaceAboutLabel } from "../../lib/place-content.ts";
 
 interface RelatedPlace {
   place: VisiblePlace;
@@ -55,27 +56,8 @@ export async function getStaticPaths() {
   }));
 }
 
-const HISTORY_SECTION_IDS = new Set([
-  "history",
-  "discovery",
-  "foundation",
-  "consecration",
-  "saint-simeon",
-  "relics",
-  "canonization",
-]);
-const ARRIVAL_SECTION_IDS = new Set(["location"]);
-const PRACTICAL_SECTION_IDS = new Set(["services", "visitor-information", "verification-notes"]);
-
 const { place, relatedPlaces, routes } = Astro.props as { place: VisiblePlace; relatedPlaces: RelatedPlace[]; routes: VisibleRoute[] };
-const hasCoordinates = place.latitude !== undefined && place.longitude !== undefined;
-const historySections = place.narrativeSections.filter((section) => HISTORY_SECTION_IDS.has(section.id));
-const arrivalSections = place.narrativeSections.filter((section) => ARRIVAL_SECTION_IDS.has(section.id));
-const aboutSections = place.narrativeSections.filter((section) =>
-  !HISTORY_SECTION_IDS.has(section.id)
-  && !ARRIVAL_SECTION_IDS.has(section.id)
-  && !PRACTICAL_SECTION_IDS.has(section.id)
-);
+const aboutLabel = getPlaceAboutLabel(place.placeType);
 ---
 
 <BaseLayout
@@ -89,9 +71,9 @@ const aboutSections = place.narrativeSections.filter((section) =>
   <section class="place-profile-body">
     <div class="shell place-profile-grid">
       <article class="place-profile-about prose" aria-labelledby="place-about-title">
-        <h2 id="place-about-title">О светињи</h2>
-        {aboutSections.length > 0 ? (
-          <PlaceNarrativeSegments sections={aboutSections} />
+        <h2 id="place-about-title">{aboutLabel}</h2>
+        {place.narrativeBody.trim() ? (
+          <PlaceNarrativeArticle body={place.narrativeBody} heading={aboutLabel} />
         ) : (
           <p>Општи подаци о светињи су у припреми.</p>
         )}
@@ -99,35 +81,6 @@ const aboutSections = place.narrativeSections.filter((section) =>
 
       <PlaceDetailGallery place={place} />
       <PlacePracticalPanel place={place} />
-
-      <div class="place-profile-cards">
-        <section class="place-editorial-card place-history-card prose" aria-labelledby="place-history-title">
-          <h2 id="place-history-title">Историја</h2>
-          {historySections.length > 0 ? (
-            <PlaceNarrativeSegments sections={historySections} />
-          ) : (
-            <p>Историјски подаци су у припреми.</p>
-          )}
-        </section>
-
-        <section class="place-editorial-card place-arrival-card" aria-labelledby="place-arrival-title">
-          <h2 id="place-arrival-title">Како стићи</h2>
-          {place.address && <p><strong>Адреса:</strong> {place.address}</p>}
-          {arrivalSections.length > 0 ? (
-            <PlaceNarrativeSegments sections={arrivalSections} />
-          ) : hasCoordinates ? (
-            <p>Локација је означена на главној карти. Прије посјете провјерите приступ и услове на терену.</p>
-          ) : (
-            <p>Текстуални подаци о положају су у припреми.</p>
-          )}
-          {!hasCoordinates && (
-            <p>Тачан положај на интерактивној карти биће додат након географске провјере.</p>
-          )}
-          {hasCoordinates && (
-            <a class="place-inline-link" href="/#mapa">Прикажи на главној карти <span aria-hidden="true">→</span></a>
-          )}
-        </section>
-      </div>
 
       <PlaceRelatedShelf currentPlace={place} relatedPlaces={relatedPlaces} />
       <PlaceRouteBacklinks placeId={place.id} routes={routes} />

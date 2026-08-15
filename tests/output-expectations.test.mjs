@@ -10,6 +10,7 @@ const place = (id, placeType, options = {}) => ({
   placeType,
   typeLabel: "Свето мјесто",
   preview: true,
+  narrativeBody: "",
   narrativeSections: [],
   sourceIds: [],
   sources: [],

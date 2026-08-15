@@ -1,41 +1,92 @@
 ---
 import type { VisiblePlace } from "../../lib/content/publication";
 
-interface Props {
-  place: VisiblePlace;
-}
-
+interface Props { place: VisiblePlace; }
 const { place } = Astro.props;
 const [primaryImage, ...secondaryImages] = place.galleryImages;
 const placeholderSlots = [1, 2, 3, 4] as const;
+const galleryId = `place-gallery-${place.id}`;
 ---
 
-<section class="place-detail-gallery" aria-labelledby="place-gallery-title" data-testid="place-detail-gallery">
-  <div class="place-section-heading">
-    <h2 id="place-gallery-title">Фотографије</h2>
-  </div>
+<section class="place-detail-gallery" aria-labelledby="place-gallery-title" data-testid="place-detail-gallery" data-place-gallery={galleryId}>
+  <div class="place-section-heading"><h2 id="place-gallery-title">Фотографије</h2></div>
   <div class="place-detail-gallery__grid">
     {primaryImage ? (
-      <figure class="place-detail-gallery__main">
+      <button class="place-detail-gallery__main place-detail-gallery__button" type="button" data-gallery-open data-gallery-index="0" aria-label={`Увећај фотографију: ${primaryImage.alt}`}>
         <img src={primaryImage.src} alt={primaryImage.alt} width={primaryImage.width} height={primaryImage.height} loading="lazy" decoding="async" />
-      </figure>
+      </button>
     ) : (
-      <div class="place-detail-gallery__main place-detail-gallery__placeholder">
-        <span aria-hidden="true"></span><p>Ауторска фотографија биће додата</p>
-      </div>
+      <div class="place-detail-gallery__main place-detail-gallery__placeholder"><span aria-hidden="true"></span><p>Ауторска фотографија биће додата</p></div>
     )}
-    {placeholderSlots.map((slot, index) => {
-      const image = secondaryImages[index];
-      return image ? (
-        <figure class="place-detail-gallery__image" data-gallery-slot={slot}>
-          <img src={image.src} alt={image.alt} width={image.width} height={image.height} loading="lazy" decoding="async" />
-        </figure>
-      ) : (
-        <div class="place-detail-gallery__placeholder" data-gallery-slot={slot}>
-          <span aria-hidden="true"></span>
-          <p>{slot === 4 ? "Галерија у припреми" : "Још фотографија биће додато"}</p>
-        </div>
-      );
-    })}
+    {secondaryImages.map((image, index) => (
+      <button class="place-detail-gallery__image place-detail-gallery__button" type="button" data-gallery-open data-gallery-index={String(index + 1)} aria-label={`Увећај фотографију: ${image.alt}`}>
+        <img src={image.src} alt={image.alt} width={image.width} height={image.height} loading="lazy" decoding="async" />
+      </button>
+    ))}
+    {placeholderSlots.slice(secondaryImages.length).map((slot) => (
+      <div class="place-detail-gallery__placeholder" data-gallery-slot={slot}><span aria-hidden="true"></span><p>{slot === 4 ? "Галерија у припреми" : "Још фотографија биће додато"}</p></div>
+    ))}
   </div>
+
+  {place.youtubeVideoId && (
+    <section class="place-detail-video" aria-labelledby={`${galleryId}-video-title`}>
+      <h2 id={`${galleryId}-video-title`}>Видео</h2>
+      <div class="place-detail-video__frame"><iframe src={`https://www.youtube-nocookie.com/embed/${place.youtubeVideoId}`} title={`Видео — ${place.name}`} loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+    </section>
+  )}
+
+  {primaryImage && (
+    <dialog class="place-gallery-lightbox" data-gallery-dialog aria-label={`Галерија — ${place.name}`}>
+      <div class="place-gallery-lightbox__surface">
+        <button class="place-gallery-lightbox__close" type="button" data-gallery-close aria-label="Затвори галерију">×</button>
+        <button class="place-gallery-lightbox__nav place-gallery-lightbox__nav--previous" type="button" data-gallery-previous aria-label="Претходна фотографија">‹</button>
+        <figure><img data-gallery-image src={primaryImage.src} alt={primaryImage.alt} /><figcaption data-gallery-counter>1 / {place.galleryImages.length}</figcaption></figure>
+        <button class="place-gallery-lightbox__nav place-gallery-lightbox__nav--next" type="button" data-gallery-next aria-label="Следећа фотографија">›</button>
+      </div>
+    </dialog>
+  )}
 </section>
+
+<script>
+  const initialisePlaceGalleries = () => {
+    document.querySelectorAll<HTMLElement>("[data-place-gallery]").forEach((root) => {
+      if (root.dataset.galleryInitialised === "true") return;
+      root.dataset.galleryInitialised = "true";
+      const dialog = root.querySelector<HTMLDialogElement>("[data-gallery-dialog]");
+      const lightboxImage = dialog?.querySelector<HTMLImageElement>("[data-gallery-image]");
+      const counter = dialog?.querySelector<HTMLElement>("[data-gallery-counter]");
+      const openers = [...root.querySelectorAll<HTMLButtonElement>("[data-gallery-open]")];
+      const images = openers.map((button) => button.querySelector<HTMLImageElement>("img")).filter((image): image is HTMLImageElement => Boolean(image));
+      if (!dialog || !lightboxImage || images.length === 0) return;
+      let index = 0;
+      let trigger: HTMLButtonElement | undefined;
+      const navigation = dialog.querySelectorAll<HTMLButtonElement>("[data-gallery-previous], [data-gallery-next]");
+      navigation.forEach((button) => { button.hidden = images.length < 2; });
+      const show = (nextIndex: number) => {
+        index = (nextIndex + images.length) % images.length;
+        lightboxImage.src = images[index]!.currentSrc || images[index]!.src;
+        lightboxImage.alt = images[index]!.alt;
+        if (counter) counter.textContent = `${index + 1} / ${images.length}`;
+      };
+      openers.forEach((button, openerIndex) => button.addEventListener("click", () => {
+        trigger = button;
+        show(openerIndex);
+        dialog.showModal();
+        document.documentElement.classList.add("has-open-lightbox");
+        dialog.querySelector<HTMLButtonElement>("[data-gallery-close]")?.focus();
+      }));
+      const close = () => dialog.close();
+      dialog.querySelector("[data-gallery-close]")?.addEventListener("click", close);
+      dialog.querySelector("[data-gallery-previous]")?.addEventListener("click", () => show(index - 1));
+      dialog.querySelector("[data-gallery-next]")?.addEventListener("click", () => show(index + 1));
+      dialog.addEventListener("click", (event) => { if (event.target === dialog) close(); });
+      dialog.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowLeft") { event.preventDefault(); show(index - 1); }
+        if (event.key === "ArrowRight") { event.preventDefault(); show(index + 1); }
+      });
+      dialog.addEventListener("close", () => { document.documentElement.classList.remove("has-open-lightbox"); trigger?.focus(); });
+    });
+  };
+  initialisePlaceGalleries();
+  document.addEventListener("astro:page-load", initialisePlaceGalleries);
+</script>

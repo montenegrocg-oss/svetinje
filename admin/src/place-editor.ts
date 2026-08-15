@@ -1,13 +1,14 @@
 import { parse, stringify } from "yaml";
 import { isPlaceAreaId } from "../../src/lib/place-areas.ts";
+import { canonicalYoutubeUrl, normalizeUnifiedNarrativeBody } from "../../src/lib/place-content.ts";
 import {
   CANONICAL_SCHEMA_FINGERPRINT,
   validateNarrative,
   validatePlace,
 } from "./generated/canonical-validators.js";
 import { AdminError, internalFailure } from "./errors.ts";
-import type { CanonicalOptions, EditablePlaceRecord, NarrativeSection } from "./repository-content.ts";
-import { parseNarrative, serializeNarrative, serializeNarrativeSections } from "./repository-content.ts";
+import type { CanonicalOptions, EditablePlaceRecord } from "./repository-content.ts";
+import { parseNarrative, serializeNarrative } from "./repository-content.ts";
 import { fingerprintCanonicalSchemas } from "./schema-fingerprint.ts";
 
 export interface UpdatePlaceBody {
@@ -28,7 +29,9 @@ export interface UpdatePlaceBody {
   coordinateAccuracy?: unknown;
   publicationSafety?: unknown;
   alternateNames?: unknown;
-  sections?: unknown;
+  narrativeBody?: unknown;
+  patronalFeast?: unknown;
+  youtubeUrl?: unknown;
 }
 
 export interface UpdatedCanonicalFiles {
@@ -106,34 +109,9 @@ function validateAlternateNames(value: unknown, original: unknown, options: Cano
   });
 }
 
-function validateSections(value: unknown, original: NarrativeSection[], options: CanonicalOptions, errors: Record<string, string>): NarrativeSection[] {
-  if (!Array.isArray(value)) {
-    errors.sections = "Одељци морају бити листа.";
-    return [];
-  }
-  const sections = value.flatMap((entry, index) => {
-    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
-      errors[`sections.${index}`] = "Одељак није важећи.";
-      return [];
-    }
-    const record = entry as Record<string, unknown>;
-    const id = text(record.id);
-    const title = requiredText(record.title, `sections.${index}.title`, errors);
-    if (!id || !options.narrativeSectionIds.includes(id)) errors[`sections.${index}.id`] = "Канонски ID одељка није подржан.";
-    const paragraphs = Array.isArray(record.paragraphs)
-      ? record.paragraphs.filter((paragraph): paragraph is string => typeof paragraph === "string").map((paragraph) => paragraph.trim()).filter(Boolean)
-      : [];
-    if (!Array.isArray(record.paragraphs)) errors[`sections.${index}.paragraphs`] = "Пасуси морају бити листа.";
-    return id && title ? [{ id, title, paragraphs }] : [];
-  });
-  if (new Set(sections.map(({ id }) => id)).size !== sections.length) errors.sections = "ID одељка се не смије поновити.";
-  for (const existing of original) if (!sections.some(({ id }) => id === existing.id)) errors.sections = "Постојећи канонски одељци се не смију уклонити у овој фази.";
-  return sections;
-}
-
 function assertSafeMarkdown(body: string, errors: Record<string, string>): void {
   if (/<\/?(?:script|iframe|object|embed|form|input|button|style|link|meta)\b/i.test(body) || /\son[a-z]+\s*=/i.test(body) || /(?:javascript|data|vbscript):/i.test(body)) {
-    errors.sections = "Текст садржи небезбједан HTML или URI.";
+    errors.narrativeBody = "Текст садржи небезбједан HTML или URI.";
   }
 }
 
@@ -160,9 +138,13 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
     errors.publicationSafety = "Координате објављеног објекта морају бити означене као јавне.";
   }
   const alternateNames = validateAlternateNames(body.alternateNames ?? [], record.rawNarrative.alternate_names, record.options, errors);
-  const sections = validateSections(body.sections ?? [], record.place.sections, record.options, errors);
-  const narrativeBody = serializeNarrativeSections(sections, record.narrativeBody);
-  assertSafeMarkdown(narrativeBody, errors);
+  const narrativeBody = normalizeUnifiedNarrativeBody(body.narrativeBody);
+  if (narrativeBody === undefined) errors.narrativeBody = "Главни текст мора бити текстуално поље.";
+  const rawYoutubeUrl = text(body.youtubeUrl);
+  const youtubeUrl = rawYoutubeUrl ? canonicalYoutubeUrl(rawYoutubeUrl) : undefined;
+  if (rawYoutubeUrl && !youtubeUrl) errors.youtubeUrl = "Унесите важећи YouTube линк.";
+  const patronalFeast = text(body.patronalFeast);
+  assertSafeMarkdown(narrativeBody ?? "", errors);
   if (Object.keys(errors).length > 0) throw new AdminError("invalid_form_data", 400, "Place update is invalid", errors);
 
   const place = structuredClone(record.rawPlace);
@@ -172,6 +154,8 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   if (place.place_type.value !== placeType) place.place_type = { value: placeType, verification: resetVerification() };
   place.ecclesiastical ??= {};
   setFact(place.ecclesiastical, "jurisdiction", text(body.jurisdiction));
+  if (patronalFeast) place.patronal_feast = { name: patronalFeast }; else delete place.patronal_feast;
+  if (youtubeUrl) place.video = { youtube_url: youtubeUrl }; else delete place.video;
   place.location ??= {};
   setFact(place.location, "country_code", countryCode);
   setFact(place.location, "municipality", text(body.municipality));
@@ -194,7 +178,7 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   if (alternateNames.length > 0) narrative.alternate_names = alternateNames; else delete narrative.alternate_names;
   const unchanged = same(place, record.rawPlace)
     && same(narrative, record.rawNarrative)
-    && narrativeBody === record.narrativeBody;
+    && narrativeBody === normalizeUnifiedNarrativeBody(record.narrativeBody);
   if (!unchanged) {
     const timestamp = now.toISOString().replace(/\.\d{3}Z$/, "Z");
     place.audit = { ...place.audit, updated_at: timestamp, updated_by: actor };
@@ -202,7 +186,7 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   }
 
   const placeYaml = stringify(place, { lineWidth: 0 });
-  const narrativeMarkdown = serializeNarrative(narrative, narrativeBody);
+  const narrativeMarkdown = serializeNarrative(narrative, narrativeBody ?? "");
   if (!parse(placeYaml) || !parseNarrative(narrativeMarkdown).frontMatter) throw new AdminError("invalid_form_data", 400, "Serialized content is invalid");
   const loadedSchemaFingerprint = await fingerprintCanonicalSchemas(record.schemas);
   if (loadedSchemaFingerprint !== CANONICAL_SCHEMA_FINGERPRINT) {

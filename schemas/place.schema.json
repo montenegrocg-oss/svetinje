@@ -20,6 +20,8 @@
     "place_type": { "$ref": "#/$defs/placeTypeFact" },
     "parent_place_id": { "$ref": "common.schema.json#/$defs/entityIdFact" },
     "ecclesiastical": { "$ref": "#/$defs/ecclesiastical" },
+    "patronal_feast": { "$ref": "#/$defs/patronalFeast" },
+    "video": { "$ref": "#/$defs/video" },
     "location": { "$ref": "#/$defs/location" },
     "relationships": { "$ref": "#/$defs/relationships" },
     "source_ids": { "$ref": "common.schema.json#/$defs/sourceIdList" },
@@ -73,6 +75,25 @@
         "dedication_ids": { "$ref": "common.schema.json#/$defs/entityIdListFact" },
         "community_type": { "$ref": "common.schema.json#/$defs/stringFact" },
         "associated_entity_ids": { "$ref": "common.schema.json#/$defs/entityIdListFact" }
+      }
+    },
+    "patronalFeast": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "$ref": "common.schema.json#/$defs/nonEmptyText" }
+      }
+    },
+    "video": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["youtube_url"],
+      "properties": {
+        "youtube_url": {
+          "type": "string",
+          "pattern": "^https://www\\.youtube\\.com/watch\\?v=[A-Za-z0-9_-]{11}$"
+        }
       }
     },
     "coordinateAccuracy": {

@@ -164,11 +164,6 @@ const collectAlternateNames = () => [...form.querySelectorAll<HTMLElement>("[dat
   context: row.querySelector<HTMLTextAreaElement>("[data-alt-context]")?.value ?? "",
   verificationStatus: (row.querySelector("[data-alt-status]") as HTMLSelectElement | null)?.value ?? "requires-verification",
 }));
-const collectSections = () => [...form.querySelectorAll<HTMLElement>("[data-section]")].map((section) => ({
-  id: section.dataset.sectionId ?? "",
-  title: section.querySelector<HTMLInputElement>("[data-section-title]")?.value ?? "",
-  paragraphs: [...section.querySelectorAll<HTMLTextAreaElement>("[data-paragraph]")].map(({ value }) => value),
-}));
 const body = () => ({
   expectedHeadSha: form.dataset.headSha,
   preferredName: field("preferredName").value,
@@ -186,16 +181,11 @@ const body = () => ({
   longitude: field("longitude").value,
   coordinateAccuracy: field("coordinateAccuracy").value,
   publicationSafety: field("publicationSafety").value,
+  patronalFeast: field("patronalFeast").value,
+  youtubeUrl: field("youtubeUrl").value,
+  narrativeBody: field("narrativeBody").value,
   alternateNames: collectAlternateNames(),
-  sections: collectSections(),
 });
-
-const createParagraph = () => {
-  const wrapper = document.createElement("div"); wrapper.className = "paragraph";
-  const textarea = document.createElement("textarea"); textarea.dataset.paragraph = "";
-  const remove = document.createElement("button"); remove.type = "button"; remove.className = "icon-button"; remove.dataset.removeParagraph = ""; remove.textContent = "×"; remove.setAttribute("aria-label", "Уклони пасус");
-  wrapper.appendChild(textarea); wrapper.appendChild(remove); return wrapper;
-};
 form.addEventListener("click", (event) => {
   const target = event.target as HTMLElement;
   if (target.closest("[data-remove-alternate]")) target.closest("[data-alternate-row]")?.remove();
@@ -203,38 +193,21 @@ form.addEventListener("click", (event) => {
     const template = document.querySelector<HTMLTemplateElement>("[data-alternate-template]");
     if (template) form.querySelector("[data-alternate-list]")?.appendChild(template.content.cloneNode(true));
   }
-  if (target.closest("[data-remove-paragraph]")) target.closest(".paragraph")?.remove();
-  const addParagraph = target.closest("[data-add-paragraph]");
-  if (addParagraph) addParagraph.closest("[data-section]")?.querySelector("[data-paragraphs]")?.appendChild(createParagraph());
-  const moveSection = target.closest<HTMLButtonElement>("[data-move-section]");
-  if (moveSection) {
-    const section = moveSection.closest<HTMLElement>("[data-section]");
-    const sibling = moveSection.dataset.moveSection === "up" ? section?.previousElementSibling : section?.nextElementSibling;
-    if (section && sibling) {
-      const parent = section.parentElement;
-      if (parent && moveSection.dataset.moveSection === "up") parent.insertBefore(section, sibling);
-      else if (parent) parent.insertBefore(sibling, section);
-    }
-  }
-  if (target.closest("[data-add-section]")) {
-    const select = form.querySelector("[data-new-section]") as HTMLSelectElement | null;
-    if (!select?.value) return;
-    const article = document.createElement("article"); article.className = "section-editor"; article.dataset.section = ""; article.dataset.sectionId = select.value;
-    const toolbar = document.createElement("div"); toolbar.className = "toolbar";
-    const heading = document.createElement("h3"); heading.textContent = select.value;
-    const actions = document.createElement("div"); actions.className = "actions";
-    for (const [direction, label, glyph] of [["up", "Помјери одјељак навише", "↑"], ["down", "Помјери одјељак наниже", "↓"]] as const) {
-      const move = document.createElement("button"); move.type = "button"; move.className = "icon-button"; move.dataset.moveSection = direction; move.setAttribute("aria-label", label); move.textContent = glyph; actions.appendChild(move);
-    }
-    toolbar.appendChild(heading); toolbar.appendChild(actions);
-    const titleLabel = document.createElement("label"); titleLabel.className = "field"; titleLabel.append("Наслов");
-    const titleInput = document.createElement("input"); titleInput.dataset.sectionTitle = ""; titleLabel.appendChild(titleInput);
-    const paragraphs = document.createElement("div"); paragraphs.dataset.paragraphs = "";
-    const add = document.createElement("button"); add.type = "button"; add.className = "button secondary"; add.dataset.addParagraph = ""; add.textContent = "Додај пасус";
-    article.appendChild(toolbar); article.appendChild(titleLabel); article.appendChild(paragraphs); article.appendChild(add);
-    form.querySelector("[data-section-list]")?.appendChild(article); select.selectedOptions[0]?.remove();
-  }
   if (target.closest("button") && !target.closest("#foto")) markDirty();
+});
+
+const youtubeInput = field("youtubeUrl") as HTMLInputElement;
+const youtubePreview = form.querySelector<HTMLAnchorElement>("[data-youtube-preview]");
+youtubeInput.addEventListener("input", () => {
+  if (!youtubePreview) return;
+  try {
+    const url = new URL(youtubeInput.value.trim());
+    const allowed = new Set(["youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be", "youtube-nocookie.com", "www.youtube-nocookie.com"]);
+    youtubePreview.hidden = url.protocol !== "https:" || !allowed.has(url.hostname.toLowerCase());
+    if (!youtubePreview.hidden) youtubePreview.href = url.href;
+  } catch {
+    youtubePreview.hidden = true;
+  }
 });
 
 form.addEventListener("submit", async (event) => {
