@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-crkva-svete-trojice-na-rumiji-1496c633b153
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/crkva-svete-trojice-na-rumiji/photo-crkva-svete-trojice-na-rumiji-1496c633b153.jpg
+checksum_sha256: 7626b53b309c817b709551407715a4d42f7c7b26c8bbe250c9a9052c02d473ca
+mime_type: image/jpeg
+width: 1280
+height: 960
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - crkva-svete-trojice-na-rumiji
+localized_text:
+  sr:
+    alt_text: Црква свете Тројице
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-15T11:02:53Z
+    reviewed_revision: 555bf8f06c77021694112ccc61b82110c53b5124
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-15T11:02:53Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-15T11:02:53Z
+  updated_by: montenegro-cg

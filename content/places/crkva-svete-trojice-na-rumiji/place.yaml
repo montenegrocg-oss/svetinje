@@ -5,12 +5,14 @@ place_type:
   value: church
   verification:
     status: requires-verification
-relationships: {}
+relationships:
+  media_ids:
+    - photo-crkva-svete-trojice-na-rumiji-1496c633b153
 approvals: []
 audit:
   created_at: 2026-08-15T10:54:56.943Z
   created_by: montenegro-cg
-  updated_at: 2026-08-15T11:00:12Z
+  updated_at: 2026-08-15T11:02:53Z
   updated_by: montenegro-cg
 browse_area_id: bar-crmnica-skadarsko-jezero
 ecclesiastical:
