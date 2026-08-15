@@ -120,6 +120,29 @@ test("pilot route public composition remains loader-driven and key-safe", async 
   assert.doesNotMatch(map, /[?&]key=[A-Za-z0-9_-]{16,}/);
 });
 
+test("route detail uses one scoped responsive typography and metric system", async () => {
+  const [routePage, map, profile, css] = await Promise.all([
+    readFile(new URL("../src/pages/rute/[slug]/index.astro", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/routes/RouteMap.astro", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/routes/ElevationProfile.astro", import.meta.url), "utf8"),
+    readFile(new URL("../src/styles/global.css", import.meta.url), "utf8"),
+  ]);
+  assert.match(css, /\.route-detail-page\s*\{[^}]*--route-font-display:\s*clamp\([^;]+;[^}]*--route-font-h2:\s*clamp\([^;]+;[^}]*--route-font-h3:\s*clamp\([^;]+;[^}]*--route-font-body:\s*clamp\(/s);
+  assert.match(css, /\.route-overview h1\s*\{[^}]*font-size:\s*var\(--route-font-display\)/s);
+  assert.match(css, /\.route-section-title\s*\{[^}]*font-size:\s*var\(--route-font-h2\)[^}]*text-transform:\s*none/s);
+  assert.match(css, /\.route-places \.editorial-place-card h2\s*\{[^}]*font-size:\s*var\(--route-font-h3\)[^}]*text-transform:\s*none/s);
+  assert.match(css, /\.route-overview__metrics\s*\{[^}]*grid-template-columns:\s*repeat\(4,/s);
+  assert.match(css, /\.route-overview__metrics div\s*\{[^}]*display:\s*grid;[^}]*min-height:[^;}]+;[^}]*align-content:\s*center/s);
+  assert.match(css, /@media \(max-width: 47\.99rem\)[\s\S]*?\.route-overview__metrics\s*\{[^}]*grid-template-columns:\s*repeat\(2,/s);
+  assert.match(routePage, /class="route-section-title" id="route-details-title"/);
+  assert.match(routePage, /class="route-section-title" id="route-practical-title"/);
+  assert.match(profile, /class="route-section-title" id="route-profile-title"/);
+  for (const source of [routePage, map, profile]) {
+    assert.match(source, /class="route-stat__label"/);
+    assert.match(source, /class="route-stat__value"/);
+  }
+});
+
 test("route practical schema is optional and validates supported planning enums", async () => {
   const routeYaml = parse(await readFile(new URL("../content/routes/manastir-sergija-rumija/route.yaml", import.meta.url), "utf8"));
   assert.equal(validateRoute(routeYaml), true, JSON.stringify(validateRoute.errors));

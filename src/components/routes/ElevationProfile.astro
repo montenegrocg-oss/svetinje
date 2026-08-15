@@ -17,14 +17,14 @@ const startElevationText = (startElevation ?? route.metrics.min_elevation_m)?.to
 ---
 
 <section class="route-profile" aria-labelledby="route-profile-title">
-  <header><h2 id="route-profile-title">Висински профил</h2><p>Промјена надморске висине дуж цијеле трасе.</p></header>
+  <header class="route-section-header"><p class="route-section-eyebrow">Висински профил</p><h2 class="route-section-title" id="route-profile-title">Профил висине</h2><p>Промјена надморске висине дуж цијеле трасе.</p></header>
   <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Профил висине од ${route.metrics.min_elevation_m} до ${route.metrics.max_elevation_m} метара`}>
     <polygon points={areaPoints} />
     <polyline points={points} />
   </svg>
   <dl>
-    <div><dt>{startElevation === undefined ? "Најнижа тачка" : "Почетна висина"}</dt><dd>{startElevationText} m</dd></div>
-    <div><dt>Највиша тачка</dt><dd>{route.metrics.max_elevation_m} m</dd></div>
-    <div><dt>Укупни успон</dt><dd>+{route.metrics.ascent_m} m</dd></div>
+    <div><dt class="route-stat__label">{startElevation === undefined ? "Најнижа тачка" : "Почетна висина"}</dt><dd class="route-stat__value">{startElevationText} m</dd></div>
+    <div><dt class="route-stat__label">Највиша тачка</dt><dd class="route-stat__value">{route.metrics.max_elevation_m} m</dd></div>
+    <div><dt class="route-stat__label">Укупни успон</dt><dd class="route-stat__value">+{route.metrics.ascent_m} m</dd></div>
   </dl>
 </section>

@@ -20,9 +20,9 @@ const mapData = JSON.stringify({ trackUrl: route.trackUrl, start: { latitude: ro
     <script is:inline type="application/json" data-route-map-data set:html={mapData}></script>
   </div>
   <dl class="route-map__stats" aria-label="Висински подаци руте">
-    <div><dt>Највиша тачка</dt><dd>{formatElevation(route.metrics.max_elevation_m)}</dd></div>
-    <div><dt>{route.profile[0]?.elevationM === undefined ? "Најнижа тачка" : "Почетна тачка"}</dt><dd>{formatElevation(startElevation)}</dd></div>
-    <div><dt>Успон</dt><dd>{formatElevation(route.metrics.ascent_m)}</dd></div>
+    <div><dt class="route-stat__label">Највиша тачка</dt><dd class="route-stat__value">{formatElevation(route.metrics.max_elevation_m)}</dd></div>
+    <div><dt class="route-stat__label">{route.profile[0]?.elevationM === undefined ? "Најнижа тачка" : "Почетна тачка"}</dt><dd class="route-stat__value">{formatElevation(startElevation)}</dd></div>
+    <div><dt class="route-stat__label">Успон</dt><dd class="route-stat__value">{formatElevation(route.metrics.ascent_m)}</dd></div>
   </dl>
 </section>
 

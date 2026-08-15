@@ -4478,6 +4478,12 @@
 
 @layer route-platform {
   .route-detail-page {
+    --route-font-display: clamp(2rem, 1.5rem + 1.25vw, 2.625rem);
+    --route-font-h2: clamp(1.5rem, 1.3rem + 0.55vw, 1.75rem);
+    --route-font-h3: clamp(1.125rem, 1.02rem + 0.3vw, 1.3rem);
+    --route-font-body: clamp(0.95rem, 0.92rem + 0.1vw, 1rem);
+    --route-font-label: 0.75rem;
+    --route-font-stat: clamp(1.05rem, 1rem + 0.2vw, 1.125rem);
     padding-bottom: clamp(2.5rem, 5vw, 5rem);
     background:
       linear-gradient(rgba(189, 141, 53, 0.035) 1px, transparent 1px),
@@ -4574,16 +4580,16 @@
     max-width: 18ch;
     margin-top: 1rem;
     color: #26231f;
-    font-size: clamp(2.2rem, 3.5vw, 4.35rem);
-    line-height: 1.04;
+    font-size: var(--route-font-display);
+    line-height: 1.07;
   }
 
   .route-overview__lead {
     max-width: 58ch;
     margin-top: 1.2rem;
     color: var(--ink-reading);
-    font-size: 1.02rem;
-    line-height: 1.7;
+    font-size: var(--route-font-body);
+    line-height: 1.65;
   }
 
   .route-overview__metrics {
@@ -4594,25 +4600,27 @@
   }
 
   .route-overview__metrics div {
+    display: grid;
+    min-height: 5.75rem;
     min-width: 0;
+    align-content: center;
     padding: 0.8rem 0.75rem;
     border-block: 1px solid rgba(189, 141, 53, 0.24);
   }
 
-  .route-overview__metrics dt,
-  .route-map__stats dt {
+  .route-stat__label {
     color: var(--ink-soft);
-    font-size: 0.68rem;
+    font-size: var(--route-font-label);
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }
 
-  .route-overview__metrics dd {
+  .route-stat__value {
     margin-top: 0.25rem;
     color: #2e2a24;
-    font-family: var(--font-display);
-    font-size: 1.12rem;
-    font-weight: 650;
+    font-size: var(--route-font-stat);
+    font-weight: 700;
+    line-height: 1.25;
     text-wrap: balance;
   }
 
@@ -4648,14 +4656,47 @@
     background: #fcfaf5;
   }
 
-  .route-about .section-eyebrow {
-    color: #8b641e;
+  .route-section-header {
+    display: grid;
+    gap: 0.4rem;
   }
 
-  .route-about > p:not(.section-eyebrow) {
-    margin-top: 0.75rem;
+  .route-section-eyebrow {
+    margin: 0;
+    color: #9a6c1c;
+    font-family: var(--font-body);
+    font-size: var(--route-font-label);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .route-section-title {
+    margin: 0;
+    color: #292621;
+    font-family: var(--font-display);
+    font-size: var(--route-font-h2);
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.15;
+    text-transform: none;
+  }
+
+  .route-card-title {
+    margin-top: 0.4rem;
+    color: #292621;
+    font-family: var(--font-display);
+    font-size: var(--route-font-h3);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .route-about > p:not(.route-section-eyebrow) {
+    margin-top: 0.7rem;
     color: var(--ink-reading);
-    line-height: 1.7;
+    font-size: var(--route-font-body);
+    line-height: 1.65;
   }
 
   .route-overview > .route-map-section {
@@ -4738,6 +4779,9 @@
   }
 
   .route-map__stats div {
+    display: grid;
+    min-height: 5.1rem;
+    align-content: center;
     padding: 1.15rem 1rem;
     text-align: center;
   }
@@ -4747,10 +4791,7 @@
   }
 
   .route-map__stats dd {
-    margin-top: 0.25rem;
     color: #2f2b25;
-    font-family: var(--font-display);
-    font-size: 1.45rem;
   }
 
   .route-guide {
@@ -4769,22 +4810,10 @@
     border-right: 1px solid rgba(189, 141, 53, 0.2);
   }
 
-  .route-details-card h2,
-  .route-profile h2,
-  .route-practical h2,
-  .route-highlights h2,
-  .route-places h2 {
-    font-family: var(--font-body);
-    font-size: 0.82rem;
-    font-weight: 800;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-  }
-
   .route-details-card dl {
     display: grid;
-    gap: 1.35rem;
-    margin-top: 1.5rem;
+    gap: 1.25rem;
+    margin-top: 1.15rem;
   }
 
   .route-details-card dl div {
@@ -4810,7 +4839,7 @@
   .route-details-card dt {
     grid-area: term;
     color: #2b2925;
-    font-size: 0.78rem;
+    font-size: 0.86rem;
     font-weight: 800;
   }
 
@@ -4818,8 +4847,8 @@
     grid-area: value;
     margin-top: 0.15rem;
     color: var(--ink-soft);
-    font-size: 0.82rem;
-    line-height: 1.5;
+    font-size: var(--route-font-body);
+    line-height: 1.55;
   }
 
   .route-guide__right {
@@ -4847,7 +4876,7 @@
   .route-profile > header p {
     margin-top: 0.4rem;
     color: var(--ink-soft);
-    font-size: 0.82rem;
+    font-size: var(--route-font-body);
   }
 
   .route-profile svg {
@@ -4881,13 +4910,10 @@
 
   .route-profile dt {
     color: var(--ink-soft);
-    font-size: 0.72rem;
   }
 
   .route-profile dd {
-    margin-top: 0.2rem;
     color: #2f2b25;
-    font-weight: 800;
   }
 
   .route-practical {
@@ -4898,7 +4924,7 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0;
-    margin-top: 1.2rem;
+    margin-top: 1rem;
   }
 
   .route-practical dl div {
@@ -4915,7 +4941,7 @@
 
   .route-practical dt {
     color: var(--ink-soft);
-    font-size: 0.68rem;
+    font-size: var(--route-font-label);
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }
@@ -4923,7 +4949,7 @@
   .route-practical dd {
     margin-top: 0.22rem;
     color: #2e2a24;
-    font-size: 0.84rem;
+    font-size: var(--route-font-body);
     font-weight: 700;
     line-height: 1.45;
   }
@@ -4956,7 +4982,8 @@
     max-width: 78ch;
     margin-top: 0.75rem;
     color: var(--ink-reading);
-    line-height: 1.75;
+    font-size: var(--route-font-body);
+    line-height: 1.65;
   }
 
   .route-highlights {
@@ -4995,7 +5022,7 @@
 
   .route-highlights h3 {
     font-family: var(--font-body);
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     font-weight: 800;
   }
 
@@ -5007,6 +5034,28 @@
 
   .route-places > header {
     padding: 1.3rem 1.5rem;
+  }
+
+  .route-places .editorial-place-card .eyebrow {
+    font-size: var(--route-font-label);
+  }
+
+  .route-places .editorial-place-card h2 {
+    font-family: var(--font-display);
+    font-size: var(--route-font-h3);
+    font-weight: 600;
+    line-height: 1.2;
+    text-transform: none;
+  }
+
+  .route-places .editorial-place-card__summary {
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+
+  .route-places .editorial-place-card__link {
+    font-size: 0.84rem;
+    font-weight: 750;
   }
 
   .route-places > div {
@@ -5027,7 +5076,7 @@
 
   .route-cta h2 {
     color: #38322a;
-    font-size: clamp(1rem, 1.5vw, 1.25rem);
+    font-size: clamp(1.125rem, 1rem + 0.4vw, 1.25rem);
   }
 
   .route-cta a {
@@ -5103,12 +5152,8 @@
       padding: 1.35rem 1.15rem;
     }
 
-    .route-overview h1 {
-      font-size: clamp(2rem, 10vw, 3rem);
-    }
-
     .route-overview__lead {
-      font-size: 0.94rem;
+      font-size: var(--route-font-body);
     }
 
     .route-overview__metrics {
@@ -5130,11 +5175,12 @@
     }
 
     .route-map__stats div {
+      min-height: 4.5rem;
       padding: 0.85rem 0.35rem;
     }
 
     .route-map__stats dt {
-      font-size: 0.58rem;
+      font-size: 0.68rem;
     }
 
     .route-map__stats dd {

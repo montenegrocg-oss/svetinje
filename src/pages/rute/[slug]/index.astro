@@ -75,27 +75,33 @@ const metricRows = [
         <h1>{route.name}</h1>
         <p class="route-overview__lead">{route.summary}</p>
         <dl class="route-overview__metrics">
-          {metricRows.map((row) => <div><dt>{row.label}</dt><dd>{row.value}</dd></div>)}
+          {metricRows.map((row) => <div><dt class="route-stat__label">{row.label}</dt><dd class="route-stat__value">{row.value}</dd></div>)}
         </dl>
         {isOneWay && <div class="route-direction"><strong>Једносмјерна рута</strong>{durationNote && <p>{durationNote}</p>}</div>}
       </header>
       <RouteMap route={route} />
       <section class="route-about" aria-labelledby="route-about-title">
-        <p class="section-eyebrow">О рути</p>
-        <h2 class="visually-hidden" id="route-about-title">О рути</h2>
+        <p class="route-section-eyebrow">О рути</p>
+        <h2 class="route-card-title" id="route-about-title">О рути</h2>
         {aboutParagraphs.map((paragraph) => <p>{paragraph}</p>)}
       </section>
     </article>
 
     <div class="shell route-guide">
       <section class="route-details-card" aria-labelledby="route-details-title">
-        <h2 id="route-details-title">Детаљи руте</h2>
+        <header class="route-section-header">
+          <p class="route-section-eyebrow">Детаљи</p>
+          <h2 class="route-section-title" id="route-details-title">Детаљи руте</h2>
+        </header>
         <dl>{routeDetails.map((row, index) => <div><span class="route-row-icon" aria-hidden="true">{index + 1}</span><dt>{row.label}</dt><dd>{row.value}</dd></div>)}</dl>
       </section>
       <div class="route-guide__right">
         <ElevationProfile route={route} />
         <section class="route-practical" aria-labelledby="route-practical-title">
-          <h2 id="route-practical-title">Практичне информације</h2>
+          <header class="route-section-header">
+            <p class="route-section-eyebrow">Планирање</p>
+            <h2 class="route-section-title" id="route-practical-title">Практичне информације</h2>
+          </header>
           <dl>
             {practicalRows.map((row) => <div><dt>{row.label}</dt><dd><span>{row.value}</span>{row.note && <small>{row.note}</small>}</dd></div>)}
             {practical?.last_verified_at && <div><dt>Последња провјера</dt><dd><time datetime={practical.last_verified_at}>{practical.last_verified_at}</time></dd></div>}
@@ -107,12 +113,15 @@ const metricRows = [
     {remainingNarrativeSections.map((section) => <section class="shell route-narrative"><h2>{section.title}</h2>{section.paragraphs.map((paragraph) => <p>{paragraph.text}</p>)}</section>)}
 
     {route.highlights.length > 0 && <section class="shell route-highlights" aria-labelledby="route-highlights-title">
-      <h2 id="route-highlights-title">Успут вриједи видјети</h2>
+      <header class="route-section-header">
+        <p class="route-section-eyebrow">Успут</p>
+        <h2 class="route-section-title" id="route-highlights-title">Успут вриједи видјети</h2>
+      </header>
       <ol>{route.highlights.map((highlight, index) => <li><span aria-hidden="true">{index + 1}</span><div><h3>{highlight.title}</h3><p>{highlight.description}</p></div>{highlight.distance_from_start_km !== undefined && <small>~ {highlight.distance_from_start_km.toLocaleString("sr-ME", { maximumFractionDigits: 1 })} km од полазишта</small>}</li>)}</ol>
     </section>}
 
     <section class="shell route-places" aria-labelledby="route-places-title">
-      <header><p class="section-eyebrow">Повезана мјеста</p><h2 id="route-places-title">Светиње на рути</h2></header>
+      <header class="route-section-header"><p class="route-section-eyebrow">Повезана мјеста</p><h2 class="route-section-title" id="route-places-title">Светиње на рути</h2></header>
       <div>{[route.startPlace, ...route.waypointPlaces, route.endPlace].map((place) => <PlaceCard place={place} />)}</div>
     </section>
 
