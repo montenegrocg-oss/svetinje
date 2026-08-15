@@ -4613,7 +4613,7 @@
     font-family: var(--font-display);
     font-size: 1.12rem;
     font-weight: 650;
-    white-space: nowrap;
+    text-wrap: balance;
   }
 
   .route-direction {

@@ -13,8 +13,7 @@ const formatElevation = (value: number | undefined) => value === undefined
 const mapData = JSON.stringify({ trackUrl: route.trackUrl, start: { latitude: route.startPlace.latitude, longitude: route.startPlace.longitude, asset: startAsset }, end: { latitude: route.endPlace.latitude, longitude: route.endPlace.longitude, asset: endAsset } }).replaceAll("<", "\\u003c");
 ---
 
-<section class="route-map-section" aria-labelledby="route-map-title">
-  <h2 class="visually-hidden" id="route-map-title">Интерактивна карта руте</h2>
+<section class="route-map-section" aria-label="Интерактивна карта руте">
   <div class="route-map" data-route-map data-has-key={String(hasKey)}>
     <div class="route-map__fallback" data-route-map-fallback><span aria-hidden="true"></span><p>{hasKey ? "Учитавање карте…" : "Карта је тренутно недоступна."}</p></div>
     <div class="route-map__canvas" data-route-map-canvas aria-label="Интерактивна карта пјешачке руте"></div>
