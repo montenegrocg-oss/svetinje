@@ -4,6 +4,7 @@ import { categoryForPlaceType } from "../../src/lib/place-filters.ts";
 import { paginatePlaces, PLACES_PER_PAGE } from "../../src/lib/explorer-pagination.ts";
 import { HOMEPAGE_PREVIEW_LIMIT } from "../../src/lib/explorer-preview.ts";
 import { PLACE_AREAS } from "../../src/lib/place-areas.ts";
+import { loadVisibleRoutes } from "../../src/lib/content/routes.ts";
 
 export const STATIC_HTML_ROUTES = Object.freeze([
   "index.html",
@@ -15,6 +16,7 @@ export const STATIC_HTML_ROUTES = Object.freeze([
   "o-projektu/index.html",
   "izvori/index.html",
   "novosti/index.html",
+  "rute/index.html",
 ]);
 
 export const CATEGORY_HTML_ROUTES = Object.freeze({
@@ -32,7 +34,7 @@ export const CATEGORY_HREFS = Object.freeze({
 const hasCoordinates = (place) =>
   Number.isFinite(place.latitude) && Number.isFinite(place.longitude);
 
-export function createOutputModel(places, news = []) {
+export function createOutputModel(places, news = [], routes = []) {
   const normalizedPlaces = [...places];
   const categoryMembership = {
     monasteries: [],
@@ -62,6 +64,7 @@ export function createOutputModel(places, news = []) {
   const areaMembership = Object.fromEntries(
     PLACE_AREAS.map((area) => [area.id, normalizedPlaces.filter((place) => place.browseAreaId === area.id)]),
   );
+  const routeDetailRoutes = routes.map((route) => ({ route, path: `rute/${route.slug}/index.html` }));
 
   return {
     places: normalizedPlaces,
@@ -69,12 +72,15 @@ export function createOutputModel(places, news = []) {
     detailRoutes,
     news: [...news],
     newsDetailRoutes,
+    routes: [...routes],
+    routeDetailRoutes,
     allExpectedRoutes: [
       ...STATIC_HTML_ROUTES,
       ...detailRoutes.map(({ route }) => route),
       ...newsDetailRoutes.map(({ route }) => route),
+      ...routeDetailRoutes.map(({ path }) => path),
     ],
-    expectedPageCount: STATIC_HTML_ROUTES.length + normalizedPlaces.length + newsDetailRoutes.length,
+    expectedPageCount: STATIC_HTML_ROUTES.length + normalizedPlaces.length + newsDetailRoutes.length + routeDetailRoutes.length,
     categoryMembership,
     areaMembership,
     placesById: new Map(normalizedPlaces.map((place) => [place.id, place])),
@@ -94,5 +100,6 @@ export function createOutputModel(places, news = []) {
 export async function createOutputExpectations(root, { editorialPreview }) {
   const places = await loadVisiblePlaces(root, { editorialPreview });
   const news = await loadVisibleNews(root, { editorialPreview, visiblePlaces: places });
-  return createOutputModel(places, news);
+  const routes = await loadVisibleRoutes(root, { editorialPreview });
+  return createOutputModel(places, news, routes);
 }

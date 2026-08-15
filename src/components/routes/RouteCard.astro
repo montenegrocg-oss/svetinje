@@ -1,0 +1,27 @@
+---
+import InterfaceIcon from "../InterfaceIcon.astro";
+import type { VisibleRoute } from "../../lib/content/routes";
+
+interface Props { route: VisibleRoute; compact?: boolean }
+const { route, compact = false } = Astro.props;
+const duration = route.metrics.estimated_duration_minutes ?? route.metrics.recorded_duration_minutes;
+const formatDuration = (minutes?: number) => minutes === undefined ? undefined : `${Math.floor(minutes / 60)} ч ${minutes % 60 ? `${minutes % 60} мин` : ""}`.trim();
+const difficulty = { easy: "Лака", moderate: "Средње захтјевна", demanding: "Захтјевна" }[route.difficulty];
+---
+
+<article class:list={["route-card", compact && "route-card--compact"]} data-route-id={route.id}>
+  <div class="route-card__visual" aria-hidden="true"><InterfaceIcon name="route" size={28} /></div>
+  <div class="route-card__body">
+    <p class="route-card__type">Пјешачка рута {route.preview && <span>Радни приказ</span>}</p>
+    <h3><a href={`/rute/${route.slug}/`}>{route.shortName}</a></h3>
+    {!compact && <p>{route.summary}</p>}
+    <dl class="route-card__metrics">
+      <div><dt>Дужина</dt><dd>{(route.metrics.distance_m! / 1000).toLocaleString("sr-ME", { maximumFractionDigits: 1 })} km</dd></div>
+      {duration !== undefined && <div><dt>Вријеме</dt><dd>{formatDuration(duration)}</dd></div>}
+      {route.metrics.ascent_m !== undefined && <div><dt>Успон</dt><dd>+{route.metrics.ascent_m} m</dd></div>}
+      <div><dt>Тежина</dt><dd>{difficulty}</dd></div>
+    </dl>
+    <p class="route-card__water">Вода: {route.water.status === "unknown" ? "Није провјерено" : route.water.status === "none" ? "Нема потврђених извора" : "Провјерите податке о води"}</p>
+    <a class="route-card__action" href={`/rute/${route.slug}/`}>Погледај руту <span aria-hidden="true">→</span></a>
+  </div>
+</article>

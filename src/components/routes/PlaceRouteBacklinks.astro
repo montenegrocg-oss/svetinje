@@ -1,0 +1,10 @@
+---
+import type { VisibleRoute } from "../../lib/content/routes";
+interface Props { placeId: string; routes: VisibleRoute[] }
+const { placeId, routes } = Astro.props;
+const from = routes.filter((route) => route.startPlace.id === placeId);
+const to = routes.filter((route) => route.endPlace.id === placeId);
+---
+
+{from.length > 0 && <section class="place-route-links" aria-labelledby="routes-from-title"><h2 id="routes-from-title">Руте од ове светиње</h2>{from.map((route) => <a href={`/rute/${route.slug}/`}>{route.shortName}<span aria-hidden="true">→</span></a>)}</section>}
+{to.length > 0 && <section class="place-route-links" aria-labelledby="routes-to-title"><h2 id="routes-to-title">Руте до ове светиње</h2>{to.map((route) => <a href={`/rute/${route.slug}/`}>{route.shortName}<span aria-hidden="true">→</span></a>)}</section>}

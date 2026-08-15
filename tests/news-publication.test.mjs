@@ -46,6 +46,7 @@ test("preview news is suppressed when its related place is not visible", async (
   t.after(() => rm(root, { recursive: true, force: true }));
   await cp(path.join(PROJECT_ROOT, "content"), path.join(root, "content"), { recursive: true });
   await cp(path.join(PROJECT_ROOT, "validation"), path.join(root, "validation"), { recursive: true });
+  await writeFile(path.join(root, "validation", "editorial-preview-routes.json"), '{\n  "route_ids": []\n}\n', "utf8");
   const file = path.join(root, "validation", "editorial-preview.json");
   const allowlist = JSON.parse(await readFile(file, "utf8"));
   allowlist.place_ids = allowlist.place_ids.filter((id) => id !== "manastir-savina");

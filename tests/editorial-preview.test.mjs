@@ -379,7 +379,8 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.match(mapCanvas, /aria-label.*отвори страницу/);
   assert.match(mapCanvas, /document\.createElement\("a"\)/);
   assert.match(homepage, /loadVisiblePlaces/);
-  assert.match(homepage, /<MapExplorer places=\{places\} \/>/);
+  assert.match(homepage, /loadVisibleRoutes/);
+  assert.match(homepage, /<MapExplorer places=\{places\} routes=\{routes\} \/>/);
   assert.doesNotMatch(explorer, /loadVisiblePlaces/);
   assert.match(card, /Радни приказ/);
   assert.match(card, /place\.previewImageSrc/);

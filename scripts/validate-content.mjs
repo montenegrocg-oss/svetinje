@@ -10,6 +10,9 @@ const summary = [
   `${counts.practical} practical record(s)`,
   `${counts.media} media record(s)`,
   `${counts.news} news record(s)`,
+  `${counts.routes} route record(s)`,
+  `${counts.routeNarratives} route narrative(s)`,
+  `${counts.routeTracks} route track(s)`,
 ].join(", ");
 if (errors.length > 0) {
   console.error(`Content validation failed with ${errors.length} error(s):`);

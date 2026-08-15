@@ -1,0 +1,28 @@
+---
+import type { VisibleRoute } from "../../lib/content/routes";
+interface Props { route: VisibleRoute }
+const { route } = Astro.props;
+const width = 900;
+const height = 240;
+const inset = 20;
+const profile = route.profile;
+const maxDistance = Math.max(...profile.map((point) => point.distanceM), 1);
+const minElevation = Math.min(...profile.map((point) => point.elevationM));
+const maxElevation = Math.max(...profile.map((point) => point.elevationM));
+const range = Math.max(maxElevation - minElevation, 1);
+const points = profile.map((point) => `${inset + point.distanceM / maxDistance * (width - inset * 2)},${height - inset - (point.elevationM - minElevation) / range * (height - inset * 2)}`).join(" ");
+const areaPoints = `${inset},${height - inset} ${points} ${width - inset},${height - inset}`;
+---
+
+<section class="route-profile" aria-labelledby="route-profile-title">
+  <header><p class="section-eyebrow">Траса</p><h2 id="route-profile-title">Профил висине</h2></header>
+  <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Профил висине од ${route.metrics.min_elevation_m} до ${route.metrics.max_elevation_m} метара`}>
+    <polygon points={areaPoints} />
+    <polyline points={points} />
+  </svg>
+  <dl>
+    <div><dt>Најнижа тачка</dt><dd>{route.metrics.min_elevation_m} m</dd></div>
+    <div><dt>Највиша тачка</dt><dd>{route.metrics.max_elevation_m} m</dd></div>
+    <div><dt>Укупни успон</dt><dd>+{route.metrics.ascent_m} m</dd></div>
+  </dl>
+</section>

@@ -19,6 +19,7 @@ async function project(t) {
   t.after(() => rm(root, { recursive: true, force: true }));
   await cp(path.join(PROJECT_ROOT, "schemas"), path.join(root, "schemas"), { recursive: true });
   await cp(path.join(PROJECT_ROOT, "validation"), path.join(root, "validation"), { recursive: true });
+  await writeFile(path.join(root, "validation", "editorial-preview-routes.json"), '{\n  "route_ids": []\n}\n', "utf8");
   await mkdir(path.join(root, "content"), { recursive: true });
   await writeFile(path.join(root, "content", "README.md"), "# Test content\n", "utf8");
   return root;
@@ -118,6 +119,9 @@ test("the repository summary reports actual validated record counts", async () =
     practical: await countFiles(path.join(contentRoot, "practical"), (file) => file.endsWith(".yaml")),
     media: await countFiles(path.join(contentRoot, "media"), (file) => file.endsWith(".yaml")),
     news: await countFiles(path.join(contentRoot, "news"), (file) => file.endsWith(".md")),
+    routes: await countFiles(path.join(contentRoot, "routes"), (file) => path.basename(file) === "route.yaml"),
+    routeNarratives: await countFiles(path.join(contentRoot, "routes"), (file) => file.endsWith(".md") && path.basename(path.dirname(file)) === "narratives"),
+    routeTracks: await countFiles(path.join(contentRoot, "routes"), (file) => path.basename(file) === "track.geojson"),
   };
   assert.deepEqual(result.errors, []);
   assert.deepEqual(result.counts, actualCounts);

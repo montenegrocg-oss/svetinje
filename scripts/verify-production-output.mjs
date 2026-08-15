@@ -436,6 +436,31 @@ const generalCatalogueImageIds = new Set(selectFeaturedCataloguePlaces(model.pla
 verifyCards(catalogue, model.places, model.places, "general catalogue", failures, generalCatalogueImageIds);
 verifyCataloguePagination(catalogue, model.places, "general catalogue", failures);
 
+const routeCatalogue = pagesByRoute.get("rute/index.html");
+for (const { route, path: routePath } of model.routeDetailRoutes) {
+  const detail = pagesByRoute.get(routePath);
+  if (!routeCatalogue?.html.includes(route.shortName) || !routeCatalogue.html.includes(`/rute/${route.slug}/`)) {
+    failures.push(`route catalogue is missing ${route.id}`);
+  }
+  if (!detail?.html.includes(route.name) || !detail.html.includes(route.startPlace.name) || !detail.html.includes(route.endPlace.name)) {
+    failures.push(`route detail ${route.id} does not derive linked place content`);
+  }
+  if (!detail?.html.includes("Профил висине") || !detail.html.includes("Преузми GPX")) {
+    failures.push(`route detail ${route.id} is missing profile or GPX download`);
+  }
+  if (!homepageHtml.includes(route.shortName) || !homepageHtml.includes(`/rute/${route.slug}/`)) {
+    failures.push(`homepage featured routes are missing ${route.id}`);
+  }
+  for (const extension of ["track.geojson", "track.gpx"]) {
+    try { await readFile(path.join(distRoot, "rute", route.slug, extension), "utf8"); }
+    catch { failures.push(`visible route ${route.id} is missing ${extension}`); }
+  }
+  const startDetail = pagesByRoute.get(`svetinje/${route.startPlace.slug}/index.html`);
+  const endDetail = pagesByRoute.get(`svetinje/${route.endPlace.slug}/index.html`);
+  if (!startDetail?.html.includes("Руте од ове светиње") || !startDetail.html.includes(`/rute/${route.slug}/`)) failures.push(`start place backlink is missing for ${route.id}`);
+  if (!endDetail?.html.includes("Руте до ове светиње") || !endDetail.html.includes(`/rute/${route.slug}/`)) failures.push(`end place backlink is missing for ${route.id}`);
+}
+
 for (const [category, route] of Object.entries(CATEGORY_HTML_ROUTES)) {
   const page = pagesByRoute.get(route);
   const members = model.categoryMembership[category];
@@ -473,6 +498,21 @@ for (const page of pages) {
 }
 
 if (!editorialPreview) {
+  const routeRegistry = JSON.parse(await readFile(path.join(root, "validation", "editorial-preview-routes.json"), "utf8"));
+  for (const routeId of routeRegistry.route_ids ?? []) {
+    const narrative = await readFile(path.join(root, "content", "routes", routeId, "narratives", "sr.md"), "utf8");
+    const routeSlug = narrative.match(/^slug:\s*(.+)$/m)?.[1]?.trim();
+    const routeName = narrative.match(/^preferred_name:\s*(.+)$/m)?.[1]?.trim();
+    for (const value of [routeId, routeSlug, routeName].filter(Boolean)) {
+      if (pages.some((page) => page.html.includes(value))) failures.push(`production contains excluded research route value ${value}`);
+    }
+    if (routeSlug) {
+      for (const extension of ["index.html", "track.geojson", "track.gpx"]) {
+        try { await readFile(path.join(distRoot, "rute", routeSlug, extension), "utf8"); failures.push(`production generated excluded research route asset ${routeSlug}/${extension}`); }
+        catch { /* Expected. */ }
+      }
+    }
+  }
   const excludedContent = await loadExcludedContentMarkers(root);
   for (const marker of excludedContent) {
     if (marker.slug) {
@@ -500,8 +540,8 @@ if (failures.length > 0) {
   console.error(failures.join("\n"));
   process.exitCode = 1;
 } else if (editorialPreview) {
-  console.log(`Editorial preview output check passed: ${files.length} HTML page(s), ${model.places.length} allowlisted place(s), ${model.news.length} allowlisted news item(s), noindex enforced.`);
+  console.log(`Editorial preview output check passed: ${files.length} HTML page(s), ${model.places.length} allowlisted place(s), ${model.news.length} allowlisted news item(s), ${model.routes.length} allowlisted route(s), noindex enforced.`);
 } else {
   const excluded = await loadExcludedContentMarkers(root);
-  console.log(`Production output check passed: ${files.length} HTML page(s), ${model.places.length} visible place(s), ${model.news.length} visible news item(s), ${excluded.length} excluded narrative(s), 0 leaks.`);
+  console.log(`Production output check passed: ${files.length} HTML page(s), ${model.places.length} visible place(s), ${model.news.length} visible news item(s), ${model.routes.length} visible route(s), ${excluded.length} excluded narrative(s), 0 leaks.`);
 }

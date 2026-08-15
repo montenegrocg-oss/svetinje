@@ -4,6 +4,7 @@ import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { parseDocument } from "yaml";
 import { isPlaceAreaId } from "../src/lib/place-areas.ts";
+import { ROUTE_ENDPOINT_THRESHOLD_M, validateRouteGeoJson } from "../src/lib/routes/gpx.ts";
 
 const SCHEMA_FILES = {
   place: "place.schema.json",
@@ -12,6 +13,8 @@ const SCHEMA_FILES = {
   practical: "practical.schema.json",
   media: "media.schema.json",
   news: "news.schema.json",
+  route: "route.schema.json",
+  routeNarrative: "route-narrative.schema.json",
   policy: "publication-policy.schema.json",
 };
 
@@ -39,6 +42,7 @@ const ALLOWED_SECTION_KEYS = new Set([
   "spiritual-life",
   "location",
 ]);
+const ALLOWED_ROUTE_SECTION_KEYS = new Set(["about-route", "route-course", "water-rest", "safety", "equipment", "notes"]);
 
 const ENTITY_PATHS = [
   { kind: "place", pattern: /^content\/places\/([^/]+)\/place\.yaml$/ },
@@ -47,6 +51,9 @@ const ENTITY_PATHS = [
   { kind: "practical", pattern: /^content\/practical\/([^/]+)\/([^/]+)\.yaml$/ },
   { kind: "media", pattern: /^content\/media\/([^/]+)\.yaml$/ },
   { kind: "news", pattern: /^content\/news\/([^/]+)\.md$/ },
+  { kind: "route", pattern: /^content\/routes\/([^/]+)\/route\.yaml$/ },
+  { kind: "routeNarrative", pattern: /^content\/routes\/([^/]+)\/narratives\/(sr|ru|en)\.md$/ },
+  { kind: "routeTrack", pattern: /^content\/routes\/([^/]+)\/track\.geojson$/ },
 ];
 
 const COUNT_KEY = {
@@ -56,6 +63,9 @@ const COUNT_KEY = {
   practical: "practical",
   media: "media",
   news: "news",
+  route: "routes",
+  routeNarrative: "routeNarratives",
+  routeTrack: "routeTracks",
 };
 
 const PUBLIC_STATUSES = new Set(["approved", "published"]);
@@ -174,6 +184,11 @@ function validatePath(record) {
   }
   if (kind === "media" && data.id !== match[1]) errors.push(issue(file, "/id", `media id must match filename ${match[1]}`));
   if (kind === "news" && data.id !== match[1]) errors.push(issue(file, "/id", `news id must match filename ${match[1]}`));
+  if (kind === "route" && data.id !== match[1]) errors.push(issue(file, "/id", `route id must match directory ${match[1]}`));
+  if (kind === "routeNarrative") {
+    if (data.route_id !== match[1]) errors.push(issue(file, "/route_id", `route_id must match directory ${match[1]}`));
+    if (data.locale !== match[2]) errors.push(issue(file, "/locale", `locale must match filename ${match[2]}.md`));
+  }
   return errors;
 }
 
@@ -203,7 +218,8 @@ function requiredRoles(record) {
     roles.push(...PLACE_ROLES);
     if (data.location?.coordinates) roles.push("geographic-safety");
   }
-  if (record.kind === "narrative") roles.push(...PLACE_ROLES, LOCALE_ROLE[data.locale]);
+  if (["narrative", "routeNarrative"].includes(record.kind)) roles.push(...PLACE_ROLES, LOCALE_ROLE[data.locale]);
+  if (record.kind === "route") roles.push("factual", "geographic-safety");
   if (record.kind === "source") roles.push("factual");
   if (record.kind === "practical") {
     roles.push("factual");
@@ -301,7 +317,8 @@ function validateMarkdown(record) {
       if (PUBLIC_STATUSES.has(data.editorial_status)) errors.push(issue(file, "/body", "approved H2 headings require a stable {#section-key}"));
       continue;
     }
-    if (!ALLOWED_SECTION_KEYS.has(key)) errors.push(issue(file, "/body", `unsupported section key ${key}`));
+    const allowedKeys = record.kind === "routeNarrative" ? ALLOWED_ROUTE_SECTION_KEYS : ALLOWED_SECTION_KEYS;
+    if (!allowedKeys.has(key)) errors.push(issue(file, "/body", `unsupported section key ${key}`));
     if (headingKeys.includes(key)) errors.push(issue(file, "/body", `duplicate section key ${key}`));
     headingKeys.push(key);
   }
@@ -361,7 +378,7 @@ function validateUniqueness(records) {
   for (const record of records) {
     const { data, kind, file } = record;
     if (!data) continue;
-    if (["place", "source", "practical", "media", "news"].includes(kind) && data.id) {
+    if (["place", "source", "practical", "media", "news", "route"].includes(kind) && data.id) {
       const previous = identifiers.get(data.id);
       if (previous) errors.push(issue(file, "/id", `duplicate entity id ${data.id}; first declared in ${previous}`));
       else identifiers.set(data.id, file);
@@ -378,6 +395,18 @@ function validateUniqueness(records) {
         else slugs.set(slugKey, file);
       }
     }
+    if (kind === "routeNarrative") {
+      const key = `${data.route_id}:${data.locale}`;
+      const previous = narratives.get(key);
+      if (previous) errors.push(issue(file, "/locale", `duplicate route narrative ${key}; first declared in ${previous}`));
+      else narratives.set(key, file);
+      if (data.slug && !["archived", "rejected"].includes(data.editorial_status)) {
+        const slugKey = `route:${data.locale}:${data.slug}`;
+        const slugPrevious = slugs.get(slugKey);
+        if (slugPrevious) errors.push(issue(file, "/slug", `duplicate active route slug ${data.slug}; first declared in ${slugPrevious}`));
+        else slugs.set(slugKey, file);
+      }
+    }
     if (kind === "news" && data.slug && !["archived", "rejected"].includes(data.editorial_status)) {
       const previous = slugs.get(`news:${data.slug}`);
       if (previous) errors.push(issue(file, "/slug", `duplicate active news slug ${data.slug}; first declared in ${previous}`));
@@ -389,7 +418,7 @@ function validateUniqueness(records) {
 
 function validateReferences(records) {
   const errors = [];
-  const byKind = Object.fromEntries(["place", "source", "practical", "media", "news"].map((kind) => [kind, new Map()]));
+  const byKind = Object.fromEntries(["place", "source", "practical", "media", "news", "route"].map((kind) => [kind, new Map()]));
   for (const record of records) {
     if (byKind[record.kind] && record.data?.id) byKind[record.kind].set(record.data.id, record);
   }
@@ -402,6 +431,27 @@ function validateReferences(records) {
     if (!data) continue;
     if (["narrative", "practical"].includes(kind) && !placeIds.has(data.place_id)) {
       errors.push(issue(file, "/place_id", `unknown place id ${data.place_id}`));
+    }
+    if (kind === "routeNarrative" && !byKind.route.has(data.route_id)) {
+      errors.push(issue(file, "/route_id", `unknown route id ${data.route_id}`));
+    }
+    if (kind === "route") {
+      for (const [field, placeId] of [
+        ["start_place_id", data.relationships?.start_place_id],
+        ["end_place_id", data.relationships?.end_place_id],
+      ]) if (!placeIds.has(placeId)) errors.push(issue(file, `/relationships/${field}`, `unknown place id ${placeId}`));
+      for (const placeId of data.relationships?.waypoint_place_ids ?? []) {
+        if (!placeIds.has(placeId)) errors.push(issue(file, "/relationships/waypoint_place_ids", `unknown place id ${placeId}`));
+      }
+      const expectedObjectKey = `content/routes/${data.id}/track.geojson`;
+      if (data.track?.status === "ready" && data.track.object_key !== expectedObjectKey) {
+        errors.push(issue(file, "/track/object_key", `ready track object_key must be ${expectedObjectKey}`));
+      }
+      if (data.track?.endpoint_validation && (
+        data.track.endpoint_validation.start_distance_m > data.track.endpoint_validation.threshold_m
+        || data.track.endpoint_validation.end_distance_m > data.track.endpoint_validation.threshold_m
+        || data.track.endpoint_validation.threshold_m !== ROUTE_ENDPOINT_THRESHOLD_M
+      )) errors.push(issue(file, "/track/endpoint_validation", "route endpoints must be within the approved threshold"));
     }
     for (const sourceList of [...collectValues(data, "source_ids"), ...collectValues(data, "caption_source_ids")]) {
       for (const id of sourceList.values) if (!sourceIds.has(id)) errors.push(issue(file, sourceList.at, `unknown source id ${id}`));
@@ -459,7 +509,7 @@ function validatePolicyState(records, policy, policyFile) {
 
 export async function validateRepositoryWithSummary(root) {
   const errors = [];
-  const counts = { places: 0, narratives: 0, sources: 0, practical: 0, media: 0, news: 0 };
+  const counts = { places: 0, narratives: 0, sources: 0, practical: 0, media: 0, news: 0, routes: 0, routeNarratives: 0, routeTracks: 0 };
   let validators;
   try {
     validators = await buildValidators(root);
@@ -497,17 +547,25 @@ export async function validateRepositoryWithSummary(root) {
     }
     counts[COUNT_KEY[classification.kind]] += 1;
     const text = await readFile(absoluteFile, "utf8");
-    const parsed = ["narrative", "news"].includes(classification.kind) ? parseMarkdown(text, file) : parseYaml(text, file);
+    let parsed;
+    if (["narrative", "routeNarrative", "news"].includes(classification.kind)) parsed = parseMarkdown(text, file);
+    else if (classification.kind === "routeTrack") {
+      const trackErrors = sourceTextChecks(text, file);
+      let data;
+      try { data = JSON.parse(text); } catch { trackErrors.push(issue(file, "/", "track must be valid JSON")); }
+      if (data && !validateRouteGeoJson(data, classification.match[1])) trackErrors.push(issue(file, "/", "track must be a valid route GeoJSON LineString"));
+      parsed = { data, errors: trackErrors };
+    } else parsed = parseYaml(text, file);
     errors.push(...parsed.errors);
     const record = { file, kind: classification.kind, match: classification.match, data: parsed.data, body: parsed.body ?? "" };
     records.push(record);
     if (record.data) {
       const validator = validators[record.kind];
-      if (!validator(record.data)) {
+      if (validator && !validator(record.data)) {
         for (const error of validator.errors ?? []) errors.push(issue(file, formatAjvPath(error), error.message));
       }
       errors.push(...validatePath(record), ...validateDates(record));
-      if (record.kind === "narrative") errors.push(...validateMarkdown(record));
+      if (["narrative", "routeNarrative"].includes(record.kind)) errors.push(...validateMarkdown(record));
       if (record.kind === "news") errors.push(...validateNewsMarkdown(record));
     }
   }
@@ -517,6 +575,34 @@ export async function validateRepositoryWithSummary(root) {
     errors.push(...validatePolicyState(records, policy, policyFile));
   }
   errors.push(...validateUniqueness(records), ...validateReferences(records));
+
+  const routes = new Map(records.filter((record) => record.kind === "route" && record.data).map((record) => [record.data.id, record]));
+  const tracks = new Map(records.filter((record) => record.kind === "routeTrack" && record.data).map((record) => [record.match[1], record]));
+  for (const [id, route] of routes) {
+    if (route.data.track?.status !== "ready") continue;
+    const track = tracks.get(id);
+    if (!track) errors.push(issue(route.file, "/track", "ready route is missing track.geojson"));
+    else if (track.data.geometry.coordinates.length !== route.data.track.point_count) {
+      errors.push(issue(route.file, "/track/point_count", "point_count must match track.geojson"));
+    }
+  }
+
+  const routeRegistryFile = "validation/editorial-preview-routes.json";
+  try {
+    const routeRegistry = await loadJson(path.join(root, routeRegistryFile));
+    if (!routeRegistry || !Array.isArray(routeRegistry.route_ids) || Object.keys(routeRegistry).some((key) => key !== "route_ids")) {
+      errors.push(issue(routeRegistryFile, "/", "route registry must contain only route_ids array"));
+    } else {
+      const seen = new Set();
+      for (const id of routeRegistry.route_ids) {
+        if (seen.has(id)) errors.push(issue(routeRegistryFile, "/route_ids", "route_ids must not contain duplicates"));
+        seen.add(id);
+        if (!routes.has(id)) errors.push(issue(routeRegistryFile, "/route_ids", `unknown route id ${id}`));
+      }
+    }
+  } catch (error) {
+    errors.push(issue(routeRegistryFile, "/", `cannot read route registry: ${error.message}`));
+  }
   return {
     errors: errors.sort((a, b) => a.file.localeCompare(b.file) || a.field.localeCompare(b.field) || a.message.localeCompare(b.message)),
     counts,

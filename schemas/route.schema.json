@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://svetinje.me/schemas/route.schema.json",
+  "title": "Svetinje.me hiking route record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "editorial_status",
+    "route_type",
+    "direction",
+    "relationships",
+    "track",
+    "metrics",
+    "difficulty",
+    "water",
+    "surface",
+    "recommended_seasons",
+    "featured",
+    "approvals",
+    "audit"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "$ref": "common.schema.json#/$defs/entityId" },
+    "editorial_status": { "$ref": "common.schema.json#/$defs/editorialStatus" },
+    "route_type": { "enum": ["hiking"] },
+    "direction": { "enum": ["one-way", "out-and-back", "circular"] },
+    "relationships": { "$ref": "#/$defs/relationships" },
+    "track": { "$ref": "#/$defs/track" },
+    "metrics": { "$ref": "#/$defs/metrics" },
+    "difficulty": { "$ref": "#/$defs/difficulty" },
+    "water": { "$ref": "#/$defs/water" },
+    "surface": { "$ref": "#/$defs/surface" },
+    "recommended_seasons": { "$ref": "#/$defs/recommendedSeasons" },
+    "featured": { "$ref": "#/$defs/featured" },
+    "approvals": { "$ref": "common.schema.json#/$defs/approvals" },
+    "audit": { "$ref": "common.schema.json#/$defs/audit" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "track": { "type": "object", "properties": { "status": { "const": "ready" } }, "required": ["status"] } },
+        "required": ["track"]
+      },
+      "then": {
+        "properties": {
+          "track": { "type": "object", "required": ["object_key", "point_count", "endpoint_validation"] },
+          "metrics": { "type": "object", "required": ["distance_m"] }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "editorial_status": { "enum": ["approved", "published"] } },
+        "required": ["editorial_status"]
+      },
+      "then": {
+        "properties": { "approvals": { "type": "array", "minItems": 2 } }
+      }
+    }
+  ],
+  "$defs": {
+    "relationships": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_place_id", "end_place_id", "waypoint_place_ids"],
+      "properties": {
+        "start_place_id": { "$ref": "common.schema.json#/$defs/entityId" },
+        "end_place_id": { "$ref": "common.schema.json#/$defs/entityId" },
+        "waypoint_place_ids": { "$ref": "common.schema.json#/$defs/entityIdList" }
+      }
+    },
+    "endpointValidation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_distance_m", "end_distance_m", "threshold_m"],
+      "properties": {
+        "start_distance_m": { "type": "number", "minimum": 0 },
+        "end_distance_m": { "type": "number", "minimum": 0 },
+        "threshold_m": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "track": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["missing", "ready"] },
+        "object_key": {
+          "type": "string",
+          "pattern": "^content/routes/[a-z0-9]+(?:-[a-z0-9]+)*/track\\.geojson$"
+        },
+        "point_count": { "type": "integer", "minimum": 2, "maximum": 100000 },
+        "endpoint_validation": { "$ref": "#/$defs/endpointValidation" }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "distance_m": { "type": "number", "exclusiveMinimum": 0 },
+        "ascent_m": { "type": "number", "minimum": 0 },
+        "descent_m": { "type": "number", "minimum": 0 },
+        "min_elevation_m": { "type": "number" },
+        "max_elevation_m": { "type": "number" },
+        "recorded_duration_minutes": { "type": "integer", "minimum": 0 },
+        "estimated_duration_minutes": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "difficulty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value"],
+      "properties": { "value": { "enum": ["easy", "moderate", "demanding"] } }
+    },
+    "water": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["unknown", "none", "available", "requires-verification"] },
+        "note": { "$ref": "common.schema.json#/$defs/nonEmptyText" }
+      }
+    },
+    "surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["values"],
+      "properties": {
+        "values": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["paved", "gravel", "trail", "rock", "steps", "other"] }
+        }
+      }
+    },
+    "recommendedSeasons": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "enum": ["spring", "summer", "autumn", "winter"] }
+    },
+    "featured": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "order"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "order": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

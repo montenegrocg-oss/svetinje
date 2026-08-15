@@ -70,7 +70,7 @@ test("desktop and mobile navigation expose the required Serbian guide sections",
     ["/crkve/", "Цркве"],
     ["/sveta-mjesta/", "Света мјеста"],
     ["/mapa/", "Мапа"],
-    ["/#rute", "Руте"],
+    ["/rute/", "Руте"],
     ["/o-projektu/", "О пројекту"],
   ];
   let previousIndex = -1;
@@ -103,7 +103,8 @@ test("the homepage is composed from reusable map-explorer components", async () 
   const homepage = await source("src/pages/index.astro");
   assert.match(homepage, /import MapExplorer/);
   assert.match(homepage, /import PlaceAreas/);
-  assert.match(homepage, /<MapExplorer places=\{places\} \/>/);
+  assert.match(homepage, /loadVisibleRoutes/);
+  assert.match(homepage, /<MapExplorer places=\{places\} routes=\{routes\} \/>/);
   assert.match(homepage, /<PlaceAreas places=\{places\} \/>/);
   assert.doesNotMatch(homepage, /PopularRoutes/);
   assert.doesNotMatch(homepage, /HomepagePreviews/);
@@ -121,10 +122,10 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(explorer, /<ExplorerSidebar places=\{initialPlaces\} totalPlaces=\{places\.length\} \/>/);
   assert.match(explorer, /<RecommendedPlaces places=\{places\} \/>/);
   assert.match(explorer, /import PopularRoutes from "\.\/PopularRoutes\.astro"/);
-  assert.match(explorer, /<PopularRoutes \/>/);
+  assert.match(explorer, /<PopularRoutes routes=\{routes\} \/>/);
   assert.ok(
     explorer.indexOf("<ExplorerSidebar places={initialPlaces} totalPlaces={places.length} />") < explorer.indexOf("<RecommendedPlaces places={places} />")
-      && explorer.indexOf("<RecommendedPlaces places={places} />") < explorer.indexOf("<PopularRoutes />"),
+      && explorer.indexOf("<RecommendedPlaces places={places} />") < explorer.indexOf("<PopularRoutes routes={routes} />"),
     "homepage preview, recommendations, and routes must retain their editorial order",
   );
   assert.doesNotMatch(explorer, /ExplorerContinuation|ExplorerPagination|data-continuation|data-explorer-pagination/);

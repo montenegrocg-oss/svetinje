@@ -1,0 +1,44 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import PlaceCard from "../../../components/PlaceCard.astro";
+import ElevationProfile from "../../../components/routes/ElevationProfile.astro";
+import RouteMap from "../../../components/routes/RouteMap.astro";
+import { loadVisibleRoutes, type VisibleRoute } from "../../../lib/content/routes";
+
+export async function getStaticPaths() {
+  return (await loadVisibleRoutes()).map((route) => ({ params: { slug: route.slug }, props: { route } }));
+}
+const { route } = Astro.props as { route: VisibleRoute };
+const duration = route.metrics.estimated_duration_minutes ?? route.metrics.recorded_duration_minutes;
+const durationText = duration === undefined ? undefined : `${Math.floor(duration / 60)} ч ${duration % 60 ? `${duration % 60} мин` : ""}`.trim();
+const difficulty = { easy: "Лака", moderate: "Средње захтјевна", demanding: "Захтјевна" }[route.difficulty];
+const surfaces: Record<string,string> = { paved: "Асфалт", gravel: "Макадам", trail: "Стаза", rock: "Камен", steps: "Степенице", other: "Остало" };
+const seasons: Record<string,string> = { spring: "Прољеће", summer: "Љето", autumn: "Јесен", winter: "Зима" };
+---
+
+<BaseLayout title={route.name} description={route.summary} canonicalPath={`/rute/${route.slug}/`} noindex={route.preview}>
+  <header class="route-detail-hero"><div class="shell"><p class="section-eyebrow">Пјешачка рута</p><h1>{route.startPlace.name}<span aria-hidden="true">→</span>{route.endPlace.name}</h1><p>{route.summary}</p><dl>
+    <div><dt>Дужина</dt><dd>{(route.metrics.distance_m! / 1000).toLocaleString("sr-ME", { maximumFractionDigits: 1 })} km</dd></div>
+    {durationText && <div><dt>Вријеме</dt><dd>{durationText}</dd></div>}
+    <div><dt>Успон</dt><dd>+{route.metrics.ascent_m} m</dd></div>
+    <div><dt>Тежина</dt><dd>{difficulty}</dd></div>
+  </dl></div></header>
+  <div class="shell route-detail">
+    <RouteMap route={route} />
+    <ElevationProfile route={route} />
+    <section class="route-practical" aria-labelledby="route-practical-title"><h2 id="route-practical-title">Практичне информације</h2><dl>
+      <div><dt>Дужина</dt><dd>{(route.metrics.distance_m! / 1000).toLocaleString("sr-ME", { maximumFractionDigits: 1 })} km</dd></div>
+      {durationText && <div><dt>Вријеме</dt><dd>{durationText}</dd></div>}
+      {route.metrics.ascent_m !== undefined && <div><dt>Успон</dt><dd>+{route.metrics.ascent_m} m</dd></div>}
+      {route.metrics.descent_m !== undefined && <div><dt>Спуст</dt><dd>−{route.metrics.descent_m} m</dd></div>}
+      {route.metrics.min_elevation_m !== undefined && <div><dt>Најнижа тачка</dt><dd>{route.metrics.min_elevation_m} m</dd></div>}
+      {route.metrics.max_elevation_m !== undefined && <div><dt>Највиша тачка</dt><dd>{route.metrics.max_elevation_m} m</dd></div>}
+      <div><dt>Тежина</dt><dd>{difficulty}</dd></div>
+      <div><dt>Вода</dt><dd>{route.water.status === "unknown" ? "Није провјерено" : route.water.note}</dd></div>
+      {route.surface.length > 0 && <div><dt>Подлога</dt><dd>{route.surface.map((item) => surfaces[item] ?? item).join(", ")}</dd></div>}
+      {route.recommendedSeasons.length > 0 && <div><dt>Препоручени период</dt><dd>{route.recommendedSeasons.map((item) => seasons[item] ?? item).join(", ")}</dd></div>}
+    </dl><a class="route-download" href={route.gpxUrl} download>Преузми GPX</a></section>
+    {route.narrativeSections.map((section) => <section class="route-narrative"><h2>{section.title}</h2>{section.paragraphs.map((paragraph) => <p>{paragraph.text}</p>)}</section>)}
+    <section class="route-places" aria-labelledby="route-places-title"><header><p class="section-eyebrow">Повезана мјеста</p><h2 id="route-places-title">Светиње на рути</h2></header><div>{[route.startPlace, ...route.waypointPlaces, route.endPlace].map((place) => <PlaceCard place={place} />)}</div></section>
+  </div>
+</BaseLayout>

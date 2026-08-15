@@ -7,12 +7,14 @@ import PopularRoutes from "./PopularRoutes.astro";
 import RecommendedPlaces from "./RecommendedPlaces.astro";
 import { HOMEPAGE_PREVIEW_LIMIT } from "../lib/explorer-preview";
 import type { VisiblePlace } from "../lib/content/publication";
+import type { VisibleRoute } from "../lib/content/routes";
 
 interface Props {
   places: VisiblePlace[];
+  routes: VisibleRoute[];
 }
 
-const { places } = Astro.props;
+const { places, routes } = Astro.props;
 const initialPlaces = places.slice(0, HOMEPAGE_PREVIEW_LIMIT);
 const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
 ---
@@ -34,7 +36,7 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
     <ExplorerSidebar places={initialPlaces} totalPlaces={places.length} />
     <div class="map-explorer__secondary">
       <RecommendedPlaces places={places} />
-      <PopularRoutes />
+      <PopularRoutes routes={routes} />
     </div>
   </div>
 

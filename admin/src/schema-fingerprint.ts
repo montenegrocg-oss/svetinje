@@ -4,6 +4,11 @@ export interface CanonicalSchemas {
   place: Record<string, unknown>;
   narrative: Record<string, unknown>;
 }
+export interface CanonicalRouteSchemas {
+  common: Record<string, unknown>;
+  route: Record<string, unknown>;
+  routeNarrative: Record<string, unknown>;
+}
 
 function canonicalize(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonicalize);
@@ -21,6 +26,16 @@ export async function fingerprintCanonicalSchemas(schemas: CanonicalSchemas): Pr
     media: schemas.media,
     narrative: schemas.narrative,
     place: schemas.place,
+  }));
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(canonicalJson));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+export async function fingerprintRouteSchemas(schemas: CanonicalRouteSchemas): Promise<string> {
+  const canonicalJson = JSON.stringify(canonicalize({
+    common: schemas.common,
+    route: schemas.route,
+    routeNarrative: schemas.routeNarrative,
   }));
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(canonicalJson));
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");

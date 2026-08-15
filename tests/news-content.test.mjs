@@ -20,6 +20,7 @@ async function fixture(t) {
   t.after(() => rm(root, { recursive: true, force: true }));
   await cp(path.join(PROJECT_ROOT, "schemas"), path.join(root, "schemas"), { recursive: true });
   await cp(path.join(PROJECT_ROOT, "validation"), path.join(root, "validation"), { recursive: true });
+  await writeFile(path.join(root, "validation", "editorial-preview-routes.json"), '{\n  "route_ids": []\n}\n', "utf8");
   await mkdir(path.join(root, "content", "news"), { recursive: true });
   await writeFile(path.join(root, "content", "README.md"), "# Test content\n", "utf8");
   return root;

@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://svetinje.me/schemas/route-narrative.schema.json",
+  "title": "Svetinje.me localized route narrative front matter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "route_id",
+    "locale",
+    "editorial_status",
+    "translation_status",
+    "slug",
+    "preferred_name",
+    "summary",
+    "approvals",
+    "audit"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "route_id": { "$ref": "common.schema.json#/$defs/entityId" },
+    "locale": { "$ref": "common.schema.json#/$defs/locale" },
+    "editorial_status": { "$ref": "common.schema.json#/$defs/editorialStatus" },
+    "translation_status": { "$ref": "common.schema.json#/$defs/translationStatus" },
+    "slug": { "$ref": "common.schema.json#/$defs/slug" },
+    "preferred_name": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "short_name": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "summary": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "seo_title": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "seo_description": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+    "source_revision": { "$ref": "common.schema.json#/$defs/gitSha" },
+    "source_ids": { "$ref": "common.schema.json#/$defs/sourceIdList" },
+    "section_sources": { "$ref": "#/$defs/sectionSources" },
+    "approvals": { "$ref": "common.schema.json#/$defs/approvals" },
+    "audit": { "$ref": "common.schema.json#/$defs/audit" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "locale": { "const": "sr" } }, "required": ["locale"] },
+      "then": { "properties": { "translation_status": { "const": "source" } } }
+    },
+    {
+      "if": { "properties": { "locale": { "enum": ["ru", "en"] } }, "required": ["locale"] },
+      "then": { "required": ["source_revision"] }
+    },
+    {
+      "if": {
+        "properties": { "editorial_status": { "enum": ["approved", "published"] } },
+        "required": ["editorial_status"]
+      },
+      "then": {
+        "required": ["seo_title", "seo_description"],
+        "properties": { "approvals": { "type": "array", "minItems": 3 } }
+      }
+    }
+  ],
+  "$defs": {
+    "sectionKey": {
+      "enum": ["about-route", "route-course", "water-rest", "safety", "equipment", "notes"]
+    },
+    "sectionSources": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/sectionKey" },
+      "additionalProperties": {
+        "allOf": [
+          { "$ref": "common.schema.json#/$defs/sourceIdList" },
+          { "type": "array", "minItems": 1 }
+        ]
+      }
+    }
+  }
+}

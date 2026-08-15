@@ -5,6 +5,9 @@ import { deletePlacePhoto, MAX_PHOTO_COUNT, MAX_UPLOAD_BYTES, updatePlacePhoto, 
 import { createPlace, deletePlace, getEditablePlace, getPlace, listPlaces, updatePlace, updatePlacePreview } from "./service.ts";
 import type { AdminEnv } from "./types.ts";
 import { dashboardPage, editPlacePage, newPlacePage, placePage, placesPage } from "./ui.ts";
+import { createRoute, deleteRoute, getEditableRoute, listRoutes, removeRouteTrack, updateRoute, updateRoutePreview, uploadRouteGpx } from "./route-service.ts";
+import { editRoutePage, newRoutePage, routesPage } from "./ui.ts";
+import { MAX_GPX_BYTES } from "../../src/lib/routes/gpx.ts";
 
 const JSON_HEADERS = { "cache-control": "no-store" };
 
@@ -51,6 +54,15 @@ async function photoUpload(request: Request) {
   };
 }
 
+async function routeGpxUpload(request: Request) {
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("multipart/form-data")) throw new AdminError("invalid_form_data", 415, "GPX upload must use multipart/form-data");
+  const contentLength = Number(request.headers.get("content-length"));
+  if (Number.isFinite(contentLength) && contentLength > MAX_GPX_BYTES + 64_000) throw new AdminError("invalid_form_data", 413, "GPX upload is too large");
+  let form: FormData; try { form = await request.formData(); } catch { throw new AdminError("invalid_form_data", 400, "GPX upload body is invalid"); }
+  const file = form.get("gpx"); if (!(file instanceof File) || file.size < 1 || file.size > MAX_GPX_BYTES || !file.name.toLowerCase().endsWith(".gpx")) throw new AdminError("invalid_form_data", 400, "Изаберите GPX датотеку до 5 MB.");
+  return { expectedHeadSha: form.get("expectedHeadSha"), xml: await file.text() };
+}
+
 export async function handleRequest(request: Request, env: AdminEnv): Promise<Response> {
   try {
     const session = await authenticateRequest(request, env);
@@ -93,6 +105,19 @@ export async function handleRequest(request: Request, env: AdminEnv): Promise<Re
       requireSameOrigin(request);
       return Response.json(await updatePlace(repository, env, session, apiPlaceMatch[1], await jsonBody(request)), { headers: JSON_HEADERS });
     }
+    if (request.method === "GET" && url.pathname === "/api/routes") {
+      const result = await listRoutes(repository, env); return Response.json({ routes: result.routes, branch: result.branch, headSha: result.state.headSha }, { headers: JSON_HEADERS });
+    }
+    if (request.method === "POST" && url.pathname === "/api/routes") { requireSameOrigin(request); return Response.json(await createRoute(repository, env, session, await jsonBody(request)), { status: 201, headers: JSON_HEADERS }); }
+    const apiRouteTrack = url.pathname.match(/^\/api\/routes\/([a-z0-9]+(?:-[a-z0-9]+)*)\/track$/);
+    if (request.method === "PUT" && apiRouteTrack?.[1]) { requireSameOrigin(request); const upload = await routeGpxUpload(request); return Response.json(await uploadRouteGpx(repository, env, session, apiRouteTrack[1], upload.expectedHeadSha, upload.xml), { headers: JSON_HEADERS }); }
+    if (request.method === "DELETE" && apiRouteTrack?.[1]) { requireSameOrigin(request); return Response.json(await removeRouteTrack(repository, env, session, apiRouteTrack[1], await jsonBody(request)), { headers: JSON_HEADERS }); }
+    const apiRoutePreview = url.pathname.match(/^\/api\/routes\/([a-z0-9]+(?:-[a-z0-9]+)*)\/preview$/);
+    if (request.method === "PATCH" && apiRoutePreview?.[1]) { requireSameOrigin(request); return Response.json(await updateRoutePreview(repository, env, apiRoutePreview[1], await jsonBody(request)), { headers: JSON_HEADERS }); }
+    const apiRoute = url.pathname.match(/^\/api\/routes\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
+    if (request.method === "GET" && apiRoute?.[1]) { const result = await getEditableRoute(repository, env, apiRoute[1]); return Response.json({ route: result.route, places: result.places, branch: result.branch, headSha: result.state.headSha }, { headers: JSON_HEADERS }); }
+    if (request.method === "PATCH" && apiRoute?.[1]) { requireSameOrigin(request); return Response.json(await updateRoute(repository, env, session, apiRoute[1], await jsonBody(request)), { headers: JSON_HEADERS }); }
+    if (request.method === "DELETE" && apiRoute?.[1]) { requireSameOrigin(request); return Response.json(await deleteRoute(repository, env, apiRoute[1], await jsonBody(request)), { headers: JSON_HEADERS }); }
     if (request.method === "DELETE" && apiPlaceMatch?.[1]) {
       requireSameOrigin(request);
       return Response.json(await deletePlace(repository, env, session, apiPlaceMatch[1], await jsonBody(request)), { headers: JSON_HEADERS });
@@ -116,6 +141,10 @@ export async function handleRequest(request: Request, env: AdminEnv): Promise<Re
       const snapshot = await listPlaces(repository, env);
       return newPlacePage(session, snapshot.supportedPlaceTypes, snapshot.state.headSha);
     }
+    if (request.method === "GET" && url.pathname === "/routes") { return routesPage(session, await listRoutes(repository, env)); }
+    if (request.method === "GET" && url.pathname === "/routes/new") { return newRoutePage(session, await listRoutes(repository, env)); }
+    const editRouteMatch = url.pathname.match(/^\/routes\/([a-z0-9]+(?:-[a-z0-9]+)*)\/edit$/);
+    if (request.method === "GET" && editRouteMatch?.[1]) { const result = await getEditableRoute(repository, env, editRouteMatch[1]); return editRoutePage(session, result, result.route, env.PUBLIC_MAPTILER_KEY?.trim()); }
     const editPlaceMatch = url.pathname.match(/^\/places\/([a-z0-9]+(?:-[a-z0-9]+)*)\/edit$/);
     if (request.method === "GET" && editPlaceMatch?.[1]) {
       const result = await getEditablePlace(repository, env, editPlaceMatch[1]);

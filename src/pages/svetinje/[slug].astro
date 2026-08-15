@@ -7,6 +7,8 @@ import PlacePracticalPanel from "../../components/place-detail/PlacePracticalPan
 import PlaceRelatedShelf from "../../components/place-detail/PlaceRelatedShelf.astro";
 import type { VisiblePlace } from "../../lib/content/publication";
 import { loadVisiblePlaces } from "../../lib/content/publication";
+import PlaceRouteBacklinks from "../../components/routes/PlaceRouteBacklinks.astro";
+import { loadVisibleRoutes, routesForPlace, type VisibleRoute } from "../../lib/content/routes";
 
 interface RelatedPlace {
   place: VisiblePlace;
@@ -46,10 +48,10 @@ export async function getStaticPaths() {
       })
       .map(({ place: candidate, distanceKm }) => ({ place: candidate, distanceKm }))
       .slice(0, 4);
-  const places = await loadVisiblePlaces();
+  const [places, routes] = await Promise.all([loadVisiblePlaces(), loadVisibleRoutes()]);
   return places.map((place) => ({
     params: { slug: place.slug },
-    props: { place, relatedPlaces: relatedPlacesFor(place, places) },
+    props: { place, relatedPlaces: relatedPlacesFor(place, places), routes: routesForPlace(routes, place.id) },
   }));
 }
 
@@ -65,7 +67,7 @@ const HISTORY_SECTION_IDS = new Set([
 const ARRIVAL_SECTION_IDS = new Set(["location"]);
 const PRACTICAL_SECTION_IDS = new Set(["services", "visitor-information", "verification-notes"]);
 
-const { place, relatedPlaces } = Astro.props as { place: VisiblePlace; relatedPlaces: RelatedPlace[] };
+const { place, relatedPlaces, routes } = Astro.props as { place: VisiblePlace; relatedPlaces: RelatedPlace[]; routes: VisibleRoute[] };
 const hasCoordinates = place.latitude !== undefined && place.longitude !== undefined;
 const historySections = place.narrativeSections.filter((section) => HISTORY_SECTION_IDS.has(section.id));
 const arrivalSections = place.narrativeSections.filter((section) => ARRIVAL_SECTION_IDS.has(section.id));
@@ -128,6 +130,7 @@ const aboutSections = place.narrativeSections.filter((section) =>
       </div>
 
       <PlaceRelatedShelf currentPlace={place} relatedPlaces={relatedPlaces} />
+      <PlaceRouteBacklinks placeId={place.id} routes={routes} />
     </div>
   </section>
 </BaseLayout>
