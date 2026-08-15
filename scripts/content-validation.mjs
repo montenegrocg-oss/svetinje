@@ -443,6 +443,14 @@ function validateReferences(records) {
       for (const placeId of data.relationships?.waypoint_place_ids ?? []) {
         if (!placeIds.has(placeId)) errors.push(issue(file, "/relationships/waypoint_place_ids", `unknown place id ${placeId}`));
       }
+      const highlightIds = new Set();
+      for (const [index, highlight] of (data.highlights ?? []).entries()) {
+        if (highlightIds.has(highlight.id)) errors.push(issue(file, `/highlights/${index}/id`, `duplicate route highlight id ${highlight.id}`));
+        highlightIds.add(highlight.id);
+        if (highlight.related_place_id && !placeIds.has(highlight.related_place_id)) {
+          errors.push(issue(file, `/highlights/${index}/related_place_id`, `unknown related place id ${highlight.related_place_id}`));
+        }
+      }
       const expectedObjectKey = `content/routes/${data.id}/track.geojson`;
       if (data.track?.status === "ready" && data.track.object_key !== expectedObjectKey) {
         errors.push(issue(file, "/track/object_key", `ready track object_key must be ${expectedObjectKey}`));

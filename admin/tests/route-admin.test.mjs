@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { parse, stringify } from "yaml";
 import { createRoute, deleteRoute, getEditableRoute, removeRouteTrack, updateRoute, updateRoutePreview, uploadRouteGpx } from "../src/route-service.ts";
 import { editRoutePage } from "../src/ui.ts";
 
@@ -67,6 +68,18 @@ test("route practical planning fields round-trip and remain no-op when unchanged
   assert.equal(updated.route.practical.trailMarkingStatus, "partially-marked"); assert.equal(updated.route.practical.mobileSignalStatus, "variable");
   const noOp = await updateRoute(repo, env, session, record.route.id, routeBody(updated));
   assert.equal(noOp.unchanged, true); assert.equal(repo.commits.length, 1);
+});
+
+test("route editor preserves optional canonical highlights that are not edited by the form", async () => {
+  const repo = await repository();
+  const routePath = "content/routes/manastir-sergija-rumija/route.yaml";
+  const routeYaml = parse(repo.files.get(routePath));
+  routeYaml.highlights = [{ id: "verified-stop", title: "Провјерена тачка", description: "Провјерен опис." }];
+  repo.files.set(routePath, stringify(routeYaml, { lineWidth: 0 }));
+  const record = await getEditableRoute(repo, env, "manastir-sergija-rumija");
+  await updateRoute(repo, env, session, record.route.id, routeBody(record, { shortName: "Сергије → Румија" }));
+  const updated = parse(repo.files.get(routePath));
+  assert.deepEqual(updated.highlights, routeYaml.highlights);
 });
 
 test("route practical editor exposes the canonical planning fields", async () => {

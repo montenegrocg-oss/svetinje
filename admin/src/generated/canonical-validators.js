@@ -6733,12 +6733,12 @@ return errors === 0;
 validate90.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
 export const validateRoute = validate104;
-const schema136 = {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://svetinje.me/schemas/route.schema.json","title":"Svetinje.me hiking route record","type":"object","additionalProperties":false,"required":["schema_version","id","editorial_status","route_type","direction","relationships","track","metrics","difficulty","water","surface","recommended_seasons","featured","approvals","audit"],"properties":{"schema_version":{"const":1},"id":{"$ref":"common.schema.json#/$defs/entityId"},"editorial_status":{"$ref":"common.schema.json#/$defs/editorialStatus"},"route_type":{"enum":["hiking"]},"direction":{"enum":["one-way","out-and-back","circular"]},"relationships":{"$ref":"#/$defs/relationships"},"track":{"$ref":"#/$defs/track"},"metrics":{"$ref":"#/$defs/metrics"},"difficulty":{"$ref":"#/$defs/difficulty"},"water":{"$ref":"#/$defs/water"},"practical":{"$ref":"#/$defs/practical"},"surface":{"$ref":"#/$defs/surface"},"recommended_seasons":{"$ref":"#/$defs/recommendedSeasons"},"featured":{"$ref":"#/$defs/featured"},"approvals":{"$ref":"common.schema.json#/$defs/approvals"},"audit":{"$ref":"common.schema.json#/$defs/audit"}},"allOf":[{"if":{"properties":{"track":{"type":"object","properties":{"status":{"const":"ready"}},"required":["status"]}},"required":["track"]},"then":{"properties":{"track":{"type":"object","required":["object_key","point_count","endpoint_validation"]},"metrics":{"type":"object","required":["distance_m"]}}}},{"if":{"properties":{"editorial_status":{"enum":["approved","published"]}},"required":["editorial_status"]},"then":{"properties":{"approvals":{"type":"array","minItems":2}}}}],"$defs":{"relationships":{"type":"object","additionalProperties":false,"required":["start_place_id","end_place_id","waypoint_place_ids"],"properties":{"start_place_id":{"$ref":"common.schema.json#/$defs/entityId"},"end_place_id":{"$ref":"common.schema.json#/$defs/entityId"},"waypoint_place_ids":{"$ref":"common.schema.json#/$defs/entityIdList"}}},"endpointValidation":{"type":"object","additionalProperties":false,"required":["start_distance_m","end_distance_m","threshold_m"],"properties":{"start_distance_m":{"type":"number","minimum":0},"end_distance_m":{"type":"number","minimum":0},"threshold_m":{"type":"number","exclusiveMinimum":0}}},"track":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["missing","ready"]},"object_key":{"type":"string","pattern":"^content/routes/[a-z0-9]+(?:-[a-z0-9]+)*/track\\.geojson$"},"point_count":{"type":"integer","minimum":2,"maximum":100000},"endpoint_validation":{"$ref":"#/$defs/endpointValidation"}}},"metrics":{"type":"object","additionalProperties":false,"properties":{"distance_m":{"type":"number","exclusiveMinimum":0},"ascent_m":{"type":"number","minimum":0},"descent_m":{"type":"number","minimum":0},"min_elevation_m":{"type":"number"},"max_elevation_m":{"type":"number"},"recorded_duration_minutes":{"type":"integer","minimum":0},"estimated_duration_minutes":{"type":"integer","minimum":1}}},"difficulty":{"type":"object","additionalProperties":false,"required":["value"],"properties":{"value":{"enum":["easy","moderate","demanding"]}}},"water":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","none","available","requires-verification"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"practical":{"type":"object","additionalProperties":false,"properties":{"start_access":{"$ref":"#/$defs/practicalNote"},"parking":{"$ref":"#/$defs/parking"},"trail_marking":{"$ref":"#/$defs/trailMarking"},"difficult_sections":{"$ref":"#/$defs/difficultSections"},"footwear":{"$ref":"#/$defs/footwear"},"mobile_signal":{"$ref":"#/$defs/mobileSignal"},"weather":{"$ref":"#/$defs/practicalNote"},"last_verified_at":{"type":"string","format":"date"}}},"practicalNote":{"type":"object","additionalProperties":false,"required":["note"],"properties":{"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"parking":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","available","limited","none"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"trailMarking":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","marked","partially-marked","unmarked"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"difficultSections":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","none","present"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"footwear":{"type":"object","additionalProperties":false,"required":["recommendation"],"properties":{"recommendation":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"mobileSignal":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","good","variable","poor","none"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"surface":{"type":"object","additionalProperties":false,"required":["values"],"properties":{"values":{"type":"array","uniqueItems":true,"items":{"enum":["paved","gravel","trail","rock","steps","other"]}}}},"recommendedSeasons":{"type":"array","uniqueItems":true,"items":{"enum":["spring","summer","autumn","winter"]}},"featured":{"type":"object","additionalProperties":false,"required":["enabled","order"],"properties":{"enabled":{"type":"boolean"},"order":{"type":"integer","minimum":1}}}}};
+const schema136 = {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://svetinje.me/schemas/route.schema.json","title":"Svetinje.me hiking route record","type":"object","additionalProperties":false,"required":["schema_version","id","editorial_status","route_type","direction","relationships","track","metrics","difficulty","water","surface","recommended_seasons","featured","approvals","audit"],"properties":{"schema_version":{"const":1},"id":{"$ref":"common.schema.json#/$defs/entityId"},"editorial_status":{"$ref":"common.schema.json#/$defs/editorialStatus"},"route_type":{"enum":["hiking"]},"direction":{"enum":["one-way","out-and-back","circular"]},"relationships":{"$ref":"#/$defs/relationships"},"track":{"$ref":"#/$defs/track"},"metrics":{"$ref":"#/$defs/metrics"},"difficulty":{"$ref":"#/$defs/difficulty"},"water":{"$ref":"#/$defs/water"},"practical":{"$ref":"#/$defs/practical"},"highlights":{"$ref":"#/$defs/highlights"},"surface":{"$ref":"#/$defs/surface"},"recommended_seasons":{"$ref":"#/$defs/recommendedSeasons"},"featured":{"$ref":"#/$defs/featured"},"approvals":{"$ref":"common.schema.json#/$defs/approvals"},"audit":{"$ref":"common.schema.json#/$defs/audit"}},"allOf":[{"if":{"properties":{"track":{"type":"object","properties":{"status":{"const":"ready"}},"required":["status"]}},"required":["track"]},"then":{"properties":{"track":{"type":"object","required":["object_key","point_count","endpoint_validation"]},"metrics":{"type":"object","required":["distance_m"]}}}},{"if":{"properties":{"editorial_status":{"enum":["approved","published"]}},"required":["editorial_status"]},"then":{"properties":{"approvals":{"type":"array","minItems":2}}}}],"$defs":{"relationships":{"type":"object","additionalProperties":false,"required":["start_place_id","end_place_id","waypoint_place_ids"],"properties":{"start_place_id":{"$ref":"common.schema.json#/$defs/entityId"},"end_place_id":{"$ref":"common.schema.json#/$defs/entityId"},"waypoint_place_ids":{"$ref":"common.schema.json#/$defs/entityIdList"}}},"endpointValidation":{"type":"object","additionalProperties":false,"required":["start_distance_m","end_distance_m","threshold_m"],"properties":{"start_distance_m":{"type":"number","minimum":0},"end_distance_m":{"type":"number","minimum":0},"threshold_m":{"type":"number","exclusiveMinimum":0}}},"track":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["missing","ready"]},"object_key":{"type":"string","pattern":"^content/routes/[a-z0-9]+(?:-[a-z0-9]+)*/track\\.geojson$"},"point_count":{"type":"integer","minimum":2,"maximum":100000},"endpoint_validation":{"$ref":"#/$defs/endpointValidation"}}},"metrics":{"type":"object","additionalProperties":false,"properties":{"distance_m":{"type":"number","exclusiveMinimum":0},"ascent_m":{"type":"number","minimum":0},"descent_m":{"type":"number","minimum":0},"min_elevation_m":{"type":"number"},"max_elevation_m":{"type":"number"},"recorded_duration_minutes":{"type":"integer","minimum":0},"estimated_duration_minutes":{"type":"integer","minimum":1}}},"difficulty":{"type":"object","additionalProperties":false,"required":["value"],"properties":{"value":{"enum":["easy","moderate","demanding"]}}},"water":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","none","available","requires-verification"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"practical":{"type":"object","additionalProperties":false,"properties":{"start_access":{"$ref":"#/$defs/practicalNote"},"parking":{"$ref":"#/$defs/parking"},"trail_marking":{"$ref":"#/$defs/trailMarking"},"difficult_sections":{"$ref":"#/$defs/difficultSections"},"footwear":{"$ref":"#/$defs/footwear"},"mobile_signal":{"$ref":"#/$defs/mobileSignal"},"weather":{"$ref":"#/$defs/practicalNote"},"last_verified_at":{"type":"string","format":"date"}}},"practicalNote":{"type":"object","additionalProperties":false,"required":["note"],"properties":{"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"parking":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","available","limited","none"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"trailMarking":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","marked","partially-marked","unmarked"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"difficultSections":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","none","present"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"footwear":{"type":"object","additionalProperties":false,"required":["recommendation"],"properties":{"recommendation":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"mobileSignal":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","good","variable","poor","none"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"highlights":{"type":"array","items":{"$ref":"#/$defs/highlight"}},"highlight":{"type":"object","additionalProperties":false,"required":["id","title","description"],"properties":{"id":{"$ref":"common.schema.json#/$defs/entityId"},"title":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"description":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"distance_from_start_km":{"type":"number","minimum":0},"related_place_id":{"$ref":"common.schema.json#/$defs/entityId"}}},"surface":{"type":"object","additionalProperties":false,"required":["values"],"properties":{"values":{"type":"array","uniqueItems":true,"items":{"enum":["paved","gravel","trail","rock","steps","other"]}}}},"recommendedSeasons":{"type":"array","uniqueItems":true,"items":{"enum":["spring","summer","autumn","winter"]}},"featured":{"type":"object","additionalProperties":false,"required":["enabled","order"],"properties":{"enabled":{"type":"boolean"},"order":{"type":"integer","minimum":1}}}}};
 const schema146 = {"type":"object","additionalProperties":false,"properties":{"distance_m":{"type":"number","exclusiveMinimum":0},"ascent_m":{"type":"number","minimum":0},"descent_m":{"type":"number","minimum":0},"min_elevation_m":{"type":"number"},"max_elevation_m":{"type":"number"},"recorded_duration_minutes":{"type":"integer","minimum":0},"estimated_duration_minutes":{"type":"integer","minimum":1}}};
 const schema147 = {"type":"object","additionalProperties":false,"required":["value"],"properties":{"value":{"enum":["easy","moderate","demanding"]}}};
-const schema163 = {"type":"object","additionalProperties":false,"required":["values"],"properties":{"values":{"type":"array","uniqueItems":true,"items":{"enum":["paved","gravel","trail","rock","steps","other"]}}}};
-const schema164 = {"type":"array","uniqueItems":true,"items":{"enum":["spring","summer","autumn","winter"]}};
-const schema165 = {"type":"object","additionalProperties":false,"required":["enabled","order"],"properties":{"enabled":{"type":"boolean"},"order":{"type":"integer","minimum":1}}};
+const schema169 = {"type":"object","additionalProperties":false,"required":["values"],"properties":{"values":{"type":"array","uniqueItems":true,"items":{"enum":["paved","gravel","trail","rock","steps","other"]}}}};
+const schema170 = {"type":"array","uniqueItems":true,"items":{"enum":["spring","summer","autumn","winter"]}};
+const schema171 = {"type":"object","additionalProperties":false,"required":["enabled","order"],"properties":{"enabled":{"type":"boolean"},"order":{"type":"integer","minimum":1}}};
 const schema139 = {"type":"object","additionalProperties":false,"required":["start_place_id","end_place_id","waypoint_place_ids"],"properties":{"start_place_id":{"$ref":"common.schema.json#/$defs/entityId"},"end_place_id":{"$ref":"common.schema.json#/$defs/entityId"},"waypoint_place_ids":{"$ref":"common.schema.json#/$defs/entityIdList"}}};
 
 function validate106(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
@@ -8033,11 +8033,303 @@ return errors === 0;
 }
 validate113.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
+const schema163 = {"type":"array","items":{"$ref":"#/$defs/highlight"}};
+const schema164 = {"type":"object","additionalProperties":false,"required":["id","title","description"],"properties":{"id":{"$ref":"common.schema.json#/$defs/entityId"},"title":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"description":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"distance_from_start_km":{"type":"number","minimum":0},"related_place_id":{"$ref":"common.schema.json#/$defs/entityId"}}};
+
+function validate129(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+let vErrors = null;
+let errors = 0;
+const evaluated0 = validate129.evaluated;
+if(evaluated0.dynamicProps){
+evaluated0.props = undefined;
+}
+if(evaluated0.dynamicItems){
+evaluated0.items = undefined;
+}
+if(data && typeof data == "object" && !Array.isArray(data)){
+if(data.id === undefined){
+const err0 = {instancePath,schemaPath:"#/required",keyword:"required",params:{missingProperty: "id"},message:"must have required property '"+"id"+"'"};
+if(vErrors === null){
+vErrors = [err0];
+}
+else {
+vErrors.push(err0);
+}
+errors++;
+}
+if(data.title === undefined){
+const err1 = {instancePath,schemaPath:"#/required",keyword:"required",params:{missingProperty: "title"},message:"must have required property '"+"title"+"'"};
+if(vErrors === null){
+vErrors = [err1];
+}
+else {
+vErrors.push(err1);
+}
+errors++;
+}
+if(data.description === undefined){
+const err2 = {instancePath,schemaPath:"#/required",keyword:"required",params:{missingProperty: "description"},message:"must have required property '"+"description"+"'"};
+if(vErrors === null){
+vErrors = [err2];
+}
+else {
+vErrors.push(err2);
+}
+errors++;
+}
+for(const key0 in data){
+if(!(((((key0 === "id") || (key0 === "title")) || (key0 === "description")) || (key0 === "distance_from_start_km")) || (key0 === "related_place_id"))){
+const err3 = {instancePath,schemaPath:"#/additionalProperties",keyword:"additionalProperties",params:{additionalProperty: key0},message:"must NOT have additional properties"};
+if(vErrors === null){
+vErrors = [err3];
+}
+else {
+vErrors.push(err3);
+}
+errors++;
+}
+}
+if(data.id !== undefined){
+let data0 = data.id;
+if(typeof data0 === "string"){
+if(func2(data0) > 100){
+const err4 = {instancePath:instancePath+"/id",schemaPath:"common.schema.json#/$defs/entityId/maxLength",keyword:"maxLength",params:{limit: 100},message:"must NOT have more than 100 characters"};
+if(vErrors === null){
+vErrors = [err4];
+}
+else {
+vErrors.push(err4);
+}
+errors++;
+}
+if(func2(data0) < 2){
+const err5 = {instancePath:instancePath+"/id",schemaPath:"common.schema.json#/$defs/entityId/minLength",keyword:"minLength",params:{limit: 2},message:"must NOT have fewer than 2 characters"};
+if(vErrors === null){
+vErrors = [err5];
+}
+else {
+vErrors.push(err5);
+}
+errors++;
+}
+if(!pattern4.test(data0)){
+const err6 = {instancePath:instancePath+"/id",schemaPath:"common.schema.json#/$defs/entityId/pattern",keyword:"pattern",params:{pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"},message:"must match pattern \""+"^[a-z0-9]+(?:-[a-z0-9]+)*$"+"\""};
+if(vErrors === null){
+vErrors = [err6];
+}
+else {
+vErrors.push(err6);
+}
+errors++;
+}
+}
+else {
+const err7 = {instancePath:instancePath+"/id",schemaPath:"common.schema.json#/$defs/entityId/type",keyword:"type",params:{type: "string"},message:"must be string"};
+if(vErrors === null){
+vErrors = [err7];
+}
+else {
+vErrors.push(err7);
+}
+errors++;
+}
+}
+if(data.title !== undefined){
+let data1 = data.title;
+if(typeof data1 === "string"){
+if(func2(data1) < 1){
+const err8 = {instancePath:instancePath+"/title",schemaPath:"common.schema.json#/$defs/nonEmptyText/minLength",keyword:"minLength",params:{limit: 1},message:"must NOT have fewer than 1 characters"};
+if(vErrors === null){
+vErrors = [err8];
+}
+else {
+vErrors.push(err8);
+}
+errors++;
+}
+if(!pattern5.test(data1)){
+const err9 = {instancePath:instancePath+"/title",schemaPath:"common.schema.json#/$defs/nonEmptyText/pattern",keyword:"pattern",params:{pattern: "\\S"},message:"must match pattern \""+"\\S"+"\""};
+if(vErrors === null){
+vErrors = [err9];
+}
+else {
+vErrors.push(err9);
+}
+errors++;
+}
+}
+else {
+const err10 = {instancePath:instancePath+"/title",schemaPath:"common.schema.json#/$defs/nonEmptyText/type",keyword:"type",params:{type: "string"},message:"must be string"};
+if(vErrors === null){
+vErrors = [err10];
+}
+else {
+vErrors.push(err10);
+}
+errors++;
+}
+}
+if(data.description !== undefined){
+let data2 = data.description;
+if(typeof data2 === "string"){
+if(func2(data2) < 1){
+const err11 = {instancePath:instancePath+"/description",schemaPath:"common.schema.json#/$defs/nonEmptyText/minLength",keyword:"minLength",params:{limit: 1},message:"must NOT have fewer than 1 characters"};
+if(vErrors === null){
+vErrors = [err11];
+}
+else {
+vErrors.push(err11);
+}
+errors++;
+}
+if(!pattern5.test(data2)){
+const err12 = {instancePath:instancePath+"/description",schemaPath:"common.schema.json#/$defs/nonEmptyText/pattern",keyword:"pattern",params:{pattern: "\\S"},message:"must match pattern \""+"\\S"+"\""};
+if(vErrors === null){
+vErrors = [err12];
+}
+else {
+vErrors.push(err12);
+}
+errors++;
+}
+}
+else {
+const err13 = {instancePath:instancePath+"/description",schemaPath:"common.schema.json#/$defs/nonEmptyText/type",keyword:"type",params:{type: "string"},message:"must be string"};
+if(vErrors === null){
+vErrors = [err13];
+}
+else {
+vErrors.push(err13);
+}
+errors++;
+}
+}
+if(data.distance_from_start_km !== undefined){
+let data3 = data.distance_from_start_km;
+if((typeof data3 == "number") && (isFinite(data3))){
+if(data3 < 0 || isNaN(data3)){
+const err14 = {instancePath:instancePath+"/distance_from_start_km",schemaPath:"#/properties/distance_from_start_km/minimum",keyword:"minimum",params:{comparison: ">=", limit: 0},message:"must be >= 0"};
+if(vErrors === null){
+vErrors = [err14];
+}
+else {
+vErrors.push(err14);
+}
+errors++;
+}
+}
+else {
+const err15 = {instancePath:instancePath+"/distance_from_start_km",schemaPath:"#/properties/distance_from_start_km/type",keyword:"type",params:{type: "number"},message:"must be number"};
+if(vErrors === null){
+vErrors = [err15];
+}
+else {
+vErrors.push(err15);
+}
+errors++;
+}
+}
+if(data.related_place_id !== undefined){
+let data4 = data.related_place_id;
+if(typeof data4 === "string"){
+if(func2(data4) > 100){
+const err16 = {instancePath:instancePath+"/related_place_id",schemaPath:"common.schema.json#/$defs/entityId/maxLength",keyword:"maxLength",params:{limit: 100},message:"must NOT have more than 100 characters"};
+if(vErrors === null){
+vErrors = [err16];
+}
+else {
+vErrors.push(err16);
+}
+errors++;
+}
+if(func2(data4) < 2){
+const err17 = {instancePath:instancePath+"/related_place_id",schemaPath:"common.schema.json#/$defs/entityId/minLength",keyword:"minLength",params:{limit: 2},message:"must NOT have fewer than 2 characters"};
+if(vErrors === null){
+vErrors = [err17];
+}
+else {
+vErrors.push(err17);
+}
+errors++;
+}
+if(!pattern4.test(data4)){
+const err18 = {instancePath:instancePath+"/related_place_id",schemaPath:"common.schema.json#/$defs/entityId/pattern",keyword:"pattern",params:{pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"},message:"must match pattern \""+"^[a-z0-9]+(?:-[a-z0-9]+)*$"+"\""};
+if(vErrors === null){
+vErrors = [err18];
+}
+else {
+vErrors.push(err18);
+}
+errors++;
+}
+}
+else {
+const err19 = {instancePath:instancePath+"/related_place_id",schemaPath:"common.schema.json#/$defs/entityId/type",keyword:"type",params:{type: "string"},message:"must be string"};
+if(vErrors === null){
+vErrors = [err19];
+}
+else {
+vErrors.push(err19);
+}
+errors++;
+}
+}
+}
+else {
+const err20 = {instancePath,schemaPath:"#/type",keyword:"type",params:{type: "object"},message:"must be object"};
+if(vErrors === null){
+vErrors = [err20];
+}
+else {
+vErrors.push(err20);
+}
+errors++;
+}
+validate129.errors = vErrors;
+return errors === 0;
+}
+validate129.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+
 
 function validate128(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
 const evaluated0 = validate128.evaluated;
+if(evaluated0.dynamicProps){
+evaluated0.props = undefined;
+}
+if(evaluated0.dynamicItems){
+evaluated0.items = undefined;
+}
+if(Array.isArray(data)){
+const len0 = data.length;
+for(let i0=0; i0<len0; i0++){
+if(!(validate129(data[i0], {instancePath:instancePath+"/" + i0,parentData:data,parentDataProperty:i0,rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate129.errors : vErrors.concat(validate129.errors);
+errors = vErrors.length;
+}
+}
+}
+else {
+const err0 = {instancePath,schemaPath:"#/type",keyword:"type",params:{type: "array"},message:"must be array"};
+if(vErrors === null){
+vErrors = [err0];
+}
+else {
+vErrors.push(err0);
+}
+errors++;
+}
+validate128.errors = vErrors;
+return errors === 0;
+}
+validate128.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
+
+
+function validate132(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+let vErrors = null;
+let errors = 0;
+const evaluated0 = validate132.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -8063,16 +8355,16 @@ vErrors.push(err0);
 }
 errors++;
 }
-validate128.errors = vErrors;
+validate132.errors = vErrors;
 return errors === 0;
 }
-validate128.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
+validate132.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
 
 
-function validate131(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate135(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate131.evaluated;
+const evaluated0 = validate135.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -8303,10 +8595,10 @@ vErrors.push(err19);
 }
 errors++;
 }
-validate131.errors = vErrors;
+validate135.errors = vErrors;
 return errors === 0;
 }
-validate131.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate135.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
 
 function validate104(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
@@ -9090,10 +9382,16 @@ vErrors = vErrors === null ? validate113.errors : vErrors.concat(validate113.err
 errors = vErrors.length;
 }
 }
+if(data.highlights !== undefined){
+if(!(validate128(data.highlights, {instancePath:instancePath+"/highlights",parentData:data,parentDataProperty:"highlights",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate128.errors : vErrors.concat(validate128.errors);
+errors = vErrors.length;
+}
+}
 if(data.surface !== undefined){
-let data25 = data.surface;
-if(data25 && typeof data25 == "object" && !Array.isArray(data25)){
-if(data25.values === undefined){
+let data26 = data.surface;
+if(data26 && typeof data26 == "object" && !Array.isArray(data26)){
+if(data26.values === undefined){
 const err58 = {instancePath:instancePath+"/surface",schemaPath:"#/$defs/surface/required",keyword:"required",params:{missingProperty: "values"},message:"must have required property '"+"values"+"'"};
 if(vErrors === null){
 vErrors = [err58];
@@ -9103,7 +9401,7 @@ vErrors.push(err58);
 }
 errors++;
 }
-for(const key3 in data25){
+for(const key3 in data26){
 if(!(key3 === "values")){
 const err59 = {instancePath:instancePath+"/surface",schemaPath:"#/$defs/surface/additionalProperties",keyword:"additionalProperties",params:{additionalProperty: key3},message:"must NOT have additional properties"};
 if(vErrors === null){
@@ -9115,14 +9413,14 @@ vErrors.push(err59);
 errors++;
 }
 }
-if(data25.values !== undefined){
-let data26 = data25.values;
-if(Array.isArray(data26)){
-const len0 = data26.length;
+if(data26.values !== undefined){
+let data27 = data26.values;
+if(Array.isArray(data27)){
+const len0 = data27.length;
 for(let i0=0; i0<len0; i0++){
-let data27 = data26[i0];
-if(!((((((data27 === "paved") || (data27 === "gravel")) || (data27 === "trail")) || (data27 === "rock")) || (data27 === "steps")) || (data27 === "other"))){
-const err60 = {instancePath:instancePath+"/surface/values/" + i0,schemaPath:"#/$defs/surface/properties/values/items/enum",keyword:"enum",params:{allowedValues: schema163.properties.values.items.enum},message:"must be equal to one of the allowed values"};
+let data28 = data27[i0];
+if(!((((((data28 === "paved") || (data28 === "gravel")) || (data28 === "trail")) || (data28 === "rock")) || (data28 === "steps")) || (data28 === "other"))){
+const err60 = {instancePath:instancePath+"/surface/values/" + i0,schemaPath:"#/$defs/surface/properties/values/items/enum",keyword:"enum",params:{allowedValues: schema169.properties.values.items.enum},message:"must be equal to one of the allowed values"};
 if(vErrors === null){
 vErrors = [err60];
 }
@@ -9132,13 +9430,13 @@ vErrors.push(err60);
 errors++;
 }
 }
-let i1 = data26.length;
+let i1 = data27.length;
 let j0;
 if(i1 > 1){
 outer0:
 for(;i1--;){
 for(j0 = i1; j0--;){
-if(func0(data26[i1], data26[j0])){
+if(func0(data27[i1], data27[j0])){
 const err61 = {instancePath:instancePath+"/surface/values",schemaPath:"#/$defs/surface/properties/values/uniqueItems",keyword:"uniqueItems",params:{i: i1, j: j0},message:"must NOT have duplicate items (items ## "+j0+" and "+i1+" are identical)"};
 if(vErrors === null){
 vErrors = [err61];
@@ -9177,13 +9475,13 @@ errors++;
 }
 }
 if(data.recommended_seasons !== undefined){
-let data28 = data.recommended_seasons;
-if(Array.isArray(data28)){
-const len1 = data28.length;
+let data29 = data.recommended_seasons;
+if(Array.isArray(data29)){
+const len1 = data29.length;
 for(let i2=0; i2<len1; i2++){
-let data29 = data28[i2];
-if(!((((data29 === "spring") || (data29 === "summer")) || (data29 === "autumn")) || (data29 === "winter"))){
-const err64 = {instancePath:instancePath+"/recommended_seasons/" + i2,schemaPath:"#/$defs/recommendedSeasons/items/enum",keyword:"enum",params:{allowedValues: schema164.items.enum},message:"must be equal to one of the allowed values"};
+let data30 = data29[i2];
+if(!((((data30 === "spring") || (data30 === "summer")) || (data30 === "autumn")) || (data30 === "winter"))){
+const err64 = {instancePath:instancePath+"/recommended_seasons/" + i2,schemaPath:"#/$defs/recommendedSeasons/items/enum",keyword:"enum",params:{allowedValues: schema170.items.enum},message:"must be equal to one of the allowed values"};
 if(vErrors === null){
 vErrors = [err64];
 }
@@ -9193,13 +9491,13 @@ vErrors.push(err64);
 errors++;
 }
 }
-let i3 = data28.length;
+let i3 = data29.length;
 let j1;
 if(i3 > 1){
 outer1:
 for(;i3--;){
 for(j1 = i3; j1--;){
-if(func0(data28[i3], data28[j1])){
+if(func0(data29[i3], data29[j1])){
 const err65 = {instancePath:instancePath+"/recommended_seasons",schemaPath:"#/$defs/recommendedSeasons/uniqueItems",keyword:"uniqueItems",params:{i: i3, j: j1},message:"must NOT have duplicate items (items ## "+j1+" and "+i3+" are identical)"};
 if(vErrors === null){
 vErrors = [err65];
@@ -9226,9 +9524,9 @@ errors++;
 }
 }
 if(data.featured !== undefined){
-let data30 = data.featured;
-if(data30 && typeof data30 == "object" && !Array.isArray(data30)){
-if(data30.enabled === undefined){
+let data31 = data.featured;
+if(data31 && typeof data31 == "object" && !Array.isArray(data31)){
+if(data31.enabled === undefined){
 const err67 = {instancePath:instancePath+"/featured",schemaPath:"#/$defs/featured/required",keyword:"required",params:{missingProperty: "enabled"},message:"must have required property '"+"enabled"+"'"};
 if(vErrors === null){
 vErrors = [err67];
@@ -9238,7 +9536,7 @@ vErrors.push(err67);
 }
 errors++;
 }
-if(data30.order === undefined){
+if(data31.order === undefined){
 const err68 = {instancePath:instancePath+"/featured",schemaPath:"#/$defs/featured/required",keyword:"required",params:{missingProperty: "order"},message:"must have required property '"+"order"+"'"};
 if(vErrors === null){
 vErrors = [err68];
@@ -9248,7 +9546,7 @@ vErrors.push(err68);
 }
 errors++;
 }
-for(const key4 in data30){
+for(const key4 in data31){
 if(!((key4 === "enabled") || (key4 === "order"))){
 const err69 = {instancePath:instancePath+"/featured",schemaPath:"#/$defs/featured/additionalProperties",keyword:"additionalProperties",params:{additionalProperty: key4},message:"must NOT have additional properties"};
 if(vErrors === null){
@@ -9260,8 +9558,8 @@ vErrors.push(err69);
 errors++;
 }
 }
-if(data30.enabled !== undefined){
-if(typeof data30.enabled !== "boolean"){
+if(data31.enabled !== undefined){
+if(typeof data31.enabled !== "boolean"){
 const err70 = {instancePath:instancePath+"/featured/enabled",schemaPath:"#/$defs/featured/properties/enabled/type",keyword:"type",params:{type: "boolean"},message:"must be boolean"};
 if(vErrors === null){
 vErrors = [err70];
@@ -9272,9 +9570,9 @@ vErrors.push(err70);
 errors++;
 }
 }
-if(data30.order !== undefined){
-let data32 = data30.order;
-if(!(((typeof data32 == "number") && (!(data32 % 1) && !isNaN(data32))) && (isFinite(data32)))){
+if(data31.order !== undefined){
+let data33 = data31.order;
+if(!(((typeof data33 == "number") && (!(data33 % 1) && !isNaN(data33))) && (isFinite(data33)))){
 const err71 = {instancePath:instancePath+"/featured/order",schemaPath:"#/$defs/featured/properties/order/type",keyword:"type",params:{type: "integer"},message:"must be integer"};
 if(vErrors === null){
 vErrors = [err71];
@@ -9284,8 +9582,8 @@ vErrors.push(err71);
 }
 errors++;
 }
-if((typeof data32 == "number") && (isFinite(data32))){
-if(data32 < 1 || isNaN(data32)){
+if((typeof data33 == "number") && (isFinite(data33))){
+if(data33 < 1 || isNaN(data33)){
 const err72 = {instancePath:instancePath+"/featured/order",schemaPath:"#/$defs/featured/properties/order/minimum",keyword:"minimum",params:{comparison: ">=", limit: 1},message:"must be >= 1"};
 if(vErrors === null){
 vErrors = [err72];
@@ -9310,14 +9608,14 @@ errors++;
 }
 }
 if(data.approvals !== undefined){
-if(!(validate128(data.approvals, {instancePath:instancePath+"/approvals",parentData:data,parentDataProperty:"approvals",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate128.errors : vErrors.concat(validate128.errors);
+if(!(validate132(data.approvals, {instancePath:instancePath+"/approvals",parentData:data,parentDataProperty:"approvals",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate132.errors : vErrors.concat(validate132.errors);
 errors = vErrors.length;
 }
 }
 if(data.audit !== undefined){
-if(!(validate131(data.audit, {instancePath:instancePath+"/audit",parentData:data,parentDataProperty:"audit",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate131.errors : vErrors.concat(validate131.errors);
+if(!(validate135(data.audit, {instancePath:instancePath+"/audit",parentData:data,parentDataProperty:"audit",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate135.errors : vErrors.concat(validate135.errors);
 errors = vErrors.length;
 }
 }
@@ -9337,13 +9635,13 @@ return errors === 0;
 }
 validate104.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
-export const validateRouteNarrative = validate133;
-const schema172 = {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://svetinje.me/schemas/route-narrative.schema.json","title":"Svetinje.me localized route narrative front matter","type":"object","additionalProperties":false,"required":["schema_version","route_id","locale","editorial_status","translation_status","slug","preferred_name","summary","approvals","audit"],"properties":{"schema_version":{"const":1},"route_id":{"$ref":"common.schema.json#/$defs/entityId"},"locale":{"$ref":"common.schema.json#/$defs/locale"},"editorial_status":{"$ref":"common.schema.json#/$defs/editorialStatus"},"translation_status":{"$ref":"common.schema.json#/$defs/translationStatus"},"slug":{"$ref":"common.schema.json#/$defs/slug"},"preferred_name":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"short_name":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"summary":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"seo_title":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"seo_description":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"source_revision":{"$ref":"common.schema.json#/$defs/gitSha"},"source_ids":{"$ref":"common.schema.json#/$defs/sourceIdList"},"section_sources":{"$ref":"#/$defs/sectionSources"},"approvals":{"$ref":"common.schema.json#/$defs/approvals"},"audit":{"$ref":"common.schema.json#/$defs/audit"}},"allOf":[{"if":{"properties":{"locale":{"const":"sr"}},"required":["locale"]},"then":{"properties":{"translation_status":{"const":"source"}}}},{"if":{"properties":{"locale":{"enum":["ru","en"]}},"required":["locale"]},"then":{"required":["source_revision"]}},{"if":{"properties":{"editorial_status":{"enum":["approved","published"]}},"required":["editorial_status"]},"then":{"required":["seo_title","seo_description"],"properties":{"approvals":{"type":"array","minItems":3}}}}],"$defs":{"sectionKey":{"enum":["about-route","route-course","water-rest","safety","equipment","notes"]},"sectionSources":{"type":"object","propertyNames":{"$ref":"#/$defs/sectionKey"},"additionalProperties":{"allOf":[{"$ref":"common.schema.json#/$defs/sourceIdList"},{"type":"array","minItems":1}]}}}};
+export const validateRouteNarrative = validate137;
+const schema178 = {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://svetinje.me/schemas/route-narrative.schema.json","title":"Svetinje.me localized route narrative front matter","type":"object","additionalProperties":false,"required":["schema_version","route_id","locale","editorial_status","translation_status","slug","preferred_name","summary","approvals","audit"],"properties":{"schema_version":{"const":1},"route_id":{"$ref":"common.schema.json#/$defs/entityId"},"locale":{"$ref":"common.schema.json#/$defs/locale"},"editorial_status":{"$ref":"common.schema.json#/$defs/editorialStatus"},"translation_status":{"$ref":"common.schema.json#/$defs/translationStatus"},"slug":{"$ref":"common.schema.json#/$defs/slug"},"preferred_name":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"short_name":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"summary":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"seo_title":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"seo_description":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"source_revision":{"$ref":"common.schema.json#/$defs/gitSha"},"source_ids":{"$ref":"common.schema.json#/$defs/sourceIdList"},"section_sources":{"$ref":"#/$defs/sectionSources"},"approvals":{"$ref":"common.schema.json#/$defs/approvals"},"audit":{"$ref":"common.schema.json#/$defs/audit"}},"allOf":[{"if":{"properties":{"locale":{"const":"sr"}},"required":["locale"]},"then":{"properties":{"translation_status":{"const":"source"}}}},{"if":{"properties":{"locale":{"enum":["ru","en"]}},"required":["locale"]},"then":{"required":["source_revision"]}},{"if":{"properties":{"editorial_status":{"enum":["approved","published"]}},"required":["editorial_status"]},"then":{"required":["seo_title","seo_description"],"properties":{"approvals":{"type":"array","minItems":3}}}}],"$defs":{"sectionKey":{"enum":["about-route","route-course","water-rest","safety","equipment","notes"]},"sectionSources":{"type":"object","propertyNames":{"$ref":"#/$defs/sectionKey"},"additionalProperties":{"allOf":[{"$ref":"common.schema.json#/$defs/sourceIdList"},{"type":"array","minItems":1}]}}}};
 
-function validate134(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate138(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate134.evaluated;
+const evaluated0 = validate138.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -9428,18 +9726,18 @@ vErrors.push(err5);
 }
 errors++;
 }
-validate134.errors = vErrors;
+validate138.errors = vErrors;
 return errors === 0;
 }
-validate134.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
+validate138.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
 
-const schema186 = {"type":"object","propertyNames":{"$ref":"#/$defs/sectionKey"},"additionalProperties":{"allOf":[{"$ref":"common.schema.json#/$defs/sourceIdList"},{"type":"array","minItems":1}]}};
-const schema187 = {"enum":["about-route","route-course","water-rest","safety","equipment","notes"]};
+const schema192 = {"type":"object","propertyNames":{"$ref":"#/$defs/sectionKey"},"additionalProperties":{"allOf":[{"$ref":"common.schema.json#/$defs/sourceIdList"},{"type":"array","minItems":1}]}};
+const schema193 = {"enum":["about-route","route-course","water-rest","safety","equipment","notes"]};
 
-function validate136(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate140(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate136.evaluated;
+const evaluated0 = validate140.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -9450,7 +9748,7 @@ if(data && typeof data == "object" && !Array.isArray(data)){
 for(const key0 in data){
 const _errs1 = errors;
 if(!((((((key0 === "about-route") || (key0 === "route-course")) || (key0 === "water-rest")) || (key0 === "safety")) || (key0 === "equipment")) || (key0 === "notes"))){
-const err0 = {instancePath,schemaPath:"#/$defs/sectionKey/enum",keyword:"enum",params:{allowedValues: schema187.enum},message:"must be equal to one of the allowed values",propertyName:key0};
+const err0 = {instancePath,schemaPath:"#/$defs/sectionKey/enum",keyword:"enum",params:{allowedValues: schema193.enum},message:"must be equal to one of the allowed values",propertyName:key0};
 if(vErrors === null){
 vErrors = [err0];
 }
@@ -9473,8 +9771,8 @@ errors++;
 }
 for(const key1 in data){
 let data0 = data[key1];
-if(!(validate134(data0, {instancePath:instancePath+"/" + key1.replace(/~/g, "~0").replace(/\//g, "~1"),parentData:data,parentDataProperty:key1,rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate134.errors : vErrors.concat(validate134.errors);
+if(!(validate138(data0, {instancePath:instancePath+"/" + key1.replace(/~/g, "~0").replace(/\//g, "~1"),parentData:data,parentDataProperty:key1,rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate138.errors : vErrors.concat(validate138.errors);
 errors = vErrors.length;
 }
 if(Array.isArray(data0)){
@@ -9511,16 +9809,16 @@ vErrors.push(err4);
 }
 errors++;
 }
-validate136.errors = vErrors;
+validate140.errors = vErrors;
 return errors === 0;
 }
-validate136.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate140.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
 
-function validate139(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate143(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate139.evaluated;
+const evaluated0 = validate143.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -9546,16 +9844,16 @@ vErrors.push(err0);
 }
 errors++;
 }
-validate139.errors = vErrors;
+validate143.errors = vErrors;
 return errors === 0;
 }
-validate139.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
+validate143.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
 
 
-function validate142(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate146(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate142.evaluated;
+const evaluated0 = validate146.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -9786,17 +10084,17 @@ vErrors.push(err19);
 }
 errors++;
 }
-validate142.errors = vErrors;
+validate146.errors = vErrors;
 return errors === 0;
 }
-validate142.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate146.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
 
-function validate133(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate137(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 /*# sourceURL="https://svetinje.me/schemas/route-narrative.schema.json" */;
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate133.evaluated;
+const evaluated0 = validate137.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -10168,7 +10466,7 @@ vErrors.push(err24);
 errors++;
 }
 for(const key0 in data){
-if(!(func1.call(schema172.properties, key0))){
+if(!(func1.call(schema178.properties, key0))){
 const err25 = {instancePath,schemaPath:"#/additionalProperties",keyword:"additionalProperties",params:{additionalProperty: key0},message:"must NOT have additional properties"};
 if(vErrors === null){
 vErrors = [err25];
@@ -10521,26 +10819,26 @@ errors++;
 }
 }
 if(data.source_ids !== undefined){
-if(!(validate134(data.source_ids, {instancePath:instancePath+"/source_ids",parentData:data,parentDataProperty:"source_ids",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate134.errors : vErrors.concat(validate134.errors);
+if(!(validate138(data.source_ids, {instancePath:instancePath+"/source_ids",parentData:data,parentDataProperty:"source_ids",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate138.errors : vErrors.concat(validate138.errors);
 errors = vErrors.length;
 }
 }
 if(data.section_sources !== undefined){
-if(!(validate136(data.section_sources, {instancePath:instancePath+"/section_sources",parentData:data,parentDataProperty:"section_sources",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate136.errors : vErrors.concat(validate136.errors);
+if(!(validate140(data.section_sources, {instancePath:instancePath+"/section_sources",parentData:data,parentDataProperty:"section_sources",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate140.errors : vErrors.concat(validate140.errors);
 errors = vErrors.length;
 }
 }
 if(data.approvals !== undefined){
-if(!(validate139(data.approvals, {instancePath:instancePath+"/approvals",parentData:data,parentDataProperty:"approvals",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate139.errors : vErrors.concat(validate139.errors);
+if(!(validate143(data.approvals, {instancePath:instancePath+"/approvals",parentData:data,parentDataProperty:"approvals",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate143.errors : vErrors.concat(validate143.errors);
 errors = vErrors.length;
 }
 }
 if(data.audit !== undefined){
-if(!(validate142(data.audit, {instancePath:instancePath+"/audit",parentData:data,parentDataProperty:"audit",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate142.errors : vErrors.concat(validate142.errors);
+if(!(validate146(data.audit, {instancePath:instancePath+"/audit",parentData:data,parentDataProperty:"audit",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate146.errors : vErrors.concat(validate146.errors);
 errors = vErrors.length;
 }
 }
@@ -10555,10 +10853,10 @@ vErrors.push(err55);
 }
 errors++;
 }
-validate133.errors = vErrors;
+validate137.errors = vErrors;
 return errors === 0;
 }
-validate133.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate137.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
 export const CANONICAL_SCHEMA_FINGERPRINT = "ce7074effe9d560b9369a0618dc06de1a17ba768a7ee5cd6bed171a384ad0e52";
-export const ROUTE_SCHEMA_FINGERPRINT = "a9c95b48d933a44a67967874facc23ae3f7f563509d1133303efb33664b61dde";
+export const ROUTE_SCHEMA_FINGERPRINT = "ed6fb27ab70f5906de7b1b2019c2d12a9c108f56a6b2f359aece64ac673bef41";

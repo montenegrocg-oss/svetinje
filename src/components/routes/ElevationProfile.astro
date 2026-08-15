@@ -17,7 +17,7 @@ const startElevationText = (startElevation ?? route.metrics.min_elevation_m)?.to
 ---
 
 <section class="route-profile" aria-labelledby="route-profile-title">
-  <header><p class="section-eyebrow">Висински профил</p><h2 id="route-profile-title">Профил висине</h2></header>
+  <header><h2 id="route-profile-title">Висински профил</h2><p>Промјена надморске висине дуж цијеле трасе.</p></header>
   <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Профил висине од ${route.metrics.min_elevation_m} до ${route.metrics.max_elevation_m} метара`}>
     <polygon points={areaPoints} />
     <polyline points={points} />

@@ -33,6 +33,7 @@
     "difficulty": { "$ref": "#/$defs/difficulty" },
     "water": { "$ref": "#/$defs/water" },
     "practical": { "$ref": "#/$defs/practical" },
+    "highlights": { "$ref": "#/$defs/highlights" },
     "surface": { "$ref": "#/$defs/surface" },
     "recommended_seasons": { "$ref": "#/$defs/recommendedSeasons" },
     "featured": { "$ref": "#/$defs/featured" },
@@ -185,6 +186,22 @@
       "properties": {
         "status": { "enum": ["unknown", "good", "variable", "poor", "none"] },
         "note": { "$ref": "common.schema.json#/$defs/nonEmptyText" }
+      }
+    },
+    "highlights": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/highlight" }
+    },
+    "highlight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "description"],
+      "properties": {
+        "id": { "$ref": "common.schema.json#/$defs/entityId" },
+        "title": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+        "description": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+        "distance_from_start_km": { "type": "number", "minimum": 0 },
+        "related_place_id": { "$ref": "common.schema.json#/$defs/entityId" }
       }
     },
     "surface": {

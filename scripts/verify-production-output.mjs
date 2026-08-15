@@ -445,11 +445,17 @@ for (const { route, path: routePath } of model.routeDetailRoutes) {
   if (!detail?.html.includes(route.name) || !detail.html.includes(route.startPlace.name) || !detail.html.includes(route.endPlace.name)) {
     failures.push(`route detail ${route.id} does not derive linked place content`);
   }
-  if (!detail?.html.includes("Профил висине") || !detail.html.includes("Преузми GPX")) {
+  if (!detail?.html.includes("Висински профил") || !detail.html.includes("Преузми GPX")) {
     failures.push(`route detail ${route.id} is missing profile or GPX download`);
   }
-  if (detail && (!detail.html.includes("Интерактивна карта") || !detail.html.includes("Висински профил"))) {
+  if (detail && (!detail.html.includes("Интерактивна карта руте") || !detail.html.includes("Детаљи руте") || !detail.html.includes("Практичне информације"))) {
     failures.push(`route detail ${route.id} is missing the public map or elevation headings`);
+  }
+  if (detail && (!detail.html.includes("Назад на све руте") || !detail.html.includes("Прегледај све руте"))) {
+    failures.push(`route detail ${route.id} is missing route navigation or CTA`);
+  }
+  if (detail && (route.highlights?.length ?? 0) === 0 && detail.html.includes("Успут вриједи видјети")) {
+    failures.push(`route detail ${route.id} renders an empty highlights section`);
   }
   if (detail && route.direction === "one-way" && !detail.html.includes("Једносмјерна рута")) {
     failures.push(`one-way route detail ${route.id} is missing its direction label`);

@@ -98,14 +98,23 @@ test("pilot route public composition remains loader-driven and key-safe", async 
   assert.match(map, /new maplibregl\.Marker\(\{ element, anchor: "bottom" \}\)/);
   assert.match(map, /padding: \{ top: 72, right: 56, bottom: 64, left: 56 \}/);
   assert.match(css, /\.route-map > \.route-map__canvas[^\{]*\{[^}]*position: absolute;[^}]*height: 100%;/s);
-  assert.match(css, /\.route-map \{[^}]*height: 26rem;[^}]*min-height: 26rem;/s);
+  assert.match(css, /\.route-overview[^\{]*\{[^}]*grid-template-areas:[^}]*"identity map"[^}]*"about map"/s);
+  assert.match(css, /\.route-map \{[^}]*min-height: 38rem;/s);
+  assert.match(routePage, /Назад на све руте/);
+  assert.match(routePage, /class="route-overview__metrics"/);
+  assert.match(routePage, /Детаљи руте/);
+  assert.match(routePage, /Практичне информације/);
+  assert.match(routePage, /Пронађите више инспирације за ваша путовања/);
+  assert.match(routePage, /href="\/rute\/"[^>]*>Прегледај све руте/);
+  assert.match(routePage, /route\.highlights\.length > 0/);
+  assert.match(map, /class="route-map__stats"/);
   assert.match(routePage, /Једносмјерна рута/);
   assert.match(routePage, /повратак није урачунат/);
   assert.match(routePage, /Процијењено вријеме односи се на кретање у једном смјеру/);
   assert.doesNotMatch(routePage, /<dt>Спуст<\/dt>|route\.metrics\.descent_m/);
-  const practicalMarkup = routePage.slice(routePage.indexOf('<section class="route-practical"'), routePage.indexOf('{route.narrativeSections'));
+  const practicalMarkup = routePage.slice(routePage.indexOf('<section class="route-practical"'), routePage.indexOf('remainingNarrativeSections.map'));
   for (const duplicate of ["Дужина", "Вријеме", "Успон", "Најнижа тачка", "Највиша тачка", "Тежина"]) assert.doesNotMatch(practicalMarkup, new RegExp(`>${duplicate}<`));
-  for (const planningLabel of ["Паркинг", "Маркација", "Захтјевни дјелови", "Вода", "Мобилни сигнал"]) assert.match(routePage, new RegExp(`label: "${planningLabel}"`));
+  for (const planningLabel of ["Паркинг", "Означеност", "Захтјевни дјелови", "Вода", "Мобилни сигнал"]) assert.match(routePage, new RegExp(`label: "${planningLabel}"`));
   assert.match(routePage, /row\.note &&/);
   assert.doesNotMatch(routePage, /1986|2693|614/);
   assert.doesNotMatch(map, /[?&]key=[A-Za-z0-9_-]{16,}/);
@@ -123,4 +132,21 @@ test("route practical schema is optional and validates supported planning enums"
   assert.equal(validateRoute(withPractical), true, JSON.stringify(validateRoute.errors));
   withPractical.practical.parking.status = "sometimes";
   assert.equal(validateRoute(withPractical), false);
+});
+
+test("route highlights are optional, canonical, and rendered only when present", async () => {
+  const routeYaml = parse(await readFile(new URL("../content/routes/manastir-sergija-rumija/route.yaml", import.meta.url), "utf8"));
+  assert.equal(routeYaml.highlights, undefined);
+  assert.equal(validateRoute(routeYaml), true, JSON.stringify(validateRoute.errors));
+  const withHighlight = structuredClone(routeYaml);
+  withHighlight.highlights = [{
+    id: "verified-stop",
+    title: "Провјерена тачка",
+    description: "Канонски опис провјерене тачке.",
+    distance_from_start_km: 1.2,
+    related_place_id: "crkva-svete-trojice-na-rumiji",
+  }];
+  assert.equal(validateRoute(withHighlight), true, JSON.stringify(validateRoute.errors));
+  withHighlight.highlights[0].distance_from_start_km = -1;
+  assert.equal(validateRoute(withHighlight), false);
 });

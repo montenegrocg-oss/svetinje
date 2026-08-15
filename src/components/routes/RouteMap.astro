@@ -6,17 +6,25 @@ const { route } = Astro.props;
 const hasKey = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
 const startAsset = resolveMarkerAsset(route.startPlace.placeType)?.src;
 const endAsset = resolveMarkerAsset(route.endPlace.placeType)?.src;
+const startElevation = route.profile[0]?.elevationM ?? route.metrics.min_elevation_m;
+const formatElevation = (value: number | undefined) => value === undefined
+  ? "Није унесено"
+  : `${value.toLocaleString("sr-ME", { maximumFractionDigits: 0 })} m`;
 const mapData = JSON.stringify({ trackUrl: route.trackUrl, start: { latitude: route.startPlace.latitude, longitude: route.startPlace.longitude, asset: startAsset }, end: { latitude: route.endPlace.latitude, longitude: route.endPlace.longitude, asset: endAsset } }).replaceAll("<", "\\u003c");
 ---
 
 <section class="route-map-section" aria-labelledby="route-map-title">
-  <header class="route-map-section__header"><p class="section-eyebrow">Траса</p><h2 id="route-map-title">Интерактивна карта</h2></header>
-  <a class="route-download" href={route.gpxUrl} download>Преузми GPX</a>
+  <h2 class="visually-hidden" id="route-map-title">Интерактивна карта руте</h2>
   <div class="route-map" data-route-map data-has-key={String(hasKey)}>
-    <div class="route-map__fallback" data-route-map-fallback><span aria-hidden="true"></span><p>{hasKey ? "Учитавање карте…" : "Карта је тренутно недоступна. Траса је сачувана и може се преузети као GPX."}</p></div>
+    <div class="route-map__fallback" data-route-map-fallback><span aria-hidden="true"></span><p>{hasKey ? "Учитавање карте…" : "Карта је тренутно недоступна."}</p></div>
     <div class="route-map__canvas" data-route-map-canvas aria-label="Интерактивна карта пјешачке руте"></div>
     <script is:inline type="application/json" data-route-map-data set:html={mapData}></script>
   </div>
+  <dl class="route-map__stats" aria-label="Висински подаци руте">
+    <div><dt>Највиша тачка</dt><dd>{formatElevation(route.metrics.max_elevation_m)}</dd></div>
+    <div><dt>{route.profile[0]?.elevationM === undefined ? "Најнижа тачка" : "Почетна тачка"}</dt><dd>{formatElevation(startElevation)}</dd></div>
+    <div><dt>Успон</dt><dd>{formatElevation(route.metrics.ascent_m)}</dd></div>
+  </dl>
 </section>
 
 <script>
@@ -77,6 +85,6 @@ const mapData = JSON.stringify({ trackUrl: route.trackUrl, start: { latitude: ro
         });
         requestAnimationFrame(() => map.resize());
       });
-    } catch { fallback?.querySelector("p")?.replaceChildren("Карта није могла бити учитана. Покушајте поново или преузмите GPX."); }
+    } catch { fallback?.querySelector("p")?.replaceChildren("Карта није могла бити учитана. Покушајте поново касније."); }
   });
 </script>

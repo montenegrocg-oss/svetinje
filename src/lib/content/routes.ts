@@ -15,6 +15,7 @@ interface RouteRecord {
   difficulty: { value: "easy" | "moderate" | "demanding" };
   water: { status: "unknown" | "none" | "available" | "requires-verification"; note?: string };
   practical?: RoutePractical;
+  highlights?: RouteHighlight[];
   surface: { values: string[] };
   recommended_seasons: string[];
   featured: { enabled: boolean; order: number };
@@ -30,6 +31,14 @@ export interface RoutePractical {
   mobile_signal?: { status: "unknown" | "good" | "variable" | "poor" | "none"; note?: string };
   weather?: { note: string };
   last_verified_at?: string;
+}
+
+export interface RouteHighlight {
+  id: string;
+  title: string;
+  description: string;
+  distance_from_start_km?: number;
+  related_place_id?: string;
 }
 
 interface RouteNarrative {
@@ -62,6 +71,7 @@ export interface VisibleRoute {
   difficulty: RouteRecord["difficulty"]["value"];
   water: RouteRecord["water"];
   practical?: RoutePractical;
+  highlights: RouteHighlight[];
   surface: string[];
   recommendedSeasons: string[];
   featured: RouteRecord["featured"];
@@ -177,6 +187,7 @@ export async function loadVisibleRoutes(root = process.cwd(), options: { editori
       summary: narrative.summary, routeType: record.route_type, direction: record.direction,
       startPlace, endPlace, waypointPlaces: waypointPlaces as VisiblePlace[], metrics: record.metrics,
       difficulty: record.difficulty.value, water: record.water, ...(record.practical ? { practical: record.practical } : {}), surface: record.surface.values,
+      highlights: record.highlights ?? [],
       recommendedSeasons: record.recommended_seasons, featured: record.featured,
       pointCount: record.track.point_count!, track,
       trackUrl: `/rute/${narrative.slug}/track.geojson`, gpxUrl: `/rute/${narrative.slug}/track.gpx`,
