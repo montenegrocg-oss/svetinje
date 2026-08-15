@@ -26,10 +26,15 @@ difficulty:
   value: moderate
 water:
   status: none
-  note: Подаци о води на рути још нису провјерени.
+  note: На рути нема извора са водом.
 surface:
-  values: []
-recommended_seasons: []
+  values:
+    - gravel
+    - rock
+recommended_seasons:
+  - spring
+  - summer
+  - autumn
 featured:
   enabled: true
   order: 1
@@ -37,5 +42,17 @@ approvals: []
 audit:
   created_at: 2026-08-15T12:00:00Z
   created_by: montenegro-cg
-  updated_at: 2026-08-15T13:22:31.954Z
+  updated_at: 2026-08-15T15:27:18.059Z
   updated_by: montenegro-cg
+practical:
+  parking:
+    status: available
+  trail_marking:
+    status: marked
+  difficult_sections:
+    status: none
+  footwear:
+    recommendation: Трекинг обућа
+  mobile_signal:
+    status: variable
+  last_verified_at: 2026-07-31
