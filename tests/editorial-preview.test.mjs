@@ -110,7 +110,9 @@ test("editorial preview loads a research place without summary, sections, or nar
   await writeFile(narrativeFile, `---\n${stringify(frontMatter)}---\n`, "utf8");
 
   const allowlist = JSON.parse(await readFile(allowlistFile, "utf8"));
-  allowlist.place_ids.push(id);
+  if (!allowlist.place_ids.includes(id)) {
+    allowlist.place_ids.push(id);
+  }
   await writeFile(allowlistFile, `${JSON.stringify(allowlist, null, 2)}\n`, "utf8");
 
   const visible = await loadEditorialPreviewPlaces(root);
