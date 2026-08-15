@@ -12,15 +12,6 @@ source_ids:
   - spc-eparhije-i-crkvene-opstine
   - mitropolija-manastirista-u-mitropoliji
   - mitropolija-markus-podmaine-2016
-section_sources:
-  introduction:
-    - mitropolija-muski-manastiri
-    - spc-eparhije-i-crkvene-opstine
-    - mitropolija-manastirista-u-mitropoliji
-    - mitropolija-markus-podmaine-2016
-  history:
-    - mitropolija-muski-manastiri
-    - mitropolija-markus-podmaine-2016
 approvals: []
 audit:
   created_at: 2026-08-03T11:46:30Z

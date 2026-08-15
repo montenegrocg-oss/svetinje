@@ -115,6 +115,24 @@ function assertSafeMarkdown(body: string, errors: Record<string, string>): void 
   }
 }
 
+export function migrateLegacyNarrativeProvenance(narrative: Record<string, any>) {
+  const sourceIds: string[] = [];
+  const seen = new Set<string>();
+  const add = (value: unknown) => {
+    if (typeof value !== "string" || !value.trim() || seen.has(value)) return;
+    seen.add(value);
+    sourceIds.push(value);
+  };
+  for (const value of Array.isArray(narrative.source_ids) ? narrative.source_ids : []) add(value);
+  for (const values of Object.values(narrative.section_sources ?? {})) {
+    for (const value of Array.isArray(values) ? values : []) add(value);
+  }
+  if (sourceIds.length > 0) narrative.source_ids = sourceIds;
+  else delete narrative.source_ids;
+  delete narrative.section_sources;
+  return narrative;
+}
+
 export async function updateCanonicalPlace(record: EditablePlaceRecord, body: UpdatePlaceBody, actor: string, now: Date): Promise<UpdatedCanonicalFiles> {
   const errors: Record<string, string> = {};
   const preferredName = requiredText(body.preferredName, "preferredName", errors);
@@ -148,7 +166,7 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   if (Object.keys(errors).length > 0) throw new AdminError("invalid_form_data", 400, "Place update is invalid", errors);
 
   const place = structuredClone(record.rawPlace);
-  const narrative = structuredClone(record.rawNarrative);
+  const narrative = migrateLegacyNarrativeProvenance(structuredClone(record.rawNarrative));
   if (browseAreaId) place.browse_area_id = browseAreaId; else delete place.browse_area_id;
   place.place_type ??= {};
   if (place.place_type.value !== placeType) place.place_type = { value: placeType, verification: resetVerification() };

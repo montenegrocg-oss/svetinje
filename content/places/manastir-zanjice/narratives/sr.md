@@ -9,13 +9,6 @@ preferred_name: Манастир Жањице
 summary: Манастир Жањице је утврђени комплекс са храмом Ваведења Пресвете Богородице на малом острву уз Луштицу.
 source_ids:
   - mitropolija-muski-manastiri
-section_sources:
-  introduction:
-    - mitropolija-muski-manastiri
-  history:
-    - mitropolija-muski-manastiri
-  location:
-    - mitropolija-muski-manastiri
 approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z

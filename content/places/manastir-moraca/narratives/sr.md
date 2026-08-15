@@ -9,11 +9,6 @@ preferred_name: Манастир Морача
 summary: Манастир Морача, посвећен Успењу Пресвете Богородице, подигнут је средином XIII вијека.
 source_ids:
   - mitropolija-muski-manastiri
-section_sources:
-  introduction:
-    - mitropolija-muski-manastiri
-  history:
-    - mitropolija-muski-manastiri
 approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z

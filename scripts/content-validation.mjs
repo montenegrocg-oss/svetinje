@@ -18,30 +18,6 @@ const SCHEMA_FILES = {
   policy: "publication-policy.schema.json",
 };
 
-const ALLOWED_SECTION_KEYS = new Set([
-  "introduction",
-  "history",
-  "consecration",
-  "spiritual-significance",
-  "architecture-and-art",
-  "frescoes-and-interior",
-  "crypt-of-all-saints",
-  "relics-icons-and-traditions",
-  "spiritual-and-cultural-life",
-  "services",
-  "visitor-information",
-  "verification-notes",
-  "practical-context",
-  "accessibility-context",
-  "discovery",
-  "foundation",
-  "saint-simeon",
-  "relics",
-  "canonization",
-  "feasts",
-  "spiritual-life",
-  "location",
-]);
 const ALLOWED_ROUTE_SECTION_KEYS = new Set(["about-route", "route-course", "water-rest", "safety", "equipment", "notes"]);
 
 const ENTITY_PATHS = [
@@ -309,26 +285,29 @@ function validateMarkdown(record) {
   }
   if (/(?:javascript|data|vbscript):/i.test(body)) errors.push(issue(file, "/body", "unsafe URI protocol is not allowed"));
 
-  const headings = [...body.matchAll(/^##\s+(.+)$/gm)];
   const headingKeys = [];
-  for (const heading of headings) {
-    const key = heading[1].match(/\s\{#([a-z0-9-]+)\}\s*$/)?.[1];
-    if (!key) {
-      if (PUBLIC_STATUSES.has(data.editorial_status)) errors.push(issue(file, "/body", "approved H2 headings require a stable {#section-key}"));
-      continue;
+  if (record.kind === "routeNarrative") {
+    const headings = [...body.matchAll(/^##\s+(.+)$/gm)];
+    for (const heading of headings) {
+      const key = heading[1].match(/\s\{#([a-z0-9-]+)\}\s*$/)?.[1];
+      if (!key) {
+        if (PUBLIC_STATUSES.has(data.editorial_status)) errors.push(issue(file, "/body", "approved H2 headings require a stable {#section-key}"));
+        continue;
+      }
+      if (!ALLOWED_ROUTE_SECTION_KEYS.has(key)) errors.push(issue(file, "/body", `unsupported section key ${key}`));
+      if (headingKeys.includes(key)) errors.push(issue(file, "/body", `duplicate section key ${key}`));
+      headingKeys.push(key);
     }
-    const allowedKeys = record.kind === "routeNarrative" ? ALLOWED_ROUTE_SECTION_KEYS : ALLOWED_SECTION_KEYS;
-    if (!allowedKeys.has(key)) errors.push(issue(file, "/body", `unsupported section key ${key}`));
-    if (headingKeys.includes(key)) errors.push(issue(file, "/body", `duplicate section key ${key}`));
-    headingKeys.push(key);
   }
   if (PUBLIC_STATUSES.has(data.editorial_status)) {
     if (/\b(?:TBD|TODO|FIXME|placeholder|lorem ipsum|to be confirmed)\b/i.test(`${JSON.stringify(data)}\n${body}`)) {
       errors.push(issue(file, "/", "approved content cannot contain placeholder markers"));
     }
   }
-  for (const key of Object.keys(data.section_sources ?? {})) {
-    if (!headingKeys.includes(key)) errors.push(issue(file, `/section_sources/${key}`, "section source key has no matching H2 section"));
+  if (record.kind === "routeNarrative") {
+    for (const key of Object.keys(data.section_sources ?? {})) {
+      if (!headingKeys.includes(key)) errors.push(issue(file, `/section_sources/${key}`, "section source key has no matching H2 section"));
+    }
   }
   if (data.locale === "sr" && body.trim() && !/[\u0400-\u04ff]/u.test(body)) {
     errors.push(issue(file, "/body", "Serbian source narrative must contain Cyrillic text"));

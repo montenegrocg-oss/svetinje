@@ -23,37 +23,6 @@ source_ids:
   - mitropolija-prepodobni-simeon-dajbabski-2026
   - mitropolija-otkrivanje-mostiju-simeona-dajbabe-2026
   - openstreetmap-dajbabe-way-1351594167
-section_sources:
-  introduction:
-    - mitropolija-muski-manastiri
-  discovery:
-    - mitropolija-muski-manastiri
-  foundation:
-    - mitropolija-muski-manastiri
-  architecture-and-art:
-    - mitropolija-muski-manastiri
-  frescoes-and-interior:
-    - mitropolija-muski-manastiri
-  saint-simeon:
-    - mitropolija-prepodobni-simeon-dajbabski-2026
-  relics:
-    - mitropolija-prepodobni-simeon-dajbabski-2026
-    - mitropolija-otkrivanje-mostiju-simeona-dajbabe-2026
-  canonization:
-    - mitropolija-prepodobni-simeon-dajbabski-2026
-  relics-icons-and-traditions:
-    - mitropolija-muski-manastiri
-  feasts:
-    - mitropolija-muski-manastiri
-  spiritual-life:
-    - mitropolija-muski-manastiri
-  location:
-    - mitropolija-muski-manastiri
-    - openstreetmap-dajbabe-way-1351594167
-  visitor-information:
-    - mitropolija-muski-manastiri
-  verification-notes:
-    - openstreetmap-dajbabe-way-1351594167
 approvals: []
 audit:
   created_at: 2026-08-04T10:32:37Z

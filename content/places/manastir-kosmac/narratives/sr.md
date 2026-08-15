@@ -7,8 +7,8 @@ translation_status: source
 slug: manastir-kosmac
 preferred_name: Манастир Космач
 summary: Манастир Космач налази се на истоименом острву у сјеверозападном дијелу Скадарског језера.
-source_ids: [mitropolija-muski-manastiri]
-section_sources: { introduction: [mitropolija-muski-manastiri], history: [mitropolija-muski-manastiri], location: [mitropolija-muski-manastiri] }
+source_ids:
+  - mitropolija-muski-manastiri
 approvals: []
 audit: { created_at: 2026-08-07T12:00:00Z, created_by: codex, updated_at: 2026-08-07T12:00:00Z, updated_by: codex }
 ---

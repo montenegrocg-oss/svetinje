@@ -31,7 +31,6 @@
     "seo_description": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
     "source_revision": { "$ref": "common.schema.json#/$defs/gitSha" },
     "source_ids": { "$ref": "common.schema.json#/$defs/sourceIdList" },
-    "section_sources": { "$ref": "#/$defs/sectionSources" },
     "approvals": { "$ref": "common.schema.json#/$defs/approvals" },
     "audit": { "$ref": "common.schema.json#/$defs/audit" }
   },
@@ -74,42 +73,6 @@
         "context": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
         "source_ids": { "$ref": "common.schema.json#/$defs/sourceIdList" },
         "verification_status": { "$ref": "common.schema.json#/$defs/verificationStatus" }
-      }
-    },
-    "sectionKey": {
-      "enum": [
-        "introduction",
-        "history",
-        "consecration",
-        "spiritual-significance",
-        "architecture-and-art",
-        "frescoes-and-interior",
-        "crypt-of-all-saints",
-        "relics-icons-and-traditions",
-        "spiritual-and-cultural-life",
-        "services",
-        "visitor-information",
-        "verification-notes",
-        "practical-context",
-        "accessibility-context",
-        "discovery",
-        "foundation",
-        "saint-simeon",
-        "relics",
-        "canonization",
-        "feasts",
-        "spiritual-life",
-        "location"
-      ]
-    },
-    "sectionSources": {
-      "type": "object",
-      "propertyNames": { "$ref": "#/$defs/sectionKey" },
-      "additionalProperties": {
-        "allOf": [
-          { "$ref": "common.schema.json#/$defs/sourceIdList" },
-          { "type": "array", "minItems": 1 }
-        ]
       }
     }
   }

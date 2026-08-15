@@ -5460,7 +5460,7 @@ return errors === 0;
 validate37.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
 export const validateNarrative = validate92;
-const schema113 = {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://svetinje.me/schemas/narrative.schema.json","title":"Svetinje.me localized narrative front matter","type":"object","additionalProperties":false,"required":["schema_version","place_id","locale","editorial_status","translation_status","approvals","audit"],"properties":{"schema_version":{"const":1},"place_id":{"$ref":"common.schema.json#/$defs/entityId"},"locale":{"$ref":"common.schema.json#/$defs/locale"},"editorial_status":{"$ref":"common.schema.json#/$defs/editorialStatus"},"translation_status":{"$ref":"common.schema.json#/$defs/translationStatus"},"slug":{"$ref":"common.schema.json#/$defs/slug"},"preferred_name":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"short_name":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"alternate_names":{"type":"array","items":{"$ref":"#/$defs/alternateName"}},"summary":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"seo_title":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"seo_description":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"source_revision":{"$ref":"common.schema.json#/$defs/gitSha"},"source_ids":{"$ref":"common.schema.json#/$defs/sourceIdList"},"section_sources":{"$ref":"#/$defs/sectionSources"},"approvals":{"$ref":"common.schema.json#/$defs/approvals"},"audit":{"$ref":"common.schema.json#/$defs/audit"}},"allOf":[{"if":{"properties":{"locale":{"const":"sr"}},"required":["locale"]},"then":{"properties":{"translation_status":{"const":"source"}}}},{"if":{"properties":{"locale":{"enum":["ru","en"]}},"required":["locale"]},"then":{"required":["source_revision"],"properties":{"translation_status":{"enum":["missing","draft","in-review","approved","published","outdated","archived"]}}}},{"if":{"properties":{"editorial_status":{"enum":["approved","published"]}},"required":["editorial_status"]},"then":{"required":["slug","preferred_name","summary","seo_title","seo_description"],"properties":{"approvals":{"type":"array","minItems":3}}}}],"$defs":{"alternateName":{"type":"object","additionalProperties":false,"required":["name","context","verification_status"],"properties":{"name":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"context":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"source_ids":{"$ref":"common.schema.json#/$defs/sourceIdList"},"verification_status":{"$ref":"common.schema.json#/$defs/verificationStatus"}}},"sectionKey":{"enum":["introduction","history","consecration","spiritual-significance","architecture-and-art","frescoes-and-interior","crypt-of-all-saints","relics-icons-and-traditions","spiritual-and-cultural-life","services","visitor-information","verification-notes","practical-context","accessibility-context","discovery","foundation","saint-simeon","relics","canonization","feasts","spiritual-life","location"]},"sectionSources":{"type":"object","propertyNames":{"$ref":"#/$defs/sectionKey"},"additionalProperties":{"allOf":[{"$ref":"common.schema.json#/$defs/sourceIdList"},{"type":"array","minItems":1}]}}}};
+const schema113 = {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://svetinje.me/schemas/narrative.schema.json","title":"Svetinje.me localized narrative front matter","type":"object","additionalProperties":false,"required":["schema_version","place_id","locale","editorial_status","translation_status","approvals","audit"],"properties":{"schema_version":{"const":1},"place_id":{"$ref":"common.schema.json#/$defs/entityId"},"locale":{"$ref":"common.schema.json#/$defs/locale"},"editorial_status":{"$ref":"common.schema.json#/$defs/editorialStatus"},"translation_status":{"$ref":"common.schema.json#/$defs/translationStatus"},"slug":{"$ref":"common.schema.json#/$defs/slug"},"preferred_name":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"short_name":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"alternate_names":{"type":"array","items":{"$ref":"#/$defs/alternateName"}},"summary":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"seo_title":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"seo_description":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"source_revision":{"$ref":"common.schema.json#/$defs/gitSha"},"source_ids":{"$ref":"common.schema.json#/$defs/sourceIdList"},"approvals":{"$ref":"common.schema.json#/$defs/approvals"},"audit":{"$ref":"common.schema.json#/$defs/audit"}},"allOf":[{"if":{"properties":{"locale":{"const":"sr"}},"required":["locale"]},"then":{"properties":{"translation_status":{"const":"source"}}}},{"if":{"properties":{"locale":{"enum":["ru","en"]}},"required":["locale"]},"then":{"required":["source_revision"],"properties":{"translation_status":{"enum":["missing","draft","in-review","approved","published","outdated","archived"]}}}},{"if":{"properties":{"editorial_status":{"enum":["approved","published"]}},"required":["editorial_status"]},"then":{"required":["slug","preferred_name","summary","seo_title","seo_description"],"properties":{"approvals":{"type":"array","minItems":3}}}}],"$defs":{"alternateName":{"type":"object","additionalProperties":false,"required":["name","context","verification_status"],"properties":{"name":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"context":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"source_ids":{"$ref":"common.schema.json#/$defs/sourceIdList"},"verification_status":{"$ref":"common.schema.json#/$defs/verificationStatus"}}}}};
 const schema118 = {"type":"string","pattern":"^[a-z0-9]+(?:-[a-z0-9]+)*$","minLength":2,"maxLength":80};
 const schema121 = {"type":"object","additionalProperties":false,"required":["name","context","verification_status"],"properties":{"name":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"context":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"source_ids":{"$ref":"common.schema.json#/$defs/sourceIdList"},"verification_status":{"$ref":"common.schema.json#/$defs/verificationStatus"}}};
 
@@ -5716,94 +5716,11 @@ return errors === 0;
 }
 validate93.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
-const schema131 = {"type":"object","propertyNames":{"$ref":"#/$defs/sectionKey"},"additionalProperties":{"allOf":[{"$ref":"common.schema.json#/$defs/sourceIdList"},{"type":"array","minItems":1}]}};
-const schema132 = {"enum":["introduction","history","consecration","spiritual-significance","architecture-and-art","frescoes-and-interior","crypt-of-all-saints","relics-icons-and-traditions","spiritual-and-cultural-life","services","visitor-information","verification-notes","practical-context","accessibility-context","discovery","foundation","saint-simeon","relics","canonization","feasts","spiritual-life","location"]};
 
 function validate98(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
 const evaluated0 = validate98.evaluated;
-if(evaluated0.dynamicProps){
-evaluated0.props = undefined;
-}
-if(evaluated0.dynamicItems){
-evaluated0.items = undefined;
-}
-if(data && typeof data == "object" && !Array.isArray(data)){
-for(const key0 in data){
-const _errs1 = errors;
-if(!((((((((((((((((((((((key0 === "introduction") || (key0 === "history")) || (key0 === "consecration")) || (key0 === "spiritual-significance")) || (key0 === "architecture-and-art")) || (key0 === "frescoes-and-interior")) || (key0 === "crypt-of-all-saints")) || (key0 === "relics-icons-and-traditions")) || (key0 === "spiritual-and-cultural-life")) || (key0 === "services")) || (key0 === "visitor-information")) || (key0 === "verification-notes")) || (key0 === "practical-context")) || (key0 === "accessibility-context")) || (key0 === "discovery")) || (key0 === "foundation")) || (key0 === "saint-simeon")) || (key0 === "relics")) || (key0 === "canonization")) || (key0 === "feasts")) || (key0 === "spiritual-life")) || (key0 === "location"))){
-const err0 = {instancePath,schemaPath:"#/$defs/sectionKey/enum",keyword:"enum",params:{allowedValues: schema132.enum},message:"must be equal to one of the allowed values",propertyName:key0};
-if(vErrors === null){
-vErrors = [err0];
-}
-else {
-vErrors.push(err0);
-}
-errors++;
-}
-var valid0 = _errs1 === errors;
-if(!valid0){
-const err1 = {instancePath,schemaPath:"#/propertyNames",keyword:"propertyNames",params:{propertyName: key0},message:"property name must be valid"};
-if(vErrors === null){
-vErrors = [err1];
-}
-else {
-vErrors.push(err1);
-}
-errors++;
-}
-}
-for(const key1 in data){
-let data0 = data[key1];
-if(!(validate94(data0, {instancePath:instancePath+"/" + key1.replace(/~/g, "~0").replace(/\//g, "~1"),parentData:data,parentDataProperty:key1,rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate94.errors : vErrors.concat(validate94.errors);
-errors = vErrors.length;
-}
-if(Array.isArray(data0)){
-if(data0.length < 1){
-const err2 = {instancePath:instancePath+"/" + key1.replace(/~/g, "~0").replace(/\//g, "~1"),schemaPath:"#/additionalProperties/allOf/1/minItems",keyword:"minItems",params:{limit: 1},message:"must NOT have fewer than 1 items"};
-if(vErrors === null){
-vErrors = [err2];
-}
-else {
-vErrors.push(err2);
-}
-errors++;
-}
-}
-else {
-const err3 = {instancePath:instancePath+"/" + key1.replace(/~/g, "~0").replace(/\//g, "~1"),schemaPath:"#/additionalProperties/allOf/1/type",keyword:"type",params:{type: "array"},message:"must be array"};
-if(vErrors === null){
-vErrors = [err3];
-}
-else {
-vErrors.push(err3);
-}
-errors++;
-}
-}
-}
-else {
-const err4 = {instancePath,schemaPath:"#/type",keyword:"type",params:{type: "object"},message:"must be object"};
-if(vErrors === null){
-vErrors = [err4];
-}
-else {
-vErrors.push(err4);
-}
-errors++;
-}
-validate98.errors = vErrors;
-return errors === 0;
-}
-validate98.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
-
-
-function validate101(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
-let vErrors = null;
-let errors = 0;
-const evaluated0 = validate101.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -5829,16 +5746,16 @@ vErrors.push(err0);
 }
 errors++;
 }
-validate101.errors = vErrors;
+validate98.errors = vErrors;
 return errors === 0;
 }
-validate101.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
+validate98.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
 
 
-function validate104(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate101(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate104.evaluated;
+const evaluated0 = validate101.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -6069,10 +5986,10 @@ vErrors.push(err19);
 }
 errors++;
 }
-validate104.errors = vErrors;
+validate101.errors = vErrors;
 return errors === 0;
 }
-validate104.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate101.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
 
 function validate92(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
@@ -6854,21 +6771,15 @@ vErrors = vErrors === null ? validate94.errors : vErrors.concat(validate94.error
 errors = vErrors.length;
 }
 }
-if(data.section_sources !== undefined){
-if(!(validate98(data.section_sources, {instancePath:instancePath+"/section_sources",parentData:data,parentDataProperty:"section_sources",rootData,dynamicAnchors}))){
+if(data.approvals !== undefined){
+if(!(validate98(data.approvals, {instancePath:instancePath+"/approvals",parentData:data,parentDataProperty:"approvals",rootData,dynamicAnchors}))){
 vErrors = vErrors === null ? validate98.errors : vErrors.concat(validate98.errors);
 errors = vErrors.length;
 }
 }
-if(data.approvals !== undefined){
-if(!(validate101(data.approvals, {instancePath:instancePath+"/approvals",parentData:data,parentDataProperty:"approvals",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate101.errors : vErrors.concat(validate101.errors);
-errors = vErrors.length;
-}
-}
 if(data.audit !== undefined){
-if(!(validate104(data.audit, {instancePath:instancePath+"/audit",parentData:data,parentDataProperty:"audit",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate104.errors : vErrors.concat(validate104.errors);
+if(!(validate101(data.audit, {instancePath:instancePath+"/audit",parentData:data,parentDataProperty:"audit",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate101.errors : vErrors.concat(validate101.errors);
 errors = vErrors.length;
 }
 }
@@ -6888,19 +6799,19 @@ return errors === 0;
 }
 validate92.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
-export const validateRoute = validate106;
-const schema139 = {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://svetinje.me/schemas/route.schema.json","title":"Svetinje.me hiking route record","type":"object","additionalProperties":false,"required":["schema_version","id","editorial_status","route_type","direction","relationships","track","metrics","difficulty","water","surface","recommended_seasons","featured","approvals","audit"],"properties":{"schema_version":{"const":1},"id":{"$ref":"common.schema.json#/$defs/entityId"},"editorial_status":{"$ref":"common.schema.json#/$defs/editorialStatus"},"route_type":{"enum":["hiking"]},"direction":{"enum":["one-way","out-and-back","circular"]},"relationships":{"$ref":"#/$defs/relationships"},"track":{"$ref":"#/$defs/track"},"metrics":{"$ref":"#/$defs/metrics"},"difficulty":{"$ref":"#/$defs/difficulty"},"water":{"$ref":"#/$defs/water"},"practical":{"$ref":"#/$defs/practical"},"highlights":{"$ref":"#/$defs/highlights"},"surface":{"$ref":"#/$defs/surface"},"recommended_seasons":{"$ref":"#/$defs/recommendedSeasons"},"featured":{"$ref":"#/$defs/featured"},"approvals":{"$ref":"common.schema.json#/$defs/approvals"},"audit":{"$ref":"common.schema.json#/$defs/audit"}},"allOf":[{"if":{"properties":{"track":{"type":"object","properties":{"status":{"const":"ready"}},"required":["status"]}},"required":["track"]},"then":{"properties":{"track":{"type":"object","required":["object_key","point_count","endpoint_validation"]},"metrics":{"type":"object","required":["distance_m"]}}}},{"if":{"properties":{"editorial_status":{"enum":["approved","published"]}},"required":["editorial_status"]},"then":{"properties":{"approvals":{"type":"array","minItems":2}}}}],"$defs":{"relationships":{"type":"object","additionalProperties":false,"required":["start_place_id","end_place_id","waypoint_place_ids"],"properties":{"start_place_id":{"$ref":"common.schema.json#/$defs/entityId"},"end_place_id":{"$ref":"common.schema.json#/$defs/entityId"},"waypoint_place_ids":{"$ref":"common.schema.json#/$defs/entityIdList"}}},"endpointValidation":{"type":"object","additionalProperties":false,"required":["start_distance_m","end_distance_m","threshold_m"],"properties":{"start_distance_m":{"type":"number","minimum":0},"end_distance_m":{"type":"number","minimum":0},"threshold_m":{"type":"number","exclusiveMinimum":0}}},"track":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["missing","ready"]},"object_key":{"type":"string","pattern":"^content/routes/[a-z0-9]+(?:-[a-z0-9]+)*/track\\.geojson$"},"point_count":{"type":"integer","minimum":2,"maximum":100000},"endpoint_validation":{"$ref":"#/$defs/endpointValidation"}}},"metrics":{"type":"object","additionalProperties":false,"properties":{"distance_m":{"type":"number","exclusiveMinimum":0},"ascent_m":{"type":"number","minimum":0},"descent_m":{"type":"number","minimum":0},"min_elevation_m":{"type":"number"},"max_elevation_m":{"type":"number"},"recorded_duration_minutes":{"type":"integer","minimum":0},"estimated_duration_minutes":{"type":"integer","minimum":1}}},"difficulty":{"type":"object","additionalProperties":false,"required":["value"],"properties":{"value":{"enum":["easy","moderate","demanding"]}}},"water":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","none","available","requires-verification"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"practical":{"type":"object","additionalProperties":false,"properties":{"start_access":{"$ref":"#/$defs/practicalNote"},"parking":{"$ref":"#/$defs/parking"},"trail_marking":{"$ref":"#/$defs/trailMarking"},"difficult_sections":{"$ref":"#/$defs/difficultSections"},"footwear":{"$ref":"#/$defs/footwear"},"mobile_signal":{"$ref":"#/$defs/mobileSignal"},"weather":{"$ref":"#/$defs/practicalNote"},"last_verified_at":{"type":"string","format":"date"}}},"practicalNote":{"type":"object","additionalProperties":false,"required":["note"],"properties":{"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"parking":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","available","limited","none"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"trailMarking":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","marked","partially-marked","unmarked"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"difficultSections":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","none","present"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"footwear":{"type":"object","additionalProperties":false,"required":["recommendation"],"properties":{"recommendation":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"mobileSignal":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","good","variable","poor","none"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"highlights":{"type":"array","items":{"$ref":"#/$defs/highlight"}},"highlight":{"type":"object","additionalProperties":false,"required":["id","title","description"],"properties":{"id":{"$ref":"common.schema.json#/$defs/entityId"},"title":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"description":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"distance_from_start_km":{"type":"number","minimum":0},"related_place_id":{"$ref":"common.schema.json#/$defs/entityId"}}},"surface":{"type":"object","additionalProperties":false,"required":["values"],"properties":{"values":{"type":"array","uniqueItems":true,"items":{"enum":["paved","gravel","trail","rock","steps","other"]}}}},"recommendedSeasons":{"type":"array","uniqueItems":true,"items":{"enum":["spring","summer","autumn","winter"]}},"featured":{"type":"object","additionalProperties":false,"required":["enabled","order"],"properties":{"enabled":{"type":"boolean"},"order":{"type":"integer","minimum":1}}}}};
-const schema149 = {"type":"object","additionalProperties":false,"properties":{"distance_m":{"type":"number","exclusiveMinimum":0},"ascent_m":{"type":"number","minimum":0},"descent_m":{"type":"number","minimum":0},"min_elevation_m":{"type":"number"},"max_elevation_m":{"type":"number"},"recorded_duration_minutes":{"type":"integer","minimum":0},"estimated_duration_minutes":{"type":"integer","minimum":1}}};
-const schema150 = {"type":"object","additionalProperties":false,"required":["value"],"properties":{"value":{"enum":["easy","moderate","demanding"]}}};
-const schema172 = {"type":"object","additionalProperties":false,"required":["values"],"properties":{"values":{"type":"array","uniqueItems":true,"items":{"enum":["paved","gravel","trail","rock","steps","other"]}}}};
-const schema173 = {"type":"array","uniqueItems":true,"items":{"enum":["spring","summer","autumn","winter"]}};
-const schema174 = {"type":"object","additionalProperties":false,"required":["enabled","order"],"properties":{"enabled":{"type":"boolean"},"order":{"type":"integer","minimum":1}}};
-const schema142 = {"type":"object","additionalProperties":false,"required":["start_place_id","end_place_id","waypoint_place_ids"],"properties":{"start_place_id":{"$ref":"common.schema.json#/$defs/entityId"},"end_place_id":{"$ref":"common.schema.json#/$defs/entityId"},"waypoint_place_ids":{"$ref":"common.schema.json#/$defs/entityIdList"}}};
+export const validateRoute = validate103;
+const schema137 = {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://svetinje.me/schemas/route.schema.json","title":"Svetinje.me hiking route record","type":"object","additionalProperties":false,"required":["schema_version","id","editorial_status","route_type","direction","relationships","track","metrics","difficulty","water","surface","recommended_seasons","featured","approvals","audit"],"properties":{"schema_version":{"const":1},"id":{"$ref":"common.schema.json#/$defs/entityId"},"editorial_status":{"$ref":"common.schema.json#/$defs/editorialStatus"},"route_type":{"enum":["hiking"]},"direction":{"enum":["one-way","out-and-back","circular"]},"relationships":{"$ref":"#/$defs/relationships"},"track":{"$ref":"#/$defs/track"},"metrics":{"$ref":"#/$defs/metrics"},"difficulty":{"$ref":"#/$defs/difficulty"},"water":{"$ref":"#/$defs/water"},"practical":{"$ref":"#/$defs/practical"},"highlights":{"$ref":"#/$defs/highlights"},"surface":{"$ref":"#/$defs/surface"},"recommended_seasons":{"$ref":"#/$defs/recommendedSeasons"},"featured":{"$ref":"#/$defs/featured"},"approvals":{"$ref":"common.schema.json#/$defs/approvals"},"audit":{"$ref":"common.schema.json#/$defs/audit"}},"allOf":[{"if":{"properties":{"track":{"type":"object","properties":{"status":{"const":"ready"}},"required":["status"]}},"required":["track"]},"then":{"properties":{"track":{"type":"object","required":["object_key","point_count","endpoint_validation"]},"metrics":{"type":"object","required":["distance_m"]}}}},{"if":{"properties":{"editorial_status":{"enum":["approved","published"]}},"required":["editorial_status"]},"then":{"properties":{"approvals":{"type":"array","minItems":2}}}}],"$defs":{"relationships":{"type":"object","additionalProperties":false,"required":["start_place_id","end_place_id","waypoint_place_ids"],"properties":{"start_place_id":{"$ref":"common.schema.json#/$defs/entityId"},"end_place_id":{"$ref":"common.schema.json#/$defs/entityId"},"waypoint_place_ids":{"$ref":"common.schema.json#/$defs/entityIdList"}}},"endpointValidation":{"type":"object","additionalProperties":false,"required":["start_distance_m","end_distance_m","threshold_m"],"properties":{"start_distance_m":{"type":"number","minimum":0},"end_distance_m":{"type":"number","minimum":0},"threshold_m":{"type":"number","exclusiveMinimum":0}}},"track":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["missing","ready"]},"object_key":{"type":"string","pattern":"^content/routes/[a-z0-9]+(?:-[a-z0-9]+)*/track\\.geojson$"},"point_count":{"type":"integer","minimum":2,"maximum":100000},"endpoint_validation":{"$ref":"#/$defs/endpointValidation"}}},"metrics":{"type":"object","additionalProperties":false,"properties":{"distance_m":{"type":"number","exclusiveMinimum":0},"ascent_m":{"type":"number","minimum":0},"descent_m":{"type":"number","minimum":0},"min_elevation_m":{"type":"number"},"max_elevation_m":{"type":"number"},"recorded_duration_minutes":{"type":"integer","minimum":0},"estimated_duration_minutes":{"type":"integer","minimum":1}}},"difficulty":{"type":"object","additionalProperties":false,"required":["value"],"properties":{"value":{"enum":["easy","moderate","demanding"]}}},"water":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","none","available","requires-verification"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"practical":{"type":"object","additionalProperties":false,"properties":{"start_access":{"$ref":"#/$defs/practicalNote"},"parking":{"$ref":"#/$defs/parking"},"trail_marking":{"$ref":"#/$defs/trailMarking"},"difficult_sections":{"$ref":"#/$defs/difficultSections"},"footwear":{"$ref":"#/$defs/footwear"},"mobile_signal":{"$ref":"#/$defs/mobileSignal"},"weather":{"$ref":"#/$defs/practicalNote"},"last_verified_at":{"type":"string","format":"date"}}},"practicalNote":{"type":"object","additionalProperties":false,"required":["note"],"properties":{"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"parking":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","available","limited","none"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"trailMarking":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","marked","partially-marked","unmarked"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"difficultSections":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","none","present"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"footwear":{"type":"object","additionalProperties":false,"required":["recommendation"],"properties":{"recommendation":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"mobileSignal":{"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","good","variable","poor","none"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}},"highlights":{"type":"array","items":{"$ref":"#/$defs/highlight"}},"highlight":{"type":"object","additionalProperties":false,"required":["id","title","description"],"properties":{"id":{"$ref":"common.schema.json#/$defs/entityId"},"title":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"description":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"distance_from_start_km":{"type":"number","minimum":0},"related_place_id":{"$ref":"common.schema.json#/$defs/entityId"}}},"surface":{"type":"object","additionalProperties":false,"required":["values"],"properties":{"values":{"type":"array","uniqueItems":true,"items":{"enum":["paved","gravel","trail","rock","steps","other"]}}}},"recommendedSeasons":{"type":"array","uniqueItems":true,"items":{"enum":["spring","summer","autumn","winter"]}},"featured":{"type":"object","additionalProperties":false,"required":["enabled","order"],"properties":{"enabled":{"type":"boolean"},"order":{"type":"integer","minimum":1}}}}};
+const schema147 = {"type":"object","additionalProperties":false,"properties":{"distance_m":{"type":"number","exclusiveMinimum":0},"ascent_m":{"type":"number","minimum":0},"descent_m":{"type":"number","minimum":0},"min_elevation_m":{"type":"number"},"max_elevation_m":{"type":"number"},"recorded_duration_minutes":{"type":"integer","minimum":0},"estimated_duration_minutes":{"type":"integer","minimum":1}}};
+const schema148 = {"type":"object","additionalProperties":false,"required":["value"],"properties":{"value":{"enum":["easy","moderate","demanding"]}}};
+const schema170 = {"type":"object","additionalProperties":false,"required":["values"],"properties":{"values":{"type":"array","uniqueItems":true,"items":{"enum":["paved","gravel","trail","rock","steps","other"]}}}};
+const schema171 = {"type":"array","uniqueItems":true,"items":{"enum":["spring","summer","autumn","winter"]}};
+const schema172 = {"type":"object","additionalProperties":false,"required":["enabled","order"],"properties":{"enabled":{"type":"boolean"},"order":{"type":"integer","minimum":1}}};
+const schema140 = {"type":"object","additionalProperties":false,"required":["start_place_id","end_place_id","waypoint_place_ids"],"properties":{"start_place_id":{"$ref":"common.schema.json#/$defs/entityId"},"end_place_id":{"$ref":"common.schema.json#/$defs/entityId"},"waypoint_place_ids":{"$ref":"common.schema.json#/$defs/entityIdList"}}};
 
-function validate108(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate105(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate108.evaluated;
+const evaluated0 = validate105.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -6985,16 +6896,16 @@ vErrors.push(err5);
 }
 errors++;
 }
-validate108.errors = vErrors;
+validate105.errors = vErrors;
 return errors === 0;
 }
-validate108.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
+validate105.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
 
 
-function validate107(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate104(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate107.evaluated;
+const evaluated0 = validate104.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -7135,8 +7046,8 @@ errors++;
 }
 }
 if(data.waypoint_place_ids !== undefined){
-if(!(validate108(data.waypoint_place_ids, {instancePath:instancePath+"/waypoint_place_ids",parentData:data,parentDataProperty:"waypoint_place_ids",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate108.errors : vErrors.concat(validate108.errors);
+if(!(validate105(data.waypoint_place_ids, {instancePath:instancePath+"/waypoint_place_ids",parentData:data,parentDataProperty:"waypoint_place_ids",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate105.errors : vErrors.concat(validate105.errors);
 errors = vErrors.length;
 }
 }
@@ -7151,19 +7062,19 @@ vErrors.push(err12);
 }
 errors++;
 }
-validate107.errors = vErrors;
+validate104.errors = vErrors;
 return errors === 0;
 }
-validate107.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate104.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
-const schema147 = {"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["missing","ready"]},"object_key":{"type":"string","pattern":"^content/routes/[a-z0-9]+(?:-[a-z0-9]+)*/track\\.geojson$"},"point_count":{"type":"integer","minimum":2,"maximum":100000},"endpoint_validation":{"$ref":"#/$defs/endpointValidation"}}};
-const schema148 = {"type":"object","additionalProperties":false,"required":["start_distance_m","end_distance_m","threshold_m"],"properties":{"start_distance_m":{"type":"number","minimum":0},"end_distance_m":{"type":"number","minimum":0},"threshold_m":{"type":"number","exclusiveMinimum":0}}};
+const schema145 = {"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["missing","ready"]},"object_key":{"type":"string","pattern":"^content/routes/[a-z0-9]+(?:-[a-z0-9]+)*/track\\.geojson$"},"point_count":{"type":"integer","minimum":2,"maximum":100000},"endpoint_validation":{"$ref":"#/$defs/endpointValidation"}}};
+const schema146 = {"type":"object","additionalProperties":false,"required":["start_distance_m","end_distance_m","threshold_m"],"properties":{"start_distance_m":{"type":"number","minimum":0},"end_distance_m":{"type":"number","minimum":0},"threshold_m":{"type":"number","exclusiveMinimum":0}}};
 const pattern64 = new RegExp("^content/routes/[a-z0-9]+(?:-[a-z0-9]+)*/track\\.geojson$", "u");
 
-function validate111(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate108(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate111.evaluated;
+const evaluated0 = validate108.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -7196,7 +7107,7 @@ errors++;
 if(data.status !== undefined){
 let data0 = data.status;
 if(!((data0 === "missing") || (data0 === "ready"))){
-const err2 = {instancePath:instancePath+"/status",schemaPath:"#/properties/status/enum",keyword:"enum",params:{allowedValues: schema147.properties.status.enum},message:"must be equal to one of the allowed values"};
+const err2 = {instancePath:instancePath+"/status",schemaPath:"#/properties/status/enum",keyword:"enum",params:{allowedValues: schema145.properties.status.enum},message:"must be equal to one of the allowed values"};
 if(vErrors === null){
 vErrors = [err2];
 }
@@ -7409,17 +7320,17 @@ vErrors.push(err19);
 }
 errors++;
 }
-validate111.errors = vErrors;
+validate108.errors = vErrors;
 return errors === 0;
 }
-validate111.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate108.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
-const schema151 = {"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","none","available","requires-verification"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}};
+const schema149 = {"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","none","available","requires-verification"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}};
 
-function validate113(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate110(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate113.evaluated;
+const evaluated0 = validate110.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -7452,7 +7363,7 @@ errors++;
 if(data.status !== undefined){
 let data0 = data.status;
 if(!((((data0 === "unknown") || (data0 === "none")) || (data0 === "available")) || (data0 === "requires-verification"))){
-const err2 = {instancePath:instancePath+"/status",schemaPath:"#/properties/status/enum",keyword:"enum",params:{allowedValues: schema151.properties.status.enum},message:"must be equal to one of the allowed values"};
+const err2 = {instancePath:instancePath+"/status",schemaPath:"#/properties/status/enum",keyword:"enum",params:{allowedValues: schema149.properties.status.enum},message:"must be equal to one of the allowed values"};
 if(vErrors === null){
 vErrors = [err2];
 }
@@ -7508,18 +7419,18 @@ vErrors.push(err6);
 }
 errors++;
 }
-validate113.errors = vErrors;
+validate110.errors = vErrors;
 return errors === 0;
 }
-validate113.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate110.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
-const schema153 = {"type":"object","additionalProperties":false,"properties":{"start_access":{"$ref":"#/$defs/practicalNote"},"parking":{"$ref":"#/$defs/parking"},"trail_marking":{"$ref":"#/$defs/trailMarking"},"difficult_sections":{"$ref":"#/$defs/difficultSections"},"footwear":{"$ref":"#/$defs/footwear"},"mobile_signal":{"$ref":"#/$defs/mobileSignal"},"weather":{"$ref":"#/$defs/practicalNote"},"last_verified_at":{"type":"string","format":"date"}}};
-const schema154 = {"type":"object","additionalProperties":false,"required":["note"],"properties":{"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}};
+const schema151 = {"type":"object","additionalProperties":false,"properties":{"start_access":{"$ref":"#/$defs/practicalNote"},"parking":{"$ref":"#/$defs/parking"},"trail_marking":{"$ref":"#/$defs/trailMarking"},"difficult_sections":{"$ref":"#/$defs/difficultSections"},"footwear":{"$ref":"#/$defs/footwear"},"mobile_signal":{"$ref":"#/$defs/mobileSignal"},"weather":{"$ref":"#/$defs/practicalNote"},"last_verified_at":{"type":"string","format":"date"}}};
+const schema152 = {"type":"object","additionalProperties":false,"required":["note"],"properties":{"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}};
 
-function validate116(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate113(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate116.evaluated;
+const evaluated0 = validate113.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -7595,17 +7506,17 @@ vErrors.push(err5);
 }
 errors++;
 }
-validate116.errors = vErrors;
+validate113.errors = vErrors;
 return errors === 0;
 }
-validate116.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate113.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
-const schema156 = {"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","available","limited","none"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}};
+const schema154 = {"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","available","limited","none"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}};
 
-function validate118(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate115(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate118.evaluated;
+const evaluated0 = validate115.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -7638,6 +7549,105 @@ errors++;
 if(data.status !== undefined){
 let data0 = data.status;
 if(!((((data0 === "unknown") || (data0 === "available")) || (data0 === "limited")) || (data0 === "none"))){
+const err2 = {instancePath:instancePath+"/status",schemaPath:"#/properties/status/enum",keyword:"enum",params:{allowedValues: schema154.properties.status.enum},message:"must be equal to one of the allowed values"};
+if(vErrors === null){
+vErrors = [err2];
+}
+else {
+vErrors.push(err2);
+}
+errors++;
+}
+}
+if(data.note !== undefined){
+let data1 = data.note;
+if(typeof data1 === "string"){
+if(func2(data1) < 1){
+const err3 = {instancePath:instancePath+"/note",schemaPath:"common.schema.json#/$defs/nonEmptyText/minLength",keyword:"minLength",params:{limit: 1},message:"must NOT have fewer than 1 characters"};
+if(vErrors === null){
+vErrors = [err3];
+}
+else {
+vErrors.push(err3);
+}
+errors++;
+}
+if(!pattern5.test(data1)){
+const err4 = {instancePath:instancePath+"/note",schemaPath:"common.schema.json#/$defs/nonEmptyText/pattern",keyword:"pattern",params:{pattern: "\\S"},message:"must match pattern \""+"\\S"+"\""};
+if(vErrors === null){
+vErrors = [err4];
+}
+else {
+vErrors.push(err4);
+}
+errors++;
+}
+}
+else {
+const err5 = {instancePath:instancePath+"/note",schemaPath:"common.schema.json#/$defs/nonEmptyText/type",keyword:"type",params:{type: "string"},message:"must be string"};
+if(vErrors === null){
+vErrors = [err5];
+}
+else {
+vErrors.push(err5);
+}
+errors++;
+}
+}
+}
+else {
+const err6 = {instancePath,schemaPath:"#/type",keyword:"type",params:{type: "object"},message:"must be object"};
+if(vErrors === null){
+vErrors = [err6];
+}
+else {
+vErrors.push(err6);
+}
+errors++;
+}
+validate115.errors = vErrors;
+return errors === 0;
+}
+validate115.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+
+const schema156 = {"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","marked","partially-marked","unmarked"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}};
+
+function validate117(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+let vErrors = null;
+let errors = 0;
+const evaluated0 = validate117.evaluated;
+if(evaluated0.dynamicProps){
+evaluated0.props = undefined;
+}
+if(evaluated0.dynamicItems){
+evaluated0.items = undefined;
+}
+if(data && typeof data == "object" && !Array.isArray(data)){
+if(data.status === undefined){
+const err0 = {instancePath,schemaPath:"#/required",keyword:"required",params:{missingProperty: "status"},message:"must have required property '"+"status"+"'"};
+if(vErrors === null){
+vErrors = [err0];
+}
+else {
+vErrors.push(err0);
+}
+errors++;
+}
+for(const key0 in data){
+if(!((key0 === "status") || (key0 === "note"))){
+const err1 = {instancePath,schemaPath:"#/additionalProperties",keyword:"additionalProperties",params:{additionalProperty: key0},message:"must NOT have additional properties"};
+if(vErrors === null){
+vErrors = [err1];
+}
+else {
+vErrors.push(err1);
+}
+errors++;
+}
+}
+if(data.status !== undefined){
+let data0 = data.status;
+if(!((((data0 === "unknown") || (data0 === "marked")) || (data0 === "partially-marked")) || (data0 === "unmarked"))){
 const err2 = {instancePath:instancePath+"/status",schemaPath:"#/properties/status/enum",keyword:"enum",params:{allowedValues: schema156.properties.status.enum},message:"must be equal to one of the allowed values"};
 if(vErrors === null){
 vErrors = [err2];
@@ -7694,17 +7704,17 @@ vErrors.push(err6);
 }
 errors++;
 }
-validate118.errors = vErrors;
+validate117.errors = vErrors;
 return errors === 0;
 }
-validate118.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate117.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
-const schema158 = {"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","marked","partially-marked","unmarked"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}};
+const schema158 = {"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","none","present"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}};
 
-function validate120(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate119(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate120.evaluated;
+const evaluated0 = validate119.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -7736,7 +7746,7 @@ errors++;
 }
 if(data.status !== undefined){
 let data0 = data.status;
-if(!((((data0 === "unknown") || (data0 === "marked")) || (data0 === "partially-marked")) || (data0 === "unmarked"))){
+if(!(((data0 === "unknown") || (data0 === "none")) || (data0 === "present"))){
 const err2 = {instancePath:instancePath+"/status",schemaPath:"#/properties/status/enum",keyword:"enum",params:{allowedValues: schema158.properties.status.enum},message:"must be equal to one of the allowed values"};
 if(vErrors === null){
 vErrors = [err2];
@@ -7793,116 +7803,17 @@ vErrors.push(err6);
 }
 errors++;
 }
-validate120.errors = vErrors;
+validate119.errors = vErrors;
 return errors === 0;
 }
-validate120.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate119.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
-const schema160 = {"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","none","present"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}};
+const schema160 = {"type":"object","additionalProperties":false,"required":["recommendation"],"properties":{"recommendation":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}};
 
-function validate122(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate121(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate122.evaluated;
-if(evaluated0.dynamicProps){
-evaluated0.props = undefined;
-}
-if(evaluated0.dynamicItems){
-evaluated0.items = undefined;
-}
-if(data && typeof data == "object" && !Array.isArray(data)){
-if(data.status === undefined){
-const err0 = {instancePath,schemaPath:"#/required",keyword:"required",params:{missingProperty: "status"},message:"must have required property '"+"status"+"'"};
-if(vErrors === null){
-vErrors = [err0];
-}
-else {
-vErrors.push(err0);
-}
-errors++;
-}
-for(const key0 in data){
-if(!((key0 === "status") || (key0 === "note"))){
-const err1 = {instancePath,schemaPath:"#/additionalProperties",keyword:"additionalProperties",params:{additionalProperty: key0},message:"must NOT have additional properties"};
-if(vErrors === null){
-vErrors = [err1];
-}
-else {
-vErrors.push(err1);
-}
-errors++;
-}
-}
-if(data.status !== undefined){
-let data0 = data.status;
-if(!(((data0 === "unknown") || (data0 === "none")) || (data0 === "present"))){
-const err2 = {instancePath:instancePath+"/status",schemaPath:"#/properties/status/enum",keyword:"enum",params:{allowedValues: schema160.properties.status.enum},message:"must be equal to one of the allowed values"};
-if(vErrors === null){
-vErrors = [err2];
-}
-else {
-vErrors.push(err2);
-}
-errors++;
-}
-}
-if(data.note !== undefined){
-let data1 = data.note;
-if(typeof data1 === "string"){
-if(func2(data1) < 1){
-const err3 = {instancePath:instancePath+"/note",schemaPath:"common.schema.json#/$defs/nonEmptyText/minLength",keyword:"minLength",params:{limit: 1},message:"must NOT have fewer than 1 characters"};
-if(vErrors === null){
-vErrors = [err3];
-}
-else {
-vErrors.push(err3);
-}
-errors++;
-}
-if(!pattern5.test(data1)){
-const err4 = {instancePath:instancePath+"/note",schemaPath:"common.schema.json#/$defs/nonEmptyText/pattern",keyword:"pattern",params:{pattern: "\\S"},message:"must match pattern \""+"\\S"+"\""};
-if(vErrors === null){
-vErrors = [err4];
-}
-else {
-vErrors.push(err4);
-}
-errors++;
-}
-}
-else {
-const err5 = {instancePath:instancePath+"/note",schemaPath:"common.schema.json#/$defs/nonEmptyText/type",keyword:"type",params:{type: "string"},message:"must be string"};
-if(vErrors === null){
-vErrors = [err5];
-}
-else {
-vErrors.push(err5);
-}
-errors++;
-}
-}
-}
-else {
-const err6 = {instancePath,schemaPath:"#/type",keyword:"type",params:{type: "object"},message:"must be object"};
-if(vErrors === null){
-vErrors = [err6];
-}
-else {
-vErrors.push(err6);
-}
-errors++;
-}
-validate122.errors = vErrors;
-return errors === 0;
-}
-validate122.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
-
-const schema162 = {"type":"object","additionalProperties":false,"required":["recommendation"],"properties":{"recommendation":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}};
-
-function validate124(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
-let vErrors = null;
-let errors = 0;
-const evaluated0 = validate124.evaluated;
+const evaluated0 = validate121.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -7978,17 +7889,17 @@ vErrors.push(err5);
 }
 errors++;
 }
-validate124.errors = vErrors;
+validate121.errors = vErrors;
 return errors === 0;
 }
-validate124.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate121.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
-const schema164 = {"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","good","variable","poor","none"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}};
+const schema162 = {"type":"object","additionalProperties":false,"required":["status"],"properties":{"status":{"enum":["unknown","good","variable","poor","none"]},"note":{"$ref":"common.schema.json#/$defs/nonEmptyText"}}};
 
-function validate126(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate123(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate126.evaluated;
+const evaluated0 = validate123.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -8021,7 +7932,7 @@ errors++;
 if(data.status !== undefined){
 let data0 = data.status;
 if(!(((((data0 === "unknown") || (data0 === "good")) || (data0 === "variable")) || (data0 === "poor")) || (data0 === "none"))){
-const err2 = {instancePath:instancePath+"/status",schemaPath:"#/properties/status/enum",keyword:"enum",params:{allowedValues: schema164.properties.status.enum},message:"must be equal to one of the allowed values"};
+const err2 = {instancePath:instancePath+"/status",schemaPath:"#/properties/status/enum",keyword:"enum",params:{allowedValues: schema162.properties.status.enum},message:"must be equal to one of the allowed values"};
 if(vErrors === null){
 vErrors = [err2];
 }
@@ -8077,16 +7988,16 @@ vErrors.push(err6);
 }
 errors++;
 }
-validate126.errors = vErrors;
+validate123.errors = vErrors;
 return errors === 0;
 }
-validate126.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate123.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
 
-function validate115(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate112(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate115.evaluated;
+const evaluated0 = validate112.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -8107,44 +8018,44 @@ errors++;
 }
 }
 if(data.start_access !== undefined){
-if(!(validate116(data.start_access, {instancePath:instancePath+"/start_access",parentData:data,parentDataProperty:"start_access",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate116.errors : vErrors.concat(validate116.errors);
+if(!(validate113(data.start_access, {instancePath:instancePath+"/start_access",parentData:data,parentDataProperty:"start_access",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate113.errors : vErrors.concat(validate113.errors);
 errors = vErrors.length;
 }
 }
 if(data.parking !== undefined){
-if(!(validate118(data.parking, {instancePath:instancePath+"/parking",parentData:data,parentDataProperty:"parking",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate118.errors : vErrors.concat(validate118.errors);
+if(!(validate115(data.parking, {instancePath:instancePath+"/parking",parentData:data,parentDataProperty:"parking",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate115.errors : vErrors.concat(validate115.errors);
 errors = vErrors.length;
 }
 }
 if(data.trail_marking !== undefined){
-if(!(validate120(data.trail_marking, {instancePath:instancePath+"/trail_marking",parentData:data,parentDataProperty:"trail_marking",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate120.errors : vErrors.concat(validate120.errors);
+if(!(validate117(data.trail_marking, {instancePath:instancePath+"/trail_marking",parentData:data,parentDataProperty:"trail_marking",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate117.errors : vErrors.concat(validate117.errors);
 errors = vErrors.length;
 }
 }
 if(data.difficult_sections !== undefined){
-if(!(validate122(data.difficult_sections, {instancePath:instancePath+"/difficult_sections",parentData:data,parentDataProperty:"difficult_sections",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate122.errors : vErrors.concat(validate122.errors);
+if(!(validate119(data.difficult_sections, {instancePath:instancePath+"/difficult_sections",parentData:data,parentDataProperty:"difficult_sections",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate119.errors : vErrors.concat(validate119.errors);
 errors = vErrors.length;
 }
 }
 if(data.footwear !== undefined){
-if(!(validate124(data.footwear, {instancePath:instancePath+"/footwear",parentData:data,parentDataProperty:"footwear",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate124.errors : vErrors.concat(validate124.errors);
+if(!(validate121(data.footwear, {instancePath:instancePath+"/footwear",parentData:data,parentDataProperty:"footwear",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate121.errors : vErrors.concat(validate121.errors);
 errors = vErrors.length;
 }
 }
 if(data.mobile_signal !== undefined){
-if(!(validate126(data.mobile_signal, {instancePath:instancePath+"/mobile_signal",parentData:data,parentDataProperty:"mobile_signal",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate126.errors : vErrors.concat(validate126.errors);
+if(!(validate123(data.mobile_signal, {instancePath:instancePath+"/mobile_signal",parentData:data,parentDataProperty:"mobile_signal",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate123.errors : vErrors.concat(validate123.errors);
 errors = vErrors.length;
 }
 }
 if(data.weather !== undefined){
-if(!(validate116(data.weather, {instancePath:instancePath+"/weather",parentData:data,parentDataProperty:"weather",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate116.errors : vErrors.concat(validate116.errors);
+if(!(validate113(data.weather, {instancePath:instancePath+"/weather",parentData:data,parentDataProperty:"weather",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate113.errors : vErrors.concat(validate113.errors);
 errors = vErrors.length;
 }
 }
@@ -8184,18 +8095,18 @@ vErrors.push(err3);
 }
 errors++;
 }
-validate115.errors = vErrors;
+validate112.errors = vErrors;
 return errors === 0;
 }
-validate115.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate112.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
-const schema166 = {"type":"array","items":{"$ref":"#/$defs/highlight"}};
-const schema167 = {"type":"object","additionalProperties":false,"required":["id","title","description"],"properties":{"id":{"$ref":"common.schema.json#/$defs/entityId"},"title":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"description":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"distance_from_start_km":{"type":"number","minimum":0},"related_place_id":{"$ref":"common.schema.json#/$defs/entityId"}}};
+const schema164 = {"type":"array","items":{"$ref":"#/$defs/highlight"}};
+const schema165 = {"type":"object","additionalProperties":false,"required":["id","title","description"],"properties":{"id":{"$ref":"common.schema.json#/$defs/entityId"},"title":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"description":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"distance_from_start_km":{"type":"number","minimum":0},"related_place_id":{"$ref":"common.schema.json#/$defs/entityId"}}};
 
-function validate131(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate128(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate131.evaluated;
+const evaluated0 = validate128.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -8441,16 +8352,16 @@ vErrors.push(err20);
 }
 errors++;
 }
-validate131.errors = vErrors;
+validate128.errors = vErrors;
 return errors === 0;
 }
-validate131.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate128.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
 
-function validate130(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate127(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate130.evaluated;
+const evaluated0 = validate127.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -8460,8 +8371,8 @@ evaluated0.items = undefined;
 if(Array.isArray(data)){
 const len0 = data.length;
 for(let i0=0; i0<len0; i0++){
-if(!(validate131(data[i0], {instancePath:instancePath+"/" + i0,parentData:data,parentDataProperty:i0,rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate131.errors : vErrors.concat(validate131.errors);
+if(!(validate128(data[i0], {instancePath:instancePath+"/" + i0,parentData:data,parentDataProperty:i0,rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate128.errors : vErrors.concat(validate128.errors);
 errors = vErrors.length;
 }
 }
@@ -8476,16 +8387,16 @@ vErrors.push(err0);
 }
 errors++;
 }
-validate130.errors = vErrors;
+validate127.errors = vErrors;
 return errors === 0;
 }
-validate130.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
+validate127.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
 
 
-function validate134(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate131(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate134.evaluated;
+const evaluated0 = validate131.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -8511,16 +8422,16 @@ vErrors.push(err0);
 }
 errors++;
 }
-validate134.errors = vErrors;
+validate131.errors = vErrors;
 return errors === 0;
 }
-validate134.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
+validate131.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
 
 
-function validate137(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate134(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate137.evaluated;
+const evaluated0 = validate134.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -8751,17 +8662,17 @@ vErrors.push(err19);
 }
 errors++;
 }
-validate137.errors = vErrors;
+validate134.errors = vErrors;
 return errors === 0;
 }
-validate137.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate134.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
 
-function validate106(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate103(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 /*# sourceURL="https://svetinje.me/schemas/route.schema.json" */;
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate106.evaluated;
+const evaluated0 = validate103.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -9180,7 +9091,7 @@ vErrors.push(err30);
 errors++;
 }
 for(const key0 in data){
-if(!(func1.call(schema139.properties, key0))){
+if(!(func1.call(schema137.properties, key0))){
 const err31 = {instancePath,schemaPath:"#/additionalProperties",keyword:"additionalProperties",params:{additionalProperty: key0},message:"must NOT have additional properties"};
 if(vErrors === null){
 vErrors = [err31];
@@ -9263,7 +9174,7 @@ errors++;
 }
 if(data.route_type !== undefined){
 if(!(data.route_type === "hiking")){
-const err38 = {instancePath:instancePath+"/route_type",schemaPath:"#/properties/route_type/enum",keyword:"enum",params:{allowedValues: schema139.properties.route_type.enum},message:"must be equal to one of the allowed values"};
+const err38 = {instancePath:instancePath+"/route_type",schemaPath:"#/properties/route_type/enum",keyword:"enum",params:{allowedValues: schema137.properties.route_type.enum},message:"must be equal to one of the allowed values"};
 if(vErrors === null){
 vErrors = [err38];
 }
@@ -9276,7 +9187,7 @@ errors++;
 if(data.direction !== undefined){
 let data10 = data.direction;
 if(!(((data10 === "one-way") || (data10 === "out-and-back")) || (data10 === "circular"))){
-const err39 = {instancePath:instancePath+"/direction",schemaPath:"#/properties/direction/enum",keyword:"enum",params:{allowedValues: schema139.properties.direction.enum},message:"must be equal to one of the allowed values"};
+const err39 = {instancePath:instancePath+"/direction",schemaPath:"#/properties/direction/enum",keyword:"enum",params:{allowedValues: schema137.properties.direction.enum},message:"must be equal to one of the allowed values"};
 if(vErrors === null){
 vErrors = [err39];
 }
@@ -9287,14 +9198,14 @@ errors++;
 }
 }
 if(data.relationships !== undefined){
-if(!(validate107(data.relationships, {instancePath:instancePath+"/relationships",parentData:data,parentDataProperty:"relationships",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate107.errors : vErrors.concat(validate107.errors);
+if(!(validate104(data.relationships, {instancePath:instancePath+"/relationships",parentData:data,parentDataProperty:"relationships",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate104.errors : vErrors.concat(validate104.errors);
 errors = vErrors.length;
 }
 }
 if(data.track !== undefined){
-if(!(validate111(data.track, {instancePath:instancePath+"/track",parentData:data,parentDataProperty:"track",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate111.errors : vErrors.concat(validate111.errors);
+if(!(validate108(data.track, {instancePath:instancePath+"/track",parentData:data,parentDataProperty:"track",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate108.errors : vErrors.concat(validate108.errors);
 errors = vErrors.length;
 }
 }
@@ -9504,7 +9415,7 @@ errors++;
 if(data21.value !== undefined){
 let data22 = data21.value;
 if(!(((data22 === "easy") || (data22 === "moderate")) || (data22 === "demanding"))){
-const err56 = {instancePath:instancePath+"/difficulty/value",schemaPath:"#/$defs/difficulty/properties/value/enum",keyword:"enum",params:{allowedValues: schema150.properties.value.enum},message:"must be equal to one of the allowed values"};
+const err56 = {instancePath:instancePath+"/difficulty/value",schemaPath:"#/$defs/difficulty/properties/value/enum",keyword:"enum",params:{allowedValues: schema148.properties.value.enum},message:"must be equal to one of the allowed values"};
 if(vErrors === null){
 vErrors = [err56];
 }
@@ -9527,20 +9438,20 @@ errors++;
 }
 }
 if(data.water !== undefined){
-if(!(validate113(data.water, {instancePath:instancePath+"/water",parentData:data,parentDataProperty:"water",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate113.errors : vErrors.concat(validate113.errors);
+if(!(validate110(data.water, {instancePath:instancePath+"/water",parentData:data,parentDataProperty:"water",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate110.errors : vErrors.concat(validate110.errors);
 errors = vErrors.length;
 }
 }
 if(data.practical !== undefined){
-if(!(validate115(data.practical, {instancePath:instancePath+"/practical",parentData:data,parentDataProperty:"practical",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate115.errors : vErrors.concat(validate115.errors);
+if(!(validate112(data.practical, {instancePath:instancePath+"/practical",parentData:data,parentDataProperty:"practical",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate112.errors : vErrors.concat(validate112.errors);
 errors = vErrors.length;
 }
 }
 if(data.highlights !== undefined){
-if(!(validate130(data.highlights, {instancePath:instancePath+"/highlights",parentData:data,parentDataProperty:"highlights",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate130.errors : vErrors.concat(validate130.errors);
+if(!(validate127(data.highlights, {instancePath:instancePath+"/highlights",parentData:data,parentDataProperty:"highlights",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate127.errors : vErrors.concat(validate127.errors);
 errors = vErrors.length;
 }
 }
@@ -9576,7 +9487,7 @@ const len0 = data27.length;
 for(let i0=0; i0<len0; i0++){
 let data28 = data27[i0];
 if(!((((((data28 === "paved") || (data28 === "gravel")) || (data28 === "trail")) || (data28 === "rock")) || (data28 === "steps")) || (data28 === "other"))){
-const err60 = {instancePath:instancePath+"/surface/values/" + i0,schemaPath:"#/$defs/surface/properties/values/items/enum",keyword:"enum",params:{allowedValues: schema172.properties.values.items.enum},message:"must be equal to one of the allowed values"};
+const err60 = {instancePath:instancePath+"/surface/values/" + i0,schemaPath:"#/$defs/surface/properties/values/items/enum",keyword:"enum",params:{allowedValues: schema170.properties.values.items.enum},message:"must be equal to one of the allowed values"};
 if(vErrors === null){
 vErrors = [err60];
 }
@@ -9637,7 +9548,7 @@ const len1 = data29.length;
 for(let i2=0; i2<len1; i2++){
 let data30 = data29[i2];
 if(!((((data30 === "spring") || (data30 === "summer")) || (data30 === "autumn")) || (data30 === "winter"))){
-const err64 = {instancePath:instancePath+"/recommended_seasons/" + i2,schemaPath:"#/$defs/recommendedSeasons/items/enum",keyword:"enum",params:{allowedValues: schema173.items.enum},message:"must be equal to one of the allowed values"};
+const err64 = {instancePath:instancePath+"/recommended_seasons/" + i2,schemaPath:"#/$defs/recommendedSeasons/items/enum",keyword:"enum",params:{allowedValues: schema171.items.enum},message:"must be equal to one of the allowed values"};
 if(vErrors === null){
 vErrors = [err64];
 }
@@ -9764,14 +9675,14 @@ errors++;
 }
 }
 if(data.approvals !== undefined){
-if(!(validate134(data.approvals, {instancePath:instancePath+"/approvals",parentData:data,parentDataProperty:"approvals",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate134.errors : vErrors.concat(validate134.errors);
+if(!(validate131(data.approvals, {instancePath:instancePath+"/approvals",parentData:data,parentDataProperty:"approvals",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate131.errors : vErrors.concat(validate131.errors);
 errors = vErrors.length;
 }
 }
 if(data.audit !== undefined){
-if(!(validate137(data.audit, {instancePath:instancePath+"/audit",parentData:data,parentDataProperty:"audit",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate137.errors : vErrors.concat(validate137.errors);
+if(!(validate134(data.audit, {instancePath:instancePath+"/audit",parentData:data,parentDataProperty:"audit",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate134.errors : vErrors.concat(validate134.errors);
 errors = vErrors.length;
 }
 }
@@ -9786,18 +9697,18 @@ vErrors.push(err74);
 }
 errors++;
 }
-validate106.errors = vErrors;
+validate103.errors = vErrors;
 return errors === 0;
 }
-validate106.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate103.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
-export const validateRouteNarrative = validate139;
-const schema181 = {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://svetinje.me/schemas/route-narrative.schema.json","title":"Svetinje.me localized route narrative front matter","type":"object","additionalProperties":false,"required":["schema_version","route_id","locale","editorial_status","translation_status","slug","preferred_name","summary","approvals","audit"],"properties":{"schema_version":{"const":1},"route_id":{"$ref":"common.schema.json#/$defs/entityId"},"locale":{"$ref":"common.schema.json#/$defs/locale"},"editorial_status":{"$ref":"common.schema.json#/$defs/editorialStatus"},"translation_status":{"$ref":"common.schema.json#/$defs/translationStatus"},"slug":{"$ref":"common.schema.json#/$defs/slug"},"preferred_name":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"short_name":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"summary":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"seo_title":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"seo_description":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"source_revision":{"$ref":"common.schema.json#/$defs/gitSha"},"source_ids":{"$ref":"common.schema.json#/$defs/sourceIdList"},"section_sources":{"$ref":"#/$defs/sectionSources"},"approvals":{"$ref":"common.schema.json#/$defs/approvals"},"audit":{"$ref":"common.schema.json#/$defs/audit"}},"allOf":[{"if":{"properties":{"locale":{"const":"sr"}},"required":["locale"]},"then":{"properties":{"translation_status":{"const":"source"}}}},{"if":{"properties":{"locale":{"enum":["ru","en"]}},"required":["locale"]},"then":{"required":["source_revision"]}},{"if":{"properties":{"editorial_status":{"enum":["approved","published"]}},"required":["editorial_status"]},"then":{"required":["seo_title","seo_description"],"properties":{"approvals":{"type":"array","minItems":3}}}}],"$defs":{"sectionKey":{"enum":["about-route","route-course","water-rest","safety","equipment","notes"]},"sectionSources":{"type":"object","propertyNames":{"$ref":"#/$defs/sectionKey"},"additionalProperties":{"allOf":[{"$ref":"common.schema.json#/$defs/sourceIdList"},{"type":"array","minItems":1}]}}}};
+export const validateRouteNarrative = validate136;
+const schema179 = {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://svetinje.me/schemas/route-narrative.schema.json","title":"Svetinje.me localized route narrative front matter","type":"object","additionalProperties":false,"required":["schema_version","route_id","locale","editorial_status","translation_status","slug","preferred_name","summary","approvals","audit"],"properties":{"schema_version":{"const":1},"route_id":{"$ref":"common.schema.json#/$defs/entityId"},"locale":{"$ref":"common.schema.json#/$defs/locale"},"editorial_status":{"$ref":"common.schema.json#/$defs/editorialStatus"},"translation_status":{"$ref":"common.schema.json#/$defs/translationStatus"},"slug":{"$ref":"common.schema.json#/$defs/slug"},"preferred_name":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"short_name":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"summary":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"seo_title":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"seo_description":{"$ref":"common.schema.json#/$defs/nonEmptyText"},"source_revision":{"$ref":"common.schema.json#/$defs/gitSha"},"source_ids":{"$ref":"common.schema.json#/$defs/sourceIdList"},"section_sources":{"$ref":"#/$defs/sectionSources"},"approvals":{"$ref":"common.schema.json#/$defs/approvals"},"audit":{"$ref":"common.schema.json#/$defs/audit"}},"allOf":[{"if":{"properties":{"locale":{"const":"sr"}},"required":["locale"]},"then":{"properties":{"translation_status":{"const":"source"}}}},{"if":{"properties":{"locale":{"enum":["ru","en"]}},"required":["locale"]},"then":{"required":["source_revision"]}},{"if":{"properties":{"editorial_status":{"enum":["approved","published"]}},"required":["editorial_status"]},"then":{"required":["seo_title","seo_description"],"properties":{"approvals":{"type":"array","minItems":3}}}}],"$defs":{"sectionKey":{"enum":["about-route","route-course","water-rest","safety","equipment","notes"]},"sectionSources":{"type":"object","propertyNames":{"$ref":"#/$defs/sectionKey"},"additionalProperties":{"allOf":[{"$ref":"common.schema.json#/$defs/sourceIdList"},{"type":"array","minItems":1}]}}}};
 
-function validate140(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate137(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate140.evaluated;
+const evaluated0 = validate137.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -9882,18 +9793,18 @@ vErrors.push(err5);
 }
 errors++;
 }
-validate140.errors = vErrors;
+validate137.errors = vErrors;
 return errors === 0;
 }
-validate140.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
+validate137.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
 
-const schema195 = {"type":"object","propertyNames":{"$ref":"#/$defs/sectionKey"},"additionalProperties":{"allOf":[{"$ref":"common.schema.json#/$defs/sourceIdList"},{"type":"array","minItems":1}]}};
-const schema196 = {"enum":["about-route","route-course","water-rest","safety","equipment","notes"]};
+const schema193 = {"type":"object","propertyNames":{"$ref":"#/$defs/sectionKey"},"additionalProperties":{"allOf":[{"$ref":"common.schema.json#/$defs/sourceIdList"},{"type":"array","minItems":1}]}};
+const schema194 = {"enum":["about-route","route-course","water-rest","safety","equipment","notes"]};
 
-function validate142(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate139(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate142.evaluated;
+const evaluated0 = validate139.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -9904,7 +9815,7 @@ if(data && typeof data == "object" && !Array.isArray(data)){
 for(const key0 in data){
 const _errs1 = errors;
 if(!((((((key0 === "about-route") || (key0 === "route-course")) || (key0 === "water-rest")) || (key0 === "safety")) || (key0 === "equipment")) || (key0 === "notes"))){
-const err0 = {instancePath,schemaPath:"#/$defs/sectionKey/enum",keyword:"enum",params:{allowedValues: schema196.enum},message:"must be equal to one of the allowed values",propertyName:key0};
+const err0 = {instancePath,schemaPath:"#/$defs/sectionKey/enum",keyword:"enum",params:{allowedValues: schema194.enum},message:"must be equal to one of the allowed values",propertyName:key0};
 if(vErrors === null){
 vErrors = [err0];
 }
@@ -9927,8 +9838,8 @@ errors++;
 }
 for(const key1 in data){
 let data0 = data[key1];
-if(!(validate140(data0, {instancePath:instancePath+"/" + key1.replace(/~/g, "~0").replace(/\//g, "~1"),parentData:data,parentDataProperty:key1,rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate140.errors : vErrors.concat(validate140.errors);
+if(!(validate137(data0, {instancePath:instancePath+"/" + key1.replace(/~/g, "~0").replace(/\//g, "~1"),parentData:data,parentDataProperty:key1,rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate137.errors : vErrors.concat(validate137.errors);
 errors = vErrors.length;
 }
 if(Array.isArray(data0)){
@@ -9965,16 +9876,16 @@ vErrors.push(err4);
 }
 errors++;
 }
-validate142.errors = vErrors;
+validate139.errors = vErrors;
 return errors === 0;
 }
-validate142.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate139.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
 
-function validate145(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate142(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate145.evaluated;
+const evaluated0 = validate142.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -10000,16 +9911,16 @@ vErrors.push(err0);
 }
 errors++;
 }
-validate145.errors = vErrors;
+validate142.errors = vErrors;
 return errors === 0;
 }
-validate145.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
+validate142.evaluated = {"items":true,"dynamicProps":false,"dynamicItems":false};
 
 
-function validate148(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate145(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate148.evaluated;
+const evaluated0 = validate145.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -10240,17 +10151,17 @@ vErrors.push(err19);
 }
 errors++;
 }
-validate148.errors = vErrors;
+validate145.errors = vErrors;
 return errors === 0;
 }
-validate148.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate145.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
 
-function validate139(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+function validate136(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 /*# sourceURL="https://svetinje.me/schemas/route-narrative.schema.json" */;
 let vErrors = null;
 let errors = 0;
-const evaluated0 = validate139.evaluated;
+const evaluated0 = validate136.evaluated;
 if(evaluated0.dynamicProps){
 evaluated0.props = undefined;
 }
@@ -10622,7 +10533,7 @@ vErrors.push(err24);
 errors++;
 }
 for(const key0 in data){
-if(!(func1.call(schema181.properties, key0))){
+if(!(func1.call(schema179.properties, key0))){
 const err25 = {instancePath,schemaPath:"#/additionalProperties",keyword:"additionalProperties",params:{additionalProperty: key0},message:"must NOT have additional properties"};
 if(vErrors === null){
 vErrors = [err25];
@@ -10975,26 +10886,26 @@ errors++;
 }
 }
 if(data.source_ids !== undefined){
-if(!(validate140(data.source_ids, {instancePath:instancePath+"/source_ids",parentData:data,parentDataProperty:"source_ids",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate140.errors : vErrors.concat(validate140.errors);
+if(!(validate137(data.source_ids, {instancePath:instancePath+"/source_ids",parentData:data,parentDataProperty:"source_ids",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate137.errors : vErrors.concat(validate137.errors);
 errors = vErrors.length;
 }
 }
 if(data.section_sources !== undefined){
-if(!(validate142(data.section_sources, {instancePath:instancePath+"/section_sources",parentData:data,parentDataProperty:"section_sources",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate142.errors : vErrors.concat(validate142.errors);
+if(!(validate139(data.section_sources, {instancePath:instancePath+"/section_sources",parentData:data,parentDataProperty:"section_sources",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate139.errors : vErrors.concat(validate139.errors);
 errors = vErrors.length;
 }
 }
 if(data.approvals !== undefined){
-if(!(validate145(data.approvals, {instancePath:instancePath+"/approvals",parentData:data,parentDataProperty:"approvals",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate145.errors : vErrors.concat(validate145.errors);
+if(!(validate142(data.approvals, {instancePath:instancePath+"/approvals",parentData:data,parentDataProperty:"approvals",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate142.errors : vErrors.concat(validate142.errors);
 errors = vErrors.length;
 }
 }
 if(data.audit !== undefined){
-if(!(validate148(data.audit, {instancePath:instancePath+"/audit",parentData:data,parentDataProperty:"audit",rootData,dynamicAnchors}))){
-vErrors = vErrors === null ? validate148.errors : vErrors.concat(validate148.errors);
+if(!(validate145(data.audit, {instancePath:instancePath+"/audit",parentData:data,parentDataProperty:"audit",rootData,dynamicAnchors}))){
+vErrors = vErrors === null ? validate145.errors : vErrors.concat(validate145.errors);
 errors = vErrors.length;
 }
 }
@@ -11009,10 +10920,10 @@ vErrors.push(err55);
 }
 errors++;
 }
-validate139.errors = vErrors;
+validate136.errors = vErrors;
 return errors === 0;
 }
-validate139.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+validate136.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
-export const CANONICAL_SCHEMA_FINGERPRINT = "0ae44864ba3274b402046e1ad14d323453f2a084bcbb37aa03b76a4786b33309";
+export const CANONICAL_SCHEMA_FINGERPRINT = "79f945988ed98cda0d8763821da1b2baca03dd63f8814b3794a8a3b515b6ee48";
 export const ROUTE_SCHEMA_FINGERPRINT = "ed6fb27ab70f5906de7b1b2019c2d12a9c108f56a6b2f359aece64ac673bef41";

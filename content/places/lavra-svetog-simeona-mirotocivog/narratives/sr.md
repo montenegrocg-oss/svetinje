@@ -9,13 +9,6 @@ preferred_name: Лавра Светог Симеона Мироточивог
 summary: Лавра Светог Симеона Мироточивог налази се на ушћу Рибнице у Морачу, у Старој вароши у Подгорици.
 source_ids:
   - mitropolija-muski-manastiri
-section_sources:
-  introduction:
-    - mitropolija-muski-manastiri
-  history:
-    - mitropolija-muski-manastiri
-  location:
-    - mitropolija-muski-manastiri
 approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z

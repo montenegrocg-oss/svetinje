@@ -28,38 +28,6 @@ source_ids:
   - mitropolija-slava-sabornog-hrama-bar-2026
   - mitropolija-krst-jovana-vladimira-rumija-2026
   - editorial-dossier-saborni-hram-bar-2026
-section_sources:
-  introduction:
-    - hrambar-o-hramu
-    - mitropolija-slava-sabornog-hrama-bar-2026
-  history:
-    - hrambar-o-hramu
-  consecration:
-    - mitropolija-osvecenje-sabornog-hrama-bar-2025
-  spiritual-significance:
-    - mitropolija-slava-sabornog-hrama-bar-2026
-    - mitropolija-krst-jovana-vladimira-rumija-2026
-  architecture-and-art:
-    - hrambar-o-hramu
-  frescoes-and-interior:
-    - hrambar-o-hramu
-  spiritual-and-cultural-life:
-    - hrambar-o-hramu
-  relics-icons-and-traditions:
-    - mitropolija-osvecenje-sabornog-hrama-bar-2025
-    - mitropolija-cestica-mostiju-jovana-vladimira-bar-2016
-    - hrambar-trojerucica-bar-2025
-    - mitropolija-krst-jovana-vladimira-rumija-2026
-  services:
-    - hrambar-o-hramu
-  visitor-information:
-    - hrambar-o-hramu
-  location:
-    - hrambar-o-hramu
-    - editorial-dossier-saborni-hram-bar-2026
-  verification-notes:
-    - hrambar-o-hramu
-    - editorial-dossier-saborni-hram-bar-2026
 approvals: []
 audit:
   created_at: 2026-08-04T11:37:48Z

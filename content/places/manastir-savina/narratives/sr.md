@@ -23,32 +23,6 @@ source_ids:
   - manastirsavina-kontakt
   - mitropolija-slava-manastira-savina-2025
   - openstreetmap-manastir-savina-way-147257044
-section_sources:
-  introduction:
-    - mitropolija-muski-manastiri
-    - manastirsavina-crkve
-  architecture-and-art:
-    - manastirsavina-crkve
-  relics-icons-and-traditions:
-    - manastirsavina-pocetna
-    - manastirsavina-riznica
-    - manastirsavina-biblioteka
-  feasts:
-    - mitropolija-slava-manastira-savina-2025
-    - manastirsavina-crkve
-  history:
-    - manastirsavina-o-manastiru
-    - manastirsavina-crkve
-    - manastirsavina-riznica
-  location:
-    - manastirsavina-kontakt
-    - openstreetmap-manastir-savina-way-147257044
-  visitor-information:
-    - manastirsavina-pocetna
-    - manastirsavina-kontakt
-  verification-notes:
-    - manastirsavina-kontakt
-    - openstreetmap-manastir-savina-way-147257044
 approvals: []
 audit:
   created_at: 2026-08-04T21:15:45Z

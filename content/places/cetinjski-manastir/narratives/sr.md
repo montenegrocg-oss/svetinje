@@ -9,13 +9,6 @@ preferred_name: Цетињски манастир
 summary: Цетињски манастир је манастир Рођења Пресвете Богородице на Цетињу, чију градњу извор датира у 1484. годину.
 source_ids:
   - mitropolija-muski-manastiri
-section_sources:
-  introduction:
-    - mitropolija-muski-manastiri
-  history:
-    - mitropolija-muski-manastiri
-  location:
-    - mitropolija-muski-manastiri
 approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z

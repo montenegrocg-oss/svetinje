@@ -66,9 +66,6 @@ alternate_names:
     verification_status: verified
 summary: Existing summary
 source_ids: [source-one]
-section_sources:
-  introduction: [source-one]
-  history: [source-one]
 approvals:
   - { role: sr-language, reviewer_id: maxim, outcome: approved, reviewed_at: 2026-08-01T00:00:00Z, reviewed_revision: cccccccccccccccccccccccccccccccccccccccc, scope: Existing }
 audit: { created_at: 2026-08-01T00:00:00Z, created_by: maxim, updated_at: 2026-08-01T00:00:00Z, updated_by: maxim }
@@ -83,6 +80,10 @@ audit: { created_at: 2026-08-01T00:00:00Z, created_by: maxim, updated_at: 2026-0
 
 [^source-one]: Регистар извора: source-one.
 `;
+const LEGACY_NARRATIVE = NARRATIVE.replace(
+  "source_ids: [source-one]\napprovals:",
+  "source_ids: [source-one]\nsection_sources:\n  introduction: [source-one]\n  history: [source-map, source-one]\napprovals:",
+);
 const TEXTLESS_NARRATIVE = `---
 schema_version: 1
 place_id: existing-place
@@ -319,7 +320,8 @@ test("PATCH round trip updates basic, location, coordinates and narrative in one
   assert.deepEqual(nextPlace.source_ids, ["source-one", "source-map"]);
   assert.equal(nextPlace.approvals.length, 1);
   assert.equal(nextNarrative.frontMatter.approvals.length, 1);
-  assert.deepEqual(nextNarrative.frontMatter.section_sources, { introduction: ["source-one"], history: ["source-one"] });
+  assert.deepEqual(nextNarrative.frontMatter.source_ids, ["source-one"]);
+  assert.equal(nextNarrative.frontMatter.section_sources, undefined);
   assert.match(nextNarrative.body, /\[\^source-one\]/);
   assert.ok(nextNarrative.body.indexOf("{#introduction}") < nextNarrative.body.indexOf("{#history}"));
   assert.match(nextNarrative.body, /Нови текст/);
@@ -356,6 +358,37 @@ test("no-op PATCH succeeds without changing audit timestamps or creating a Git c
   assert.equal(result.unchanged, true);
   assert.equal(result.commitSha, HEAD);
   assert.equal(repository.committed, undefined);
+});
+
+test("legacy narrative provenance self-heals on save without losing sources", async () => {
+  const repository = new RoundTripRepository();
+  repository.blobs.narrative = LEGACY_NARRATIVE;
+  const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  const first = await updatePlace(
+    repository,
+    env,
+    session,
+    "existing-place",
+    { ...body(loaded.place), summary: "Мигриран опис" },
+    new Date("2026-08-15T12:00:00Z"),
+  );
+  assert.equal(first.unchanged, false);
+  const migrated = parseNarrative(repository.blobs.narrative);
+  assert.deepEqual(migrated.frontMatter.source_ids, ["source-one", "source-map"]);
+  assert.equal(migrated.frontMatter.section_sources, undefined);
+  assert.equal(migrated.body.trim(), parseNarrative(LEGACY_NARRATIVE).body.trim());
+
+  const reopened = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  const repeated = await updatePlace(
+    repository,
+    env,
+    session,
+    "existing-place",
+    { ...body(reopened.place), expectedHeadSha: repository.headSha },
+    new Date("2026-08-15T12:05:00Z"),
+  );
+  assert.equal(repeated.unchanged, true);
+  assert.equal(repository.commitCount, 1);
 });
 
 test("a repeated PATCH after serialization and readback does not create an audit-only commit", async () => {

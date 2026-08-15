@@ -7,8 +7,8 @@ translation_status: source
 slug: manastir-miholjska-prevlaka
 preferred_name: Манастир Михољска Превлака
 summary: Манастир Светог Архангела Михаила на Михољској Превлаци био је сједиште Зетске епископије, а потом Зетске митрополије.
-source_ids: [mitropolija-muski-manastiri]
-section_sources: { introduction: [mitropolija-muski-manastiri], history: [mitropolija-muski-manastiri], location: [mitropolija-muski-manastiri] }
+source_ids:
+  - mitropolija-muski-manastiri
 approvals: []
 audit: { created_at: 2026-08-07T12:00:00Z, created_by: codex, updated_at: 2026-08-07T12:00:00Z, updated_by: codex }
 ---

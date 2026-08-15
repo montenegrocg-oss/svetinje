@@ -139,6 +139,20 @@ test("neutral draft structural records validate", async (t) => {
   assert.deepEqual(await validateRepository(root), []);
 });
 
+test("unified place narrative accepts document sources without anchored H2 sections", async (t) => {
+  const root = await project(t);
+  await yamlFile(root, "content/places/validation-subject/place.yaml", place());
+  const canonical = narrative();
+  await narrativeFile(root, "validation-subject", "sr", canonical, "## Слободан наслов\n\nЈединствени текст без секцијског сидра.\n");
+  assert.deepEqual(await validateRepository(root), []);
+
+  await narrativeFile(root, "validation-subject", "sr", {
+    ...canonical,
+    section_sources: { introduction: ["legacy-source"] },
+  }, "Јединствени текст без старог H2 модела.\n");
+  assert.ok(has(await validateRepository(root), "must NOT have additional properties"));
+});
+
 test("place browse areas are optional and must reference the shared catalogue", async (t) => {
   const root = await project(t);
   await yamlFile(root, "content/places/validation-subject/place.yaml", {

@@ -7,8 +7,8 @@ translation_status: source
 slug: manastir-kom
 preferred_name: Манастир Ком
 summary: Манастир Ком подигнут је у првој половини XV вијека на Андријској гори код Жабљака Црнојевића.
-source_ids: [mitropolija-muski-manastiri]
-section_sources: { introduction: [mitropolija-muski-manastiri], history: [mitropolija-muski-manastiri], location: [mitropolija-muski-manastiri] }
+source_ids:
+  - mitropolija-muski-manastiri
 approvals: []
 audit: { created_at: 2026-08-07T12:00:00Z, created_by: codex, updated_at: 2026-08-07T12:00:00Z, updated_by: codex }
 ---

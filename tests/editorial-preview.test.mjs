@@ -215,9 +215,9 @@ test("Dajbabe remains research-only, sourced, and public-safe", async () => {
   assert.equal(osm.url, "https://www.openstreetmap.org/way/1351594167");
   assert.equal(osm.source_type, "other-approved");
   assert.match(narrative, /summary: Пећински манастир Успења Пресвете Богородице/);
-  assert.match(narrative, /## Чудесно откриће светиње \{#discovery\}/);
-  assert.match(narrative, /## Канонизација и празник \{#canonization\}/);
-  assert.match(narrative, /## Положај манастира \{#location\}/);
+  assert.match(narrative, /почетак савременог манастира повезан је са виђењем/);
+  assert.match(narrative, /Пећинска црква има неправилну основу/);
+  assert.doesNotMatch(narrative, /^section_sources:/m);
   assert.doesNotMatch(narrative, /радно вријеме|телефон|електронск[а-я]+ пошта|паркинг/i);
 });
 
