@@ -448,6 +448,20 @@ for (const { route, path: routePath } of model.routeDetailRoutes) {
   if (!detail?.html.includes("Профил висине") || !detail.html.includes("Преузми GPX")) {
     failures.push(`route detail ${route.id} is missing profile or GPX download`);
   }
+  if (detail && (!detail.html.includes("Интерактивна карта") || !detail.html.includes("Висински профил"))) {
+    failures.push(`route detail ${route.id} is missing the public map or elevation headings`);
+  }
+  if (detail && route.direction === "one-way" && !detail.html.includes("Једносмјерна рута")) {
+    failures.push(`one-way route detail ${route.id} is missing its direction label`);
+  }
+  if (detail && route.direction === "one-way" && route.metrics.recorded_duration_minutes !== undefined && route.metrics.estimated_duration_minutes === undefined && !detail.html.includes("повратак није урачунат")) {
+    failures.push(`recorded one-way route ${route.id} does not explain that return time is excluded`);
+  }
+  const practical = detail ? elementContaining(detail.html, "section", 'class="route-practical"') : "";
+  if (route.direction === "one-way" && route.metrics.descent_m === 0 && practical.includes("Спуст")) failures.push(`one-way ascent route ${route.id} exposes a misleading zero descent row`);
+  for (const duplicate of ["Дужина", "Вријеме", "Успон", "Најнижа тачка", "Највиша тачка", "Тежина"]) {
+    if (practical.includes(`<dt>${duplicate}</dt>`)) failures.push(`route practical panel ${route.id} duplicates the ${duplicate} hero/profile metric`);
+  }
   if (!homepageHtml.includes(route.shortName) || !homepageHtml.includes(`/rute/${route.slug}/`)) {
     failures.push(`homepage featured routes are missing ${route.id}`);
   }

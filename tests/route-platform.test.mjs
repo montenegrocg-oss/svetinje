@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { parse } from "yaml";
+import { validateRoute } from "../admin/src/generated/canonical-validators.js";
 import {
   GpxValidationError,
   calculateElevationGainLoss,
@@ -74,16 +76,50 @@ test("GPX parser fails closed on malformed coordinates and insufficient tracks",
 });
 
 test("pilot route public composition remains loader-driven and key-safe", async () => {
-  const [home, map, routePage, header] = await Promise.all([
+  const [home, map, routePage, header, css] = await Promise.all([
     readFile(new URL("../src/pages/index.astro", import.meta.url), "utf8"),
     readFile(new URL("../src/components/routes/RouteMap.astro", import.meta.url), "utf8"),
     readFile(new URL("../src/pages/rute/[slug]/index.astro", import.meta.url), "utf8"),
     readFile(new URL("../src/components/Header.astro", import.meta.url), "utf8"),
+    readFile(new URL("../src/styles/global.css", import.meta.url), "utf8"),
   ]);
   assert.match(home, /loadVisibleRoutes/);
   assert.match(home, /<MapExplorer places=\{places\} routes=\{routes\}/);
   assert.match(header, /href: "\/rute\/", label: "Руте"/);
   assert.match(map, /fetch\(data\.trackUrl/);
+  assert.match(map, /new ResizeObserver/);
+  assert.match(map, /map\.resize\(\)/);
+  assert.match(map, /canvas\.clientWidth <= 0 \|\| canvas\.clientHeight <= 0/);
+  assert.equal((map.match(/new maplibregl\.AttributionControl/g) ?? []).length, 1);
+  assert.doesNotMatch(map, /customAttribution/);
+  assert.match(map, /styleimagemissing/);
+  assert.match(map, /setTerrain\(null\)/);
+  assert.match(map, /addSource\("route-track"/);
+  assert.match(map, /new maplibregl\.Marker\(\{ element, anchor: "bottom" \}\)/);
+  assert.match(css, /\.route-map > \.route-map__canvas[^\{]*\{[^}]*position: absolute;[^}]*height: 100%;/s);
+  assert.match(css, /\.route-map \{[^}]*height: 26rem;[^}]*min-height: 26rem;/s);
+  assert.match(routePage, /Једносмјерна рута/);
+  assert.match(routePage, /повратак није урачунат/);
+  assert.match(routePage, /Процијењено вријеме односи се на кретање у једном смјеру/);
+  assert.doesNotMatch(routePage, /<dt>Спуст<\/dt>|route\.metrics\.descent_m/);
+  const practicalMarkup = routePage.slice(routePage.indexOf('<section class="route-practical"'), routePage.indexOf('{route.narrativeSections'));
+  for (const duplicate of ["Дужина", "Вријеме", "Успон", "Најнижа тачка", "Највиша тачка", "Тежина"]) assert.doesNotMatch(practicalMarkup, new RegExp(`>${duplicate}<`));
+  for (const planningLabel of ["Паркинг", "Маркација", "Захтјевни дјелови", "Вода", "Мобилни сигнал"]) assert.match(routePage, new RegExp(`label: "${planningLabel}"`));
+  assert.match(routePage, /row\.note &&/);
   assert.doesNotMatch(routePage, /1986|2693|614/);
   assert.doesNotMatch(map, /[?&]key=[A-Za-z0-9_-]{16,}/);
+});
+
+test("route practical schema is optional and validates supported planning enums", async () => {
+  const routeYaml = parse(await readFile(new URL("../content/routes/manastir-sergija-rumija/route.yaml", import.meta.url), "utf8"));
+  assert.equal(routeYaml.practical, undefined); assert.equal(validateRoute(routeYaml), true, JSON.stringify(validateRoute.errors));
+  const withPractical = structuredClone(routeYaml);
+  withPractical.practical = {
+    start_access: { note: "Провјерити приступ." }, parking: { status: "limited" }, trail_marking: { status: "partially-marked" },
+    difficult_sections: { status: "present" }, footwear: { recommendation: "Планинарске ципеле." }, mobile_signal: { status: "variable" },
+    weather: { note: "Провјерити вјетар." }, last_verified_at: "2026-08-15",
+  };
+  assert.equal(validateRoute(withPractical), true, JSON.stringify(validateRoute.errors));
+  withPractical.practical.parking.status = "sometimes";
+  assert.equal(validateRoute(withPractical), false);
 });

@@ -12,16 +12,18 @@ const maxElevation = Math.max(...profile.map((point) => point.elevationM));
 const range = Math.max(maxElevation - minElevation, 1);
 const points = profile.map((point) => `${inset + point.distanceM / maxDistance * (width - inset * 2)},${height - inset - (point.elevationM - minElevation) / range * (height - inset * 2)}`).join(" ");
 const areaPoints = `${inset},${height - inset} ${points} ${width - inset},${height - inset}`;
+const startElevation = profile[0]?.elevationM;
+const startElevationText = (startElevation ?? route.metrics.min_elevation_m)?.toLocaleString("sr-ME", { maximumFractionDigits: 1 });
 ---
 
 <section class="route-profile" aria-labelledby="route-profile-title">
-  <header><p class="section-eyebrow">Траса</p><h2 id="route-profile-title">Профил висине</h2></header>
+  <header><p class="section-eyebrow">Висински профил</p><h2 id="route-profile-title">Профил висине</h2></header>
   <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Профил висине од ${route.metrics.min_elevation_m} до ${route.metrics.max_elevation_m} метара`}>
     <polygon points={areaPoints} />
     <polyline points={points} />
   </svg>
   <dl>
-    <div><dt>Најнижа тачка</dt><dd>{route.metrics.min_elevation_m} m</dd></div>
+    <div><dt>{startElevation === undefined ? "Најнижа тачка" : "Почетна висина"}</dt><dd>{startElevationText} m</dd></div>
     <div><dt>Највиша тачка</dt><dd>{route.metrics.max_elevation_m} m</dd></div>
     <div><dt>Укупни успон</dt><dd>+{route.metrics.ascent_m} m</dd></div>
   </dl>

@@ -14,10 +14,22 @@ interface RouteRecord {
   metrics: { distance_m?: number; ascent_m?: number; descent_m?: number; min_elevation_m?: number; max_elevation_m?: number; recorded_duration_minutes?: number; estimated_duration_minutes?: number };
   difficulty: { value: "easy" | "moderate" | "demanding" };
   water: { status: "unknown" | "none" | "available" | "requires-verification"; note?: string };
+  practical?: RoutePractical;
   surface: { values: string[] };
   recommended_seasons: string[];
   featured: { enabled: boolean; order: number };
   approvals: Array<{ role: string; reviewer_id: string; outcome: string }>;
+}
+
+export interface RoutePractical {
+  start_access?: { note: string };
+  parking?: { status: "unknown" | "available" | "limited" | "none"; note?: string };
+  trail_marking?: { status: "unknown" | "marked" | "partially-marked" | "unmarked"; note?: string };
+  difficult_sections?: { status: "unknown" | "none" | "present"; note?: string };
+  footwear?: { recommendation: string };
+  mobile_signal?: { status: "unknown" | "good" | "variable" | "poor" | "none"; note?: string };
+  weather?: { note: string };
+  last_verified_at?: string;
 }
 
 interface RouteNarrative {
@@ -49,6 +61,7 @@ export interface VisibleRoute {
   metrics: RouteRecord["metrics"];
   difficulty: RouteRecord["difficulty"]["value"];
   water: RouteRecord["water"];
+  practical?: RoutePractical;
   surface: string[];
   recommendedSeasons: string[];
   featured: RouteRecord["featured"];
@@ -163,7 +176,7 @@ export async function loadVisibleRoutes(root = process.cwd(), options: { editori
       shortName: narrative.short_name ?? narrative.preferred_name,
       summary: narrative.summary, routeType: record.route_type, direction: record.direction,
       startPlace, endPlace, waypointPlaces: waypointPlaces as VisiblePlace[], metrics: record.metrics,
-      difficulty: record.difficulty.value, water: record.water, surface: record.surface.values,
+      difficulty: record.difficulty.value, water: record.water, ...(record.practical ? { practical: record.practical } : {}), surface: record.surface.values,
       recommendedSeasons: record.recommended_seasons, featured: record.featured,
       pointCount: record.track.point_count!, track,
       trackUrl: `/rute/${narrative.slug}/track.geojson`, gpxUrl: `/rute/${narrative.slug}/track.gpx`,

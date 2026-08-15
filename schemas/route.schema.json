@@ -32,6 +32,7 @@
     "metrics": { "$ref": "#/$defs/metrics" },
     "difficulty": { "$ref": "#/$defs/difficulty" },
     "water": { "$ref": "#/$defs/water" },
+    "practical": { "$ref": "#/$defs/practical" },
     "surface": { "$ref": "#/$defs/surface" },
     "recommended_seasons": { "$ref": "#/$defs/recommendedSeasons" },
     "featured": { "$ref": "#/$defs/featured" },
@@ -121,6 +122,68 @@
       "required": ["status"],
       "properties": {
         "status": { "enum": ["unknown", "none", "available", "requires-verification"] },
+        "note": { "$ref": "common.schema.json#/$defs/nonEmptyText" }
+      }
+    },
+    "practical": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "start_access": { "$ref": "#/$defs/practicalNote" },
+        "parking": { "$ref": "#/$defs/parking" },
+        "trail_marking": { "$ref": "#/$defs/trailMarking" },
+        "difficult_sections": { "$ref": "#/$defs/difficultSections" },
+        "footwear": { "$ref": "#/$defs/footwear" },
+        "mobile_signal": { "$ref": "#/$defs/mobileSignal" },
+        "weather": { "$ref": "#/$defs/practicalNote" },
+        "last_verified_at": { "type": "string", "format": "date" }
+      }
+    },
+    "practicalNote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["note"],
+      "properties": { "note": { "$ref": "common.schema.json#/$defs/nonEmptyText" } }
+    },
+    "parking": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["unknown", "available", "limited", "none"] },
+        "note": { "$ref": "common.schema.json#/$defs/nonEmptyText" }
+      }
+    },
+    "trailMarking": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["unknown", "marked", "partially-marked", "unmarked"] },
+        "note": { "$ref": "common.schema.json#/$defs/nonEmptyText" }
+      }
+    },
+    "difficultSections": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["unknown", "none", "present"] },
+        "note": { "$ref": "common.schema.json#/$defs/nonEmptyText" }
+      }
+    },
+    "footwear": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recommendation"],
+      "properties": { "recommendation": { "$ref": "common.schema.json#/$defs/nonEmptyText" } }
+    },
+    "mobileSignal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["unknown", "good", "variable", "poor", "none"] },
         "note": { "$ref": "common.schema.json#/$defs/nonEmptyText" }
       }
     },

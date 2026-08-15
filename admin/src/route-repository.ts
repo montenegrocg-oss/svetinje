@@ -5,11 +5,21 @@ import type { BranchState, GitRepository, TreeEntry } from "./types.ts";
 import { validateRouteGeoJson, type RouteGeoJson } from "../../src/lib/routes/gpx.ts";
 
 export interface AdminRoutePlace { id: string; name: string; latitude?: number; longitude?: number; placeType?: string; inPreview: boolean }
+export interface AdminRoutePractical {
+  startAccessNote?: string;
+  parkingStatus: string; parkingNote?: string;
+  trailMarkingStatus: string; trailMarkingNote?: string;
+  difficultSectionsStatus: string; difficultSectionsNote?: string;
+  footwearRecommendation?: string;
+  mobileSignalStatus: string; mobileSignalNote?: string;
+  weatherNote?: string; lastVerifiedAt?: string;
+}
 export interface AdminRoute {
   id: string; name: string; shortName: string; slug: string; editorialStatus: string;
   routeType: string; direction: string; startPlaceId: string; endPlaceId: string;
   waypointPlaceIds: string[]; trackStatus: string; pointCount?: number;
   metrics: Record<string, number>; difficulty: string; waterStatus: string; waterNote?: string;
+  practical: AdminRoutePractical;
   surface: string[]; recommendedSeasons: string[]; featured: boolean; featuredOrder: number;
   summary: string; sections: Array<{ id: string; title: string; paragraphs: string[] }>;
   inPreview: boolean; track?: RouteGeoJson;
@@ -88,6 +98,16 @@ export async function loadRouteRepository(repository: GitRepository, branch: str
       startPlaceId: raw.relationships?.start_place_id ?? "", endPlaceId: raw.relationships?.end_place_id ?? "", waypointPlaceIds: raw.relationships?.waypoint_place_ids ?? [],
       trackStatus: raw.track?.status ?? "missing", ...(typeof raw.track?.point_count === "number" ? { pointCount: raw.track.point_count } : {}), metrics: raw.metrics ?? {},
       difficulty: raw.difficulty?.value ?? "moderate", waterStatus: raw.water?.status ?? "unknown", ...(typeof raw.water?.note === "string" ? { waterNote: raw.water.note } : {}),
+      practical: {
+        ...(typeof raw.practical?.start_access?.note === "string" ? { startAccessNote: raw.practical.start_access.note } : {}),
+        parkingStatus: raw.practical?.parking?.status ?? "unknown", ...(typeof raw.practical?.parking?.note === "string" ? { parkingNote: raw.practical.parking.note } : {}),
+        trailMarkingStatus: raw.practical?.trail_marking?.status ?? "unknown", ...(typeof raw.practical?.trail_marking?.note === "string" ? { trailMarkingNote: raw.practical.trail_marking.note } : {}),
+        difficultSectionsStatus: raw.practical?.difficult_sections?.status ?? "unknown", ...(typeof raw.practical?.difficult_sections?.note === "string" ? { difficultSectionsNote: raw.practical.difficult_sections.note } : {}),
+        ...(typeof raw.practical?.footwear?.recommendation === "string" ? { footwearRecommendation: raw.practical.footwear.recommendation } : {}),
+        mobileSignalStatus: raw.practical?.mobile_signal?.status ?? "unknown", ...(typeof raw.practical?.mobile_signal?.note === "string" ? { mobileSignalNote: raw.practical.mobile_signal.note } : {}),
+        ...(typeof raw.practical?.weather?.note === "string" ? { weatherNote: raw.practical.weather.note } : {}),
+        ...(typeof raw.practical?.last_verified_at === "string" ? { lastVerifiedAt: raw.practical.last_verified_at } : {}),
+      },
       surface: raw.surface?.values ?? [], recommendedSeasons: raw.recommended_seasons ?? [], featured: raw.featured?.enabled === true, featuredOrder: raw.featured?.order ?? 1,
       summary: parsedNarrative.frontMatter.summary ?? "", sections, inPreview: previewRouteIds.includes(id), ...(track ? { track } : {}),
     };

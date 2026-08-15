@@ -29,6 +29,11 @@ form.addEventListener("submit", async (event) => {
     routeType: field("routeType").value, direction: field("direction").value, startPlaceId: field("startPlaceId").value, endPlaceId: field("endPlaceId").value,
     summary: field("summary").value, estimatedDurationMinutes: field("estimatedDurationMinutes").value, difficulty: field("difficulty").value,
     waterStatus: field("waterStatus").value, waterNote: field("waterNote").value, surface: values.getAll("surface"), recommendedSeasons: values.getAll("recommendedSeasons"),
+    startAccessNote: field("startAccessNote").value, parkingStatus: field("parkingStatus").value, parkingNote: field("parkingNote").value,
+    trailMarkingStatus: field("trailMarkingStatus").value, trailMarkingNote: field("trailMarkingNote").value,
+    difficultSectionsStatus: field("difficultSectionsStatus").value, difficultSectionsNote: field("difficultSectionsNote").value,
+    footwearRecommendation: field("footwearRecommendation").value, mobileSignalStatus: field("mobileSignalStatus").value,
+    mobileSignalNote: field("mobileSignalNote").value, weatherNote: field("weatherNote").value, lastVerifiedAt: field("lastVerifiedAt").value,
     featured: values.get("featured") === "on", featuredOrder: field("featuredOrder").value, sections,
   };
   try { const result = await request(`/api/routes/${encodeURIComponent(routeId)}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }); dirty = false; if (dirtyStatus) dirtyStatus.textContent = "Нема несачуваних измјена."; if (status) status.textContent = result.unchanged ? "Нема измјена." : "Сачувано."; }

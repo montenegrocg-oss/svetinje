@@ -10,6 +10,7 @@ import { ROUTE_ENDPOINT_THRESHOLD_M, calculateRouteMetrics, endpointDistancesM, 
 
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const SHA = /^[0-9a-f]{40}$/;
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const ROUTE_SECTIONS = new Set(["about-route", "route-course", "water-rest", "safety", "equipment", "notes"]);
 const asString = (value: unknown) => typeof value === "string" ? value.trim() : undefined;
 const assertHead = (value: unknown, actual: string): string => {
@@ -67,6 +68,23 @@ export async function updateRoute(repository: GitRepository, env: AdminEnv, sess
   route.direction = asString(body.direction) ?? route.direction; route.relationships.start_place_id = startPlaceId; route.relationships.end_place_id = endPlaceId;
   route.difficulty.value = asString(body.difficulty) ?? route.difficulty.value; route.water.status = asString(body.waterStatus) ?? route.water.status;
   const waterNote = asString(body.waterNote); if (waterNote) route.water.note = waterNote; else delete route.water.note;
+  const startAccessNote = asString(body.startAccessNote); const parkingStatus = asString(body.parkingStatus) ?? "unknown"; const parkingNote = asString(body.parkingNote);
+  const trailMarkingStatus = asString(body.trailMarkingStatus) ?? "unknown"; const trailMarkingNote = asString(body.trailMarkingNote);
+  const difficultSectionsStatus = asString(body.difficultSectionsStatus) ?? "unknown"; const difficultSectionsNote = asString(body.difficultSectionsNote);
+  const footwearRecommendation = asString(body.footwearRecommendation); const mobileSignalStatus = asString(body.mobileSignalStatus) ?? "unknown";
+  const mobileSignalNote = asString(body.mobileSignalNote); const weatherNote = asString(body.weatherNote); const lastVerifiedAt = asString(body.lastVerifiedAt);
+  const practicalText = [startAccessNote, parkingNote, trailMarkingNote, difficultSectionsNote, footwearRecommendation, mobileSignalNote, weatherNote].filter((value): value is string => Boolean(value));
+  if (practicalText.some((value) => !safeText(value)) || (lastVerifiedAt && !DATE.test(lastVerifiedAt))) throw new AdminError("invalid_form_data", 400, "Практични подаци руте нису важећи.");
+  const practical: Record<string, unknown> = {};
+  if (startAccessNote) practical.start_access = { note: startAccessNote };
+  if (parkingStatus !== "unknown" || parkingNote) practical.parking = { status: parkingStatus, ...(parkingNote ? { note: parkingNote } : {}) };
+  if (trailMarkingStatus !== "unknown" || trailMarkingNote) practical.trail_marking = { status: trailMarkingStatus, ...(trailMarkingNote ? { note: trailMarkingNote } : {}) };
+  if (difficultSectionsStatus !== "unknown" || difficultSectionsNote) practical.difficult_sections = { status: difficultSectionsStatus, ...(difficultSectionsNote ? { note: difficultSectionsNote } : {}) };
+  if (footwearRecommendation) practical.footwear = { recommendation: footwearRecommendation };
+  if (mobileSignalStatus !== "unknown" || mobileSignalNote) practical.mobile_signal = { status: mobileSignalStatus, ...(mobileSignalNote ? { note: mobileSignalNote } : {}) };
+  if (weatherNote) practical.weather = { note: weatherNote };
+  if (lastVerifiedAt) practical.last_verified_at = lastVerifiedAt;
+  if (Object.keys(practical).length) route.practical = practical; else delete route.practical;
   const estimated = Number(body.estimatedDurationMinutes); if (Number.isInteger(estimated) && estimated > 0) route.metrics.estimated_duration_minutes = estimated; else delete route.metrics.estimated_duration_minutes;
   route.surface.values = Array.isArray(body.surface) ? body.surface.filter((value): value is string => typeof value === "string") : [];
   route.recommended_seasons = Array.isArray(body.recommendedSeasons) ? body.recommendedSeasons.filter((value): value is string => typeof value === "string") : [];

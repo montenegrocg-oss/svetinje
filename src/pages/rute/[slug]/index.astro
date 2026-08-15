@@ -11,9 +11,36 @@ export async function getStaticPaths() {
 const { route } = Astro.props as { route: VisibleRoute };
 const duration = route.metrics.estimated_duration_minutes ?? route.metrics.recorded_duration_minutes;
 const durationText = duration === undefined ? undefined : `${Math.floor(duration / 60)} ч ${duration % 60 ? `${duration % 60} мин` : ""}`.trim();
+const isOneWay = route.direction === "one-way";
+const durationNote = isOneWay && route.metrics.estimated_duration_minutes !== undefined
+  ? "Процијењено вријеме односи се на кретање у једном смјеру."
+  : isOneWay && route.metrics.recorded_duration_minutes !== undefined
+    ? "Забиљежено вријеме односи се на ову једносмјерну трасу; повратак није урачунат."
+    : undefined;
 const difficulty = { easy: "Лака", moderate: "Средње захтјевна", demanding: "Захтјевна" }[route.difficulty];
 const surfaces: Record<string,string> = { paved: "Асфалт", gravel: "Макадам", trail: "Стаза", rock: "Камен", steps: "Степенице", other: "Остало" };
 const seasons: Record<string,string> = { spring: "Прољеће", summer: "Љето", autumn: "Јесен", winter: "Зима" };
+const parking = { unknown: "Није провјерено", available: "Доступан", limited: "Ограничен", none: "Нема паркинга" };
+const trailMarking = { unknown: "Није провјерено", marked: "Маркирана", "partially-marked": "Дјелимично маркирана", unmarked: "Није маркирана" };
+const difficultSections = { unknown: "Није провјерено", none: "Нема посебно захтјевних дјелова", present: "Постоје захтјевни дјелови" };
+const mobileSignal = { unknown: "Није провјерено", good: "Добар", variable: "Промјенљив", poor: "Слаб", none: "Нема сигнала" };
+const water = route.water.status === "unknown" ? "Није провјерено"
+  : route.water.status === "none" ? "Нема провјереног извора воде"
+    : route.water.status === "available" ? (route.water.note ?? "Доступна")
+      : (route.water.note ?? "Захтијева провјеру");
+const practical = route.practical;
+const practicalRows = [
+  practical?.start_access?.note ? { label: "Полазиште", value: practical.start_access.note } : undefined,
+  { label: "Паркинг", value: parking[practical?.parking?.status ?? "unknown"], note: practical?.parking?.note },
+  { label: "Маркација", value: trailMarking[practical?.trail_marking?.status ?? "unknown"], note: practical?.trail_marking?.note },
+  route.surface.length > 0 ? { label: "Подлога", value: route.surface.map((item) => surfaces[item] ?? item).join(", ") } : undefined,
+  { label: "Захтјевни дјелови", value: difficultSections[practical?.difficult_sections?.status ?? "unknown"], note: practical?.difficult_sections?.note },
+  practical?.footwear?.recommendation ? { label: "Препоручена обућа", value: practical.footwear.recommendation } : undefined,
+  { label: "Вода", value: water },
+  { label: "Мобилни сигнал", value: mobileSignal[practical?.mobile_signal?.status ?? "unknown"], note: practical?.mobile_signal?.note },
+  route.recommendedSeasons.length > 0 ? { label: "Препоручени период", value: route.recommendedSeasons.map((item) => seasons[item] ?? item).join(", ") } : undefined,
+  practical?.weather?.note ? { label: "Вријеме и вјетар", value: practical.weather.note } : undefined,
+].filter((row): row is { label: string; value: string; note?: string } => Boolean(row));
 const [heroStart, ...heroEndParts] = route.name.split(" — ");
 const heroEnd = heroEndParts.join(" — ");
 ---
@@ -24,22 +51,14 @@ const heroEnd = heroEndParts.join(" — ");
     {durationText && <div><dt>Вријеме</dt><dd>{durationText}</dd></div>}
     <div><dt>Успон</dt><dd>+{route.metrics.ascent_m} m</dd></div>
     <div><dt>Тежина</dt><dd>{difficulty}</dd></div>
-  </dl></div></header>
+  </dl>{isOneWay && <div class="route-direction"><strong>Једносмјерна рута</strong>{durationNote && <p>{durationNote}</p>}</div>}</div></header>
   <div class="shell route-detail">
     <RouteMap route={route} />
     <ElevationProfile route={route} />
-    <section class="route-practical" aria-labelledby="route-practical-title"><h2 id="route-practical-title">Практичне информације</h2><dl>
-      <div><dt>Дужина</dt><dd>{(route.metrics.distance_m! / 1000).toLocaleString("sr-ME", { maximumFractionDigits: 1 })} km</dd></div>
-      {durationText && <div><dt>Вријеме</dt><dd>{durationText}</dd></div>}
-      {route.metrics.ascent_m !== undefined && <div><dt>Успон</dt><dd>+{route.metrics.ascent_m} m</dd></div>}
-      {route.metrics.descent_m !== undefined && <div><dt>Спуст</dt><dd>{route.metrics.descent_m} m</dd></div>}
-      {route.metrics.min_elevation_m !== undefined && <div><dt>Најнижа тачка</dt><dd>{route.metrics.min_elevation_m} m</dd></div>}
-      {route.metrics.max_elevation_m !== undefined && <div><dt>Највиша тачка</dt><dd>{route.metrics.max_elevation_m} m</dd></div>}
-      <div><dt>Тежина</dt><dd>{difficulty}</dd></div>
-      <div><dt>Вода</dt><dd>{route.water.status === "unknown" ? "Није провјерено" : route.water.note}</dd></div>
-      {route.surface.length > 0 && <div><dt>Подлога</dt><dd>{route.surface.map((item) => surfaces[item] ?? item).join(", ")}</dd></div>}
-      {route.recommendedSeasons.length > 0 && <div><dt>Препоручени период</dt><dd>{route.recommendedSeasons.map((item) => seasons[item] ?? item).join(", ")}</dd></div>}
-    </dl><a class="route-download" href={route.gpxUrl} download>Преузми GPX</a></section>
+    <section class="route-practical" aria-labelledby="route-practical-title"><p class="section-eyebrow">Планирање</p><h2 id="route-practical-title">Практичне информације</h2><dl>
+      {practicalRows.map((row) => <div><dt>{row.label}</dt><dd><span>{row.value}</span>{row.note && <small>{row.note}</small>}</dd></div>)}
+      {practical?.last_verified_at && <div><dt>Последња провјера</dt><dd><time datetime={practical.last_verified_at}>{practical.last_verified_at}</time></dd></div>}
+    </dl></section>
     {route.narrativeSections.map((section) => <section class="route-narrative"><h2>{section.title}</h2>{section.paragraphs.map((paragraph) => <p>{paragraph.text}</p>)}</section>)}
     <section class="route-places" aria-labelledby="route-places-title"><header><p class="section-eyebrow">Повезана мјеста</p><h2 id="route-places-title">Светиње на рути</h2></header><div>{[route.startPlace, ...route.waypointPlaces, route.endPlace].map((place) => <PlaceCard place={place} />)}</div></section>
   </div>
