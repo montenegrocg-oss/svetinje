@@ -11,7 +11,7 @@ alternate_names:
     context: Пуни назив према посвећењу храма.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Манастир Светог архангела Михаила у Бјелопавлићкој равници, познат по моштима Светог Арсенија Сремца.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -19,8 +19,8 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T12:00:00Z
-  updated_by: codex
+  updated_at: 2026-08-16T21:58:27Z
+  updated_by: montenegro-cg
 ---
 
 Манастир Ждребаоник налази се на лијевој обали Зете, у Бјелопавлићкој равници близу Даниловграда. Писани подаци о оснивању нијесу сачувани. Истраживања су показала да садашњи храм почива на темељима веће цркве с краја XVI или почетка XVII вијека.
