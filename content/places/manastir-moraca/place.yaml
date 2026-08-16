@@ -38,10 +38,12 @@ approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-14T20:51:01Z
+  updated_at: 2026-08-16T22:36:33Z
   updated_by: montenegro-cg
 ecclesiastical:
   jurisdiction:
     value: Митрополија црногорско-приморска
     verification:
       status: requires-verification
+patronal_feast:
+  name: Успеније Пресвете Богородице - Велика Госпојина 28. августа
