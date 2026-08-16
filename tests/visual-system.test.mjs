@@ -150,7 +150,8 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(recommended, /data-testid="recommended-place-card"/);
   assert.doesNotMatch(recommended, /recommended-placeholder|placeholderCount|TOTAL_RECOMMENDATION_SLOTS/);
   assert.doesNotMatch(recommended, /Радни приказ|preview-badge/);
-  assert.match(recommended, /Отвори страницу/);
+  assert.doesNotMatch(recommended, /place\.typeLabel|place-preview__record-meta|Отвори страницу|place-preview__record-action/);
+  assert.match(recommended, /<a class="place-preview__record-link" href=\{`\/svetinje\/\$\{place\.slug\}\/`\}>[\s\S]*?<h3>\{place\.name\}<\/h3>[\s\S]*?\{location && <small>\{location\}<\/small>\}[\s\S]*?<\/a>/);
   assert.match(recommended, /place\.previewImageSrc/);
   assert.match(recommended, /class="place-preview__record-image"/);
   assert.match(recommended, /alt=\{place\.previewImageAlt \?\? place\.name\}/);
@@ -193,27 +194,27 @@ test("the dedicated map route reuses the shared map without homepage-only UI", a
   assert.match(styles, /\.dedicated-map-page__stage\s*\{[\s\S]*?100dvh/);
 });
 
-test("the homepage sidebar overlays the map without pulling secondary content upward", async () => {
+test("the homepage grid keeps the sidebar below its heading and aligned with secondary content", async () => {
   const styles = await source("src/styles/global.css");
-  const desktopStart = styles.indexOf("@media (min-width: 48rem)");
+  const desktopStart = styles.lastIndexOf("@media (min-width: 68rem)", styles.indexOf("@media (min-width: 90rem)"));
   const desktopStyles = styles.slice(desktopStart);
 
-  assert.ok(desktopStart > -1, "the explorer overlay must start at the tablet breakpoint");
+  assert.ok(desktopStart > -1, "the explorer grid must start at the desktop breakpoint");
   assert.match(styles, /\.map-explorer\s*\{[\s\S]*?--map-stage-height: 24rem;[\s\S]*?--explorer-content-block-padding: 1rem;/);
   assert.match(styles, /\.map-stage\s*\{[\s\S]*?height: var\(--map-stage-height\);/);
-  assert.match(desktopStyles, /--map-stage-height: 34rem;/);
-  assert.match(desktopStyles, /--explorer-sidebar-map-offset: 10\.875rem;/);
-  assert.match(
-    desktopStyles,
-    /\.explorer-sidebar\s*\{[\s\S]*?margin-block-start: calc\([\s\S]*?var\(--explorer-sidebar-map-offset\)[\s\S]*?- var\(--map-stage-height\)[\s\S]*?- var\(--explorer-content-block-padding\)[\s\S]*?\);/,
-  );
-  assert.match(desktopStyles, /\.map-explorer__content\s*\{[\s\S]*?padding: var\(--explorer-content-block-padding\) var\(--explorer-panel-left\);/);
+  assert.match(desktopStyles, /--map-stage-height: 39\.5rem;/);
+  assert.match(desktopStyles, /\.map-explorer\s*\{[\s\S]*?display: grid;[\s\S]*?grid-template-rows: auto 1\.125rem minmax\(0, 1fr\) auto;/);
+  assert.match(desktopStyles, /\.map-stage\s*\{[\s\S]*?grid-row: 1 \/ 4;/);
+  assert.match(desktopStyles, /\.map-explorer__heading\s*\{[\s\S]*?grid-row: 1;[\s\S]*?margin-top: 1rem;/);
+  assert.match(desktopStyles, /\.map-explorer__content\s*\{[\s\S]*?display: contents;/);
+  assert.match(desktopStyles, /\.explorer-sidebar\s*\{[\s\S]*?grid-row: 3 \/ 5;/);
+  assert.match(desktopStyles, /\.map-explorer__secondary\s*\{[\s\S]*?grid-row: 4;[\s\S]*?padding-top: var\(--explorer-content-block-padding\);/);
   assert.match(desktopStyles, /\.map-attribution\s*\{[\s\S]*?left: calc\(var\(--explorer-panel-left\) \+ var\(--explorer-panel-width\) \+ 1rem\);/);
   assert.match(desktopStyles, /\.map-actions\s*\{[\s\S]*?left: calc\(var\(--explorer-panel-left\) \+ var\(--explorer-panel-width\) \+ 1rem\);/);
   assert.match(desktopStyles, /--explorer-panel-left: max\([\s\S]*?clamp\(1\.5rem, 2\.25vw, 2rem\),[\s\S]*?calc\(\(100vw - 104rem\) \/ 2\)[\s\S]*?\);/);
   assert.match(desktopStyles, /\.map-actions\s*\{[\s\S]*?right: var\(--explorer-panel-left\);/);
   assert.match(desktopStyles, /\.map-tool-stack,[\s\S]*?\.map-help\s*\{[\s\S]*?right: var\(--explorer-panel-left\);/);
-  assert.doesNotMatch(desktopStyles.match(/\.explorer-sidebar\s*\{[\s\S]*?\}/)?.[0] ?? "", /transform:/);
+  assert.doesNotMatch(styles, /--explorer-sidebar-map-offset|\.explorer-sidebar\s*\{[\s\S]*?margin-block-start:/);
 });
 
 test("the map loading surface is neutral and cannot reveal the decorative fallback", async () => {

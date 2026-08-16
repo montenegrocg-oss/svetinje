@@ -1,0 +1,17 @@
+schema_version: 1
+id: mitropolija-zenski-manastiri
+editorial_status: research
+source_type: diocesan
+title: Женски манастири
+publisher: Православна Митрополија црногорско-приморска
+url: https://mitropolija.com/zenski-manastiri/
+accessed_at: 2026-08-16
+original_language: sr-Cyrl
+locator: Двадесет два главна манастирска одјељка странице, од „Манастир Светог Георгија – Бања“ до „Манастир Златица“; изостављени су контакти, подаци о управи и сестринствима, а скитови у саставу већих манастира нијесу издвојени као посебна мјеста.
+status: active
+approvals: []
+audit:
+  created_at: 2026-08-16T12:00:00Z
+  created_by: codex
+  updated_at: 2026-08-16T12:00:00Z
+  updated_by: codex

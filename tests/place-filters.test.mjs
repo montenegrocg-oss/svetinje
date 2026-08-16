@@ -83,7 +83,7 @@ test("category catalogues feature the first two image-bearing places without cha
   assert.deepEqual(selectFeaturedCataloguePlaces([{ id: "text-only" }]), []);
 });
 
-test("homepage sidebar preview paginates matched places two at a time", () => {
+test("homepage sidebar preview paginates matched places three at a time", () => {
   const places = Array.from({ length: 25 }, (_, index) => ({
     id: `place-${index + 1}`,
     category: index % 2 === 0 ? "monasteries" : "churches",
@@ -92,17 +92,16 @@ test("homepage sidebar preview paginates matched places two at a time", () => {
   const fiveMatches = places.slice(0, 5);
   const searchMatches = places.filter((place) => place.searchText.includes("острог"));
 
-  assert.equal(HOMEPAGE_PREVIEW_LIMIT, 2);
-  assert.equal(pageCountForHomepagePreview(5), 3);
-  assert.equal(pageCountForHomepagePreview(2), 1);
+  assert.equal(HOMEPAGE_PREVIEW_LIMIT, 3);
+  assert.equal(pageCountForHomepagePreview(5), 2);
+  assert.equal(pageCountForHomepagePreview(3), 1);
   assert.equal(pageCountForHomepagePreview(1), 1);
   assert.equal(pageCountForHomepagePreview(0), 0);
-  assert.deepEqual(paginateHomepagePreview(fiveMatches, 1).pagePlaces.map(({ id }) => id), ["place-1", "place-2"]);
-  assert.deepEqual(paginateHomepagePreview(fiveMatches, 2).pagePlaces.map(({ id }) => id), ["place-3", "place-4"]);
-  assert.deepEqual(paginateHomepagePreview(fiveMatches, 3).pagePlaces.map(({ id }) => id), ["place-5"]);
+  assert.deepEqual(paginateHomepagePreview(fiveMatches, 1).pagePlaces.map(({ id }) => id), ["place-1", "place-2", "place-3"]);
+  assert.deepEqual(paginateHomepagePreview(fiveMatches, 2).pagePlaces.map(({ id }) => id), ["place-4", "place-5"]);
   assert.deepEqual(searchMatches.map(({ id }) => id), ["place-10"]);
   assert.deepEqual(paginateHomepagePreview(searchMatches, 1).pagePlaces, searchMatches);
-  assert.equal(pageForHomepagePreviewPlace(places, places[9]), 5);
+  assert.equal(pageForHomepagePreviewPlace(places, places[9]), 4);
 });
 
 test("catalogue search uses narrow fields and token-prefix matching", () => {

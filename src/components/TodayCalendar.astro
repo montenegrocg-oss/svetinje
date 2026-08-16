@@ -1,6 +1,7 @@
 ---
 import { localizedCalendarDate, type CalendarDay } from "../lib/calendar/content";
 import { createTodayCalendarModel } from "../lib/calendar/today-calendar";
+import { presentCalendarTitle } from "../lib/presentation/calendar-title";
 
 interface Props { days: CalendarDay[]; corpus: any }
 const { days, corpus } = Astro.props;
@@ -10,11 +11,13 @@ const reading = model?.reading;
 ---
 
 <section class="today-calendar" aria-labelledby="today-calendar-title" data-today-calendar data-calendar-year="2026">
-  <p class="today-calendar__label">ДАНАС</p>
-  <div class="today-calendar__date">
-    <p class="map-eyebrow">ПРАВОСЛАВНИ КАЛЕНДАР</p>
+  <header class="today-calendar__header">
+    <p class="today-calendar__label">ДАНАС</p>
     <p class="today-calendar__day" data-calendar-date>{fallback ? localizedCalendarDate(fallback.date, { day: "numeric", month: "long", year: "numeric" }) : "Календар је у припреми"}</p>
-    <h2 id="today-calendar-title" data-calendar-title>{fallback?.title ?? "Календар је у припреми"}</h2>
+  </header>
+  <div class="today-calendar__calendar">
+    <p class="map-eyebrow">ПРАВОСЛАВНИ КАЛЕНДАР</p>
+    <h2 id="today-calendar-title" data-calendar-title>{fallback ? presentCalendarTitle(fallback.title) : "Календар је у припреми"}</h2>
     <ul data-calendar-commemorations>
       {fallback?.commemorations.slice(0, 2).map((item) => <li>{item}</li>)}
     </ul>
@@ -34,6 +37,7 @@ const reading = model?.reading;
 
 <script>
   import { podgoricaDateKey } from "../lib/calendar/today-calendar";
+  import { presentCalendarTitle } from "../lib/presentation/calendar-title";
 
   const root = document.querySelector<HTMLElement>("[data-today-calendar]");
   if (root) {
@@ -52,7 +56,7 @@ const reading = model?.reading;
           const link = root.querySelector<HTMLAnchorElement>("[data-calendar-day-link]");
           const gospel = root.querySelector<HTMLElement>("[data-calendar-gospel]");
           if (dateNode) dateNode.textContent = date;
-          if (titleNode) titleNode.textContent = day.title;
+          if (titleNode) titleNode.textContent = presentCalendarTitle(day.title);
           if (list) list.replaceChildren(...day.commemorations.slice(0, 2).map((item: string) => Object.assign(document.createElement("li"), { textContent: item })));
           if (link) link.href = `/kalendar/${day.date}/`;
           if (gospel) {

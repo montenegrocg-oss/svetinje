@@ -1,4 +1,4 @@
-export const HOMEPAGE_PREVIEW_LIMIT = 2;
+export const HOMEPAGE_PREVIEW_LIMIT = 3;
 
 export interface HomepagePreviewPage<T> {
   currentPage: number;

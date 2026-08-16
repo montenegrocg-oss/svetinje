@@ -36,9 +36,9 @@ test("four-place output model derives routes, categories, markers, and media", (
   assert.deepEqual(model.mediaPlaces.map(({ id }) => id), ["alpha", "delta"]);
   assert.equal(model.expectedRealRelatedCount, 3);
   assert.equal(model.expectedRelatedPlaceholderCount, 1);
-  assert.deepEqual(model.homepagePreviewPlaces.map(({ id }) => id), ["alpha", "beta"]);
-  assert.deepEqual(model.homepagePooledPlaces.map(({ id }) => id), ["gamma", "delta"]);
-  assert.equal(model.homepagePreviewLimit, 2);
+  assert.deepEqual(model.homepagePreviewPlaces.map(({ id }) => id), ["alpha", "beta", "gamma"]);
+  assert.deepEqual(model.homepagePooledPlaces.map(({ id }) => id), ["delta"]);
+  assert.equal(model.homepagePreviewLimit, 3);
   assert.equal(model.cataloguePageCount, 1);
   assert.deepEqual(model.catalogueFirstPagePlaces, places);
   assert.equal(model.cataloguePlacesPerPage, 8);
@@ -67,8 +67,8 @@ test("a fifth place changes every inventory-derived expectation without helper e
   assert.ok(fivePlaceModel.mediaPlaces.some(({ previewImageSrc }) => previewImageSrc === "/images/epsilon.webp"));
   assert.equal(fivePlaceModel.expectedRealRelatedCount, 4);
   assert.equal(fivePlaceModel.expectedRelatedPlaceholderCount, 0);
-  assert.deepEqual(fivePlaceModel.homepagePreviewPlaces.map(({ id }) => id), ["alpha", "beta"]);
-  assert.deepEqual(fivePlaceModel.homepagePooledPlaces.map(({ id }) => id), ["gamma", "delta", "epsilon"]);
+  assert.deepEqual(fivePlaceModel.homepagePreviewPlaces.map(({ id }) => id), ["alpha", "beta", "gamma"]);
+  assert.deepEqual(fivePlaceModel.homepagePooledPlaces.map(({ id }) => id), ["delta", "epsilon"]);
   assert.equal(fivePlaceModel.cataloguePageCount, 1);
   assert.deepEqual(fivePlaceModel.catalogueFirstPagePlaces.map(({ id }) => id), ["alpha", "beta", "gamma", "delta", "epsilon"]);
 });

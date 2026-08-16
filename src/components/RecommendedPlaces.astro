@@ -39,13 +39,9 @@ const recommendations = MOST_VISITED_PLACE_IDS.flatMap((id) => {
               )}
             </div>
             <div class="place-preview__record-body">
-              <div class="place-preview__record-meta">
-                <p>{place.typeLabel}</p>
-              </div>
               <h3>{place.name}</h3>
               {location && <small>{location}</small>}
             </div>
-            <span class="place-preview__record-action">Отвори страницу <span aria-hidden="true">→</span></span>
           </a>
         </article>
       );
