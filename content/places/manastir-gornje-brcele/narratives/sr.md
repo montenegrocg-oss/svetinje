@@ -11,12 +11,12 @@ alternate_names:
     context: Пуни назив према посвећењу храма.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
   - name: Манастир Петровића
     context: Народни назив повезан са црногорским митрополитима из куће Петровића.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Историјски манастир Покрова Пресвете Богородице у Црмници, некадашња зимска резиденција цетињских митрополита.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -24,8 +24,8 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T12:00:00Z
-  updated_by: codex
+  updated_at: 2026-08-16T21:30:04Z
+  updated_by: montenegro-cg
 ---
 
 Манастир Горње Брчеле налази се у истоименом црмничком селу. Његове камене грађевине распоређене су на терасастом земљишту и складно су уклопљене у традиционално градитељство Црмнице. Народно предање почетке светиње везује за доба Балшића, док је садашњи храм Покрова Пресвете Богородице подигао митрополит Данило I почетком XVIII вијека.
