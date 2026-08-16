@@ -14,6 +14,7 @@ import { pageCountForHomepagePreview } from "../src/lib/explorer-preview.ts";
 import { selectFeaturedCataloguePlaces } from "../src/lib/category-catalogue.ts";
 import { getPlaceAboutLabel } from "../src/lib/place-content.ts";
 import { MOST_VISITED_PLACE_IDS } from "../src/lib/homepage-selections.ts";
+import { containsUnsupportedReferenceScreenshotContent } from "./lib/reference-screenshot-guard.mjs";
 
 const EMPTY_STATES = {
   monasteries: "Још нема манастира спремних за јавно објављивање.",
@@ -521,7 +522,7 @@ for (const detailCase of model.detailRoutes) {
 
 for (const page of pages) {
   if (/rating|>\s*Оцјена\s*</i.test(page.html) || /033\/459-084|manastirmaine@gmail\.com/i.test(page.html)) failures.push(`${page.relative} contains prohibited practical or commercial preview data`);
-  if (/180\s*m|08:00|16:00|18:00|Дјелимично активан|Црква Св\. Тројице|Манастир Дуљево/i.test(page.html)) failures.push(`${page.relative} contains unsupported reference-screenshot content`);
+  if (containsUnsupportedReferenceScreenshotContent(page.html)) failures.push(`${page.relative} contains unsupported reference-screenshot content`);
 }
 
 if (!editorialPreview) {
