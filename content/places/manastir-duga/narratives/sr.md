@@ -11,7 +11,7 @@ alternate_names:
     context: Пуни назив према посвећењу и положају.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Манастир Успења Пресвете Богородице у кањону Мораче, премјештен на садашње мјесто у XVIII вијеку.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -19,8 +19,8 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T12:00:00Z
-  updated_by: codex
+  updated_at: 2026-08-16T21:45:46Z
+  updated_by: montenegro-cg
 ---
 
 Манастир Дуга налази се у кањону Мораче, на десној обали ријеке, на путу од Подгорице према Колашину. Посвећен је Успењу Пресвете Богородице. Предање ктиторство приписује Вукану Немањићу, али за ту тврдњу није наведена непосредна средњовјековна потврда.
