@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-miholjska-prevlaka-b93cdbdaf8f4
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/miholjska-prevlaka/photo-miholjska-prevlaka-b93cdbdaf8f4.jpg
+checksum_sha256: b846c2e63a47aa61e6dcd0bb431efddaa80e0ec4b390b9b130dd85371c01b6bd
+mime_type: image/jpeg
+width: 720
+height: 1280
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - miholjska-prevlaka
+localized_text:
+  sr:
+    alt_text: Манастир Михољска Превлака
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-16T22:31:45Z
+    reviewed_revision: 4795ef3f89f813f204fd110bf78d94df92ddaf5f
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-16T22:31:45Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-16T22:31:45Z
+  updated_by: montenegro-cg

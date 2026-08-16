@@ -21,14 +21,16 @@ location:
       source_ids:
         - openstreetmap-miholjska-prevlaka-way-921834753
       qualification: Координате представљају центроид манастира Светог Архангела Михаила на Михољској Превлаци према OpenStreetMap way 921834753, а не центар острва или тачан улаз.
-relationships: {}
+relationships:
+  media_ids:
+    - photo-miholjska-prevlaka-b93cdbdaf8f4
 source_ids:
   - mitropolija-muski-manastiri
 approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T22:29:23Z
+  updated_at: 2026-08-16T22:31:45Z
   updated_by: montenegro-cg
 ecclesiastical:
   jurisdiction:
