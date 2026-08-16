@@ -35,13 +35,15 @@ location:
 relationships:
   media_ids:
     - photo-manastir-vranjina-d262b7601720
+    - photo-manastir-vranjina-d7e34a5dccf2
+    - photo-manastir-vranjina-d3cff964bcef
 source_ids:
   - mitropolija-muski-manastiri
 approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T10:58:21Z
+  updated_at: 2026-08-16T10:58:55Z
   updated_by: montenegro-cg
 ecclesiastical:
   jurisdiction:
