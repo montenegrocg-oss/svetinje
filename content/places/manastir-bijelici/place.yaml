@@ -21,6 +21,18 @@ location:
     value: ME
     verification:
       status: requires-verification
+  municipality:
+    value: Котор
+    verification:
+      status: requires-verification
+  coordinates:
+    latitude: 42.381312
+    longitude: 18.709271
+    accuracy: complex-centroid
+    publication_safety: public
+    crs: EPSG:4326
+    verification:
+      status: requires-verification
 relationships: {}
 source_ids:
   - mitropolija-muski-manastiri
@@ -28,10 +40,12 @@ approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-14T16:45:11Z
+  updated_at: 2026-08-16T10:46:00Z
   updated_by: montenegro-cg
 ecclesiastical:
   jurisdiction:
     value: Митрополија црногорско-приморска
     verification:
       status: requires-verification
+patronal_feast:
+  name: Чудо Светог архангела Михаила 19. септембар
