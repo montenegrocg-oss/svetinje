@@ -1,5 +1,6 @@
 import maplibregl from "maplibre-gl";
 import { CoordinatePickerState, parseCoordinateInputs } from "./coordinate-picker-state.ts";
+import { hasLoadedBaseStyle, isFatalBaseStyleError } from "./coordinate-map-readiness.ts";
 
 const form = document.querySelector<HTMLFormElement>("[data-place-editor]");
 if (!form) throw new Error("Place editor form is missing");
@@ -555,23 +556,12 @@ if (mapContainer && mapCanvas && key) {
     addControl("⌂", "Прикажи Црну Гору", resetMontenegro);
     coordinateMap.addControl({ onAdd: () => controls, onRemove: () => controls.remove() }, "top-right");
     let mapReady = false;
-    let mapRendered = false;
-    const hasRenderableCanvas = () => {
-      try {
-        const canvas = coordinateMap?.getCanvas();
-        return canvas instanceof HTMLCanvasElement
-          && canvas.isConnected
-          && mapCanvas.contains(canvas)
-          && canvas.clientWidth > 0
-          && canvas.clientHeight > 0
-          && canvas.width > 0
-          && canvas.height > 0;
-      } catch {
-        return false;
-      }
-    };
-    const readinessTimeout = window.setTimeout(() => {
-      if (mapReady) return;
+    let mapFailed = false;
+    let readinessTimeout = 0;
+    const showMapFailure = () => {
+      if (mapReady || mapFailed) return;
+      mapFailed = true;
+      window.clearTimeout(readinessTimeout);
       if (mapStatus) {
         mapStatus.hidden = false;
         mapStatus.textContent = "Мапа тренутно није доступна. Координате можете унијети ручно.";
@@ -579,30 +569,28 @@ if (mapContainer && mapCanvas && key) {
       coordinateMap?.remove();
       coordinateMap = undefined;
       coordinateMarker = undefined;
-    }, 11_000);
+    };
     const revealCoordinateMap = () => {
-      if (mapReady || !coordinateMap) return;
+      if (mapReady || mapFailed || !coordinateMap || !hasLoadedBaseStyle(coordinateMap)) return;
       mapReady = true;
       window.clearTimeout(readinessTimeout);
-      coordinateMap.off("render", handleRender);
       if (mapStatus) mapStatus.hidden = true;
       coordinateMap.resize();
     };
-    function handleRender() {
-      mapRendered = true;
-      if (hasRenderableCanvas()) revealCoordinateMap();
-    }
+    const handleMapError = (event: unknown) => {
+      if (!mapReady && isFatalBaseStyleError(event)) showMapFailure();
+    };
+    readinessTimeout = window.setTimeout(showMapFailure, 11_000);
     coordinateMap.once("load", revealCoordinateMap);
     coordinateMap.once("idle", revealCoordinateMap);
-    coordinateMap.on("render", handleRender);
+    coordinateMap.on("error", handleMapError);
     if (coordinateState.pair) syncMarker(coordinateState.pair); else resetMontenegro();
     coordinateMap.resize();
     coordinateMap.triggerRepaint();
     window.requestAnimationFrame(() => {
-      if (!coordinateMap || mapReady) return;
+      if (!coordinateMap || mapReady || mapFailed) return;
       coordinateMap.resize();
       coordinateMap.triggerRepaint();
-      if (mapRendered && hasRenderableCanvas()) revealCoordinateMap();
     });
     coordinateMap.on("click", ({ lngLat }) => {
       const next = coordinateState.setFromMap(lngLat.lng, lngLat.lat);

@@ -456,6 +456,8 @@ test("place editor hides technical coordinate controls while canonical schemas r
     readFile(new URL("../client/editor.ts", import.meta.url), "utf8"),
   ]);
   assert.doesNotMatch(html, /Јавна безбједност|Тачност|CRS|coordinateAccuracy|publicationSafety/);
+  assert.match(html, /<input name="latitude"[^>]*>/);
+  assert.match(html, /<input name="longitude"[^>]*>/);
   assert.match(html, /data-coordinate-map-canvas/);
   assert.match(html, /Уклони координате/);
   assert.match(uiSource, /Мапа тренутно није доступна\. Координате можете унијети ручно\./);
@@ -464,11 +466,17 @@ test("place editor hides technical coordinate controls while canonical schemas r
   assert.match(clientSource, /new maplibregl\.Marker\(\{ element: createMarkerElement\(\), draggable: true, anchor: "bottom" \}\)/);
   assert.match(clientSource, /coordinateMap\.on\("click"/);
   assert.match(clientSource, /coordinateMarker\.on\("dragend"/);
-  assert.match(clientSource, /coordinateMap\.on\("render", handleRender\)/);
   assert.match(clientSource, /coordinateMap\.once\("load", revealCoordinateMap\)/);
   assert.match(clientSource, /coordinateMap\.once\("idle", revealCoordinateMap\)/);
+  assert.match(clientSource, /hasLoadedBaseStyle\(coordinateMap\)/);
+  assert.match(clientSource, /coordinateMap\.on\("error", handleMapError\)/);
+  assert.match(clientSource, /if \(!mapReady && isFatalBaseStyleError\(event\)\) showMapFailure\(\)/);
+  assert.match(clientSource, /isFatalBaseStyleError\(event\)/);
+  assert.match(clientSource, /showMapFailure/);
+  assert.match(clientSource, /Мапа тренутно није доступна\. Координате можете унијети ручно\./);
   assert.match(clientSource, /if \(coordinateState\.pair\) syncMarker\(coordinateState\.pair\); else resetMontenegro\(\);/);
-  assert.doesNotMatch(clientSource, /coordinateMap\.on\("error"/);
+  assert.doesNotMatch(clientSource, /hasRenderableCanvas|coordinateMap\.on\("render"/);
+  assert.doesNotMatch(clientSource, /key=[A-Za-z0-9]{20}/);
   assert.match(clientSource, /input\.addEventListener\("blur", syncManualPoint\)/);
   assert.match(clientSource, /coordinateState\.clear\(\)/);
   assert.match(clientSource, /addControl\("⌂", "Прикажи Црну Гору"/);
@@ -618,7 +626,11 @@ test("admin media thumbnails use the scoped R2 CSP and relationship-order contro
   const response = editPlacePage(session, record);
   const html = await response.text();
   const csp = response.headers.get("content-security-policy") ?? "";
+  const connectDirective = csp.split(";").find((directive) => directive.trim().startsWith("connect-src"))?.trim() ?? "";
   const imgDirective = csp.split(";").find((directive) => directive.trim().startsWith("img-src")) ?? "";
+  assert.equal(connectDirective, "connect-src 'self' https://api.maptiler.com");
+  assert.match(imgDirective, /https:\/\/api\.maptiler\.com/);
+  assert.doesNotMatch(csp, /https:\/\/\*\.maptiler\.com|(?:^|\s)https:(?:\s|;|$)/);
   assert.match(imgDirective, /https:\/\/media\.svetinje\.me/);
   assert.doesNotMatch(csp.split(";").find((directive) => directive.trim().startsWith("default-src")) ?? "", /media\.svetinje\.me|\*/);
   assert.doesNotMatch(csp.split(";").find((directive) => directive.trim().startsWith("connect-src")) ?? "", /media\.svetinje\.me/);
