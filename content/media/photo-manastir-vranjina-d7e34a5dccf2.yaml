@@ -23,7 +23,7 @@ related_place_ids:
   - manastir-vranjina
 localized_text:
   sr:
-    alt_text: Манастир Врањина
+    alt_text: Манастир Врањина, конак
     translation_status: source
     approvals: []
 approvals:
@@ -36,5 +36,5 @@ approvals:
 audit:
   created_at: 2026-08-16T10:58:55Z
   created_by: montenegro-cg
-  updated_at: 2026-08-16T10:58:55Z
+  updated_at: 2026-08-16T10:59:23Z
   updated_by: montenegro-cg
