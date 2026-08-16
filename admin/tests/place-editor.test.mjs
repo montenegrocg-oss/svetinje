@@ -464,9 +464,15 @@ test("place editor hides technical coordinate controls while canonical schemas r
   assert.match(clientSource, /new maplibregl\.Marker\(\{ element: createMarkerElement\(\), draggable: true, anchor: "bottom" \}\)/);
   assert.match(clientSource, /coordinateMap\.on\("click"/);
   assert.match(clientSource, /coordinateMarker\.on\("dragend"/);
+  assert.match(clientSource, /coordinateMap\.on\("render", handleRender\)/);
+  assert.match(clientSource, /coordinateMap\.once\("load", revealCoordinateMap\)/);
+  assert.match(clientSource, /coordinateMap\.once\("idle", revealCoordinateMap\)/);
+  assert.match(clientSource, /if \(coordinateState\.pair\) syncMarker\(coordinateState\.pair\); else resetMontenegro\(\);/);
+  assert.doesNotMatch(clientSource, /coordinateMap\.on\("error"/);
   assert.match(clientSource, /input\.addEventListener\("blur", syncManualPoint\)/);
   assert.match(clientSource, /coordinateState\.clear\(\)/);
   assert.match(clientSource, /addControl\("⌂", "Прикажи Црну Гору"/);
+  assert.match(uiSource, /admin-map-controls\.maplibregl-ctrl-group button\{width:44px;min-width:44px;height:44px;min-height:44px\}/);
   assert.match(PLACE_SCHEMA, /"accuracy"/);
   assert.match(PLACE_SCHEMA, /"publication_safety"/);
   assert.match(PLACE_SCHEMA, /"crs"/);

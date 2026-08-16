@@ -554,13 +554,55 @@ if (mapContainer && mapCanvas && key) {
     addControl("−", "Умањи карту", () => coordinateMap?.zoomOut());
     addControl("⌂", "Прикажи Црну Гору", resetMontenegro);
     coordinateMap.addControl({ onAdd: () => controls, onRemove: () => controls.remove() }, "top-right");
-    coordinateMap.once("load", () => {
+    let mapReady = false;
+    let mapRendered = false;
+    const hasRenderableCanvas = () => {
+      try {
+        const canvas = coordinateMap?.getCanvas();
+        return canvas instanceof HTMLCanvasElement
+          && canvas.isConnected
+          && mapCanvas.contains(canvas)
+          && canvas.clientWidth > 0
+          && canvas.clientHeight > 0
+          && canvas.width > 0
+          && canvas.height > 0;
+      } catch {
+        return false;
+      }
+    };
+    const readinessTimeout = window.setTimeout(() => {
+      if (mapReady) return;
+      if (mapStatus) {
+        mapStatus.hidden = false;
+        mapStatus.textContent = "Мапа тренутно није доступна. Координате можете унијети ручно.";
+      }
+      coordinateMap?.remove();
+      coordinateMap = undefined;
+      coordinateMarker = undefined;
+    }, 11_000);
+    const revealCoordinateMap = () => {
+      if (mapReady || !coordinateMap) return;
+      mapReady = true;
+      window.clearTimeout(readinessTimeout);
+      coordinateMap.off("render", handleRender);
       if (mapStatus) mapStatus.hidden = true;
-      if (coordinateState.pair) syncMarker(coordinateState.pair); else resetMontenegro();
-      coordinateMap?.resize();
-    });
-    coordinateMap.on("error", () => {
-      if (mapStatus && !mapStatus.hidden) mapStatus.textContent = "Мапа тренутно није доступна. Координате можете унијети ручно.";
+      coordinateMap.resize();
+    };
+    function handleRender() {
+      mapRendered = true;
+      if (hasRenderableCanvas()) revealCoordinateMap();
+    }
+    coordinateMap.once("load", revealCoordinateMap);
+    coordinateMap.once("idle", revealCoordinateMap);
+    coordinateMap.on("render", handleRender);
+    if (coordinateState.pair) syncMarker(coordinateState.pair); else resetMontenegro();
+    coordinateMap.resize();
+    coordinateMap.triggerRepaint();
+    window.requestAnimationFrame(() => {
+      if (!coordinateMap || mapReady) return;
+      coordinateMap.resize();
+      coordinateMap.triggerRepaint();
+      if (mapRendered && hasRenderableCanvas()) revealCoordinateMap();
     });
     coordinateMap.on("click", ({ lngLat }) => {
       const next = coordinateState.setFromMap(lngLat.lng, lngLat.lat);
