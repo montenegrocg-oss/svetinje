@@ -150,7 +150,8 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(recommended, /data-testid="recommended-place-card"/);
   assert.doesNotMatch(recommended, /recommended-placeholder|placeholderCount|TOTAL_RECOMMENDATION_SLOTS/);
   assert.doesNotMatch(recommended, /Радни приказ|preview-badge/);
-  assert.match(recommended, /Отвори страницу/);
+  assert.doesNotMatch(recommended, /place\.typeLabel|place-preview__record-meta|Отвори страницу|place-preview__record-action/);
+  assert.match(recommended, /<a class="place-preview__record-link" href=\{`\/svetinje\/\$\{place\.slug\}\/`\}>[\s\S]*?<h3>\{place\.name\}<\/h3>[\s\S]*?\{location && <small>\{location\}<\/small>\}[\s\S]*?<\/a>/);
   assert.match(recommended, /place\.previewImageSrc/);
   assert.match(recommended, /class="place-preview__record-image"/);
   assert.match(recommended, /alt=\{place\.previewImageAlt \?\? place\.name\}/);
