@@ -20,14 +20,10 @@ export interface UpdatePlaceBody {
   browseAreaId?: unknown;
   summary?: unknown;
   jurisdiction?: unknown;
-  countryCode?: unknown;
   municipality?: unknown;
   settlement?: unknown;
-  postalAddress?: unknown;
   latitude?: unknown;
   longitude?: unknown;
-  coordinateAccuracy?: unknown;
-  publicationSafety?: unknown;
   alternateNames?: unknown;
   narrativeBody?: unknown;
   patronalFeast?: unknown;
@@ -143,15 +139,17 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   if (slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) errors.slug = "Slug мора бити lowercase ASCII kebab-case.";
   if (placeType && !record.options.placeTypes.includes(placeType)) errors.placeType = "Врста објекта није подржана.";
   if (browseAreaId && !isPlaceAreaId(browseAreaId)) errors.browseAreaId = "Област није дио важећег каталога.";
-  const countryCode = text(body.countryCode);
-  if (countryCode && !/^[A-Z]{2}$/.test(countryCode)) errors.countryCode = "Код државе мора имати два велика ASCII слова.";
   const latitude = parseOptionalNumber(body.latitude, "latitude", -90, 90, errors);
   const longitude = parseOptionalNumber(body.longitude, "longitude", -180, 180, errors);
-  if ((latitude === undefined) !== (longitude === undefined)) errors.coordinates = "Ширина и дужина морају бити попуњене или обрисане заједно.";
-  const coordinateAccuracy = text(body.coordinateAccuracy);
-  const publicationSafety = text(body.publicationSafety);
-  if (latitude !== undefined && (!coordinateAccuracy || !record.options.coordinateAccuracy.includes(coordinateAccuracy))) errors.coordinateAccuracy = "Изаберите подржану тачност.";
-  if (latitude !== undefined && (!publicationSafety || !record.options.publicationSafety.includes(publicationSafety))) errors.publicationSafety = "Изаберите подржан ниво јавне безбједности.";
+  if ((latitude === undefined) !== (longitude === undefined)) errors.coordinates = "Унесите и географску ширину и географску дужину.";
+  const currentCoordinates = record.rawPlace.location?.coordinates;
+  const coordinateAccuracy = record.options.coordinateAccuracy.includes(currentCoordinates?.accuracy)
+    ? currentCoordinates.accuracy
+    : "complex-centroid";
+  const publicationSafety = record.options.publicationSafety.includes(currentCoordinates?.publication_safety)
+    ? currentCoordinates.publication_safety
+    : "public";
+  const coordinateCrs = currentCoordinates?.crs === "EPSG:4326" ? currentCoordinates.crs : "EPSG:4326";
   if (record.place.inPreview && latitude !== undefined && longitude !== undefined && publicationSafety !== "public") {
     errors.publicationSafety = "Координате објављеног објекта морају бити означене као јавне.";
   }
@@ -175,17 +173,15 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   if (patronalFeast) place.patronal_feast = { name: patronalFeast }; else delete place.patronal_feast;
   if (youtubeUrl) place.video = { youtube_url: youtubeUrl }; else delete place.video;
   place.location ??= {};
-  setFact(place.location, "country_code", countryCode);
   setFact(place.location, "municipality", text(body.municipality));
   setFact(place.location, "settlement", text(body.settlement));
-  setFact(place.location, "postal_address", text(body.postalAddress));
   if (latitude === undefined || longitude === undefined) {
     delete place.location.coordinates;
   } else {
-    const nextCoordinateValues = { latitude, longitude, accuracy: coordinateAccuracy, publication_safety: publicationSafety };
+    const nextCoordinateValues = { latitude, longitude, accuracy: coordinateAccuracy, publication_safety: publicationSafety, crs: coordinateCrs };
     const current = place.location.coordinates;
-    const currentValues = current && { latitude: current.latitude, longitude: current.longitude, accuracy: current.accuracy, publication_safety: current.publication_safety };
-    if (!same(currentValues, nextCoordinateValues)) place.location.coordinates = { ...nextCoordinateValues, crs: "EPSG:4326", verification: resetVerification() };
+    const currentValues = current && { latitude: current.latitude, longitude: current.longitude, accuracy: current.accuracy, publication_safety: current.publication_safety, crs: current.crs };
+    if (!same(currentValues, nextCoordinateValues)) place.location.coordinates = { ...nextCoordinateValues, verification: resetVerification() };
   }
 
   narrative.preferred_name = preferredName;

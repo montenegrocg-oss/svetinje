@@ -272,7 +272,10 @@ function verifyDetail(detailCase, model, pagesByRoute, failures) {
     if (!hero.includes("place-profile-hero__fallback")) failures.push(`${place.id} detail hero is missing its honest media fallback`);
     if (!gallery.includes("Ауторска фотографија биће додата")) failures.push(`${place.id} detail gallery is missing its honest media fallback`);
   }
-  if (!gallery || countMatches(gallery, /data-gallery-slot=/g) !== 4) failures.push(`${place.id} detail gallery must retain four honest preparation slots`);
+  const expectedPlaceholderSlots = place.galleryImages.length === 0 ? 4 : Math.max(0, 5 - place.galleryImages.length);
+  if (!gallery || countMatches(gallery, /data-gallery-slot=/g) !== expectedPlaceholderSlots) {
+    failures.push(`${place.id} detail gallery must retain ${expectedPlaceholderSlots} honest preparation slot(s)`);
+  }
 
   if (!html.includes("Практичне информације")) failures.push(`${place.id} detail page is missing its repository-backed practical panel`);
   if (hasCoordinates && (!html.includes(`data-latitude="${place.latitude}"`) || !html.includes(`data-longitude="${place.longitude}"`))) {

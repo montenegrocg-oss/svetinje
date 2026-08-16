@@ -1,4 +1,5 @@
 import maplibregl from "maplibre-gl";
+import { CoordinatePickerState, parseCoordinateInputs } from "./coordinate-picker-state.ts";
 
 const form = document.querySelector<HTMLFormElement>("[data-place-editor]");
 if (!form) throw new Error("Place editor form is missing");
@@ -173,14 +174,10 @@ const body = () => ({
   browseAreaId: field("browseAreaId").value,
   summary: field("summary").value,
   jurisdiction: field("jurisdiction").value,
-  countryCode: field("countryCode").value,
   municipality: field("municipality").value,
   settlement: field("settlement").value,
-  postalAddress: field("postalAddress").value,
   latitude: field("latitude").value,
   longitude: field("longitude").value,
-  coordinateAccuracy: field("coordinateAccuracy").value,
-  publicationSafety: field("publicationSafety").value,
   patronalFeast: field("patronalFeast").value,
   youtubeUrl: field("youtubeUrl").value,
   narrativeBody: field("narrativeBody").value,
@@ -474,23 +471,106 @@ form.addEventListener("click", async (event) => {
 });
 
 const mapContainer = form.querySelector<HTMLElement>("[data-coordinate-map]");
+const mapCanvas = form.querySelector<HTMLElement>("[data-coordinate-map-canvas]");
+const mapStatus = form.querySelector<HTMLElement>("[data-coordinate-map-status]");
+const clearPoint = form.querySelector<HTMLButtonElement>("[data-clear-point]");
+const latitude = field("latitude") as HTMLInputElement;
+const longitude = field("longitude") as HTMLInputElement;
+const initialResult = parseCoordinateInputs(latitude.value, longitude.value);
+const coordinateState = new CoordinatePickerState(initialResult.kind === "valid" ? initialResult.pair : undefined);
+let coordinateMap: maplibregl.Map | undefined;
+let coordinateMarker: maplibregl.Marker | undefined;
+
+const formatMapCoordinate = (value: number) => String(Number(value.toFixed(7)));
+const setCoordinateValidity = (result = parseCoordinateInputs(latitude.value, longitude.value)) => {
+  latitude.setCustomValidity("");
+  longitude.setCustomValidity("");
+  if (result.kind === "incomplete") {
+    const message = "Унесите и географску ширину и географску дужину.";
+    latitude.setCustomValidity(message);
+    longitude.setCustomValidity(message);
+  } else if (result.kind === "invalid") {
+    (result.field === "latitude" ? latitude : longitude).setCustomValidity(
+      result.field === "latitude" ? "Ширина мора бити између -90 и 90." : "Дужина мора бити између -180 и 180.",
+    );
+  }
+  return result;
+};
+const updateClearButton = () => { if (clearPoint) clearPoint.hidden = !coordinateState.pair; };
+const createMarkerElement = () => { const element = document.createElement("span"); element.className = "admin-coordinate-marker"; element.setAttribute("aria-hidden", "true"); return element; };
+const syncMarker = (pair: { latitude: number; longitude: number }) => {
+  if (!coordinateMap) return;
+  if (!coordinateMarker) {
+    coordinateMarker = new maplibregl.Marker({ element: createMarkerElement(), draggable: true, anchor: "bottom" })
+      .setLngLat([pair.longitude, pair.latitude]).addTo(coordinateMap);
+    coordinateMarker.on("dragend", () => {
+      const point = coordinateMarker!.getLngLat();
+      const next = coordinateState.setFromMap(point.lng, point.lat);
+      latitude.value = formatMapCoordinate(next.latitude);
+      longitude.value = formatMapCoordinate(next.longitude);
+      setCoordinateValidity(); updateClearButton(); markDirty();
+    });
+  } else coordinateMarker.setLngLat([pair.longitude, pair.latitude]);
+};
+const resetMontenegro = () => coordinateMap?.fitBounds([[18.42, 41.8], [20.36, 43.57]], { padding: 42, duration: 0 });
+const syncManualPoint = () => {
+  const result = coordinateState.setFromInputs(latitude.value, longitude.value);
+  setCoordinateValidity(result);
+  if (result.kind === "valid") {
+    syncMarker(result.pair);
+    coordinateMap?.easeTo({ center: [result.pair.longitude, result.pair.latitude], zoom: Math.max(coordinateMap.getZoom(), 15) });
+  } else if (result.kind === "empty") {
+    coordinateMarker?.remove(); coordinateMarker = undefined;
+  }
+  updateClearButton();
+};
+for (const input of [latitude, longitude]) {
+  input.addEventListener("change", syncManualPoint);
+  input.addEventListener("blur", syncManualPoint);
+}
+clearPoint?.addEventListener("click", () => {
+  coordinateState.clear(); latitude.value = ""; longitude.value = ""; setCoordinateValidity();
+  coordinateMarker?.remove(); coordinateMarker = undefined; updateClearButton(); resetMontenegro(); markDirty();
+});
+updateClearButton();
+
 const key = form.dataset.mapKey;
-if (mapContainer && key) {
-  mapContainer.replaceChildren();
-  const latitude = field("latitude") as HTMLInputElement;
-  const longitude = field("longitude") as HTMLInputElement;
-  const validPoint = () => Number.isFinite(latitude.valueAsNumber) && Number.isFinite(longitude.valueAsNumber);
-  const map = new maplibregl.Map({ container: mapContainer, style: `https://api.maptiler.com/maps/019fc7d8-717c-701d-9ca5-a53d9438d3ce/style.json?key=${encodeURIComponent(key)}`, center: validPoint() ? [longitude.valueAsNumber, latitude.valueAsNumber] : [19.25, 42.7], zoom: validPoint() ? 14 : 6.2, attributionControl: false });
-  map.addControl(new maplibregl.AttributionControl({ compact: true, customAttribution: "© MapTiler © OpenStreetMap contributors" }));
-  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
-  let marker: maplibregl.Marker | undefined;
-  const setPoint = (lng: number, lat: number) => {
-    longitude.value = String(Number(lng.toFixed(7))); latitude.value = String(Number(lat.toFixed(7)));
-    if (!marker) { marker = new maplibregl.Marker({ draggable: true }).setLngLat([lng, lat]).addTo(map); marker.on("dragend", () => { const point = marker!.getLngLat(); setPoint(point.lng, point.lat); markDirty(); }); }
-    else marker.setLngLat([lng, lat]);
-  };
-  if (validPoint()) setPoint(longitude.valueAsNumber, latitude.valueAsNumber);
-  map.on("click", ({ lngLat }) => { setPoint(lngLat.lng, lngLat.lat); markDirty(); });
-  for (const input of [latitude, longitude]) input.addEventListener("change", () => { if (validPoint()) setPoint(longitude.valueAsNumber, latitude.valueAsNumber); });
-  form.querySelector("[data-clear-point]")?.addEventListener("click", () => { latitude.value = ""; longitude.value = ""; marker?.remove(); marker = undefined; markDirty(); });
+if (mapContainer && mapCanvas && key) {
+  try {
+    coordinateMap = new maplibregl.Map({
+      container: mapCanvas,
+      style: `https://api.maptiler.com/maps/019fc7d8-717c-701d-9ca5-a53d9438d3ce/style.json?key=${encodeURIComponent(key)}`,
+      center: coordinateState.pair ? [coordinateState.pair.longitude, coordinateState.pair.latitude] : [19.25, 42.7],
+      zoom: coordinateState.pair ? 16 : 6.2,
+      attributionControl: false,
+    });
+    coordinateMap.addControl(new maplibregl.AttributionControl({ compact: true, customAttribution: "© MapTiler © OpenStreetMap contributors" }));
+    const controls = document.createElement("div");
+    controls.className = "admin-map-controls maplibregl-ctrl maplibregl-ctrl-group";
+    const addControl = (label: string, title: string, action: () => void) => {
+      const button = document.createElement("button"); button.type = "button"; button.textContent = label; button.title = title; button.setAttribute("aria-label", title); button.addEventListener("click", action); controls.appendChild(button);
+    };
+    addControl("+", "Увећај карту", () => coordinateMap?.zoomIn());
+    addControl("−", "Умањи карту", () => coordinateMap?.zoomOut());
+    addControl("⌂", "Прикажи Црну Гору", resetMontenegro);
+    coordinateMap.addControl({ onAdd: () => controls, onRemove: () => controls.remove() }, "top-right");
+    coordinateMap.once("load", () => {
+      if (mapStatus) mapStatus.hidden = true;
+      if (coordinateState.pair) syncMarker(coordinateState.pair); else resetMontenegro();
+      coordinateMap?.resize();
+    });
+    coordinateMap.on("error", () => {
+      if (mapStatus && !mapStatus.hidden) mapStatus.textContent = "Мапа тренутно није доступна. Координате можете унијети ручно.";
+    });
+    coordinateMap.on("click", ({ lngLat }) => {
+      const next = coordinateState.setFromMap(lngLat.lng, lngLat.lat);
+      latitude.value = formatMapCoordinate(next.latitude); longitude.value = formatMapCoordinate(next.longitude);
+      setCoordinateValidity(); syncMarker(next); updateClearButton(); markDirty();
+    });
+  } catch {
+    if (mapStatus) { mapStatus.hidden = false; mapStatus.textContent = "Мапа тренутно није доступна. Координате можете унијети ручно."; }
+  }
+} else if (mapStatus) {
+  mapStatus.hidden = false;
+  mapStatus.textContent = "Мапа тренутно није доступна. Координате можете унијети ручно.";
 }

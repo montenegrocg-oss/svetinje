@@ -312,7 +312,14 @@ test("the male-monastery import is complete, research-only, and source-bound", a
 
 test("a research monastery without coordinates gets a detail route but no marker or false map claim", async () => {
   const places = await loadVisiblePlaces(PROJECT_ROOT, { editorialPreview: true });
-  const noCoordinates = places.find((place) => place.id === "manastir-bijelici");
+  const sourcePlace = places.find((place) => place.id === "manastir-bijelici");
+  const noCoordinates = sourcePlace && {
+    ...sourcePlace,
+    id: "synthetic-coordinate-less-place",
+    slug: "synthetic-coordinate-less-place",
+    latitude: undefined,
+    longitude: undefined,
+  };
   const withCoordinates = places.find((place) => place.id === "podmaine");
   const [detail, mapCanvas, card, practicalPanel] = await Promise.all([
     source("src/pages/svetinje/[slug].astro"),
@@ -324,6 +331,10 @@ test("a research monastery without coordinates gets a detail route but no marker
   assert.ok(noCoordinates);
   assert.equal(noCoordinates.latitude, undefined);
   assert.equal(noCoordinates.longitude, undefined);
+  const detailRoutes = [noCoordinates].map((place) => `/svetinje/${place.slug}/`);
+  const markerPlaces = [noCoordinates].filter((place) => Number.isFinite(place.latitude) && Number.isFinite(place.longitude));
+  assert.deepEqual(detailRoutes, ["/svetinje/synthetic-coordinate-less-place/"]);
+  assert.deepEqual(markerPlaces, []);
   assert.equal(withCoordinates?.latitude, 42.29799);
   assert.match(mapCanvas, /Number\.isFinite\(place\.latitude\)/);
   assert.match(practicalPanel, /\{hasCoordinates && \([\s\S]*<PlaceMiniMap/);

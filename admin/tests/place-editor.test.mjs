@@ -185,8 +185,8 @@ const session = { subject: "user", email: "editor@example.com", actor: "editor-u
 const newPlaceBody = { preferredName: "Нови објекат", id: "novi-objekat", slug: "novi-objekat", placeType: "monastery", expectedHeadSha: HEAD };
 const body = (place) => ({
   expectedHeadSha: HEAD, preferredName: place.preferredName, shortName: place.shortName ?? "", slug: place.slug, placeType: place.placeType, browseAreaId: place.browseAreaId, summary: place.summary,
-  jurisdiction: place.jurisdiction ?? "", countryCode: place.countryCode ?? "", municipality: place.municipality ?? "", settlement: place.settlement ?? "", postalAddress: place.postalAddress ?? "",
-  latitude: place.latitude, longitude: place.longitude, coordinateAccuracy: place.coordinateAccuracy, publicationSafety: place.publicationSafety, alternateNames: place.alternateNames,
+  jurisdiction: place.jurisdiction ?? "", municipality: place.municipality ?? "", settlement: place.settlement ?? "",
+  latitude: place.latitude, longitude: place.longitude, alternateNames: place.alternateNames,
   narrativeBody: place.narrativeBody, patronalFeast: place.patronalFeast ?? "", youtubeUrl: place.youtubeUrl ?? "",
 });
 
@@ -424,34 +424,52 @@ test("a repeated PATCH after serialization and readback does not create an audit
   assert.deepEqual(parseNarrative(repository.blobs.narrative).frontMatter.audit, savedNarrative.audit);
 });
 
-test("published coordinates require explicit public safety while drafts retain canonical options", async () => {
-  const previewRepository = new Repository();
-  const previewRecord = await loadEditablePlace(previewRepository, "editorial/work", "existing-place");
-  await assert.rejects(
-    () => updatePlace(previewRepository, env, session, "existing-place", { ...body(previewRecord.place), publicationSafety: "review-required" }),
-    (error) => error.code === "invalid_form_data"
-      && error.status === 400
-      && error.fields?.publicationSafety === "Координате објављеног објекта морају бити означене као јавне.",
-  );
-  assert.equal(previewRepository.committed, undefined);
+test("coordinate metadata is backend-managed, defaults for a new pair, and preserves valid existing values", async () => {
+  const repository = new Repository();
+  const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  const removed = await updateCanonicalPlace(loaded, { ...body(loaded.place), latitude: "", longitude: "" }, "editor-user", new Date("2026-08-13T12:00:00Z"));
+  const withoutCoordinates = { ...loaded, rawPlace: removed.place, place: { ...loaded.place, latitude: undefined, longitude: undefined } };
+  const created = await updateCanonicalPlace(withoutCoordinates, { ...body(withoutCoordinates.place), latitude: 42.1, longitude: 19.1 }, "editor-user", new Date("2026-08-13T12:01:00Z"));
+  assert.deepEqual(created.place.location.coordinates, {
+    latitude: 42.1,
+    longitude: 19.1,
+    accuracy: "complex-centroid",
+    publication_safety: "public",
+    crs: "EPSG:4326",
+    verification: { status: "requires-verification" },
+  });
 
-  const nonPreviewRepository = new Repository();
-  nonPreviewRepository.blobs.preview = JSON.stringify({ place_ids: [] });
-  const nonPreviewRecord = await loadEditablePlace(nonPreviewRepository, "editorial/work", "existing-place");
-  const result = await updatePlace(
-    nonPreviewRepository,
-    env,
-    session,
-    "existing-place",
-    { ...body(nonPreviewRecord.place), publicationSafety: "review-required" },
-  );
-  assert.equal(result.unchanged, false);
-  assert.equal(nonPreviewRepository.committed.files.length, 2);
+  const customRepository = new Repository();
+  customRepository.blobs.place = PLACE.replace("accuracy: complex-centroid", "accuracy: exact-entrance");
+  const custom = await loadEditablePlace(customRepository, "editorial/work", "existing-place");
+  const moved = await updateCanonicalPlace(custom, { ...body(custom.place), latitude: 42.2, longitude: 19.2 }, "editor-user", new Date("2026-08-13T12:02:00Z"));
+  assert.equal(moved.place.location.coordinates.accuracy, "exact-entrance");
+  assert.equal(moved.place.location.coordinates.publication_safety, "public");
+  assert.equal(moved.place.location.coordinates.crs, "EPSG:4326");
 });
 
-test("place editor explains published coordinate safety next to the field", async () => {
-  const uiSource = await readFile(new URL("../src/ui.ts", import.meta.url), "utf8");
-  assert.match(uiSource, /Координате објављеног објекта морају бити означене као јавне\./);
+test("place editor hides technical coordinate controls while canonical schemas retain them", async () => {
+  const record = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
+  const [html, uiSource, clientSource] = await Promise.all([
+    editPlacePage(session, record).text(),
+    readFile(new URL("../src/ui.ts", import.meta.url), "utf8"),
+    readFile(new URL("../client/editor.ts", import.meta.url), "utf8"),
+  ]);
+  assert.doesNotMatch(html, /Јавна безбједност|Тачност|CRS|coordinateAccuracy|publicationSafety/);
+  assert.match(html, /data-coordinate-map-canvas/);
+  assert.match(html, /Уклони координате/);
+  assert.match(uiSource, /Мапа тренутно није доступна\. Координате можете унијети ручно\./);
+  assert.doesNotMatch(clientSource, /field\("coordinateAccuracy"\)|field\("publicationSafety"\)/);
+  assert.match(clientSource, /zoom: coordinateState\.pair \? 16 : 6\.2/);
+  assert.match(clientSource, /new maplibregl\.Marker\(\{ element: createMarkerElement\(\), draggable: true, anchor: "bottom" \}\)/);
+  assert.match(clientSource, /coordinateMap\.on\("click"/);
+  assert.match(clientSource, /coordinateMarker\.on\("dragend"/);
+  assert.match(clientSource, /input\.addEventListener\("blur", syncManualPoint\)/);
+  assert.match(clientSource, /coordinateState\.clear\(\)/);
+  assert.match(clientSource, /addControl\("⌂", "Прикажи Црну Гору"/);
+  assert.match(PLACE_SCHEMA, /"accuracy"/);
+  assert.match(PLACE_SCHEMA, /"publication_safety"/);
+  assert.match(PLACE_SCHEMA, /"crs"/);
 });
 
 test("place editor exposes the photo workflow and no source-registry controls", async () => {
@@ -645,4 +663,23 @@ test("unsupported type, area, coordinates and stale HEAD are rejected without co
   const repository = new Repository(); const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
   await assert.rejects(() => updatePlace(repository, env, session, "existing-place", { ...body(loaded.place), expectedHeadSha: "f".repeat(40) }), (error) => error.code === "git_conflict");
   assert.equal(repository.committed, undefined);
+});
+
+test("coordinate updates reject incomplete and out-of-range pairs", async () => {
+  const repository = new Repository();
+  const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  for (const [patch, field] of [
+    [{ latitude: 91, longitude: 19.1 }, "latitude"],
+    [{ latitude: 42.1, longitude: 181 }, "longitude"],
+    [{ latitude: 42.1, longitude: "" }, "coordinates"],
+  ]) {
+    await assert.rejects(
+      () => updateCanonicalPlace(loaded, { ...body(loaded.place), ...patch }, "editor-user", new Date("2026-08-13T12:00:00Z")),
+      (error) => error.code === "invalid_form_data" && Boolean(error.fields?.[field]),
+    );
+  }
+  await assert.rejects(
+    () => updateCanonicalPlace(loaded, { ...body(loaded.place), latitude: 42.1, longitude: "" }, "editor-user", new Date("2026-08-13T12:00:00Z")),
+    (error) => error.fields?.coordinates === "Унесите и географску ширину и географску дужину.",
+  );
 });
