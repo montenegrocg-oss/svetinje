@@ -36,6 +36,10 @@ location:
     crs: EPSG:4326
     verification:
       status: requires-verification
+  municipality:
+    value: Цетиње
+    verification:
+      status: requires-verification
 relationships:
   media_ids:
     - photo-dobrska-celija-50c5ec115054
@@ -48,7 +52,7 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T20:35:36Z
+  updated_at: 2026-08-16T20:49:38Z
   updated_by: montenegro-cg
 patronal_feast:
   name: Ваведење Пресвете Богородице 4. децембар
