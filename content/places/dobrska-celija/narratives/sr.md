@@ -17,14 +17,14 @@ alternate_names:
     source_ids:
       - mitropolija-zenski-manastiri
     verification_status: requires-verification
-summary: Стари манастир у Добрском Селу код Цетиња, некадашњи метох Цетињског манастира и мјесто народне школе.
+summary: Стари манастир у Добрском Селу код Цетиња, метох Цетињског манастира и некадашње мјесто народне школе.
 source_ids:
   - mitropolija-zenski-manastiri
 approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T20:06:55Z
+  updated_at: 2026-08-16T20:09:13Z
   updated_by: montenegro-cg
 ---
 
