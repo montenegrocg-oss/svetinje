@@ -11,12 +11,12 @@ alternate_names:
     context: Пуни назив према посвећењу храма.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
   - name: Манастир Свете Петке у Добром Долу
     context: Назив по светитељки и засеоку.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Новији манастир Свете Петке у Добром Долу, у Гостиљу Мартинићком у Бјелопавлићима.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -24,8 +24,8 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T12:00:00Z
-  updated_by: codex
+  updated_at: 2026-08-16T21:41:16Z
+  updated_by: montenegro-cg
 ---
 
 Манастир Гостиље налази се у засеоку Добри До, у Гостиљу Мартинићком у Бјелопавлићима. Храм је посвећен Преподобној Мати Параскеви — Светој Петки, чије име носи и крсна слава Бјелопавлића.
