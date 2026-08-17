@@ -605,6 +605,58 @@ worktree branch
 
 Prefer the PR / Release review chat for reviewing several completed worktree branches before integration.
 
+## Editorial fast path — `worktree/editorial-copy`
+
+`worktree/editorial-copy` may directly fast-forward `origin/feature/podmaine-pilot` only for low-risk editorial-copy changes. This is a narrow exception to the normal integration workflow and does not require a separate PR / Release review when every condition below is met.
+
+The fast path is allowed only for visible prose or copy, headings, labels, static page text, page titles or meta descriptions, and mailto or internal textual links.
+
+It must not change:
+
+- CSS, layout, or responsive behavior;
+- JavaScript or TypeScript application logic, component behavior, Map, Calendar, Admin, or Routes;
+- schemas, `content/places/**`, canonical research records, visibility/publication registries, or validation policies;
+- test infrastructure, GitHub workflows, `package.json`, `pnpm-lock.yaml`, `.gitattributes`, or `AGENTS.md` after this policy task.
+
+Before every fast-path task, run:
+
+1. `git status --short`;
+2. `git branch --show-current`;
+3. `git fetch origin`;
+4. `git rev-parse HEAD`;
+5. `git rev-parse origin/feature/podmaine-pilot`.
+
+The assigned branch must be `worktree/editorial-copy`. Before editing, it must be synchronized with the current integration HEAD using only:
+
+`git merge --ff-only origin/feature/podmaine-pilot`
+
+If the branch has diverged or has its own unfinished commits and this fast-forward is unavailable, the fast path is forbidden. Stop and use the normal review workflow.
+
+After the copy change, run:
+
+1. `git diff --name-status`;
+2. `git diff`;
+3. `pnpm run check`.
+
+All checks must be green. Before a direct push, run `git fetch origin` again and compare the task's expected integration parent with `origin/feature/podmaine-pilot`. If integration advanced after the task began, do not push, rebase, or merge automatically: stop and report the changed SHA. This protects independently created admin commits.
+
+Only if the remote integration HEAD is unchanged, push by ordinary fast-forward:
+
+`git push origin HEAD:feature/podmaine-pilot`
+
+Never use `--force` or `--force-with-lease`. After a successful integration push, also update `origin/worktree/editorial-copy` with an ordinary push.
+
+If Git rejects a push, a conflict or non-fast-forward appears, or checks fail, stop without bypassing the protection. The fast path never deploys.
+
+If a task touches design, layout, interactive behavior, a data model, canonical content, map/calendar/admin, build or deployment infrastructure, or multiple worktree domains, use the normal workflow instead:
+
+assigned worktree
+→ commit/push own branch
+→ PR / Release review
+→ integration
+
+When in doubt, use the normal review workflow.
+
 ## Cross-worktree overlap
 
 If the current task requires files actively owned by another worktree, do not silently edit them. First report:
