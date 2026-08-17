@@ -11,12 +11,12 @@ alternate_names:
     context: Назив према главном храму и положају.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
   - name: Ријечки манастир
     context: Историјски назив манастира код Ријеке Црнојевића.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Манастир Светог Николе на Ободу изнад Ријеке Црнојевића, повезан са Црнојевићима и раном ћириличном штампом.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -24,8 +24,8 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T12:00:00Z
-  updated_by: codex
+  updated_at: 2026-08-17T13:18:06Z
+  updated_by: montenegro-cg
 ---
 
 Ободски манастир налази се на брду Обод изнад Ријеке Црнојевића, недалеко од извора ријеке. Иван Црнојевић подигао је 1475. године манастир са црквом Светог Николе, који је једно вријеме био сједиште зетских митрополита.
