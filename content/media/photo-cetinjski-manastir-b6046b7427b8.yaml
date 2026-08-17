@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-cetinjski-manastir-b6046b7427b8
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/cetinjski-manastir/photo-cetinjski-manastir-b6046b7427b8.jpg
+checksum_sha256: f85cc6396e0d235466755e4129cbd4b042fef346a9111bf65f0b29422ac9749d
+mime_type: image/jpeg
+width: 1800
+height: 2400
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - cetinjski-manastir
+localized_text:
+  sr:
+    alt_text: Цетињски манастир
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-17T13:50:19Z
+    reviewed_revision: fb500e1a92c6578a0885a75cca172e8fbfa5f6c7
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-17T13:50:19Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-17T13:50:19Z
+  updated_by: montenegro-cg

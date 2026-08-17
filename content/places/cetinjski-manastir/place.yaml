@@ -32,14 +32,18 @@ location:
     value: ME
     verification:
       status: requires-verification
-relationships: {}
+relationships:
+  media_ids:
+    - photo-cetinjski-manastir-b6046b7427b8
+    - photo-cetinjski-manastir-88568921825e
+    - photo-cetinjski-manastir-486aa0f5051e
 source_ids:
   - mitropolija-muski-manastiri
 approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-17T13:44:34Z
+  updated_at: 2026-08-17T13:50:19Z
   updated_by: montenegro-cg
 ecclesiastical:
   jurisdiction:
