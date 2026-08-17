@@ -42,15 +42,15 @@ location:
       status: requires-verification
 relationships:
   media_ids:
-    - photo-manastir-rustovo-b56a2c065aa0
     - photo-manastir-rustovo-f639c5084c73
+    - photo-manastir-rustovo-b56a2c065aa0
 source_ids:
   - mitropolija-zenski-manastiri
 approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-17T10:51:14Z
+  updated_at: 2026-08-17T10:51:27Z
   updated_by: montenegro-cg
 patronal_feast:
   name: Успеније Пресвете Богородице - Велика Госпојина 28. августа
