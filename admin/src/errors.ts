@@ -44,11 +44,68 @@ export type InternalDiagnosticStage =
   | "media_object_already_exists"
   | "dashboard_render_failed";
 
+const SAFE_DIAGNOSTIC_STAGES = new Set<string>([
+  "repository_request_failed",
+  "catalog_tree_processing_failed",
+  "catalog_blob_decode_failed",
+  "catalog_yaml_parse_failed",
+  "schema_compile_failed",
+  "canonical_schema_fingerprint_mismatch",
+  "media_bucket_binding_missing",
+  "media_object_key_invalid",
+  "media_object_already_exists",
+  "dashboard_render_failed",
+  "configuration_incomplete",
+  "private_key_import_failed",
+  "app_jwt_sign_failed",
+  "installation_token_http_failure",
+  "installation_token_response_invalid",
+  "repository_request_rejected",
+]);
+
+const SAFE_DIAGNOSTIC_OPERATIONS = new Set<string>([
+  "branch_ref",
+  "commit",
+  "tree",
+  "blob",
+  "create_blob",
+  "create_tree",
+  "create_commit",
+  "update_ref",
+]);
+
 export function internalFailure(
   stage: InternalDiagnosticStage,
   fields: { status?: number; operation?: "branch_ref" | "commit" | "tree" | "blob" } = {},
 ): AdminError {
   return new AdminError("internal_error", 502, stage, { stage, ...fields });
+}
+
+export function logInternalDiagnostic(error: unknown, request: Request): void {
+  const context = {
+    event: "admin.internal_error",
+    request_method: request.method,
+    request_path: new URL(request.url).pathname,
+  };
+
+  if (error instanceof AdminError) {
+    if (error.code !== "internal_error" && error.code !== "github_authentication_failure") return;
+    const fields = error.fields;
+    console.error({
+      ...context,
+      code: error.code,
+      ...(typeof fields?.stage === "string" && SAFE_DIAGNOSTIC_STAGES.has(fields.stage) ? { stage: fields.stage } : {}),
+      ...(typeof fields?.operation === "string" && SAFE_DIAGNOSTIC_OPERATIONS.has(fields.operation) ? { operation: fields.operation } : {}),
+      ...(typeof fields?.status === "number" ? { upstream_status: fields.status } : {}),
+    });
+    return;
+  }
+
+  console.error({
+    ...context,
+    code: "internal_error",
+    ...(error instanceof Error && error.name ? { error_name: error.name } : {}),
+  });
 }
 
 const SAFE_MESSAGES: Record<AdminErrorCode, string> = {

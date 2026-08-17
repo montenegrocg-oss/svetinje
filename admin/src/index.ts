@@ -1,5 +1,5 @@
 import { authenticateRequest } from "./auth.ts";
-import { AdminError, errorResponse } from "./errors.ts";
+import { AdminError, errorResponse, logInternalDiagnostic } from "./errors.ts";
 import { GitHubRepository } from "./github.ts";
 import { deletePlacePhoto, MAX_PHOTO_COUNT, MAX_UPLOAD_BYTES, updatePlacePhoto, uploadPlacePhotos } from "./media.ts";
 import { createPlace, deletePlace, getEditablePlace, getPlace, listPlaces, updatePlace, updatePlacePreview } from "./service.ts";
@@ -172,6 +172,7 @@ export async function handleRequest(request: Request, env: AdminEnv): Promise<Re
     if (request.method === "GET" && url.pathname.startsWith("/assets/") && env.ASSETS) return env.ASSETS.fetch(request);
     throw new AdminError("not_found", 404, "Route does not exist");
   } catch (error) {
+    logInternalDiagnostic(error, request);
     return errorResponse(error);
   }
 }

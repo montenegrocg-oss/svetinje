@@ -558,6 +558,106 @@ test("internal GitHub diagnostics are omitted from public responses", async () =
   assert.deepEqual(Object.keys(JSON.parse(serialized).error).sort(), ["code", "message"]);
 });
 
+test("top-level internal failures log only safe structured diagnostics", async () => {
+  const { privateKeyPem } = createGitHubAppKeyPair("pkcs8");
+  const requestSecret = "request-body-secret";
+  const headerSecret = "authorization-secret";
+  const upstreamSecret = "upstream-response-secret";
+  const logged = [];
+  const originalFetch = globalThis.fetch;
+  const originalConsoleError = console.error;
+  globalThis.fetch = async (url) => {
+    const pathname = new URL(url).pathname;
+    if (pathname === "/app/installations/456/access_tokens") return Response.json({ token: "installation-token" }, { status: 201 });
+    if (pathname.endsWith("/git/ref/heads/editorial%2Fwork")) return Response.json({ error: upstreamSecret }, { status: 503 });
+    assert.fail(`Unexpected request ${pathname}`);
+  };
+  console.error = (...values) => logged.push(values);
+
+  let response;
+  try {
+    response = await handleRequest(new Request("https://admin.example.test/api/places/crkva-na-cipuru", {
+      method: "PATCH",
+      headers: {
+        authorization: `Bearer ${headerSecret}`,
+        "content-type": "application/json",
+        origin: "https://admin.example.test",
+      },
+      body: JSON.stringify({ expectedHeadSha: "a".repeat(40), secret: requestSecret }),
+    }), {
+      ...env,
+      ENVIRONMENT: "development",
+      DEV_AUTH_BYPASS: "true",
+      GITHUB_APP_ID: "123",
+      GITHUB_APP_INSTALLATION_ID: "456",
+      GITHUB_APP_PRIVATE_KEY: privateKeyPem,
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+    console.error = originalConsoleError;
+  }
+
+  const serialized = await response.text();
+  assert.equal(response.status, 502);
+  assert.doesNotMatch(serialized, /repository_request_failed|branch_ref|503|request-body-secret|authorization-secret|upstream-response-secret/);
+  assert.deepEqual(JSON.parse(serialized).error, { code: "internal_error", message: "Дошло је до интерне грешке." });
+  assert.equal(logged.length, 1);
+  assert.deepEqual(logged[0], [{
+    event: "admin.internal_error",
+    request_method: "PATCH",
+    request_path: "/api/places/crkva-na-cipuru",
+    code: "internal_error",
+    stage: "repository_request_failed",
+    operation: "branch_ref",
+    upstream_status: 503,
+  }]);
+  assert.doesNotMatch(JSON.stringify(logged), /request-body-secret|authorization-secret|upstream-response-secret/);
+});
+
+test("ordinary validation errors do not emit internal diagnostics", async () => {
+  const logged = [];
+  const originalConsoleError = console.error;
+  console.error = (...values) => logged.push(values);
+  try {
+    const response = await handleRequest(new Request("https://admin.example.test/api/places/existing-place", {
+      method: "PATCH",
+      headers: { "content-type": "application/json", origin: "https://attacker.example" },
+      body: "{}",
+    }), { ENVIRONMENT: "development", DEV_AUTH_BYPASS: "true", GITHUB_EDITORIAL_BRANCH: "editorial/work" });
+    assert.equal(response.status, 403);
+    assert.equal((await response.json()).error.code, "invalid_form_data");
+  } finally {
+    console.error = originalConsoleError;
+  }
+  assert.equal(logged.length, 0);
+});
+
+test("top-level GitHub authentication failures log safe diagnostics", async () => {
+  const logged = [];
+  const originalConsoleError = console.error;
+  console.error = (...values) => logged.push(values);
+  let response;
+  try {
+    response = await handleRequest(new Request("https://admin.example.test/places"), {
+      ...env,
+      ENVIRONMENT: "development",
+      DEV_AUTH_BYPASS: "true",
+    });
+  } finally {
+    console.error = originalConsoleError;
+  }
+
+  assert.equal(response.status, 502);
+  assert.deepEqual(await response.json(), { error: { code: "github_authentication_failure", message: "GitHub App аутентификација није успјела." } });
+  assert.deepEqual(logged, [[{
+    event: "admin.internal_error",
+    request_method: "GET",
+    request_path: "/places",
+    code: "github_authentication_failure",
+    stage: "configuration_incomplete",
+  }]]);
+});
+
 test("post-load internal diagnostic stages remain private", async () => {
   for (const stage of [
     "catalog_tree_processing_failed",
