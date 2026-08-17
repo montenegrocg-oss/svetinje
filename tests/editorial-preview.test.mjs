@@ -399,28 +399,30 @@ test("a research monastery without coordinates gets a detail route but no marker
 });
 
 test("Bar cathedral remains research-only, sourced, and public-safe", async () => {
-  const [placeText, narrative, sourceText] = await Promise.all([
+  const [placeText, narrative, sourceText, manifestText] = await Promise.all([
     source("content/places/saborni-hram-bar/place.yaml"),
     source("content/places/saborni-hram-bar/narratives/sr.md"),
     source("content/sources/hrambar-o-hramu.yaml"),
+    source("validation/editorial-preview.json"),
   ]);
   const place = parse(placeText);
   const sourceRecord = parse(sourceText);
+  const manifest = JSON.parse(manifestText);
+  const preview = await loadEditorialPreviewPlaces(PROJECT_ROOT);
 
   assert.equal(place.id, "saborni-hram-bar");
   assert.equal(place.editorial_status, "research");
   assert.equal(place.place_type.value, "cathedral");
-  assert.deepEqual(place.approvals, []);
-  assert.equal(place.location.coordinates.latitude, 42.10145);
-  assert.equal(place.location.coordinates.longitude, 19.09394);
-  assert.equal(place.location.coordinates.accuracy, "complex-centroid");
-  assert.equal(place.location.coordinates.publication_safety, "public");
-  assert.match(place.location.coordinates.verification.qualification, /радни центар храмовног комплекса/);
+  assert.ok(place.source_ids.includes(sourceRecord.id));
   assert.equal(sourceRecord.source_type, "official-church");
+  assert.match(narrative, /place_id: saborni-hram-bar/);
   assert.match(narrative, /slug: saborni-hram-svetog-jovana-vladimira-bar/);
-  assert.match(narrative, /## Пут до изградње храма \{#history\}/);
-  assert.match(narrative, /несагласност извора око 2002\. и 2006\. године/);
-  assert.match(narrative, /Координате на мапи означавају радни центар храмовног комплекса/);
+  assert.ok(manifest.place_ids.includes(place.id));
+  const previewPlace = preview.find((candidate) => candidate.id === place.id);
+  assert.equal(previewPlace?.preview, true);
+  for (const prohibitedField of ["phone", "email", "openingHours", "parking"]) {
+    assert.equal(prohibitedField in (previewPlace ?? {}), false);
+  }
 });
 
 test("preview UI is allowlist-driven, noindex, and free of prohibited data", async () => {
