@@ -25,14 +25,16 @@ location:
     value: Будва
     verification:
       status: requires-verification
-relationships: {}
+relationships:
+  media_ids:
+    - photo-manastir-praskvica-e150dcb4c5cb
 source_ids:
   - mitropolija-muski-manastiri
 approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-17T10:08:17Z
+  updated_at: 2026-08-17T10:11:45Z
   updated_by: montenegro-cg
 ecclesiastical:
   jurisdiction:
