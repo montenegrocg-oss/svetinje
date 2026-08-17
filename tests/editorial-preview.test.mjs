@@ -32,6 +32,60 @@ async function previewProject(t) {
   return root;
 }
 
+async function createSyntheticMediaFixture(root) {
+  const placeId = "synthetic-media-fixture";
+  const mediaId = "synthetic-media-fixture-image";
+  const mediaPath = path.join(root, "content", "media", `${mediaId}.yaml`);
+  const placeDirectory = path.join(root, "content", "places", placeId);
+  const narrativeDirectory = path.join(placeDirectory, "narratives");
+  const previewImageSrc = "https://media.svetinje.me/places/synthetic-media-fixture/synthetic-image.jpg";
+  const previewImageAlt = "Синтетичка фотографија светиње";
+
+  await mkdir(narrativeDirectory, { recursive: true });
+  await writeFile(path.join(placeDirectory, "place.yaml"), stringify({
+    schema_version: 1,
+    id: placeId,
+    editorial_status: "research",
+    place_type: { value: "monastery", verification: { status: "requires-verification" } },
+    relationships: { media_ids: [mediaId] },
+    approvals: [],
+    audit: { created_at: "2026-01-01T00:00:00Z", created_by: "test", updated_at: "2026-01-01T00:00:00Z", updated_by: "test" },
+  }), "utf8");
+  await writeFile(path.join(narrativeDirectory, "sr.md"), `---\n${stringify({
+    schema_version: 1,
+    place_id: placeId,
+    locale: "sr",
+    editorial_status: "research",
+    translation_status: "source",
+    slug: placeId,
+    preferred_name: "Синтетичка светиња",
+    summary: "Контролисани тестни запис.",
+    approvals: [],
+    audit: { created_at: "2026-01-01T00:00:00Z", created_by: "test", updated_at: "2026-01-01T00:00:00Z", updated_by: "test" },
+  })}---\n\nКонтролисани тестни садржај.\n`, "utf8");
+  await writeFile(mediaPath, stringify({
+    schema_version: 1,
+    id: mediaId,
+    editorial_status: "approved",
+    media_type: "image",
+    storage_provider: "cloudflare-r2",
+    object_key: "places/synthetic-media-fixture/synthetic-image.jpg",
+    creator: "test",
+    copyright_owner: "test",
+    rights_basis: "project-original",
+    credit_line: "Фото: test",
+    allowed_uses: ["web-display"],
+    publication_safety: "public",
+    related_place_ids: [placeId],
+    localized_text: { sr: { alt_text: previewImageAlt, translation_status: "source", approvals: [] } },
+    approvals: [],
+    audit: { created_at: "2026-01-01T00:00:00Z", created_by: "test", updated_at: "2026-01-01T00:00:00Z", updated_by: "test" },
+  }), "utf8");
+  await writeFile(path.join(root, "validation", "editorial-preview.json"), JSON.stringify({ place_ids: [placeId] }), "utf8");
+
+  return { placeId, mediaPath, previewImageSrc, previewImageAlt };
+}
+
 test("production ignores the preview allowlist and keeps research dossiers excluded", async (t) => {
   const root = await previewProject(t);
   await writeFile(path.join(root, "validation", "editorial-preview.json"), "not valid JSON", "utf8");
@@ -247,21 +301,18 @@ test("Savina remains a sourced editorial-preview monastery", async () => {
 
 test("editorial preview derives primary media and handles synthetic no-media records", async (t) => {
   const root = await previewProject(t);
-  const visible = await loadEditorialPreviewPlaces(root);
-  const withMedia = visible.find((place) => place.galleryImages.length > 0);
+  const fixture = await createSyntheticMediaFixture(root);
+  const withMedia = (await loadEditorialPreviewPlaces(root)).find((place) => place.id === fixture.placeId);
 
-  assert.ok(withMedia, "a canonical preview record with eligible media is required for this relationship test");
+  assert.ok(withMedia);
   assert.equal(withMedia.previewImageSrc, withMedia.galleryImages[0]?.src);
   assert.equal(withMedia.previewImageAlt, withMedia.galleryImages[0]?.alt);
+  assert.equal(withMedia.previewImageSrc, fixture.previewImageSrc);
+  assert.equal(withMedia.previewImageAlt, fixture.previewImageAlt);
 
-  const mediaDirectory = path.join(root, "content", "media");
-  for (const filename of await readdir(mediaDirectory)) {
-    const mediaPath = path.join(mediaDirectory, filename);
-    const media = parse(await readFile(mediaPath, "utf8"));
-    if (media.related_place_ids?.includes(withMedia.id)) await rm(mediaPath);
-  }
+  await rm(fixture.mediaPath);
 
-  const withoutMedia = (await loadEditorialPreviewPlaces(root)).find((place) => place.id === withMedia.id);
+  const withoutMedia = (await loadEditorialPreviewPlaces(root)).find((place) => place.id === fixture.placeId);
   assert.ok(withoutMedia);
   assert.equal(withoutMedia.previewImageSrc, undefined);
   assert.equal(withoutMedia.previewImageAlt, undefined);
