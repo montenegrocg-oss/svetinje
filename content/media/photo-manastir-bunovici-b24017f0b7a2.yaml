@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-manastir-bunovici-b24017f0b7a2
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/manastir-bunovici/photo-manastir-bunovici-b24017f0b7a2.jpg
+checksum_sha256: bcaac87895370cd234bc18fa10422847ef4dc56ec1fca4f1ffe429854ee56423
+mime_type: image/jpeg
+width: 1800
+height: 2400
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - manastir-bunovici
+localized_text:
+  sr:
+    alt_text: Манастир Свете Параскеве у Буновићима
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-17T12:33:38Z
+    reviewed_revision: 93aa8e4eee601892f459cc771f3b649a35764424
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-17T12:33:38Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-17T12:33:38Z
+  updated_by: montenegro-cg
