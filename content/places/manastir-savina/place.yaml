@@ -66,7 +66,11 @@ location:
       source_ids:
         - openstreetmap-manastir-savina-way-147257044
       qualification: Координате представљају радни центроид манастирског комплекса према OpenStreetMap way 147257044 и не означавају тачан пјешачки или колски улаз.
-relationships: {}
+relationships:
+  media_ids:
+    - photo-manastir-savina-cb2770547abc
+    - photo-manastir-savina-75341a1e1264
+    - photo-manastir-savina-1d1070b261d1
 source_ids:
   - mitropolija-muski-manastiri
   - manastirsavina-pocetna
@@ -81,7 +85,7 @@ approvals: []
 audit:
   created_at: 2026-08-04T21:15:45Z
   created_by: maxim
-  updated_at: 2026-08-17T10:54:39Z
+  updated_at: 2026-08-17T11:00:19Z
   updated_by: montenegro-cg
 patronal_feast:
   name: Успеније Пресвете Богородице - Велика Госпојина 28. августа

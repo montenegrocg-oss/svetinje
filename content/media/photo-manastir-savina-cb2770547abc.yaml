@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-manastir-savina-cb2770547abc
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/manastir-savina/photo-manastir-savina-cb2770547abc.jpg
+checksum_sha256: b4eec112f89760bf9521bebe6a1957989ae87f9edd8747f6744d00b915c4b0cb
+mime_type: image/jpeg
+width: 1800
+height: 2400
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - manastir-savina
+localized_text:
+  sr:
+    alt_text: Манастир Савина
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-17T11:00:19Z
+    reviewed_revision: 089388330755fc49610a7b4dce3a8364b70c169d
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-17T11:00:19Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-17T11:00:19Z
+  updated_by: montenegro-cg
