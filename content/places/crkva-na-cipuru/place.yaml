@@ -5,12 +5,15 @@ place_type:
   value: church
   verification:
     status: requires-verification
-relationships: {}
+relationships:
+  media_ids:
+    - photo-crkva-na-cipuru-e89c50220fdb
+    - photo-crkva-na-cipuru-b815c1c178ea
 approvals: []
 audit:
   created_at: 2026-08-17T14:45:14.813Z
   created_by: montenegro-cg
-  updated_at: 2026-08-17T14:56:49Z
+  updated_at: 2026-08-17T15:59:30Z
   updated_by: montenegro-cg
 browse_area_id: cetinje-okolina
 ecclesiastical:
