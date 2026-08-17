@@ -288,7 +288,10 @@ test("editorial-preview markers derive from coordinates and retain category artw
   for (const id of ["saborni-hram-podgorica", "saborni-hram-bar"]) {
     assert.equal(assetFor(markerPlaces.find((place) => place.id === id)?.placeType), "/images/map/pin-church.png");
   }
-  assert.equal(markerPlaces.find(({ id }) => id === "manastir-savina")?.previewImageSrc, undefined);
+  for (const place of markerPlaces) {
+    assert.equal(place.previewImageSrc, place.galleryImages[0]?.src);
+    assert.equal(place.previewImageAlt, place.galleryImages[0]?.alt);
+  }
 });
 
 test("one accessible marker preview preserves desktop navigation and pins touch previews", async () => {

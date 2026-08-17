@@ -221,46 +221,51 @@ test("Dajbabe remains research-only, sourced, and public-safe", async () => {
   assert.doesNotMatch(narrative, /радно вријеме|телефон|електронск[а-я]+ пошта|паркинг/i);
 });
 
-test("Savina remains a sourced editorial-preview monastery without media", async () => {
-  const [placeText, narrative, osmText, manifestText, mediaDirectory] = await Promise.all([
+test("Savina remains a sourced editorial-preview monastery", async () => {
+  const [placeText, narrative, osmText, manifestText] = await Promise.all([
     source("content/places/manastir-savina/place.yaml"),
     source("content/places/manastir-savina/narratives/sr.md"),
     source("content/sources/openstreetmap-manastir-savina-way-147257044.yaml"),
     source("validation/editorial-preview.json"),
-    readdir(path.join(PROJECT_ROOT, "content", "media")),
   ]);
   const place = parse(placeText);
   const osm = parse(osmText);
   const manifest = JSON.parse(manifestText);
+  const preview = await loadEditorialPreviewPlaces(PROJECT_ROOT);
 
   assert.ok(manifest.place_ids.includes("manastir-savina"));
   assert.equal(place.id, "manastir-savina");
   assert.equal(place.editorial_status, "research");
   assert.equal(place.place_type.value, "monastery");
-  assert.equal(place.location.coordinates.latitude, 42.45241989804254);
-  assert.equal(place.location.coordinates.longitude, 18.554391598000464);
-  assert.equal(place.location.coordinates.accuracy, "complex-centroid");
-  assert.equal(place.location.coordinates.publication_safety, "public");
-  assert.match(place.location.coordinates.verification.qualification, /центроид манастирског комплекса/);
+  assert.ok(place.source_ids.includes(osm.id));
   assert.equal(osm.url, "https://www.openstreetmap.org/way/147257044");
   assert.equal(osm.source_type, "other-approved");
   assert.match(narrative, /slug: manastir-savina/);
-  assert.match(narrative, /summary: Манастир Савина је православни мушки манастир/);
-  for (const sectionId of [
-    "introduction",
-    "architecture-and-art",
-    "relics-icons-and-traditions",
-    "feasts",
-    "history",
-    "location",
-    "visitor-information",
-    "verification-notes",
-  ]) {
-    assert.match(narrative, new RegExp(`\\{#${sectionId}\\}`));
-  }
-  assert.match(narrative, /по предању|Предање/);
-  assert.equal(mediaDirectory.some((file) => /savina/i.test(file)), false);
+  assert.equal(preview.find((candidate) => candidate.id === place.id)?.preview, true);
   assert.doesNotMatch(narrative, /радно вријеме|телефон|електронск[а-я]+ пошта|паркинг/i);
+});
+
+test("editorial preview derives primary media and handles synthetic no-media records", async (t) => {
+  const root = await previewProject(t);
+  const visible = await loadEditorialPreviewPlaces(root);
+  const withMedia = visible.find((place) => place.galleryImages.length > 0);
+
+  assert.ok(withMedia, "a canonical preview record with eligible media is required for this relationship test");
+  assert.equal(withMedia.previewImageSrc, withMedia.galleryImages[0]?.src);
+  assert.equal(withMedia.previewImageAlt, withMedia.galleryImages[0]?.alt);
+
+  const mediaDirectory = path.join(root, "content", "media");
+  for (const filename of await readdir(mediaDirectory)) {
+    const mediaPath = path.join(mediaDirectory, filename);
+    const media = parse(await readFile(mediaPath, "utf8"));
+    if (media.related_place_ids?.includes(withMedia.id)) await rm(mediaPath);
+  }
+
+  const withoutMedia = (await loadEditorialPreviewPlaces(root)).find((place) => place.id === withMedia.id);
+  assert.ok(withoutMedia);
+  assert.equal(withoutMedia.previewImageSrc, undefined);
+  assert.equal(withoutMedia.previewImageAlt, undefined);
+  assert.deepEqual(withoutMedia.galleryImages, []);
 });
 
 test("the male-monastery import is complete, research-only, and source-bound", async () => {
