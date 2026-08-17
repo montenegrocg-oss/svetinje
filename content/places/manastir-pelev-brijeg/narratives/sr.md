@@ -11,7 +11,7 @@ alternate_names:
     context: Пуни назив према посвећењу храма.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Манастир Светог Николе под Вјетерником, на старом саборном мјесту Братоножића.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -19,8 +19,8 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T12:00:00Z
-  updated_by: codex
+  updated_at: 2026-08-17T09:50:02Z
+  updated_by: montenegro-cg
 ---
 
 Манастир Пелев Бријег налази се под планином Вјетерник, сјевероисточно од Подгорице, на старом саборном мјесту Братоножића. Храм је посвећен Светом Николи.
