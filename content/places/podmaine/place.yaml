@@ -61,7 +61,12 @@ location:
       source_ids:
         - openstreetmap-podmaine-way-161886544
       qualification: Координате представљају центроид манастирског комплекса из OpenStreetMap way 161886544 и не означавају тачан пјешачки улаз.
-relationships: {}
+relationships:
+  media_ids:
+    - photo-manastir-podmaine-main
+    - photo-podmaine-330c55b691cc
+    - photo-podmaine-eecac846988b
+    - photo-podmaine-ad7486cec562
 source_ids:
   - spc-eparhije-i-crkvene-opstine
   - mitropolija-manastirista-u-mitropoliji
@@ -72,7 +77,7 @@ approvals: []
 audit:
   created_at: 2026-08-03T11:46:30Z
   created_by: maxim
-  updated_at: 2026-08-17T09:52:03Z
+  updated_at: 2026-08-17T10:02:27Z
   updated_by: montenegro-cg
 patronal_feast:
   name: Успеније Пресвете Богородице - Велика Госпојина 28. августа
