@@ -32,6 +32,14 @@ location:
     value: Котор
     verification:
       status: requires-verification
+  coordinates:
+    latitude: 42.30347821111171
+    longitude: 18.76667492117439
+    accuracy: complex-centroid
+    publication_safety: public
+    crs: EPSG:4326
+    verification:
+      status: requires-verification
 relationships: {}
 source_ids:
   - mitropolija-zenski-manastiri
@@ -41,5 +49,5 @@ patronal_feast:
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-17T12:22:14Z
+  updated_at: 2026-08-17T12:22:46Z
   updated_by: montenegro-cg
