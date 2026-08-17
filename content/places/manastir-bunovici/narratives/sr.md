@@ -11,12 +11,12 @@ alternate_names:
     context: Устаљени назив по Светој Петки.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
   - name: Манастир Свете Текле у Буновићима
     context: Локални назив светиње.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Мали камени манастирски храм на брду Стол у Буновићима, са погледом на Бококоторски залив.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -24,8 +24,8 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T12:00:00Z
-  updated_by: codex
+  updated_at: 2026-08-17T12:31:05Z
+  updated_by: montenegro-cg
 ---
 
 Манастир Свете Параскеве налази се на брду Стол, недалеко од парохијске цркве у Буновићима. Светиња је у народу позната и као Света Петка и Света Текла, а са њеног положаја отвара се поглед према Бококоторском заливу.
