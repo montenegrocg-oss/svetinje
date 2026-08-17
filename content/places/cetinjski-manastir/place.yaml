@@ -39,6 +39,12 @@ approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-14T16:46:41Z
+  updated_at: 2026-08-17T13:44:34Z
   updated_by: montenegro-cg
-ecclesiastical: {}
+ecclesiastical:
+  jurisdiction:
+    value: Митрополија црногорско-приморска
+    verification:
+      status: requires-verification
+patronal_feast:
+  name: Свети Петар Цетињски 31. октобар
