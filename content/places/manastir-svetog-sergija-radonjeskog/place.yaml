@@ -12,7 +12,7 @@ approvals: []
 audit:
   created_at: 2026-08-15T09:33:37.683Z
   created_by: montenegro-cg
-  updated_at: 2026-08-15T10:35:00Z
+  updated_at: 2026-08-17T12:37:08Z
   updated_by: montenegro-cg
 ecclesiastical:
   jurisdiction:
@@ -36,4 +36,10 @@ location:
     crs: EPSG:4326
     verification:
       status: requires-verification
+  settlement:
+    value: Микулићи
+    verification:
+      status: requires-verification
 browse_area_id: bar-crmnica-skadarsko-jezero
+patronal_feast:
+  name: Преподобни Сергије Радоњешки 8. октобар
