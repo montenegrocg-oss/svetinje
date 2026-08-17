@@ -40,14 +40,16 @@ location:
     crs: EPSG:4326
     verification:
       status: requires-verification
-relationships: {}
+relationships:
+  media_ids:
+    - photo-manastir-prekobrde-a36cc2760dfb
 source_ids:
   - mitropolija-zenski-manastiri
 approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-17T10:15:34Z
+  updated_at: 2026-08-17T10:18:32Z
   updated_by: montenegro-cg
 patronal_feast:
   name: Аранђеловдан 21. новембар
