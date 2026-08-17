@@ -11,7 +11,7 @@ alternate_names:
     context: Пуни назив према посвећењу храма.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Манастир изнад Горњих Црнаца у Пиперима, основан око испосничке ћелије Светог Стефана Пиперског.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -19,8 +19,8 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T12:00:00Z
-  updated_by: codex
+  updated_at: 2026-08-17T13:41:54Z
+  updated_by: montenegro-cg
 ---
 
 Ћелија Пиперска налази се изнад села Горњи Црнци у Пиперима, на високој заравни са погледом према Бјелопавлићкој равници. Манастирски храм посвећен је Рођењу Пресвете Богородице.

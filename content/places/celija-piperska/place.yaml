@@ -28,6 +28,18 @@ location:
       status: requires-verification
       source_ids:
         - mitropolija-zenski-manastiri
+  municipality:
+    value: Подгорица
+    verification:
+      status: requires-verification
+  coordinates:
+    latitude: 42.54648527607919
+    longitude: 19.221489504501477
+    accuracy: complex-centroid
+    publication_safety: public
+    crs: EPSG:4326
+    verification:
+      status: requires-verification
 relationships: {}
 source_ids:
   - mitropolija-zenski-manastiri
@@ -35,5 +47,7 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T12:00:00Z
-  updated_by: codex
+  updated_at: 2026-08-17T13:41:54Z
+  updated_by: montenegro-cg
+patronal_feast:
+  name: Свети Стефан Пиперски 2. јун
