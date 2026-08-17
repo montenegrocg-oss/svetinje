@@ -11,7 +11,7 @@ alternate_names:
     context: Пуни назив према посвећењу храма.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Манастир Светог Саве у Главатима, чији је садашњи храм подигнут 1874. године на мјесту старије светиње.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -19,8 +19,8 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T12:00:00Z
-  updated_by: codex
+  updated_at: 2026-08-17T12:22:14Z
+  updated_by: montenegro-cg
 ---
 
 Манастир Савина Главица налази се у Главатима, у Грбљу. Према предању, на овом мјесту је од давнина постојао манастир са храмом Светог Саве. Тачно вријеме подизања старије цркве није познато, али натпис изнад иконостаса, који се везује за XVIII вијек, упућује на старију богослужбену традицију.
