@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-manastir-prekobrde-a36cc2760dfb
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/manastir-prekobrde/photo-manastir-prekobrde-a36cc2760dfb.jpg
+checksum_sha256: ad7950959fceea96a37d4cff92e835127bfa3224f571161f8ed9cd221f40709d
+mime_type: image/jpeg
+width: 2400
+height: 1800
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - manastir-prekobrde
+localized_text:
+  sr:
+    alt_text: Манастир Прекобрђе
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-17T10:18:32Z
+    reviewed_revision: 547a869f9784e79d34f252328d2c0a975e2ef5c9
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-17T10:18:32Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-17T10:18:32Z
+  updated_by: montenegro-cg

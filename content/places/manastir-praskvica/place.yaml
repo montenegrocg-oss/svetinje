@@ -6,7 +6,8 @@ place_type:
   value: monastery
   verification:
     status: requires-verification
-    source_ids: [mitropolija-muski-manastiri]
+    source_ids:
+      - mitropolija-muski-manastiri
     qualification: Званична страница Митрополије наводи Прасквицу као манастир; запис чека стручну и црквену провјеру.
 location:
   coordinates:
@@ -17,9 +18,28 @@ location:
     publication_safety: public
     verification:
       status: requires-verification
-      source_ids: [openstreetmap-manastir-praskvica-way-1167605107]
+      source_ids:
+        - openstreetmap-manastir-praskvica-way-1167605107
       qualification: Координате представљају радни центар главне цркве Светог Николе унутар комплекса Манастира Прасквица према OpenStreetMap way 1167605107 и не означавају тачан улаз.
-relationships: {}
-source_ids: [mitropolija-muski-manastiri]
+  municipality:
+    value: Будва
+    verification:
+      status: requires-verification
+relationships:
+  media_ids:
+    - photo-manastir-praskvica-e150dcb4c5cb
+source_ids:
+  - mitropolija-muski-manastiri
 approvals: []
-audit: { created_at: 2026-08-07T12:00:00Z, created_by: codex, updated_at: 2026-08-12T21:23:04Z, updated_by: codex }
+audit:
+  created_at: 2026-08-07T12:00:00Z
+  created_by: codex
+  updated_at: 2026-08-17T10:11:45Z
+  updated_by: montenegro-cg
+ecclesiastical:
+  jurisdiction:
+    value: Митрополија црногорско-приморска
+    verification:
+      status: requires-verification
+patronal_feast:
+  name: Никољдан 19. децембар

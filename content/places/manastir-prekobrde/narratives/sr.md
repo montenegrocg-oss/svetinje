@@ -11,7 +11,7 @@ alternate_names:
     context: Пуни назив према посвећењу храма.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Манастир Светих архангела у морачком Прекобрђу, подигнут крајем XX вијека.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -19,8 +19,8 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T12:00:00Z
-  updated_by: codex
+  updated_at: 2026-08-17T10:15:34Z
+  updated_by: montenegro-cg
 ---
 
 Манастир Прекобрђе налази се у морачком крају и посвећен је Светим архангелима. Изградња храма започета је 1996. године трудом Милана Вујисића, као задужбина за покој душе његовог сина Зорана, сахрањеног у храму.

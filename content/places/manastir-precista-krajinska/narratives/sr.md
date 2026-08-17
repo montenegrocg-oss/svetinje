@@ -11,7 +11,7 @@ alternate_names:
     context: Пуни назив према посвећењу храма.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Средњовјековни манастир код Остроса на Скадарском језеру, некадашње сједиште зетских митрополита.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -19,8 +19,8 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T12:00:00Z
-  updated_by: codex
+  updated_at: 2026-08-17T10:35:20Z
+  updated_by: montenegro-cg
 ---
 
 Манастир Пречиста Крајинска налази се на обали Скадарског језера код Остроса. Главни храм посвећен је Успењу Пресвете Богородице, а комплекс је познат по значајној улози у историји Зетске митрополије.

@@ -11,12 +11,12 @@ alternate_names:
     context: Назив према археолошком локалитету и насељу.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
   - name: Иловица
     context: Стари назив локалитета забиљежен у литератури.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Ранохришћански манастирски и епископски комплекс на локалитету Црквине у Дољанима код Подгорице.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -24,8 +24,8 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T12:00:00Z
-  updated_by: codex
+  updated_at: 2026-08-16T22:23:39Z
+  updated_by: montenegro-cg
 ---
 
 Манастир Златица налази се на локалитету Црквине у Подглавици, засеоку Дољана код Подгорице. Ријеч је о ранохришћанском комплексу са остацима двију цркава, крстионицом, епископским саркофагом и некрополом.

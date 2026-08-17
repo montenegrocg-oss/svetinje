@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-manastir-rustovo-f639c5084c73
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/manastir-rustovo/photo-manastir-rustovo-f639c5084c73.jpg
+checksum_sha256: 12b3bc6a046969599959e1efb4178be4907195244acff89462503fb779cffeac
+mime_type: image/jpeg
+width: 2400
+height: 1800
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - manastir-rustovo
+localized_text:
+  sr:
+    alt_text: Манастир Рустово
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-17T10:51:14Z
+    reviewed_revision: 0f2b7b7e8dadc524137dee070e19f1ae1fafc61f
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-17T10:51:14Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-17T10:51:27Z
+  updated_by: montenegro-cg

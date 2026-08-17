@@ -11,7 +11,7 @@ alternate_names:
     context: Пуни назив према посвећењу старог храма.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Паштровски манастир изнад Светог Стефана, развијен око храма Успења Пресвете Богородице из XIV вијека.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -19,8 +19,8 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T12:00:00Z
-  updated_by: codex
+  updated_at: 2026-08-17T10:47:13Z
+  updated_by: montenegro-cg
 ---
 
 Манастир Рустово налази се у шумовитој котлини Паштровске горе, на око 370 метара надморске висине изнад Светог Стефана. Најстарији храм, посвећен Успењу Пресвете Богородице, потиче из XIV вијека.

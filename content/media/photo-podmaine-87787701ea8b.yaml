@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-podmaine-87787701ea8b
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/podmaine/photo-podmaine-87787701ea8b.jpg
+checksum_sha256: 3072f03b4ff6428023102363640cf17f3f65fbd791f76387ad6dba9355047439
+mime_type: image/jpeg
+width: 1350
+height: 2400
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - podmaine
+localized_text:
+  sr:
+    alt_text: Манастир Подмаине
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-17T10:04:38Z
+    reviewed_revision: 0026f2805abbb577404bbc043cc097314b299b0e
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-17T10:04:38Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-17T10:04:38Z
+  updated_by: montenegro-cg
