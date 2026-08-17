@@ -11,7 +11,7 @@ alternate_names:
     context: Пуни назив према посвећењу храма.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Манастир Светих Кирила и Методија у Речинама код Колашина, подигнут и освештан крајем XX вијека.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -19,8 +19,8 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T12:00:00Z
-  updated_by: codex
+  updated_at: 2026-08-17T13:15:29Z
+  updated_by: montenegro-cg
 ---
 
 Манастир Ћириловац налази се у Речинама код Колашина и посвећен је Светим равноапостолним Кирилу и Методију. Градња је започета након благослова митрополита Амфилохија 1995. године на имању дарованом Цркви.
