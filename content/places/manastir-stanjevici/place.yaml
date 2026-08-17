@@ -25,14 +25,17 @@ location:
     value: Будва
     verification:
       status: requires-verification
-relationships: {}
+relationships:
+  media_ids:
+    - photo-manastir-stanjevici-1e56b397e89c
+    - photo-manastir-stanjevici-5762bc43c2ee
 source_ids:
   - mitropolija-muski-manastiri
 approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-17T13:01:14Z
+  updated_at: 2026-08-17T13:04:21Z
   updated_by: montenegro-cg
 ecclesiastical:
   jurisdiction:
