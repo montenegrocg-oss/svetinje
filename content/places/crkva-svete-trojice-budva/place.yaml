@@ -8,11 +8,12 @@ place_type:
 relationships:
   media_ids:
     - photo-crkva-svete-trojice-budva-146585e4ef48
+    - photo-crkva-svete-trojice-budva-ee6c551a1e58
 approvals: []
 audit:
   created_at: 2026-08-18T10:29:30.896Z
   created_by: montenegro-cg
-  updated_at: 2026-08-18T10:36:15Z
+  updated_at: 2026-08-18T10:36:33Z
   updated_by: montenegro-cg
 browse_area_id: budva-pastrovici
 ecclesiastical:
