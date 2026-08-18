@@ -50,15 +50,15 @@ location:
       qualification: Координате је ручно поставио власник пројекта у центар храмовног комплекса. Тачан положај главног улаза није провјерен.
 relationships:
   media_ids:
-    - photo-saborni-hram-podgorica-main
     - photo-saborni-hram-podgorica-bf72f69113b3
+    - photo-saborni-hram-podgorica-main
 source_ids:
   - editorial-dossier-saborni-hram-podgorica-2026
 approvals: []
 audit:
   created_at: 2026-08-04T00:00:00Z
   created_by: maxim
-  updated_at: 2026-08-18T11:52:32Z
+  updated_at: 2026-08-18T11:52:44Z
   updated_by: montenegro-cg
 patronal_feast:
   name: Васкрсење Христово
