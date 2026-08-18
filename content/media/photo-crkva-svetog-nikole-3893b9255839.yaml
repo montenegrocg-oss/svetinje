@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-crkva-svetog-nikole-3893b9255839
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/crkva-svetog-nikole/photo-crkva-svetog-nikole-3893b9255839.jpg
+checksum_sha256: 971f7c43741b45af8410cf85f935a4a4b5cb02bf32d8e8c9c8af6137f84065c7
+mime_type: image/jpeg
+width: 1800
+height: 2400
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - crkva-svetog-nikole
+localized_text:
+  sr:
+    alt_text: Црква светог Николе
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-18T11:49:56Z
+    reviewed_revision: af318ed1cdf52df9603418139e3ccc73426f064d
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-18T11:49:56Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-18T11:49:56Z
+  updated_by: montenegro-cg
