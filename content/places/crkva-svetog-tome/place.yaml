@@ -1,0 +1,14 @@
+schema_version: 1
+id: crkva-svetog-tome
+editorial_status: research
+place_type:
+  value: church
+  verification:
+    status: requires-verification
+relationships: {}
+approvals: []
+audit:
+  created_at: 2026-08-18T10:58:28.728Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-18T10:58:28.728Z
+  updated_by: montenegro-cg
