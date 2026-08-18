@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-crkva-svete-trojice-budva-146585e4ef48
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/crkva-svete-trojice-budva/photo-crkva-svete-trojice-budva-146585e4ef48.jpg
+checksum_sha256: 3ff3b7443ab52638180a3ea041230d79778274d7c3a8ac9a53356fb00b5b7d8c
+mime_type: image/jpeg
+width: 1600
+height: 2400
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - crkva-svete-trojice-budva
+localized_text:
+  sr:
+    alt_text: Црква свете Тројице
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-18T10:36:15Z
+    reviewed_revision: ab2b10b4291dc2fcec2c0da675a672d915f5827f
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-18T10:36:15Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-18T10:36:15Z
+  updated_by: montenegro-cg
