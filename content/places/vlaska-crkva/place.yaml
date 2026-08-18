@@ -5,12 +5,14 @@ place_type:
   value: church
   verification:
     status: requires-verification
-relationships: {}
+relationships:
+  media_ids:
+    - photo-vlaska-crkva-a542f706b373
 approvals: []
 audit:
   created_at: 2026-08-18T09:56:00.676Z
   created_by: montenegro-cg
-  updated_at: 2026-08-18T10:03:15Z
+  updated_at: 2026-08-18T10:27:14Z
   updated_by: montenegro-cg
 browse_area_id: cetinje-okolina
 ecclesiastical:

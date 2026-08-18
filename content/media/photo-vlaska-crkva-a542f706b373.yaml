@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-vlaska-crkva-a542f706b373
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/vlaska-crkva/photo-vlaska-crkva-a542f706b373.jpg
+checksum_sha256: 0fae3ac801c4d8b85e56540c018fd30989b180a0ebb977a3a5197c13688c3776
+mime_type: image/jpeg
+width: 1800
+height: 2400
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - vlaska-crkva
+localized_text:
+  sr:
+    alt_text: Влашка Црква
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-18T10:27:14Z
+    reviewed_revision: 106a997f9dbc4fdbfe4b5bc208dbf53ed4115e86
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-18T10:27:14Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-18T10:27:14Z
+  updated_by: montenegro-cg
