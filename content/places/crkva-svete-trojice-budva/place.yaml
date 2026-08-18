@@ -1,0 +1,14 @@
+schema_version: 1
+id: crkva-svete-trojice-budva
+editorial_status: research
+place_type:
+  value: church
+  verification:
+    status: requires-verification
+relationships: {}
+approvals: []
+audit:
+  created_at: 2026-08-18T10:29:30.896Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-18T10:29:30.896Z
+  updated_by: montenegro-cg
