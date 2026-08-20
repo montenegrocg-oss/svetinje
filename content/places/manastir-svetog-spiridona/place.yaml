@@ -10,5 +10,26 @@ approvals: []
 audit:
   created_at: 2026-08-20T16:07:34.174Z
   created_by: montenegro-cg
-  updated_at: 2026-08-20T16:07:34.174Z
+  updated_at: 2026-08-20T16:10:28Z
   updated_by: montenegro-cg
+browse_area_id: budva-pastrovici
+ecclesiastical:
+  jurisdiction:
+    value: Митрополија црногорско-приморска
+    verification:
+      status: requires-verification
+patronal_feast:
+  name: Свети Спиридон Чудотворац 25. децембар
+location:
+  municipality:
+    value: Будва
+    verification:
+      status: requires-verification
+  coordinates:
+    latitude: 42.2558897
+    longitude: 18.9210695
+    accuracy: complex-centroid
+    publication_safety: public
+    crs: EPSG:4326
+    verification:
+      status: requires-verification
