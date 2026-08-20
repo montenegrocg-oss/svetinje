@@ -8,32 +8,24 @@ export function clusterProjectedMarkers<T>(
   points: ProjectedMarker<T>[],
   radius: number,
 ): ProjectedMarker<T>[][] {
+  const orderedPoints = [...points].sort((left, right) => (
+    left.x - right.x || left.y - right.y
+  ));
   const groups: ProjectedMarker<T>[][] = [];
-  const visited = new Set<number>();
+  const assigned = new Set<number>();
   const radiusSquared = radius * radius;
 
-  points.forEach((_, index) => {
-    if (visited.has(index)) return;
-    const group: ProjectedMarker<T>[] = [];
-    const pending = [index];
-    visited.add(index);
-
-    while (pending.length > 0) {
-      const currentIndex = pending.pop();
-      if (currentIndex === undefined) continue;
-      const current = points[currentIndex];
-      if (!current) continue;
-      group.push(current);
-
-      points.forEach((candidate, candidateIndex) => {
-        if (visited.has(candidateIndex)) return;
-        const deltaX = current.x - candidate.x;
-        const deltaY = current.y - candidate.y;
-        if ((deltaX * deltaX) + (deltaY * deltaY) > radiusSquared) return;
-        visited.add(candidateIndex);
-        pending.push(candidateIndex);
-      });
-    }
+  // Keep every group bounded to one stable anchor so neighbor chains cannot span the map.
+  orderedPoints.forEach((anchor, anchorIndex) => {
+    if (assigned.has(anchorIndex)) return;
+    const group = orderedPoints.filter((candidate, candidateIndex) => {
+      if (assigned.has(candidateIndex)) return false;
+      const deltaX = anchor.x - candidate.x;
+      const deltaY = anchor.y - candidate.y;
+      if ((deltaX * deltaX) + (deltaY * deltaY) > radiusSquared) return false;
+      assigned.add(candidateIndex);
+      return true;
+    });
 
     groups.push(group);
   });
