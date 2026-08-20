@@ -6,7 +6,7 @@ import { presentCalendarTitle } from "../src/lib/presentation/calendar-title.ts"
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 
-test("Today places the dynamic date in its shared header and presents canonical uppercase titles", async () => {
+test("Today places the dynamic date in its shared header and preserves canonical title casing", async () => {
   const [component, styles] = await Promise.all([
     readFile(path.join(ROOT, "src/components/TodayCalendar.astro"), "utf8"),
     readFile(path.join(ROOT, "src/styles/global.css"), "utf8"),
@@ -22,7 +22,13 @@ test("Today places the dynamic date in its shared header and presents canonical 
   assert.doesNotMatch(styles.match(/\.today-calendar h2\s*\{[\s\S]*?\}/)?.[0] ?? "", /text-transform:/);
 });
 
-test("calendar title presentation changes only all-uppercase display text", () => {
-  assert.equal(presentCalendarTitle("НЕДЕЉА ЈЕДАНАЕСТА ПО ПЕДЕСЕТНИЦИ"), "Недеља једанаеста по Педесетници");
-  assert.equal(presentCalendarTitle("Преподобни Исакије"), "Преподобни Исакије");
+test("homepage calendar title presentation does not apply generic case transformations", () => {
+  const titles = [
+    "СВЕТО ПРЕОБРАЖЕЊЕ ГОСПОДА И БОГА И СПАСА НАШЕГА ИСУСА ХРИСТА",
+    "Попразништво Преображења",
+    "НЕДЕЉА ЈЕДАНАЕСТА ПО ПЕДЕСЕТНИЦИ",
+    "недеља једанаеста по педесетници",
+  ];
+
+  for (const title of titles) assert.equal(presentCalendarTitle(title), title);
 });
