@@ -13,9 +13,7 @@ const breadcrumb = category === "monasteries"
   ? { href: "/manastiri/", label: "Манастири" }
   : category === "churches"
     ? { href: "/crkve/", label: "Цркве" }
-    : category === "holy-places"
-      ? { href: "/sveta-mjesta/", label: "Света мјеста" }
-      : { href: "/svetinje/", label: "Светиње" };
+    : { href: "/svetinje/", label: "Светиње" };
 const location = place.settlement ?? place.municipality;
 const hasCoordinates = place.latitude !== undefined && place.longitude !== undefined;
 ---

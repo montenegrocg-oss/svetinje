@@ -19,7 +19,6 @@ import { containsUnsupportedReferenceScreenshotContent } from "./lib/reference-s
 const EMPTY_STATES = {
   monasteries: "Још нема манастира спремних за јавно објављивање.",
   churches: "Још нема храмова спремних за јавно објављивање.",
-  "holy-places": "Још нема светих мјеста спремних за јавно објављивање.",
 };
 
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -325,8 +324,8 @@ function verifyFixedHomepageContracts(homepageHtml, model, failures) {
   if (explorerCardIds.length !== uniqueExplorerCardIds.size) {
     failures.push("homepage inventory must contain each data-place-card ID exactly once");
   }
-  if (explorerCardIds.length !== model.places.length) {
-    failures.push(`homepage inventory must retain all ${model.places.length} filterable place card(s), found ${explorerCardIds.length}`);
+  if (explorerCardIds.length !== model.discoveryPlaces.length) {
+    failures.push(`homepage inventory must retain all ${model.discoveryPlaces.length} public-discovery place card(s), found ${explorerCardIds.length}`);
   }
   if (initialPrimaryCards !== model.homepagePreviewPlaces.length) {
     failures.push(`homepage preview must contain ${model.homepagePreviewPlaces.length} initial card(s), found ${initialPrimaryCards}`);
@@ -358,8 +357,8 @@ function verifyFixedHomepageContracts(homepageHtml, model, failures) {
       failures.push(`homepage pagination is missing ${marker}`);
     }
   }
-  const expectedHomepagePages = pageCountForHomepagePreview(model.places.length);
-  if (model.places.length > 0) {
+  const expectedHomepagePages = pageCountForHomepagePreview(model.discoveryPlaces.length);
+  if (model.discoveryPlaces.length > 0) {
     const expectedPaginationStatus = `1 / ${expectedHomepagePages}`;
     if (!htmlToPlainText(homepagePagination).includes(expectedPaginationStatus)) {
       failures.push(`homepage pagination must initially report ${expectedPaginationStatus}`);
@@ -367,15 +366,15 @@ function verifyFixedHomepageContracts(homepageHtml, model, failures) {
   } else if (homepagePagination && !/<nav\b[^>]*\bhidden\b/.test(homepagePagination)) {
     failures.push("homepage pagination must remain hidden for an empty inventory");
   }
-  const expectedInitialStatus = model.places.length > model.homepagePreviewPlaces.length
-    ? `Приказана су ${model.homepagePreviewPlaces.length} од ${model.places.length} резултата.`
+  const expectedInitialStatus = model.discoveryPlaces.length > model.homepagePreviewPlaces.length
+    ? `Приказана су ${model.homepagePreviewPlaces.length} од ${model.discoveryPlaces.length} резултата.`
     : null;
   if (expectedInitialStatus && !htmlToPlainText(homepageHtml).includes(expectedInitialStatus)) {
     failures.push("homepage accessible result status must distinguish shown cards from full matches");
   }
 
   const visibleRecommendations = MOST_VISITED_PLACE_IDS.flatMap((id) => {
-    const place = model.placesById.get(id);
+    const place = model.discoveryPlacesById.get(id);
     return place ? [place] : [];
   });
   const realCount = countMatches(homepageHtml, /data-recommended-place=/g);
@@ -436,13 +435,14 @@ const homepage = pagesByRoute.get("index.html");
 const catalogue = pagesByRoute.get("svetinje/index.html");
 const newsArchive = pagesByRoute.get("novosti/index.html");
 const homepageHtml = homepage?.html ?? "";
+if (pagesByRoute.has("sveta-mjesta/index.html")) failures.push("removed public holy-places category route was generated");
 verifyFixedHomepageContracts(homepageHtml, model, failures);
 verifyNewsContracts(newsArchive, model, pagesByRoute, failures);
 verifyAreaNavigation(homepage, model, failures);
-verifyCards(homepage, model.places, model.places, "homepage explorer", failures);
-const generalCatalogueImageIds = new Set(selectFeaturedCataloguePlaces(model.places).map((place) => place.id));
-verifyCards(catalogue, model.places, model.places, "general catalogue", failures, generalCatalogueImageIds);
-verifyCataloguePagination(catalogue, model.places, "general catalogue", failures);
+verifyCards(homepage, model.discoveryPlaces, model.places, "homepage explorer", failures);
+const generalCatalogueImageIds = new Set(selectFeaturedCataloguePlaces(model.discoveryPlaces).map((place) => place.id));
+verifyCards(catalogue, model.discoveryPlaces, model.places, "general catalogue", failures, generalCatalogueImageIds);
+verifyCataloguePagination(catalogue, model.discoveryPlaces, "general catalogue", failures);
 
 const routeCatalogue = pagesByRoute.get("rute/index.html");
 for (const { route, path: routePath } of model.routeDetailRoutes) {

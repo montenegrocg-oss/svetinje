@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CALENDAR_HTML_ROUTES, STATIC_HTML_ROUTES, createOutputModel } from "../scripts/lib/output-expectations.mjs";
+import { CALENDAR_HTML_ROUTES, CATEGORY_HTML_ROUTES, STATIC_HTML_ROUTES, createOutputModel } from "../scripts/lib/output-expectations.mjs";
 
 const place = (id, placeType, options = {}) => ({
   id,
@@ -36,11 +36,12 @@ test("four-place output model derives routes, categories, markers, and media", (
   assert.deepEqual(model.mediaPlaces.map(({ id }) => id), ["alpha", "delta"]);
   assert.equal(model.expectedRealRelatedCount, 3);
   assert.equal(model.expectedRelatedPlaceholderCount, 1);
+  assert.deepEqual(model.discoveryPlaces.map(({ id }) => id), ["alpha", "beta", "gamma"]);
   assert.deepEqual(model.homepagePreviewPlaces.map(({ id }) => id), ["alpha", "beta", "gamma"]);
-  assert.deepEqual(model.homepagePooledPlaces.map(({ id }) => id), ["delta"]);
+  assert.deepEqual(model.homepagePooledPlaces, []);
   assert.equal(model.homepagePreviewLimit, 3);
   assert.equal(model.cataloguePageCount, 1);
-  assert.deepEqual(model.catalogueFirstPagePlaces, places);
+  assert.deepEqual(model.catalogueFirstPagePlaces.map(({ id }) => id), ["alpha", "beta", "gamma"]);
   assert.equal(model.cataloguePlacesPerPage, 8);
 });
 
@@ -67,10 +68,11 @@ test("a fifth place changes every inventory-derived expectation without helper e
   assert.ok(fivePlaceModel.mediaPlaces.some(({ previewImageSrc }) => previewImageSrc === "/images/epsilon.webp"));
   assert.equal(fivePlaceModel.expectedRealRelatedCount, 4);
   assert.equal(fivePlaceModel.expectedRelatedPlaceholderCount, 0);
+  assert.deepEqual(fivePlaceModel.discoveryPlaces.map(({ id }) => id), ["alpha", "beta", "gamma", "epsilon"]);
   assert.deepEqual(fivePlaceModel.homepagePreviewPlaces.map(({ id }) => id), ["alpha", "beta", "gamma"]);
-  assert.deepEqual(fivePlaceModel.homepagePooledPlaces.map(({ id }) => id), ["delta", "epsilon"]);
+  assert.deepEqual(fivePlaceModel.homepagePooledPlaces.map(({ id }) => id), ["epsilon"]);
   assert.equal(fivePlaceModel.cataloguePageCount, 1);
-  assert.deepEqual(fivePlaceModel.catalogueFirstPagePlaces.map(({ id }) => id), ["alpha", "beta", "gamma", "delta", "epsilon"]);
+  assert.deepEqual(fivePlaceModel.catalogueFirstPagePlaces.map(({ id }) => id), ["alpha", "beta", "gamma", "epsilon"]);
 });
 
 test("a place without coordinates or media still has cards and a detail route", () => {
@@ -85,9 +87,21 @@ test("a place without coordinates or media still has cards and a detail route", 
   assert.equal(model.detailRoutes[0].previewImageSrc, undefined);
   assert.equal(model.expectedRealRelatedCount, 0);
   assert.equal(model.expectedRelatedPlaceholderCount, 4);
-  assert.deepEqual(model.homepagePreviewPlaces, [record]);
+  assert.deepEqual(model.discoveryPlaces, []);
+  assert.deepEqual(model.homepagePreviewPlaces, []);
   assert.deepEqual(model.homepagePooledPlaces, []);
-  assert.equal(model.cataloguePageCount, 1);
+  assert.equal(model.cataloguePageCount, 0);
+});
+
+test("public output omits the holy-places category route while retaining direct canonical detail routes", () => {
+  const record = place("canonical-holy-place", "holy-spring");
+  const model = createOutputModel([record]);
+
+  assert.equal(STATIC_HTML_ROUTES.includes("sveta-mjesta/index.html"), false);
+  assert.equal(Object.hasOwn(CATEGORY_HTML_ROUTES, "holy-places"), false);
+  assert.deepEqual(model.discoveryPlaces, []);
+  assert.deepEqual(model.detailRoutes.map(({ route }) => route), ["svetinje/canonical-holy-place-slug/index.html"]);
+  assert.equal(model.detailRoutes[0].categoryHref, "/svetinje/");
 });
 
 test("news routes extend the derived output model without fixed page counts", () => {

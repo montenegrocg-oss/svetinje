@@ -1,15 +1,17 @@
 ---
 import { PLACE_AREAS } from "../lib/place-areas";
 import type { VisiblePlace } from "../lib/content/publication";
+import { selectPublicDiscoveryPlaces } from "../lib/public-place-discovery";
 
 interface Props {
   places: VisiblePlace[];
 }
 
 const { places } = Astro.props;
+const discoveryPlaces = selectPublicDiscoveryPlaces(places);
 const areas = PLACE_AREAS.map((area) => ({
   ...area,
-  count: places.filter((place) => place.browseAreaId === area.id).length,
+  count: discoveryPlaces.filter((place) => place.browseAreaId === area.id).length,
 }));
 ---
 
@@ -18,7 +20,7 @@ const areas = PLACE_AREAS.map((area) => ({
     <header class="homepage-areas__header">
       <p class="map-eyebrow">ИСТРАЖИТЕ</p>
       <h2 id="homepage-areas-title">По областима</h2>
-      <p>Откријте манастире, храмове и света мјеста у различитим крајевима Црне Горе.</p>
+      <p>Откријте манастире и храмове у различитим крајевима Црне Горе.</p>
     </header>
     <ul class="homepage-areas__list">
       {areas.map((area) => (
