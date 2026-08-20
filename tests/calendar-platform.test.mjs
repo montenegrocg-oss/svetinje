@@ -32,6 +32,25 @@ test("calendar titles remove service instructions and Serbian transliteration is
   assert.equal(serbianLatinToCyrillic("Ljubljeni Njegoš, Džem i Isus!"), "Љубљени Његош, Џем и Исус!");
 });
 
+test("public calendar data and TodayCalendarService preserve imported title casing", async () => {
+  const [days, corpus, calendarDayPage, calendarJsonEndpoint] = await Promise.all([
+    loadCalendarDays(ROOT),
+    loadScriptureCorpus(ROOT),
+    readFile(path.join(ROOT, "src/pages/kalendar/[date].astro"), "utf8"),
+    readFile(path.join(ROOT, "src/pages/calendar/2026.json.ts"), "utf8"),
+  ]);
+  const byDate = new Map(days.map((day) => [day.date, day]));
+  const transfigurationTitle = "СВЕТО ПРЕОБРАЖЕЊЕ ГОСПОДА И БОГА И СПАСА НАШЕГА ИСУСА ХРИСТА";
+  const afterfeastTitle = "Попразништво Преображења";
+
+  assert.equal(byDate.get("2026-08-19")?.title, transfigurationTitle);
+  assert.equal(byDate.get("2026-08-20")?.title, afterfeastTitle);
+  assert.equal(createTodayCalendarModel(days, corpus, new Date("2026-08-19T12:00:00Z"))?.day.title, transfigurationTitle);
+  assert.equal(createTodayCalendarModel(days, corpus, new Date("2026-08-20T12:00:00Z"))?.day.title, afterfeastTitle);
+  assert.match(calendarDayPage, /<h1>\{day\.title\}<\/h1>/);
+  assert.match(calendarJsonEndpoint, /title:\s*day\.title/);
+});
+
 test("TodayCalendarService uses Europe/Podgorica across winter, summer, and boundaries", async () => {
   const [days, corpus] = await Promise.all([loadCalendarDays(ROOT), loadScriptureCorpus(ROOT)]);
   assert.equal(podgoricaDateKey(new Date("2026-01-01T23:30:00Z")), "2026-01-02");
