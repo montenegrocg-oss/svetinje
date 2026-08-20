@@ -7,16 +7,16 @@ place_type:
     status: requires-verification
 relationships:
   media_ids:
+    - photo-crkva-svetog-djordja-donja-gorica-765dd991155d
     - photo-crkva-svetog-djordja-donja-gorica-c2b7223dc04d
     - photo-crkva-svetog-djordja-donja-gorica-bc8237a4f7b8
     - photo-crkva-svetog-djordja-donja-gorica-b20ab564674b
-    - photo-crkva-svetog-djordja-donja-gorica-765dd991155d
     - photo-crkva-svetog-djordja-donja-gorica-565e561f7c95
 approvals: []
 audit:
   created_at: 2026-08-20T15:27:22.478Z
   created_by: montenegro-cg
-  updated_at: 2026-08-20T15:39:15Z
+  updated_at: 2026-08-20T15:39:50Z
   updated_by: montenegro-cg
 browse_area_id: podgorica-zeta
 ecclesiastical:
