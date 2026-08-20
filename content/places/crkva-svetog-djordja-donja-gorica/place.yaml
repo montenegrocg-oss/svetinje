@@ -10,5 +10,30 @@ approvals: []
 audit:
   created_at: 2026-08-20T15:27:22.478Z
   created_by: montenegro-cg
-  updated_at: 2026-08-20T15:27:22.478Z
+  updated_at: 2026-08-20T15:29:56Z
   updated_by: montenegro-cg
+browse_area_id: podgorica-zeta
+ecclesiastical:
+  jurisdiction:
+    value: Митрополија црногорско-приморска
+    verification:
+      status: requires-verification
+patronal_feast:
+  name: Ђурђиц 16. новембар
+location:
+  municipality:
+    value: Подгорица
+    verification:
+      status: requires-verification
+  settlement:
+    value: Доња Горица
+    verification:
+      status: requires-verification
+  coordinates:
+    latitude: 42.4340543
+    longitude: 19.212513
+    accuracy: complex-centroid
+    publication_safety: public
+    crs: EPSG:4326
+    verification:
+      status: requires-verification
