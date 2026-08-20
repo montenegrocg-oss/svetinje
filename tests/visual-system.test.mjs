@@ -68,7 +68,6 @@ test("desktop and mobile navigation expose the required Serbian guide sections",
   const expectedItems = [
     ["/manastiri/", "Манастири"],
     ["/crkve/", "Цркве"],
-    ["/sveta-mjesta/", "Света мјеста"],
     ["/mapa/", "Мапа"],
     ["/rute/", "Руте"],
     ["/o-projektu/", "О пројекту"],
@@ -87,7 +86,7 @@ test("desktop and mobile navigation expose the required Serbian guide sections",
   assert.doesNotMatch(header, /header-search|aria-label="Претрага светиња"|> Претрага</);
   assert.match(header, /\{ href: "\/manastiri\/", label: "Манастири" \}/);
   assert.match(header, /\{ href: "\/crkve\/", label: "Цркве" \}/);
-  assert.match(header, /\{ href: "\/sveta-mjesta\/", label: "Света мјеста" \}/);
+  assert.doesNotMatch(header, /\/sveta-mjesta\/|Света мјеста/);
   assert.doesNotMatch(header, /\{ href: "\/svetinje\/", label: "Манастири" \}/);
   assert.doesNotMatch(header, /\{ href: "\/svetinje\/", label: "Цркве" \}/);
 });
@@ -120,16 +119,17 @@ test("the homepage is composed from reusable map-explorer components", async () 
   ]);
   assert.match(explorer, /<MapCanvas places=\{places\} \/>/);
   assert.match(explorer, /<MapControls \/>/);
-  assert.match(explorer, /const initialPlaces = places\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);
-  assert.match(explorer, /const inventoryPlaces = places\.slice\(HOMEPAGE_PREVIEW_LIMIT\)/);
-  assert.match(explorer, /<ExplorerSidebar places=\{initialPlaces\} totalPlaces=\{places\.length\} \/>/);
-  assert.match(explorer, /<RecommendedPlaces places=\{places\} \/>/);
+  assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
+  assert.match(explorer, /const initialPlaces = discoveryPlaces\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);
+  assert.match(explorer, /const inventoryPlaces = discoveryPlaces\.slice\(HOMEPAGE_PREVIEW_LIMIT\)/);
+  assert.match(explorer, /<ExplorerSidebar places=\{initialPlaces\} totalPlaces=\{discoveryPlaces\.length\} \/>/);
+  assert.match(explorer, /<RecommendedPlaces places=\{discoveryPlaces\} \/>/);
   assert.match(explorer, /<TodayCalendar days=\{calendarDays\} corpus=\{scriptureCorpus\} \/>/);
   assert.match(explorer, /import PopularRoutes from "\.\/PopularRoutes\.astro"/);
   assert.match(explorer, /<PopularRoutes routes=\{routes\} \/>/);
   assert.ok(
-    explorer.indexOf("<ExplorerSidebar places={initialPlaces} totalPlaces={places.length} />") < explorer.indexOf("<RecommendedPlaces places={places} />")
-      && explorer.indexOf("<RecommendedPlaces places={places} />") < explorer.indexOf("<TodayCalendar days={calendarDays} corpus={scriptureCorpus} />")
+    explorer.indexOf("<ExplorerSidebar places={initialPlaces} totalPlaces={discoveryPlaces.length} />") < explorer.indexOf("<RecommendedPlaces places={discoveryPlaces} />")
+      && explorer.indexOf("<RecommendedPlaces places={discoveryPlaces} />") < explorer.indexOf("<TodayCalendar days={calendarDays} corpus={scriptureCorpus} />")
       && explorer.indexOf("<TodayCalendar days={calendarDays} corpus={scriptureCorpus} />") < explorer.indexOf("<PopularRoutes routes={routes} />"),
     "homepage preview, recommendations, Today, and routes must retain their editorial order",
   );
@@ -227,8 +227,8 @@ test("the map loading surface is neutral and cannot reveal the decorative fallba
   assert.doesNotMatch(styles, /map-loading-surface[\s\S]{0,180}animation:/);
 });
 
-test("catalogue pages share category mapping, featured selection, filters, and eight-card pagination", async () => {
-  const [catalogue, card, pagination, paginationModel, featuredModel, areas, monasteries, churches, holyPlaces, general, filters] = await Promise.all([
+test("public catalogue pages share discovery policy, category mapping, filters, and pagination", async () => {
+  const [catalogue, card, pagination, paginationModel, featuredModel, areas, monasteries, churches, general, filters, discovery, detailHero] = await Promise.all([
     source("src/components/CategoryCatalogue.astro"),
     source("src/components/PlaceCard.astro"),
     source("src/components/ExplorerPagination.astro"),
@@ -237,13 +237,15 @@ test("catalogue pages share category mapping, featured selection, filters, and e
     source("src/lib/place-areas.ts"),
     source("src/pages/manastiri/index.astro"),
     source("src/pages/crkve/index.astro"),
-    source("src/pages/sveta-mjesta/index.astro"),
     source("src/pages/svetinje/index.astro"),
     source("src/lib/place-filters.ts"),
+    source("src/lib/public-place-discovery.ts"),
+    source("src/components/place-detail/PlaceDetailHero.astro"),
   ]);
 
   assert.match(catalogue, /categoryForPlaceType\(place\.placeType\) === category/);
   assert.match(catalogue, /loadVisiblePlaces/);
+  assert.match(catalogue, /selectPublicDiscoveryPlaces\(await loadVisiblePlaces\(\)\)/);
   assert.match(catalogue, /PLACE_AREAS\.filter/);
   assert.match(catalogue, /selectFeaturedCataloguePlaces\(places\)/);
   assert.match(catalogue, /<PlaceCard place=\{place\} variant="featured" \/>/);
@@ -271,14 +273,16 @@ test("catalogue pages share category mapping, featured selection, filters, and e
   assert.doesNotMatch(paginationModel, /primaryPlaces|continuationPlaces|CONTINUATION/);
   assert.match(monasteries, /category="monasteries"/);
   assert.match(churches, /category="churches"/);
-  assert.match(holyPlaces, /category="holy-places"/);
-  assert.match(holyPlaces, /canonicalPath="\/sveta-mjesta\/"/);
-  assert.match(holyPlaces, /Још нема светих мјеста спремних за јавно објављивање/);
+  await assert.rejects(source("src/pages/sveta-mjesta/index.astro"), /ENOENT/);
   assert.doesNotMatch(general, /category=/);
   assert.match(filters, /skete: "monasteries"/);
   assert.match(filters, /hermitage: "monasteries"/);
   assert.match(filters, /chapel: "churches"/);
   assert.match(filters, /cathedral: "churches"/);
+  assert.match(discovery, /PUBLIC_DISCOVERY_CATEGORIES = \["monasteries", "churches"\]/);
+  assert.match(discovery, /selectPublicDiscoveryPlaces/);
+  assert.doesNotMatch(detailHero, /\/sveta-mjesta\/|label: "Света мјеста"/);
+  assert.match(detailHero, /\{ href: "\/svetinje\/", label: "Светиње" \}/);
 });
 
 test("map controls, search, and filters expose accessible states and honest feedback", async () => {
@@ -322,7 +326,6 @@ test("the required Serbian interface labels are present", async () => {
     "Православна Црна Гора",
     "Манастири",
     "Цркве",
-    "Света мјеста",
     "Поклоничке руте",
     "Изгради руту",
     "Слојеви",
@@ -333,6 +336,7 @@ test("the required Serbian interface labels are present", async () => {
   ]) {
     assert.match(content, new RegExp(label.replace(/[?]/g, "\\?")));
   }
+  assert.doesNotMatch(content, /Света мјеста|data-filter="holy-places"/);
   assert.doesNotMatch(content, /маршрут/iu);
 });
 

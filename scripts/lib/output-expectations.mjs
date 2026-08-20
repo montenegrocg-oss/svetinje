@@ -1,6 +1,7 @@
 import { loadVisiblePlaces } from "../../src/lib/content/publication.ts";
 import { loadVisibleNews } from "../../src/lib/content/news.ts";
 import { categoryForPlaceType } from "../../src/lib/place-filters.ts";
+import { selectPublicDiscoveryPlaces } from "../../src/lib/public-place-discovery.ts";
 import { paginatePlaces, PLACES_PER_PAGE } from "../../src/lib/explorer-pagination.ts";
 import { HOMEPAGE_PREVIEW_LIMIT } from "../../src/lib/explorer-preview.ts";
 import { PLACE_AREAS } from "../../src/lib/place-areas.ts";
@@ -12,7 +13,6 @@ export const STATIC_HTML_ROUTES = Object.freeze([
   "svetinje/index.html",
   "manastiri/index.html",
   "crkve/index.html",
-  "sveta-mjesta/index.html",
   "o-projektu/index.html",
   "izvori/index.html",
   "novosti/index.html",
@@ -30,13 +30,12 @@ export const CALENDAR_HTML_ROUTES = Object.freeze(
 export const CATEGORY_HTML_ROUTES = Object.freeze({
   monasteries: "manastiri/index.html",
   churches: "crkve/index.html",
-  "holy-places": "sveta-mjesta/index.html",
 });
 
 export const CATEGORY_HREFS = Object.freeze({
   monasteries: "/manastiri/",
   churches: "/crkve/",
-  "holy-places": "/sveta-mjesta/",
+  "holy-places": "/svetinje/",
 });
 
 const hasCoordinates = (place) =>
@@ -44,6 +43,7 @@ const hasCoordinates = (place) =>
 
 export function createOutputModel(places, news = [], routes = []) {
   const normalizedPlaces = [...places];
+  const discoveryPlaces = selectPublicDiscoveryPlaces(normalizedPlaces);
   const categoryMembership = {
     monasteries: [],
     churches: [],
@@ -63,19 +63,20 @@ export function createOutputModel(places, news = [], routes = []) {
     };
   });
   const expectedRealRelatedCount = Math.min(4, Math.max(0, normalizedPlaces.length - 1));
-  const cataloguePagination = paginatePlaces(normalizedPlaces, 1);
-  const homepagePreviewPlaces = normalizedPlaces.slice(0, HOMEPAGE_PREVIEW_LIMIT);
+  const cataloguePagination = paginatePlaces(discoveryPlaces, 1);
+  const homepagePreviewPlaces = discoveryPlaces.slice(0, HOMEPAGE_PREVIEW_LIMIT);
   const newsDetailRoutes = news.flatMap((item) => item.slug ? [{
     item,
     route: `novosti/${item.slug}/index.html`,
   }] : []);
   const areaMembership = Object.fromEntries(
-    PLACE_AREAS.map((area) => [area.id, normalizedPlaces.filter((place) => place.browseAreaId === area.id)]),
+    PLACE_AREAS.map((area) => [area.id, discoveryPlaces.filter((place) => place.browseAreaId === area.id)]),
   );
   const routeDetailRoutes = routes.map((route) => ({ route, path: `rute/${route.slug}/index.html` }));
 
   return {
     places: normalizedPlaces,
+    discoveryPlaces,
     staticRoutes: [...STATIC_HTML_ROUTES],
     detailRoutes,
     news: [...news],
@@ -93,10 +94,11 @@ export function createOutputModel(places, news = [], routes = []) {
     categoryMembership,
     areaMembership,
     placesById: new Map(normalizedPlaces.map((place) => [place.id, place])),
+    discoveryPlacesById: new Map(discoveryPlaces.map((place) => [place.id, place])),
     markerPlaces: normalizedPlaces.filter(hasCoordinates),
     mediaPlaces: normalizedPlaces.filter((place) => typeof place.previewImageSrc === "string"),
     homepagePreviewPlaces,
-    homepagePooledPlaces: normalizedPlaces.slice(HOMEPAGE_PREVIEW_LIMIT),
+    homepagePooledPlaces: discoveryPlaces.slice(HOMEPAGE_PREVIEW_LIMIT),
     homepagePreviewLimit: HOMEPAGE_PREVIEW_LIMIT,
     cataloguePageCount: cataloguePagination.totalPages,
     catalogueFirstPagePlaces: cataloguePagination.pagePlaces,

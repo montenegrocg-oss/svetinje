@@ -1,7 +1,8 @@
-export const PLACE_FILTER_IDS = ["all", "monasteries", "churches", "holy-places", "routes"] as const;
+export const PLACE_CATEGORIES = ["monasteries", "churches", "holy-places"] as const;
+export const PLACE_FILTER_IDS = ["all", "monasteries", "churches", "routes"] as const;
 
 export type PlaceFilterId = (typeof PLACE_FILTER_IDS)[number];
-export type PlaceCategory = Exclude<PlaceFilterId, "all" | "routes">;
+export type PlaceCategory = (typeof PLACE_CATEGORIES)[number];
 
 const PLACE_TYPE_TO_CATEGORY = {
   monastery: "monasteries",

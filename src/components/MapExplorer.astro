@@ -7,6 +7,7 @@ import PopularRoutes from "./PopularRoutes.astro";
 import RecommendedPlaces from "./RecommendedPlaces.astro";
 import TodayCalendar from "./TodayCalendar.astro";
 import { HOMEPAGE_PREVIEW_LIMIT } from "../lib/explorer-preview";
+import { selectPublicDiscoveryPlaces } from "../lib/public-place-discovery";
 import type { VisiblePlace } from "../lib/content/publication";
 import type { VisibleRoute } from "../lib/content/routes";
 import type { CalendarDay } from "../lib/calendar/content";
@@ -19,16 +20,25 @@ interface Props {
 }
 
 const { places, routes, calendarDays, scriptureCorpus } = Astro.props;
-const initialPlaces = places.slice(0, HOMEPAGE_PREVIEW_LIMIT);
-const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
+const discoveryPlaces = selectPublicDiscoveryPlaces(places);
+const discoveryPlaceIds = new Set(discoveryPlaces.map((place) => place.id));
+const mapOnlyPlaceIds = places.filter((place) => !discoveryPlaceIds.has(place.id)).map((place) => place.id);
+const initialPlaces = discoveryPlaces.slice(0, HOMEPAGE_PREVIEW_LIMIT);
+const inventoryPlaces = discoveryPlaces.slice(HOMEPAGE_PREVIEW_LIMIT);
 ---
 
-<section class="map-explorer" id="mapa" aria-labelledby="map-explorer-title" data-testid="map-explorer">
+<section
+  class="map-explorer"
+  id="mapa"
+  aria-labelledby="map-explorer-title"
+  data-testid="map-explorer"
+  data-map-only-place-ids={mapOnlyPlaceIds.join(",")}
+>
   <header class="map-explorer__heading">
     <p class="map-eyebrow">Дигитални водич</p>
     <h1 id="map-explorer-title">Православна Црна Гора</h1>
     <span class="title-rule" aria-hidden="true"></span>
-    <p>Откријте манастире, храмове и света мјеста широм Црне Горе.</p>
+    <p>Откријте манастире и храмове широм Црне Горе.</p>
   </header>
 
   <div class="map-stage">
@@ -37,9 +47,9 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
   </div>
 
   <div class="map-explorer__content">
-    <ExplorerSidebar places={initialPlaces} totalPlaces={places.length} />
+    <ExplorerSidebar places={initialPlaces} totalPlaces={discoveryPlaces.length} />
     <div class="map-explorer__secondary">
-      <RecommendedPlaces places={places} />
+      <RecommendedPlaces places={discoveryPlaces} />
       <TodayCalendar days={calendarDays} corpus={scriptureCorpus} />
       <PopularRoutes routes={routes} />
     </div>
@@ -74,6 +84,7 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
   const searchForm = document.querySelector<HTMLFormElement>("[data-catalogue-search]");
   const searchInput = searchForm?.querySelector<HTMLInputElement>("input[type='search']");
   const explorerRoot = document.querySelector<HTMLElement>("[data-testid='map-explorer']");
+  const mapOnlyPlaceIds = (explorerRoot?.dataset.mapOnlyPlaceIds ?? "").split(",").filter(Boolean);
   const placeCards = [...(explorerRoot?.querySelectorAll<HTMLElement>("[data-place-card]") ?? [])];
   const primaryResults = explorerRoot?.querySelector<HTMLElement>("[data-explorer-primary-results]");
   const cardPool = explorerRoot?.querySelector<HTMLElement>("[data-explorer-card-pool]");
@@ -89,7 +100,7 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
   const paginationPrev = pagination?.querySelector<HTMLButtonElement>("[data-homepage-pagination-prev]");
   const paginationNext = pagination?.querySelector<HTMLButtonElement>("[data-homepage-pagination-next]");
   const paginationStatus = pagination?.querySelector<HTMLElement>("[data-homepage-pagination-status]");
-  const filterIds = new Set(["all", "monasteries", "churches", "holy-places", "routes"]);
+  const filterIds = new Set(["all", "monasteries", "churches", "routes"]);
   let activeFilter = "all";
   let activeAreaId = getPlaceArea(new URL(window.location.href).searchParams.get("area"))?.id ?? null;
   let matchedCards = [...placeCards];
@@ -103,10 +114,6 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
     churches: {
       title: "Нема храмова у овом приказу",
       body: "Тренутно нема храмова који одговарају изабраном филтеру и претрази.",
-    },
-    "holy-places": {
-      title: "Нема светих мјеста у овом приказу",
-      body: "Тренутно нема светих мјеста која одговарају изабраном филтеру и претрази.",
     },
     routes: {
       title: "Поклоничке руте су у припреми",
@@ -179,7 +186,7 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
     syncAreaFilter();
     if (placeCards.length === 0) {
       updatePagination(1, 0);
-      window.dispatchEvent(new CustomEvent("svetinje:place-visibility-change", { detail: { visibleIds: [] } }));
+      window.dispatchEvent(new CustomEvent("svetinje:place-visibility-change", { detail: { visibleIds: mapOnlyPlaceIds } }));
       return;
     }
     if (resetSelection) {
@@ -195,7 +202,10 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
       if (!matches) card.dataset.selected = "false";
       return matches;
     });
-    const visibleIds = matchedCards.map((card) => card.dataset.placeCard ?? "");
+    const visibleIds = [
+      ...matchedCards.map((card) => card.dataset.placeCard ?? ""),
+      ...mapOnlyPlaceIds,
+    ];
     const shown = renderPreview();
 
     filterButtons.forEach((button) => {

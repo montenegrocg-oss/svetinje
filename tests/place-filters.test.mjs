@@ -26,6 +26,11 @@ import {
   buildCatalogueSearchText,
   matchesCatalogueSearch,
 } from "../src/lib/catalogue-search.ts";
+import {
+  PUBLIC_DISCOVERY_CATEGORIES,
+  isPublicDiscoveryPlaceType,
+  selectPublicDiscoveryPlaces,
+} from "../src/lib/public-place-discovery.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -34,7 +39,7 @@ async function source(file) {
 }
 
 test("the shared place-type mapping implements every approved filter category", () => {
-  assert.deepEqual(PLACE_FILTER_IDS, ["all", "monasteries", "churches", "holy-places", "routes"]);
+  assert.deepEqual(PLACE_FILTER_IDS, ["all", "monasteries", "churches", "routes"]);
   for (const placeType of ["monastery", "skete", "hermitage"]) {
     assert.equal(categoryForPlaceType(placeType), "monasteries");
     assert.equal(matchesPlaceFilter(placeType, "monasteries"), true);
@@ -45,10 +50,26 @@ test("the shared place-type mapping implements every approved filter category", 
   }
   for (const placeType of ["holy-spring", "cave", "shrine", "other"]) {
     assert.equal(categoryForPlaceType(placeType), "holy-places");
-    assert.equal(matchesPlaceFilter(placeType, "holy-places"), true);
   }
   assert.equal(matchesPlaceFilter("monastery", "all"), true);
   assert.equal(matchesPlaceFilter("monastery", "routes"), false);
+});
+
+test("public discovery includes church taxonomy and preserves canonical holy-place records outside discovery", () => {
+  const records = [
+    { id: "monastery", placeType: "monastery" },
+    { id: "skete", placeType: "skete" },
+    { id: "church", placeType: "church" },
+    { id: "cathedral", placeType: "cathedral" },
+    { id: "holy-spring", placeType: "holy-spring" },
+    { id: "shrine", placeType: "shrine" },
+  ];
+
+  assert.deepEqual(PUBLIC_DISCOVERY_CATEGORIES, ["monasteries", "churches"]);
+  assert.deepEqual(selectPublicDiscoveryPlaces(records).map(({ id }) => id), ["monastery", "skete", "church", "cathedral"]);
+  assert.equal(isPublicDiscoveryPlaceType("holy-spring"), false);
+  assert.equal(isPublicDiscoveryPlaceType("shrine"), false);
+  assert.ok(records.some(({ placeType }) => placeType === "holy-spring"), "selection must not mutate canonical records");
 });
 
 test("the catalogue pagination model derives flat eight-place pages", () => {
@@ -142,16 +163,18 @@ test("the explorer keeps one shared filter state across cards, controls, and map
   assert.match(explorer, /const matchesSearch = matchesCatalogueSearch\(card\.dataset\.placeSearch \?\? "", query\)/);
   assert.match(explorer, /new CustomEvent\("svetinje:filter-change"/);
   assert.match(explorer, /new CustomEvent\("svetinje:place-visibility-change"/);
-  assert.match(explorer, /const initialPlaces = places\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);
-  assert.match(explorer, /const inventoryPlaces = places\.slice\(HOMEPAGE_PREVIEW_LIMIT\)/);
-  assert.match(explorer, /<ExplorerSidebar places=\{initialPlaces\} totalPlaces=\{places\.length\} \/>/);
+  assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
+  assert.match(explorer, /const mapOnlyPlaceIds = places\.filter\(\(place\) => !discoveryPlaceIds\.has\(place\.id\)\)/);
+  assert.match(explorer, /const initialPlaces = discoveryPlaces\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);
+  assert.match(explorer, /const inventoryPlaces = discoveryPlaces\.slice\(HOMEPAGE_PREVIEW_LIMIT\)/);
+  assert.match(explorer, /<ExplorerSidebar places=\{initialPlaces\} totalPlaces=\{discoveryPlaces\.length\} \/>/);
   assert.match(explorer, /data-explorer-card-pool hidden/);
   assert.match(explorer, /matchedCards = placeCards\.filter/);
   assert.match(explorer, /paginateHomepagePreview\(matchedCards, currentPage\)/);
   assert.match(explorer, /previewCards\.forEach/);
   assert.match(explorer, /if \(resetSelection\)[\s\S]*?currentPage = 1/);
   assert.match(explorer, /applyExplorerState\(true\)/);
-  assert.match(explorer, /const visibleIds = matchedCards\.map/);
+  assert.match(explorer, /const visibleIds = \[[\s\S]*?matchedCards\.map[\s\S]*?\.\.\.mapOnlyPlaceIds/);
   assert.match(explorer, /paginationPrev\?\.addEventListener\("click"/);
   assert.match(explorer, /paginationNext\?\.addEventListener\("click"/);
   assert.doesNotMatch(explorer, /pageForHomepagePreviewPlace\(matchedCards|selectedPlaceId/);
@@ -176,7 +199,7 @@ test("the explorer keeps one shared filter state across cards, controls, and map
   assert.match(controls, /data-filter="monasteries"/);
   assert.match(controls, /data-filter="monasteries" aria-pressed="false"/);
   assert.match(controls, /data-filter="churches" aria-pressed="false"/);
-  assert.match(controls, /data-filter="holy-places" aria-pressed="false"/);
+  assert.doesNotMatch(controls, /data-filter="holy-places"|Света мјеста/);
   assert.match(controls, /data-filter="routes" aria-pressed="false"/);
   const routeBuilder = controls.match(/<button[^>]*data-notice-trigger="route-notice"[^>]*>/)?.[0];
   assert.ok(routeBuilder, "the route builder action must remain present");
@@ -195,12 +218,12 @@ test("mobile map and panel filters expose distinct responsive sets with one shar
   for (const filter of ["all", "monasteries", "churches"]) {
     assert.match(controls, new RegExp(`class="map-action" data-filter="${filter}"`));
   }
-  assert.match(controls, /class="map-action map-action--mobile-hidden" data-filter="holy-places"/);
+  assert.doesNotMatch(controls, /data-filter="holy-places"|Света мјеста/);
   assert.match(controls, /data-filter="routes"/);
   assert.match(controls, /map-action--primary map-action--mobile-hidden/);
   assert.match(sidebar, /<FilterChips group="catalogue" includeRoutes=\{false\} \/>/);
   assert.match(filters, /includeRoutes \|\| filter\.id !== "routes"/);
-  assert.match(filters, /id: "holy-places"/);
+  assert.doesNotMatch(filters, /id: "holy-places"|Света мјеста/);
 
   assert.match(explorer, /const filterButtons = \[\.\.\.document\.querySelectorAll<HTMLButtonElement>\("button\[data-filter\]"\)\]/);
   assert.match(explorer, /filterButtons\.forEach\(\(button\) => \{[\s\S]*?aria-pressed[\s\S]*?activeFilter/);
@@ -230,7 +253,7 @@ test("filtering has accessible preview feedback and catalogue pagination remains
   assert.match(sidebar, /data-explorer-no-results hidden role="status" aria-live="polite"/);
   assert.match(explorer, /Поклоничке руте су у припреми/);
   assert.match(explorer, /Нема храмова у овом приказу/);
-  assert.match(explorer, /Нема светих мјеста у овом приказу/);
+  assert.doesNotMatch(explorer, /Нема светих мјеста у овом приказу/);
   assert.match(explorer, /Нема резултата/);
   assert.match(explorer, /Нема записа за изабрани филтер\./);
   assert.match(explorer, /Приказана су \$\{shown\} од \$\{matched\} резултата\. \$\{pageCopy\}/);

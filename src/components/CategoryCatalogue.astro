@@ -1,7 +1,8 @@
 ---
-import type { PlaceCategory } from "../lib/place-filters";
 import { categoryForPlaceType } from "../lib/place-filters";
 import { loadVisiblePlaces } from "../lib/content/publication";
+import type { PublicDiscoveryCategory } from "../lib/public-place-discovery";
+import { selectPublicDiscoveryPlaces } from "../lib/public-place-discovery";
 import { selectFeaturedCataloguePlaces } from "../lib/category-catalogue";
 import { PLACES_PER_PAGE } from "../lib/explorer-pagination";
 import { PLACE_AREAS } from "../lib/place-areas";
@@ -11,12 +12,12 @@ import PlaceCard from "./PlaceCard.astro";
 interface Props {
   heading: string;
   description: string;
-  category?: PlaceCategory;
+  category?: PublicDiscoveryCategory;
   emptyHeading: string;
 }
 
 const { heading, description, category, emptyHeading } = Astro.props;
-const visiblePlaces = await loadVisiblePlaces();
+const visiblePlaces = selectPublicDiscoveryPlaces(await loadVisiblePlaces());
 const places = category
   ? visiblePlaces.filter((place) => categoryForPlaceType(place.placeType) === category)
   : visiblePlaces;
@@ -44,16 +45,7 @@ const copy = category === "monasteries"
         allHeading: "Сви храмови",
         countForms: ["православни храм", "православна храма", "православних храмова"],
       }
-    : category === "holy-places"
-      ? {
-          searchPlaceholder: "Претражите света мјеста…",
-          statusPrefix: "Пронађена",
-          statusNoun: "светих мјеста",
-          featuredHeading: "Издвојена света мјеста",
-          allHeading: "Сва света мјеста",
-          countForms: ["свето мјесто", "света мјеста", "светих мјеста"],
-        }
-      : {
+    : {
           searchPlaceholder: "Претражите светиње…",
           statusPrefix: "Пронађене",
           statusNoun: "светиња",
