@@ -179,6 +179,50 @@ test("nearby visible places cluster with an accurate count and separate after zo
   })), 52).map((group) => group.length), [1, 1, 1]);
 });
 
+test("marker clustering does not grow through an unlimited neighbor chain", () => {
+  const chainedPoints = [
+    { item: "a", x: 0, y: 0 },
+    { item: "b", x: 40, y: 0 },
+    { item: "c", x: 80, y: 0 },
+    { item: "d", x: 120, y: 0 },
+  ];
+
+  assert.deepEqual(clusterProjectedMarkers(chainedPoints, 52).map((group) => (
+    group.map(({ item }) => item)
+  )), [
+    ["a", "b"],
+    ["c", "d"],
+  ]);
+});
+
+test("marker clustering is spatially deterministic and conserves filtered places", () => {
+  const points = [
+    { item: { id: "budva", category: "churches" }, x: 100, y: 100 },
+    { item: { id: "podmaine", category: "monasteries" }, x: 126, y: 108 },
+    { item: { id: "kotor", category: "churches" }, x: 310, y: 92 },
+    { item: { id: "perast", category: "churches" }, x: 338, y: 105 },
+    { item: { id: "cetinje", category: "monasteries" }, x: 220, y: 260 },
+  ];
+  const canonicalGroups = (input) => clusterProjectedMarkers(input, 52)
+    .map((group) => group.map(({ item }) => item.id).sort())
+    .sort((left, right) => left.join(",").localeCompare(right.join(",")));
+
+  assert.deepEqual(canonicalGroups(points), [
+    ["budva", "podmaine"],
+    ["cetinje"],
+    ["kotor", "perast"],
+  ]);
+  assert.deepEqual(canonicalGroups([...points].reverse()), canonicalGroups(points));
+  assert.equal(canonicalGroups(points).flat().length, points.length);
+
+  const churches = points.filter(({ item }) => item.category === "churches");
+  assert.deepEqual(canonicalGroups(churches), [
+    ["budva"],
+    ["kotor", "perast"],
+  ]);
+  assert.deepEqual(canonicalGroups(churches).flat().sort(), churches.map(({ item }) => item.id).sort());
+});
+
 test("cluster expansion chooses the first zoom where nearby places divide", () => {
   const clustered = [
     { item: "budva", x: 100, y: 100 },
