@@ -111,9 +111,10 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.doesNotMatch(homepage, /PopularRoutes/);
   assert.doesNotMatch(homepage, /HomepagePreviews/);
 
-  const [explorer, sidebar, recommended, routes] = await Promise.all([
+  const [explorer, sidebar, homepagePagination, recommended, routes] = await Promise.all([
     source("src/components/MapExplorer.astro"),
     source("src/components/ExplorerSidebar.astro"),
+    source("src/components/HomepagePagination.astro"),
     source("src/components/RecommendedPlaces.astro"),
     source("src/components/PopularRoutes.astro"),
   ]);
@@ -134,10 +135,11 @@ test("the homepage is composed from reusable map-explorer components", async () 
     "homepage preview, recommendations, Today, and routes must retain their editorial order",
   );
   assert.doesNotMatch(explorer, /ExplorerContinuation|ExplorerPagination|data-continuation|data-explorer-pagination/);
-  assert.match(sidebar, /data-homepage-pagination/);
-  assert.match(sidebar, /data-homepage-pagination-prev/);
-  assert.match(sidebar, /data-homepage-pagination-next/);
-  assert.match(sidebar, /data-homepage-pagination-status/);
+  assert.equal([...sidebar.matchAll(/<HomepagePagination totalPages=\{totalPages\} position="(top|bottom)" \/>/g)].length, 2);
+  assert.match(homepagePagination, /data-homepage-pagination/);
+  assert.match(homepagePagination, /data-homepage-pagination-prev/);
+  assert.match(homepagePagination, /data-homepage-pagination-next/);
+  assert.match(homepagePagination, /data-homepage-pagination-status/);
   assert.doesNotMatch(sidebar, /data-explorer-catalogue-link/);
   assert.match(explorer, /data-testid="map-explorer"/);
   assert.match(recommended, /Најпосјећеније светиње/);
@@ -201,7 +203,7 @@ test("the homepage grid keeps the sidebar below its heading and aligned with sec
   const desktopStyles = styles.slice(desktopStart);
 
   assert.ok(desktopStart > -1, "the explorer grid must start at the desktop breakpoint");
-  assert.match(styles, /\.map-explorer\s*\{[\s\S]*?--map-stage-height: 24rem;[\s\S]*?--explorer-content-block-padding: 1rem;/);
+  assert.match(styles, /\.map-explorer\s*\{[\s\S]*?--map-stage-height: 24rem;[\s\S]*?--explorer-content-block-padding: 0\.75rem;/);
   assert.match(styles, /\.map-stage\s*\{[\s\S]*?height: var\(--map-stage-height\);/);
   assert.match(desktopStyles, /--map-stage-height: 39\.5rem;/);
   assert.match(desktopStyles, /\.map-explorer\s*\{[\s\S]*?display: grid;[\s\S]*?grid-template-rows: auto 1\.125rem minmax\(0, 1fr\) auto;/);
@@ -216,6 +218,7 @@ test("the homepage grid keeps the sidebar below its heading and aligned with sec
   assert.match(desktopStyles, /\.map-actions\s*\{[\s\S]*?right: var\(--explorer-panel-left\);/);
   assert.match(desktopStyles, /\.map-tool-stack,[\s\S]*?\.map-help\s*\{[\s\S]*?right: var\(--explorer-panel-left\);/);
   assert.doesNotMatch(styles, /--explorer-sidebar-map-offset|\.explorer-sidebar\s*\{[\s\S]*?margin-block-start:/);
+  assert.doesNotMatch(styles, /\.map-explorer__secondary\s*\{[\s\S]*?margin-(?:top|block-start):\s*-/);
 });
 
 test("the map loading surface is neutral and cannot reveal the decorative fallback", async () => {

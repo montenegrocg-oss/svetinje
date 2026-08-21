@@ -87,10 +87,7 @@ const inventoryPlaces = discoveryPlaces.slice(HOMEPAGE_PREVIEW_LIMIT);
   const areaFilter = explorerRoot?.querySelector<HTMLElement>("[data-explorer-area-filter]");
   const areaFilterLabel = areaFilter?.querySelector<HTMLElement>("[data-explorer-area-label]");
   const clearAreaFilterButton = areaFilter?.querySelector<HTMLButtonElement>("[data-clear-area-filter]");
-  const pagination = explorerRoot?.querySelector<HTMLElement>("[data-homepage-pagination]");
-  const paginationPrev = pagination?.querySelector<HTMLButtonElement>("[data-homepage-pagination-prev]");
-  const paginationNext = pagination?.querySelector<HTMLButtonElement>("[data-homepage-pagination-next]");
-  const paginationStatus = pagination?.querySelector<HTMLElement>("[data-homepage-pagination-status]");
+  const paginations = [...(explorerRoot?.querySelectorAll<HTMLElement>("[data-homepage-pagination]") ?? [])];
   const filterIds = new Set(["all", "monasteries", "churches", "routes"]);
   let activeFilter = "all";
   let activeAreaId = getPlaceArea(new URL(window.location.href).searchParams.get("area"))?.id ?? null;
@@ -122,14 +119,19 @@ const inventoryPlaces = discoveryPlaces.slice(HOMEPAGE_PREVIEW_LIMIT);
   };
 
   const updatePagination = (page: number, totalPages: number) => {
-    if (!pagination || !paginationPrev || !paginationNext || !paginationStatus) return;
-    pagination.hidden = totalPages === 0;
-    if (totalPages === 0) return;
-    paginationPrev.disabled = page <= 1;
-    paginationNext.disabled = page >= totalPages;
-    paginationPrev.setAttribute("aria-disabled", String(page <= 1));
-    paginationNext.setAttribute("aria-disabled", String(page >= totalPages));
-    paginationStatus.textContent = `${page} / ${totalPages}`;
+    paginations.forEach((pagination) => {
+      pagination.hidden = totalPages === 0;
+      if (totalPages === 0) return;
+      const previousButton = pagination.querySelector<HTMLButtonElement>("[data-homepage-pagination-prev]");
+      const nextButton = pagination.querySelector<HTMLButtonElement>("[data-homepage-pagination-next]");
+      const status = pagination.querySelector<HTMLElement>("[data-homepage-pagination-status]");
+      if (!previousButton || !nextButton || !status) return;
+      previousButton.disabled = page <= 1;
+      nextButton.disabled = page >= totalPages;
+      previousButton.setAttribute("aria-disabled", String(page <= 1));
+      nextButton.setAttribute("aria-disabled", String(page >= totalPages));
+      status.textContent = `${page} / ${totalPages}`;
+    });
   };
 
   const renderPreview = () => {
@@ -214,17 +216,18 @@ const inventoryPlaces = discoveryPlaces.slice(HOMEPAGE_PREVIEW_LIMIT);
     updateResultStatus(shown, matchedCards.length);
   };
 
-  paginationPrev?.addEventListener("click", () => {
-    if (currentPage <= 1) return;
-    currentPage -= 1;
-    renderCurrentPaginationPage();
-  });
-
-  paginationNext?.addEventListener("click", () => {
-    const totalPages = pageCountForHomepagePreview(matchedCards.length);
-    if (currentPage >= totalPages) return;
-    currentPage += 1;
-    renderCurrentPaginationPage();
+  paginations.forEach((pagination) => {
+    pagination.querySelector<HTMLButtonElement>("[data-homepage-pagination-prev]")?.addEventListener("click", () => {
+      if (currentPage <= 1) return;
+      currentPage -= 1;
+      renderCurrentPaginationPage();
+    });
+    pagination.querySelector<HTMLButtonElement>("[data-homepage-pagination-next]")?.addEventListener("click", () => {
+      const totalPages = pageCountForHomepagePreview(matchedCards.length);
+      if (currentPage >= totalPages) return;
+      currentPage += 1;
+      renderCurrentPaginationPage();
+    });
   });
 
   filterButtons.forEach((button) => {

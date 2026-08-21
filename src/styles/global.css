@@ -832,7 +832,7 @@
 @layer explorer {
   .map-explorer {
     --map-stage-height: 24rem;
-    --explorer-content-block-padding: 1rem;
+    --explorer-content-block-padding: 0.75rem;
 
     position: relative;
     background: var(--stone-100);
@@ -1767,6 +1767,24 @@
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
     background: var(--paper);
+  }
+
+  .homepage-pagination {
+    flex-wrap: nowrap;
+  }
+
+  .homepage-pagination--top {
+    margin-top: 0.65rem;
+    padding-block: 0.4rem;
+  }
+
+  .homepage-pagination__status {
+    min-width: 3.5rem;
+    color: var(--ink-soft);
+    font-size: 0.78rem;
+    font-weight: 750;
+    text-align: center;
+    white-space: nowrap;
   }
 
   .explorer-pagination[hidden],

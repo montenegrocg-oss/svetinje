@@ -1,6 +1,7 @@
 ---
 import EmptyCatalogueState from "./EmptyCatalogueState.astro";
 import FilterChips from "./FilterChips.astro";
+import HomepagePagination from "./HomepagePagination.astro";
 import InterfaceIcon from "./InterfaceIcon.astro";
 import PlaceCard from "./PlaceCard.astro";
 import { pageCountForHomepagePreview } from "../lib/explorer-preview";
@@ -44,6 +45,7 @@ const initialStatus = visiblePlaceCount === 1 && totalPlaces === 1
     <span>Област: <strong data-explorer-area-label></strong></span>
     <button type="button" data-clear-area-filter aria-label="Уклони филтер области">×</button>
   </div>
+  <HomepagePagination totalPages={totalPages} position="top" />
   {places.length === 0 ? (
     <EmptyCatalogueState statusId="catalogue-status" />
   ) : (
@@ -63,9 +65,5 @@ const initialStatus = visiblePlaceCount === 1 && totalPlaces === 1
       </section>
     </div>
   )}
-  <nav class="explorer-pagination" data-homepage-pagination aria-label="Странице прегледа светиња" hidden={totalPages === 0}>
-    <button type="button" data-homepage-pagination-prev aria-label="Претходна страница" disabled aria-disabled="true">←</button>
-    <span data-homepage-pagination-status aria-live="polite">1 / {totalPages || 1}</span>
-    <button type="button" data-homepage-pagination-next aria-label="Сљедећа страница" disabled={totalPages <= 1} aria-disabled={totalPages <= 1 ? "true" : "false"}>→</button>
-  </nav>
+  <HomepagePagination totalPages={totalPages} position="bottom" />
 </aside>
