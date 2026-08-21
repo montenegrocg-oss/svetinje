@@ -21,19 +21,11 @@ interface Props {
 
 const { places, routes, calendarDays, scriptureCorpus } = Astro.props;
 const discoveryPlaces = selectPublicDiscoveryPlaces(places);
-const discoveryPlaceIds = new Set(discoveryPlaces.map((place) => place.id));
-const mapOnlyPlaceIds = places.filter((place) => !discoveryPlaceIds.has(place.id)).map((place) => place.id);
 const initialPlaces = discoveryPlaces.slice(0, HOMEPAGE_PREVIEW_LIMIT);
 const inventoryPlaces = discoveryPlaces.slice(HOMEPAGE_PREVIEW_LIMIT);
 ---
 
-<section
-  class="map-explorer"
-  id="mapa"
-  aria-labelledby="map-explorer-title"
-  data-testid="map-explorer"
-  data-map-only-place-ids={mapOnlyPlaceIds.join(",")}
->
+<section class="map-explorer" id="mapa" aria-labelledby="map-explorer-title" data-testid="map-explorer">
   <header class="map-explorer__heading">
     <p class="map-eyebrow">Дигитални водич</p>
     <h1 id="map-explorer-title">Православна Црна Гора</h1>
@@ -42,7 +34,7 @@ const inventoryPlaces = discoveryPlaces.slice(HOMEPAGE_PREVIEW_LIMIT);
   </header>
 
   <div class="map-stage">
-    <MapCanvas places={places} />
+    <MapCanvas places={discoveryPlaces} />
     <MapControls />
   </div>
 
@@ -84,7 +76,6 @@ const inventoryPlaces = discoveryPlaces.slice(HOMEPAGE_PREVIEW_LIMIT);
   const searchForm = document.querySelector<HTMLFormElement>("[data-catalogue-search]");
   const searchInput = searchForm?.querySelector<HTMLInputElement>("input[type='search']");
   const explorerRoot = document.querySelector<HTMLElement>("[data-testid='map-explorer']");
-  const mapOnlyPlaceIds = (explorerRoot?.dataset.mapOnlyPlaceIds ?? "").split(",").filter(Boolean);
   const placeCards = [...(explorerRoot?.querySelectorAll<HTMLElement>("[data-place-card]") ?? [])];
   const primaryResults = explorerRoot?.querySelector<HTMLElement>("[data-explorer-primary-results]");
   const cardPool = explorerRoot?.querySelector<HTMLElement>("[data-explorer-card-pool]");
@@ -184,11 +175,6 @@ const inventoryPlaces = discoveryPlaces.slice(HOMEPAGE_PREVIEW_LIMIT);
 
   const applyExplorerState = (resetSelection = false) => {
     syncAreaFilter();
-    if (placeCards.length === 0) {
-      updatePagination(1, 0);
-      window.dispatchEvent(new CustomEvent("svetinje:place-visibility-change", { detail: { visibleIds: mapOnlyPlaceIds } }));
-      return;
-    }
     if (resetSelection) {
       currentPage = 1;
       placeCards.forEach((card) => { card.dataset.selected = "false"; });
@@ -202,10 +188,7 @@ const inventoryPlaces = discoveryPlaces.slice(HOMEPAGE_PREVIEW_LIMIT);
       if (!matches) card.dataset.selected = "false";
       return matches;
     });
-    const visibleIds = [
-      ...matchedCards.map((card) => card.dataset.placeCard ?? ""),
-      ...mapOnlyPlaceIds,
-    ];
+    const visibleIds = matchedCards.map((card) => card.dataset.placeCard ?? "");
     const shown = renderPreview();
 
     filterButtons.forEach((button) => {
