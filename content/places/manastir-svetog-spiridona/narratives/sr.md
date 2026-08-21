@@ -5,12 +5,12 @@ locale: sr
 editorial_status: research
 translation_status: source
 slug: manastir-svetog-spiridona
-preferred_name: Манастир светог Спиридона
+preferred_name: Манастир Светог Спиридона
 approvals: []
 audit:
   created_at: 2026-08-20T16:07:34.174Z
   created_by: montenegro-cg
-  updated_at: 2026-08-20T16:10:28Z
+  updated_at: 2026-08-21T09:11:22Z
   updated_by: montenegro-cg
 summary: Манастир Светог Спиридона налази се на Ограђеници, високо на Паштровској гори изнад Светог Стефана. Данашња црква потиче с почетка XX вијека, а манастирски живот обновљен је почетком XXI вијека.
 ---
