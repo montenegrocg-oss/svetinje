@@ -5,12 +5,16 @@ place_type:
   value: monastery
   verification:
     status: requires-verification
-relationships: {}
+relationships:
+  media_ids:
+    - photo-manastir-svetog-spiridona-7bb49746f2b2
+    - photo-manastir-svetog-spiridona-5340a584a59b
+    - photo-manastir-svetog-spiridona-14a5c58b48e4
 approvals: []
 audit:
   created_at: 2026-08-20T16:07:34.174Z
   created_by: montenegro-cg
-  updated_at: 2026-08-21T09:11:22Z
+  updated_at: 2026-08-21T09:13:16Z
   updated_by: montenegro-cg
 browse_area_id: budva-pastrovici
 ecclesiastical:
