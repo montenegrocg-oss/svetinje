@@ -23,7 +23,7 @@ const places = category
   ? visiblePlaces.filter((place) => categoryForPlaceType(place.placeType) === category)
   : visiblePlaces;
 const isMonasteryCatalogue = category === "monasteries";
-const featuredPlaces = selectFeaturedCataloguePlaces(places);
+const featuredPlaces = isMonasteryCatalogue ? [] : selectFeaturedCataloguePlaces(places);
 const featuredPlaceIds = new Set(featuredPlaces.map((place) => place.id));
 const cataloguePlaces = places.filter((place) => !featuredPlaceIds.has(place.id));
 const relevantAreaIds = new Set(places.flatMap((place) => place.browseAreaId ? [place.browseAreaId] : []));
@@ -71,19 +71,15 @@ const countAwareDescription = `Истражите ${places.length} ${copy.countF
   data-catalogue-page-size={PLACES_PER_PAGE}
   data-catalogue-status-noun={copy.statusNoun}
   data-catalogue-status-prefix={copy.statusPrefix}
-  data-catalogue-merge-featured={isMonasteryCatalogue ? "true" : "false"}
 >
-  <header class:list={["page-hero compact category-page-hero", isMonasteryCatalogue && "category-page-hero--catalogue"]}>
-    <div class:list={["shell", !isMonasteryCatalogue && "narrow", isMonasteryCatalogue && "category-page-hero__layout"]}>
+  <header class="page-hero compact category-page-hero">
+    <div class="shell narrow">
       <div class="category-page-hero__copy">
         <p class="eyebrow">Каталог</p>
         <h1>{heading}</h1>
         <span class="category-page-hero__rule" aria-hidden="true"></span>
         <p>{places.length > 0 ? countAwareDescription : description}</p>
       </div>
-      {isMonasteryCatalogue && places.length > 0 && (
-        <CatalogueToolbar searchPlaceholder={copy.searchPlaceholder} areas={relevantAreas} />
-      )}
     </div>
   </header>
 
@@ -97,82 +93,72 @@ const countAwareDescription = `Истражите ${places.length} ${copy.countF
           <p>Садржај се објављује након завршене провјере.</p>
           <a class="text-link" href="/izvori/">Прочитај уређивачку политику <span aria-hidden="true">→</span></a>
         </div>
-      ) : (<>
-        {!isMonasteryCatalogue && (
-          <CatalogueToolbar
-            searchPlaceholder={copy.searchPlaceholder}
-            areas={relevantAreas}
-            statusText={`${copy.statusPrefix} ${places.length} ${copy.statusNoun}`}
-          />
-        )}
-
-        {!isMonasteryCatalogue && featuredPlaces.length > 0 && (
-          <section class="catalogue-featured" data-catalogue-featured aria-labelledby="catalogue-featured-title">
-            <div class="catalogue-section-heading">
-              <p class="eyebrow">Избор уредништва</p>
-              <h2 id="catalogue-featured-title">{copy.featuredHeading}</h2>
-            </div>
-            <ul class="catalogue-featured__grid">
-              {featuredPlaces.map((place) => (
-                <li
-                  data-catalogue-featured-item
-                  data-place-area={place.browseAreaId ?? ""}
-                  data-place-search={place.catalogueSearchText}
-                >
-                  <PlaceCard place={place} variant="featured" />
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        <section class="catalogue-main" data-catalogue-main aria-labelledby="catalogue-main-title">
-          <div class="catalogue-section-heading">
-            <p class="eyebrow">Каталог</p>
-            <h2 id="catalogue-main-title">{copy.allHeading}</h2>
-            {isMonasteryCatalogue && (
-              <p class="catalogue-main__status" data-catalogue-result-status role="status" aria-live="polite">
-                {copy.statusPrefix} {places.length} {copy.statusNoun}
-              </p>
-            )}
-          </div>
-          {isMonasteryCatalogue && featuredPlaces.length > 0 && (
-            <ul
-              class="catalogue-featured__grid catalogue-main__featured"
-              data-catalogue-featured
-              aria-label="Издвојени манастири"
-            >
-              {featuredPlaces.map((place) => (
-                <li
-                  data-catalogue-featured-item
-                  data-place-area={place.browseAreaId ?? ""}
-                  data-place-search={place.catalogueSearchText}
-                >
-                  <PlaceCard place={place} variant="featured" />
-                </li>
-              ))}
-            </ul>
+      ) : (
+        <div class:list={["category-catalogue__body", isMonasteryCatalogue && "category-catalogue__body--monasteries"]}>
+          {isMonasteryCatalogue && (
+            <aside class="catalogue-sidebar" aria-label="Филтери каталога манастира">
+              <CatalogueToolbar searchPlaceholder={copy.searchPlaceholder} areas={relevantAreas} />
+            </aside>
           )}
-          <ul class="catalogue-grid editorial-catalogue" aria-label={catalogueLabel} data-catalogue-grid>
-            {cataloguePlaces.map((place, index) => (
-              <li
-                data-catalogue-item
-                data-place-area={place.browseAreaId ?? ""}
-                data-place-search={place.catalogueSearchText}
-                hidden={index >= PLACES_PER_PAGE}
-              >
-                <PlaceCard place={place} variant="catalogue" />
-              </li>
-            ))}
-          </ul>
-          <ExplorerPagination totalPlaces={cataloguePlaces.length} />
-        </section>
+          {!isMonasteryCatalogue && (
+            <CatalogueToolbar
+              searchPlaceholder={copy.searchPlaceholder}
+              areas={relevantAreas}
+              statusText={`${copy.statusPrefix} ${places.length} ${copy.statusNoun}`}
+            />
+          )}
 
-        <section class="catalogue-filter-empty" data-catalogue-filter-empty hidden role="status" aria-live="polite">
-          <h2>Нема резултата за изабране филтере.</h2>
-          <button type="button" data-catalogue-reset>Очисти филтере</button>
-        </section>
-      </>)}
+          {!isMonasteryCatalogue && featuredPlaces.length > 0 && (
+            <section class="catalogue-featured" data-catalogue-featured aria-labelledby="catalogue-featured-title">
+              <div class="catalogue-section-heading">
+                <p class="eyebrow">Избор уредништва</p>
+                <h2 id="catalogue-featured-title">{copy.featuredHeading}</h2>
+              </div>
+              <ul class="catalogue-featured__grid">
+                {featuredPlaces.map((place) => (
+                  <li
+                    data-catalogue-featured-item
+                    data-place-area={place.browseAreaId ?? ""}
+                    data-place-search={place.catalogueSearchText}
+                  >
+                    <PlaceCard place={place} variant="featured" />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          <section class="catalogue-main" data-catalogue-main aria-labelledby="catalogue-main-title">
+            <div class="catalogue-section-heading">
+              <p class="eyebrow">Каталог</p>
+              <h2 id="catalogue-main-title">{copy.allHeading}</h2>
+              {isMonasteryCatalogue && (
+                <p class="catalogue-main__status" data-catalogue-result-status role="status" aria-live="polite">
+                  {copy.statusPrefix} {places.length} {copy.statusNoun}
+                </p>
+              )}
+            </div>
+            <ul class="catalogue-grid editorial-catalogue" aria-label={catalogueLabel} data-catalogue-grid>
+              {cataloguePlaces.map((place, index) => (
+                <li
+                  data-catalogue-item
+                  data-place-area={place.browseAreaId ?? ""}
+                  data-place-search={place.catalogueSearchText}
+                  hidden={index >= PLACES_PER_PAGE}
+                >
+                  <PlaceCard place={place} variant="catalogue" />
+                </li>
+              ))}
+            </ul>
+            <ExplorerPagination totalPlaces={cataloguePlaces.length} />
+          </section>
+
+          <section class="catalogue-filter-empty" data-catalogue-filter-empty hidden role="status" aria-live="polite">
+            <h2>Нема резултата за изабране филтере.</h2>
+            <button type="button" data-catalogue-reset>Очисти филтере</button>
+          </section>
+        </div>
+      )}
     </div>
   </section>
 </div>
@@ -198,7 +184,6 @@ const countAwareDescription = `Истражите ${places.length} ${copy.countF
     const status = pagination?.querySelector<HTMLElement>("[data-pagination-status]");
     const statusNoun = catalogue.dataset.catalogueStatusNoun ?? "резултата";
     const statusPrefix = catalogue.dataset.catalogueStatusPrefix ?? "Пронађено";
-    const mergeFeatured = catalogue.dataset.catalogueMergeFeatured === "true";
     let matchedItems = [...items];
     let currentPage = 1;
 
@@ -238,7 +223,7 @@ const countAwareDescription = `Истражите ${places.length} ${copy.countF
       matchedItems = items.filter((item) => matchesFilters(item, query, areaId));
       featuredItems.forEach((item) => { item.hidden = !matchedFeaturedItems.includes(item); });
       if (featuredSection) featuredSection.hidden = matchedFeaturedItems.length === 0;
-      if (mainSection) mainSection.hidden = matchedItems.length === 0 && (!mergeFeatured || matchedFeaturedItems.length === 0);
+      if (mainSection) mainSection.hidden = matchedItems.length === 0;
       const matchedTotal = matchedFeaturedItems.length + matchedItems.length;
       if (emptyState) emptyState.hidden = matchedTotal !== 0;
       const hasFilters = Boolean(query.trim() || areaId);

@@ -2164,21 +2164,6 @@
     margin-top: 0.8rem;
   }
 
-  .category-page-hero__layout {
-    display: grid;
-    gap: 1.25rem;
-  }
-
-  .category-page-hero--catalogue .catalogue-toolbar {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .category-page-hero--catalogue .catalogue-toolbar__actions {
-    grid-column: auto;
-    grid-row: auto;
-    justify-content: flex-start;
-  }
-
   .page-hero h1 {
     margin-top: 0.5rem;
   }
@@ -2290,11 +2275,30 @@
     font-size: 0.88rem;
   }
 
-  .catalogue-main__featured {
-    margin-bottom: 1rem;
+  .category-catalogue__body--monasteries {
+    display: grid;
+    gap: 1rem;
   }
 
-  .category-page-hero--catalogue + .category-catalogue .catalogue-main {
+  .category-catalogue__body--monasteries .catalogue-main {
+    margin-top: 0;
+  }
+
+  .catalogue-sidebar {
+    min-width: 0;
+  }
+
+  .catalogue-sidebar .catalogue-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .catalogue-sidebar .catalogue-toolbar__actions {
+    grid-column: auto;
+    grid-row: auto;
+    justify-content: flex-start;
+  }
+
+  .category-catalogue__body--monasteries .catalogue-filter-empty {
     margin-top: 0;
   }
 
@@ -4313,14 +4317,28 @@
       padding-block: 2.75rem;
     }
 
-    .category-page-hero--catalogue {
-      padding-block: 2rem;
+    .category-catalogue__body--monasteries {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) clamp(18rem, 25vw, 22rem);
+      grid-template-areas:
+        "main sidebar"
+        "empty sidebar";
+      align-items: start;
+      gap: 1.5rem;
     }
 
-    .category-page-hero__layout {
-      grid-template-columns: minmax(0, 1fr) clamp(22.5rem, 31vw, 27.5rem);
-      align-items: center;
-      gap: clamp(2.5rem, 5vw, 6rem);
+    .category-catalogue__body--monasteries .catalogue-main {
+      grid-area: main;
+    }
+
+    .category-catalogue__body--monasteries .catalogue-filter-empty {
+      grid-area: empty;
+    }
+
+    .catalogue-sidebar {
+      position: sticky;
+      top: 6.25rem;
+      grid-area: sidebar;
     }
 
     .editorial-place-card--featured {
