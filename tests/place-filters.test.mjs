@@ -164,7 +164,8 @@ test("the explorer keeps one shared filter state across cards, controls, and map
   assert.match(explorer, /new CustomEvent\("svetinje:filter-change"/);
   assert.match(explorer, /new CustomEvent\("svetinje:place-visibility-change"/);
   assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
-  assert.match(explorer, /const mapOnlyPlaceIds = places\.filter\(\(place\) => !discoveryPlaceIds\.has\(place\.id\)\)/);
+  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} \/>/);
+  assert.doesNotMatch(explorer, /discoveryPlaceIds|mapOnlyPlaceIds|data-map-only-place-ids/);
   assert.match(explorer, /const initialPlaces = discoveryPlaces\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);
   assert.match(explorer, /const inventoryPlaces = discoveryPlaces\.slice\(HOMEPAGE_PREVIEW_LIMIT\)/);
   assert.match(explorer, /<ExplorerSidebar places=\{initialPlaces\} totalPlaces=\{discoveryPlaces\.length\} \/>/);
@@ -174,7 +175,7 @@ test("the explorer keeps one shared filter state across cards, controls, and map
   assert.match(explorer, /previewCards\.forEach/);
   assert.match(explorer, /if \(resetSelection\)[\s\S]*?currentPage = 1/);
   assert.match(explorer, /applyExplorerState\(true\)/);
-  assert.match(explorer, /const visibleIds = \[[\s\S]*?matchedCards\.map[\s\S]*?\.\.\.mapOnlyPlaceIds/);
+  assert.match(explorer, /const visibleIds = matchedCards\.map\(\(card\) => card\.dataset\.placeCard \?\? ""\)/);
   assert.match(explorer, /paginationPrev\?\.addEventListener\("click"/);
   assert.match(explorer, /paginationNext\?\.addEventListener\("click"/);
   assert.doesNotMatch(explorer, /pageForHomepagePreviewPlace\(matchedCards|selectedPlaceId/);

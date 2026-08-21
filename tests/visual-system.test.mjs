@@ -117,7 +117,7 @@ test("the homepage is composed from reusable map-explorer components", async () 
     source("src/components/RecommendedPlaces.astro"),
     source("src/components/PopularRoutes.astro"),
   ]);
-  assert.match(explorer, /<MapCanvas places=\{places\} \/>/);
+  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} \/>/);
   assert.match(explorer, /<MapControls \/>/);
   assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
   assert.match(explorer, /const initialPlaces = discoveryPlaces\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);
@@ -179,6 +179,7 @@ test("the dedicated map route reuses the shared map without homepage-only UI", a
   ]);
 
   assert.match(page, /loadVisiblePlaces/);
+  assert.match(page, /selectPublicDiscoveryPlaces\(await loadVisiblePlaces\(\)\)/);
   assert.match(page, /<DedicatedMap places=\{places\} \/>/);
   assert.match(page, /canonicalPath="\/mapa\/"/);
   assert.doesNotMatch(page, /MapExplorer|ExplorerSidebar|RecommendedPlaces|PopularRoutes|PlaceAreas/);

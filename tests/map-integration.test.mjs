@@ -7,6 +7,7 @@ import { loadVisiblePlaces } from "../src/lib/content/publication.ts";
 import { categoryForPlaceType } from "../src/lib/place-filters.ts";
 import { MARKER_ASSETS, resolveMarkerAsset } from "../src/lib/map-marker-assets.ts";
 import { clusterProjectedMarkers, getClusterExpansionZoom } from "../src/lib/map-marker-clustering.ts";
+import { selectPublicDiscoveryPlaces } from "../src/lib/public-place-discovery.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -157,6 +158,34 @@ test("the map accepts only server-selected marker data and adds no route geometr
   assert.match(mapSource, /link\.setAttribute\("aria-label", `\$\{place\.name\} — отвори страницу`\)/);
   assert.doesNotMatch(mapSource, /addSource\s*\(|addLayer\s*\(|FeatureCollection|LineString|routeCoordinates/i);
   assert.doesNotMatch(mapSource, /42\.29799|18\.84452|Манастир Подмаине/iu);
+});
+
+test("public map marker and cluster inventory excludes coordinate-bearing holy places", () => {
+  const visiblePlaces = [
+    { id: "monastery", placeType: "monastery", longitude: 19.1, latitude: 42.1 },
+    { id: "church", placeType: "church", longitude: 19.1002, latitude: 42.1002 },
+    { id: "holy-spring", placeType: "holy-spring", longitude: 19.1001, latitude: 42.1001 },
+  ];
+  const mapPlaces = selectPublicDiscoveryPlaces(visiblePlaces);
+  const projectedMarkers = mapPlaces.map((place, index) => ({ item: place, x: 100 + index, y: 100 + index }));
+  const clusters = clusterProjectedMarkers(projectedMarkers, 52);
+
+  assert.deepEqual(mapPlaces.map(({ id }) => id), ["monastery", "church"]);
+  assert.equal(clusters.length, 1);
+  assert.equal(clusters[0]?.length, 2);
+  assert.deepEqual(clusters[0]?.map(({ item }) => item.id), ["monastery", "church"]);
+});
+
+test("homepage and dedicated map use the shared public-discovery inventory", async () => {
+  const [explorer, mapPage] = await Promise.all([
+    source("src/components/MapExplorer.astro"),
+    source("src/pages/mapa/index.astro"),
+  ]);
+
+  assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
+  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} \/>/);
+  assert.doesNotMatch(explorer, /mapOnlyPlaceIds|data-map-only-place-ids/);
+  assert.match(mapPage, /selectPublicDiscoveryPlaces\(await loadVisiblePlaces\(\)\)/);
 });
 
 test("nearby visible places cluster with an accurate count and separate after zoom-in", () => {
