@@ -208,8 +208,7 @@ Execution:
 - prefer the smallest possible patch;
 - do not perform a broad architecture review;
 - do not refactor unrelated code;
-- visually verify one representative desktop viewport and one mobile viewport;
-- add intermediate viewport checks only if a responsive issue is found;
+- use browser verification only when the task requires browser-only evidence under the Browser verification policy;
 - run focused tests if an existing test directly covers the changed behavior;
 - run `pnpm run check` once after the final patch when source code or tests changed;
 - do not run production and editorial-preview builds unless the change affects routing, publication behavior, output generation, or a build-sensitive shared component.
@@ -239,8 +238,7 @@ Execution:
 - run `pnpm run check` once after the final patch;
 - run only the build mode required by the change;
 - if the task adds or changes a static route, shared publication-aware loader usage, or output expectations, run both production and editorial-preview builds;
-- visually verify one desktop and one mobile viewport;
-- use an intermediate viewport only when the layout is breakpoint-sensitive;
+- use browser verification only when the task requires browser-only evidence under the Browser verification policy;
 - do not repeatedly rerun the full validation suite unless a failure requires another fix.
 
 Typical target duration:
@@ -273,7 +271,7 @@ Execution:
 - run `EDITORIAL_PREVIEW=true pnpm run build`;
 - verify production research leaks remain zero;
 - verify editorial preview remains `noindex`;
-- perform responsive/browser verification when UI is affected.
+- use browser verification when the task requires browser-only evidence under the Browser verification policy.
 
 Typical target duration:
 
@@ -317,7 +315,7 @@ For all tiers:
 - prefer the smallest correct patch;
 - do not clean up unrelated code during a focused task;
 - do not add tests for every content record; test behavior and architecture;
-- do not perform browser checks at many viewport sizes unless the task specifically concerns responsive behavior;
+- do not use browser checks by default; use them only when the Browser verification policy requires browser-only evidence;
 - do not turn a focused task into a general refactor.
 
 If implementation reveals an unexpected issue that would substantially expand scope, stop and report:
@@ -338,9 +336,36 @@ Prefer:
 focused implementation checks
 → final `pnpm run check` if required by the tier
 → required build(s)
-→ visual verification if required
+→ browser verification only when required by the task
 
 Do not repeatedly cycle through the entire validation stack after every small edit.
+
+## Browser verification policy
+
+Browser or Chrome verification is optional and task-driven, not a default completion requirement for UI or Map work.
+
+The normal required verification stack is:
+
+- focused tests;
+- `pnpm run check` and Astro diagnostics when required by the task tier;
+- relevant production build and output verification;
+- editorial-preview build and output verification when public or editorial output is affected;
+- repository or content validation appropriate to the changed scope.
+
+The user performs final visual, responsive, mobile-touch, and real-device QA manually on Preview.
+
+Use browser verification only when it is necessary to establish browser-only evidence, including:
+
+- reproducing a specific visual or layout bug that static checks cannot verify reliably;
+- a browser-only runtime error;
+- a MapLibre or rendering issue;
+- event, focus, or accessibility behavior requiring real DOM interaction;
+- an explicitly requested screenshot or visual comparison;
+- a task that explicitly requires browser verification.
+
+If Chrome or browser tooling is unavailable, including a trusted-RPC dependency failure, do not treat that as a blocker for commit, branch push, or Release Review integration when all required non-browser checks pass and the task does not require browser-only evidence. Do not repeatedly repair the tooling, switch browsers, or emulate Chrome for such a task. Report: `Browser verification not required; final visual QA is performed manually by the user.`
+
+Future task prompts should normally state: `Browser verification: not required. User performs final visual/responsive/touch QA manually on Preview.` When browser evidence is required, state: `Browser verification: required for <specific reason>.`
 
 ## Time escalation rule
 
@@ -495,6 +520,8 @@ Review:
 - map behavior;
 - generated output;
 - release readiness.
+
+Release Review must not treat the absence of browser verification as an automatic blocker. Green tests, builds, and output verification are sufficient for technical integration unless browser verification is an explicit task contract or the change cannot be safely assessed without a browser runtime check.
 
 This is the preferred chat for reviewing completed UI A, Map B, Calendar C, and Bulk Content branches before integration. It may compare branch diffs and identify conflicting shared files, incompatible assumptions, schema conflicts, regressions, publication leaks, and duplicate implementations.
 
