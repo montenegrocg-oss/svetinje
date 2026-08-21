@@ -5,12 +5,14 @@ place_type:
   value: church
   verification:
     status: requires-verification
-relationships: {}
+relationships:
+  media_ids:
+    - photo-crkva-svete-nedjelje-c647a4247a96
 approvals: []
 audit:
   created_at: 2026-08-21T13:31:33.584Z
   created_by: montenegro-cg
-  updated_at: 2026-08-21T13:37:20Z
+  updated_at: 2026-08-21T13:38:31Z
   updated_by: montenegro-cg
 browse_area_id: boka-kotorska
 ecclesiastical:
