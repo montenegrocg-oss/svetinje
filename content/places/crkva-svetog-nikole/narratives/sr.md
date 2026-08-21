@@ -5,12 +5,12 @@ locale: sr
 editorial_status: research
 translation_status: source
 slug: crkva-svetog-nikole
-preferred_name: Црква светог Николе
+preferred_name: Црква Светог Николе
 approvals: []
 audit:
   created_at: 2026-08-18T11:34:30.249Z
   created_by: montenegro-cg
-  updated_at: 2026-08-18T11:35:42Z
+  updated_at: 2026-08-21T09:14:39Z
   updated_by: montenegro-cg
 summary: Црква Светог Николе налази се у Старом граду Котору и једна је од најзначајнијих православних цркава Боке. Данашња црква подигнута је од 1902. до 1909. године на мјесту старије цркве страдале у пожару.
 ---
