@@ -2175,6 +2175,21 @@
     margin-top: 0.8rem;
   }
 
+  .category-page-hero__layout {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .category-page-hero--catalogue .catalogue-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .category-page-hero--catalogue .catalogue-toolbar__actions {
+    grid-column: auto;
+    grid-row: auto;
+    justify-content: flex-start;
+  }
+
   .page-hero h1 {
     margin-top: 0.5rem;
   }
@@ -2245,6 +2260,10 @@
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    background: transparent;
     text-decoration: none;
   }
 
@@ -2274,6 +2293,16 @@
   .catalogue-section-heading h2 {
     margin-top: 0.35rem;
     font-size: clamp(1.6rem, 3vw, 2.25rem);
+  }
+
+  .catalogue-main__status {
+    margin-top: 0.4rem;
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+  }
+
+  .category-page-hero--catalogue + .category-catalogue .catalogue-main {
+    margin-top: 0;
   }
 
   .catalogue-featured__grid {
@@ -4288,6 +4317,16 @@
   @media (min-width: 68rem) {
     .category-page-hero {
       padding-block: 2.75rem;
+    }
+
+    .category-page-hero--catalogue {
+      padding-block: 2rem;
+    }
+
+    .category-page-hero__layout {
+      grid-template-columns: minmax(0, 1fr) clamp(22.5rem, 31vw, 27.5rem);
+      align-items: center;
+      gap: clamp(2.5rem, 5vw, 6rem);
     }
 
     .editorial-place-card--featured {

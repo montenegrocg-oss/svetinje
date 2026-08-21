@@ -246,11 +246,12 @@ test("mobile map and panel filters expose distinct responsive sets with one shar
 });
 
 test("filtering has accessible preview feedback and catalogue pagination remains reusable", async () => {
-  const [explorer, sidebar, homepagePagination, catalogue, pagination, styles] = await Promise.all([
+  const [explorer, sidebar, homepagePagination, catalogue, toolbar, pagination, styles] = await Promise.all([
     source("src/components/MapExplorer.astro"),
     source("src/components/ExplorerSidebar.astro"),
     source("src/components/HomepagePagination.astro"),
     source("src/components/CategoryCatalogue.astro"),
+    source("src/components/CatalogueToolbar.astro"),
     source("src/components/ExplorerPagination.astro"),
     source("src/styles/global.css"),
   ]);
@@ -270,13 +271,15 @@ test("filtering has accessible preview feedback and catalogue pagination remains
   assert.match(homepagePagination, /aria-label=\{`Странице прегледа светиња — \$\{positionLabel\} навигација`\}/);
   assert.match(homepagePagination, /aria-label="Претходна страница"/);
   assert.match(homepagePagination, /aria-label="Сљедећа страница"/);
-  assert.match(catalogue, /data-catalogue-search/);
-  assert.match(catalogue, /data-catalogue-area/);
+  assert.match(toolbar, /data-catalogue-search/);
+  assert.match(toolbar, /data-catalogue-area/);
+  assert.match(toolbar, /data-catalogue-reset hidden disabled/);
   assert.match(catalogue, /data-catalogue-result-status role="status" aria-live="polite"/);
   assert.match(catalogue, /data-catalogue-featured-item/);
   assert.match(catalogue, /<ExplorerPagination totalPlaces=\{cataloguePlaces\.length\} \/>/);
   assert.match(catalogue, /matchedItems = items\.filter/);
   assert.match(catalogue, /currentPage = 1;[\s\S]*?renderPage\(1\)/);
+  assert.match(catalogue, /button\.hidden = !hasFilters/);
   assert.match(catalogue, /pagination\.hidden = totalPages <= 1/);
   assert.match(catalogue, /renderPage\(currentPage - 1\)/);
   assert.match(catalogue, /renderPage\(currentPage \+ 1\)/);
