@@ -111,9 +111,10 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.doesNotMatch(homepage, /PopularRoutes/);
   assert.doesNotMatch(homepage, /HomepagePreviews/);
 
-  const [explorer, sidebar, recommended, routes] = await Promise.all([
+  const [explorer, sidebar, homepagePagination, recommended, routes] = await Promise.all([
     source("src/components/MapExplorer.astro"),
     source("src/components/ExplorerSidebar.astro"),
+    source("src/components/HomepagePagination.astro"),
     source("src/components/RecommendedPlaces.astro"),
     source("src/components/PopularRoutes.astro"),
   ]);
@@ -134,10 +135,11 @@ test("the homepage is composed from reusable map-explorer components", async () 
     "homepage preview, recommendations, Today, and routes must retain their editorial order",
   );
   assert.doesNotMatch(explorer, /ExplorerContinuation|ExplorerPagination|data-continuation|data-explorer-pagination/);
-  assert.match(sidebar, /data-homepage-pagination/);
-  assert.match(sidebar, /data-homepage-pagination-prev/);
-  assert.match(sidebar, /data-homepage-pagination-next/);
-  assert.match(sidebar, /data-homepage-pagination-status/);
+  assert.equal([...sidebar.matchAll(/<HomepagePagination totalPages=\{totalPages\} position="(top|bottom)" \/>/g)].length, 2);
+  assert.match(homepagePagination, /data-homepage-pagination/);
+  assert.match(homepagePagination, /data-homepage-pagination-prev/);
+  assert.match(homepagePagination, /data-homepage-pagination-next/);
+  assert.match(homepagePagination, /data-homepage-pagination-status/);
   assert.doesNotMatch(sidebar, /data-explorer-catalogue-link/);
   assert.match(explorer, /data-testid="map-explorer"/);
   assert.match(recommended, /Најпосјећеније светиње/);
@@ -200,15 +202,16 @@ test("the homepage grid keeps the sidebar below its heading and aligned with sec
   const desktopStyles = styles.slice(desktopStart);
 
   assert.ok(desktopStart > -1, "the explorer grid must start at the desktop breakpoint");
-  assert.match(styles, /\.map-explorer\s*\{[\s\S]*?--map-stage-height: 24rem;[\s\S]*?--explorer-content-block-padding: 1rem;/);
+  assert.match(styles, /\.map-explorer\s*\{[\s\S]*?--map-stage-height: 24rem;[\s\S]*?grid-template-columns: 1rem minmax\(0, 1fr\) 1rem;/);
   assert.match(styles, /\.map-stage\s*\{[\s\S]*?height: var\(--map-stage-height\);/);
   assert.match(desktopStyles, /--map-stage-height: 39\.5rem;/);
-  assert.match(desktopStyles, /\.map-explorer\s*\{[\s\S]*?display: grid;[\s\S]*?grid-template-rows: auto 1\.125rem minmax\(0, 1fr\) auto;/);
-  assert.match(desktopStyles, /\.map-stage\s*\{[\s\S]*?grid-row: 1 \/ 4;/);
-  assert.match(desktopStyles, /\.map-explorer__heading\s*\{[\s\S]*?grid-row: 1;[\s\S]*?margin-top: 1rem;/);
-  assert.match(desktopStyles, /\.map-explorer__content\s*\{[\s\S]*?display: contents;/);
-  assert.match(desktopStyles, /\.explorer-sidebar\s*\{[\s\S]*?grid-row: 3 \/ 5;/);
-  assert.match(desktopStyles, /\.map-explorer__secondary\s*\{[\s\S]*?grid-row: 4;[\s\S]*?padding-top: var\(--explorer-content-block-padding\);/);
+  assert.match(desktopStyles, /\.map-explorer\s*\{[\s\S]*?display: grid;[\s\S]*?grid-template-rows: var\(--map-stage-height\) auto;/);
+  assert.match(desktopStyles, /\.map-stage\s*\{[\s\S]*?grid-row: 1;/);
+  assert.match(desktopStyles, /\.map-explorer__primary\s*\{[\s\S]*?grid-row: 1 \/ 3;[\s\S]*?grid-template-rows: auto 1\.125rem minmax\(0, 1fr\);[\s\S]*?padding-top: 1rem;/);
+  assert.match(desktopStyles, /\.map-explorer__heading\s*\{[\s\S]*?grid-row: 1;/);
+  assert.match(desktopStyles, /\.explorer-sidebar\s*\{[\s\S]*?grid-row: 3;[\s\S]*?margin-top: 0;/);
+  assert.match(desktopStyles, /\.map-explorer__secondary\s*\{[\s\S]*?grid-row: 2;[\s\S]*?padding-top: 0\.75rem;/);
+  assert.match(styles, /\.explorer-sidebar\s*\{[\s\S]*?grid-row: 3;[\s\S]*?margin-top: 0\.75rem;/);
   assert.match(desktopStyles, /\.map-attribution\s*\{[\s\S]*?left: calc\(var\(--explorer-panel-left\) \+ var\(--explorer-panel-width\) \+ 1rem\);/);
   assert.match(desktopStyles, /\.map-actions\s*\{[\s\S]*?left: calc\(var\(--explorer-panel-left\) \+ var\(--explorer-panel-width\) \+ 1rem\);/);
   assert.match(desktopStyles, /--explorer-panel-left: max\([\s\S]*?clamp\(1\.5rem, 2\.25vw, 2rem\),[\s\S]*?calc\(\(100vw - 104rem\) \/ 2\)[\s\S]*?\);/);
