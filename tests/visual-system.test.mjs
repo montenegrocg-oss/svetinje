@@ -280,6 +280,12 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.match(styles, /\.category-catalogue__body--monasteries\s*\{[\s\S]*?display: grid;[\s\S]*?gap: 1rem;/);
   assert.match(styles, /@media \(min-width: 68rem\)[\s\S]*?\.category-catalogue__body--monasteries\s*\{[\s\S]*?grid-template-columns: minmax\(0, 1fr\) clamp\(18rem, 25vw, 22rem\);/);
   assert.match(styles, /\.catalogue-sidebar\s*\{[\s\S]*?position: sticky;[\s\S]*?top: 6\.25rem;/);
+  assert.match(styles, /\.catalogue-sidebar \.catalogue-toolbar\s*\{[\s\S]*?display: flex;[\s\S]*?flex-direction: column;[\s\S]*?align-items: stretch;/);
+  assert.match(styles, /\.catalogue-sidebar \.catalogue-toolbar__search,[\s\S]*?\.catalogue-sidebar \.catalogue-toolbar__area,[\s\S]*?\.catalogue-sidebar \.catalogue-toolbar__actions\s*\{[\s\S]*?width: 100%;/);
+  assert.match(styles, /\.catalogue-sidebar \.catalogue-toolbar__actions\s*\{[\s\S]*?flex-direction: column;[\s\S]*?align-items: stretch;/);
+  assert.match(styles, /\.catalogue-sidebar \.catalogue-toolbar__actions a,[\s\S]*?\.catalogue-sidebar \.catalogue-toolbar__actions button\s*\{[\s\S]*?width: 100%;[\s\S]*?justify-content: flex-start;/);
+  assert.doesNotMatch(styles, /\.catalogue-sidebar \.catalogue-toolbar\s*\{[^}]*grid-template-columns:/);
+  assert.match(styles, /@media \(min-width: 48rem\)[\s\S]*?\.catalogue-toolbar\s*\{[\s\S]*?grid-template-columns: minmax\(16rem, 1\.35fr\) minmax\(12rem, 0\.8fr\);/);
   assert.match(outputVerifier, /const useFeaturedTier = category !== "monasteries"/);
   assert.match(outputVerifier, /verifyCataloguePagination\(page, members, `\$\{category\} catalogue`, failures, useFeaturedTier\)/);
   assert.match(pagination, /data-catalogue-pagination/);

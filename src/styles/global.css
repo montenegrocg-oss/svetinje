@@ -2289,13 +2289,28 @@
   }
 
   .catalogue-sidebar .catalogue-toolbar {
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .catalogue-sidebar .catalogue-toolbar__search,
+  .catalogue-sidebar .catalogue-toolbar__area,
+  .catalogue-sidebar .catalogue-toolbar__actions {
+    width: 100%;
   }
 
   .catalogue-sidebar .catalogue-toolbar__actions {
-    grid-column: auto;
-    grid-row: auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .catalogue-sidebar .catalogue-toolbar__actions a,
+  .catalogue-sidebar .catalogue-toolbar__actions button {
+    width: 100%;
     justify-content: flex-start;
+    text-align: left;
   }
 
   .category-catalogue__body--monasteries .catalogue-filter-empty {
