@@ -146,10 +146,11 @@ test("catalogue search uses narrow fields and token-prefix matching", () => {
   assert.equal(matchesCatalogueSearch(catalogueSearchText, "ман будва"), false);
 });
 
-test("the explorer keeps one shared filter state across cards, controls, and map markers", async () => {
-  const [explorer, sidebar, card, mapCanvas, filters, controls] = await Promise.all([
+test("the explorer keeps one shared filter and pagination state across cards, controls, and map markers", async () => {
+  const [explorer, sidebar, homepagePagination, card, mapCanvas, filters, controls] = await Promise.all([
     source("src/components/MapExplorer.astro"),
     source("src/components/ExplorerSidebar.astro"),
+    source("src/components/HomepagePagination.astro"),
     source("src/components/PlaceCard.astro"),
     source("src/components/MapCanvas.astro"),
     source("src/components/FilterChips.astro"),
@@ -176,13 +177,16 @@ test("the explorer keeps one shared filter state across cards, controls, and map
   assert.match(explorer, /if \(resetSelection\)[\s\S]*?currentPage = 1/);
   assert.match(explorer, /applyExplorerState\(true\)/);
   assert.match(explorer, /const visibleIds = matchedCards\.map\(\(card\) => card\.dataset\.placeCard \?\? ""\)/);
-  assert.match(explorer, /paginationPrev\?\.addEventListener\("click"/);
-  assert.match(explorer, /paginationNext\?\.addEventListener\("click"/);
+  assert.match(explorer, /const paginations = \[\.\.\.\(explorerRoot\?\.querySelectorAll<HTMLElement>\("\[data-homepage-pagination\]"\)/);
+  assert.match(explorer, /paginations\.forEach\(\(pagination\) => \{[\s\S]*?previousButton\.disabled = page <= 1;[\s\S]*?nextButton\.disabled = page >= totalPages;[\s\S]*?status\.textContent = `\$\{page\} \/ \$\{totalPages\}`/);
+  assert.match(explorer, /paginations\.forEach\(\(pagination\) => \{[\s\S]*?data-homepage-pagination-prev[\s\S]*?currentPage -= 1;[\s\S]*?data-homepage-pagination-next[\s\S]*?currentPage \+= 1/);
   assert.doesNotMatch(explorer, /pageForHomepagePreviewPlace\(matchedCards|selectedPlaceId/);
-  assert.match(sidebar, /data-homepage-pagination/);
-  assert.match(sidebar, /data-homepage-pagination-prev/);
-  assert.match(sidebar, /data-homepage-pagination-status/);
-  assert.match(sidebar, /data-homepage-pagination-next/);
+  assert.equal([...sidebar.matchAll(/<HomepagePagination totalPages=\{totalPages\} position="(top|bottom)" \/>/g)].length, 2);
+  assert.match(sidebar, /position="top"[\s\S]*?explorer-results[\s\S]*?position="bottom"/);
+  assert.match(homepagePagination, /data-homepage-pagination-position=\{position\}/);
+  assert.match(homepagePagination, /data-homepage-pagination-prev/);
+  assert.match(homepagePagination, /data-homepage-pagination-status/);
+  assert.match(homepagePagination, /data-homepage-pagination-next/);
   assert.doesNotMatch(sidebar, /data-explorer-catalogue-link/);
   assert.doesNotMatch(sidebar, /Све светиње —/);
   assert.doesNotMatch(explorer, /innerHTML/);
@@ -243,9 +247,10 @@ test("mobile map and panel filters expose distinct responsive sets with one shar
 });
 
 test("filtering has accessible preview feedback and catalogue pagination remains reusable", async () => {
-  const [explorer, sidebar, catalogue, pagination, styles] = await Promise.all([
+  const [explorer, sidebar, homepagePagination, catalogue, pagination, styles] = await Promise.all([
     source("src/components/MapExplorer.astro"),
     source("src/components/ExplorerSidebar.astro"),
+    source("src/components/HomepagePagination.astro"),
     source("src/components/CategoryCatalogue.astro"),
     source("src/components/ExplorerPagination.astro"),
     source("src/styles/global.css"),
@@ -263,9 +268,9 @@ test("filtering has accessible preview feedback and catalogue pagination remains
   assert.doesNotMatch(explorer, /svetinje:place-select|svetinje:place-selection-cleared/);
   assert.match(styles, /\.explorer-no-results\s*\{/);
   assert.match(styles, /\.map-explorer__content\s*\{[\s\S]*?align-items: start/);
-  assert.match(sidebar, /aria-label="Странице прегледа светиња"/);
-  assert.match(sidebar, /aria-label="Претходна страница"/);
-  assert.match(sidebar, /aria-label="Сљедећа страница"/);
+  assert.match(homepagePagination, /aria-label=\{`Странице прегледа светиња — \$\{positionLabel\} навигација`\}/);
+  assert.match(homepagePagination, /aria-label="Претходна страница"/);
+  assert.match(homepagePagination, /aria-label="Сљедећа страница"/);
   assert.match(catalogue, /data-catalogue-search/);
   assert.match(catalogue, /data-catalogue-area/);
   assert.match(catalogue, /data-catalogue-result-status role="status" aria-live="polite"/);
