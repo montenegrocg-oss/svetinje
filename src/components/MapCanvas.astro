@@ -247,6 +247,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     }
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const mobileTouch = window.matchMedia("(max-width: 47.999rem) and (pointer: coarse)").matches;
     try {
       map = new maplibregl.Map({
         container: mapContainer,
@@ -254,7 +255,9 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
         center: [19.25, 42.7],
         zoom: 6,
         attributionControl: false,
-        cooperativeGestures: true,
+        cooperativeGestures: !mobileTouch,
+        dragPan: true,
+        touchZoomRotate: true,
         dragRotate: false,
         pitchWithRotate: false,
         fadeDuration: reducedMotion.matches ? 0 : 300,

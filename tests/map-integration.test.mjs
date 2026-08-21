@@ -96,10 +96,20 @@ test("custom controls use the requested responsive Montenegro view without geolo
   assert.match(mapCanvas, /map\.zoomOut/);
   assert.match(mapCanvas, /resetButton\?\.addEventListener\("click", resetView\)/);
   assert.match(mapCanvas, /prefers-reduced-motion: reduce/);
-  assert.match(mapCanvas, /cooperativeGestures: true/);
   assert.match(mapCanvas, /dragRotate: false/);
   assert.match(mapCanvas, /pitchWithRotate: false/);
   assert.doesNotMatch(mapCanvas, /navigator\.geolocation|GeolocateControl|flyTo\s*\(/);
+});
+
+test("mobile coarse-pointer maps pan with one finger while desktop keeps cooperative gestures", async () => {
+  const mapCanvas = await source("src/components/MapCanvas.astro");
+
+  assert.match(mapCanvas, /const mobileTouch = window\.matchMedia\("\(max-width: 47\.999rem\) and \(pointer: coarse\)"\)\.matches/);
+  assert.match(mapCanvas, /cooperativeGestures: !mobileTouch/);
+  assert.match(mapCanvas, /dragPan: true/);
+  assert.match(mapCanvas, /touchZoomRotate: true/);
+  assert.match(mapCanvas, /map\.touchZoomRotate\.disableRotation\(\)/);
+  assert.doesNotMatch(mapCanvas, /addEventListener\("touch(?:start|move|end)"/);
 });
 
 test("the renderer becomes ready only after MapLibre loads and has a bounded fallback", async () => {
