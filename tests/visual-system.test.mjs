@@ -232,7 +232,7 @@ test("the map loading surface is neutral and cannot reveal the decorative fallba
 });
 
 test("public catalogue pages share discovery policy, category mapping, filters, and pagination", async () => {
-  const [catalogue, toolbar, card, pagination, paginationModel, featuredModel, areas, monasteries, churches, general, filters, discovery, detailHero] = await Promise.all([
+  const [catalogue, toolbar, card, pagination, paginationModel, featuredModel, areas, monasteries, churches, general, filters, discovery, detailHero, styles, outputVerifier] = await Promise.all([
     source("src/components/CategoryCatalogue.astro"),
     source("src/components/CatalogueToolbar.astro"),
     source("src/components/PlaceCard.astro"),
@@ -246,6 +246,8 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
     source("src/lib/place-filters.ts"),
     source("src/lib/public-place-discovery.ts"),
     source("src/components/place-detail/PlaceDetailHero.astro"),
+    source("src/styles/global.css"),
+    source("scripts/verify-production-output.mjs"),
   ]);
 
   assert.match(catalogue, /categoryForPlaceType\(place\.placeType\) === category/);
@@ -253,12 +255,12 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.match(catalogue, /selectPublicDiscoveryPlaces\(await loadVisiblePlaces\(\)\)/);
   assert.match(catalogue, /PLACE_AREAS\.filter/);
   assert.match(catalogue, /selectFeaturedCataloguePlaces\(places\)/);
-  assert.match(catalogue, /const featuredPlaces = selectFeaturedCataloguePlaces\(places\)/);
+  assert.match(catalogue, /const featuredPlaces = isMonasteryCatalogue \? \[\] : selectFeaturedCataloguePlaces\(places\)/);
   assert.match(catalogue, /!isMonasteryCatalogue && featuredPlaces\.length > 0/);
-  assert.match(catalogue, /isMonasteryCatalogue && featuredPlaces\.length > 0/);
-  assert.match(catalogue, /class="catalogue-featured__grid catalogue-main__featured"/);
-  assert.match(catalogue, /category-page-hero--catalogue/);
-  assert.match(catalogue, /<CatalogueToolbar searchPlaceholder=\{copy\.searchPlaceholder\} areas=\{relevantAreas\} \/>/);
+  assert.doesNotMatch(catalogue, /\{isMonasteryCatalogue && featuredPlaces\.length > 0/);
+  assert.doesNotMatch(catalogue, /catalogue-main__featured|category-page-hero--catalogue|category-page-hero__layout/);
+  assert.match(catalogue, /<header class="page-hero compact category-page-hero">[\s\S]*?<div class="shell narrow">/);
+  assert.match(catalogue, /<aside class="catalogue-sidebar"[\s\S]*?<CatalogueToolbar searchPlaceholder=\{copy\.searchPlaceholder\} areas=\{relevantAreas\} \/>[\s\S]*?<section class="catalogue-main"/);
   assert.match(catalogue, /statusPrefix: "Пронађено је"/);
   assert.match(catalogue, /<PlaceCard place=\{place\} variant="featured" \/>/);
   assert.match(catalogue, /<PlaceCard place=\{place\} variant="catalogue" \/>/);
@@ -275,6 +277,11 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.match(catalogue, /resultStatus\.textContent = `\$\{statusPrefix\} \$\{matchedTotal\} \$\{statusNoun\}`/);
   assert.match(catalogue, /currentPage = 1;[\s\S]*?renderPage\(1\)/);
   assert.match(card, /place\.previewImageSrc && variant !== "catalogue"/);
+  assert.match(styles, /\.category-catalogue__body--monasteries\s*\{[\s\S]*?display: grid;[\s\S]*?gap: 1rem;/);
+  assert.match(styles, /@media \(min-width: 68rem\)[\s\S]*?\.category-catalogue__body--monasteries\s*\{[\s\S]*?grid-template-columns: minmax\(0, 1fr\) clamp\(18rem, 25vw, 22rem\);/);
+  assert.match(styles, /\.catalogue-sidebar\s*\{[\s\S]*?position: sticky;[\s\S]*?top: 6\.25rem;/);
+  assert.match(outputVerifier, /const useFeaturedTier = category !== "monasteries"/);
+  assert.match(outputVerifier, /verifyCataloguePagination\(page, members, `\$\{category\} catalogue`, failures, useFeaturedTier\)/);
   assert.match(pagination, /data-catalogue-pagination/);
   assert.match(pagination, /data-pagination-previous/);
   assert.match(pagination, /data-pagination-next/);

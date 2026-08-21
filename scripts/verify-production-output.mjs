@@ -98,9 +98,9 @@ function verifyCards(page, expectedPlaces, allPlaces, label, failures, expectedI
   }
 }
 
-function verifyCataloguePagination(page, expectedPlaces, label, failures) {
+function verifyCataloguePagination(page, expectedPlaces, label, failures, useFeaturedTier = true) {
   if (!page || expectedPlaces.length === 0) return;
-  const featuredPlaces = selectFeaturedCataloguePlaces(expectedPlaces);
+  const featuredPlaces = useFeaturedTier ? selectFeaturedCataloguePlaces(expectedPlaces) : [];
   const featuredIds = new Set(featuredPlaces.map((place) => place.id));
   const paginatedPlaces = expectedPlaces.filter((place) => !featuredIds.has(place.id));
   const featuredItemTags = [...page.html.matchAll(/<li\b(?=[^>]*\bdata-catalogue-featured-item\b)[^>]*>/g)].map((match) => match[0]);
@@ -492,9 +492,12 @@ for (const { route, path: routePath } of model.routeDetailRoutes) {
 for (const [category, route] of Object.entries(CATEGORY_HTML_ROUTES)) {
   const page = pagesByRoute.get(route);
   const members = model.categoryMembership[category];
-  const featuredImageIds = new Set(selectFeaturedCataloguePlaces(members).map((place) => place.id));
+  const useFeaturedTier = category !== "monasteries";
+  const featuredImageIds = new Set(
+    useFeaturedTier ? selectFeaturedCataloguePlaces(members).map((place) => place.id) : [],
+  );
   verifyCards(page, members, model.places, `${category} catalogue`, failures, featuredImageIds);
-  verifyCataloguePagination(page, members, `${category} catalogue`, failures);
+  verifyCataloguePagination(page, members, `${category} catalogue`, failures, useFeaturedTier);
   if (members.length === 0 && !page?.html.includes(EMPTY_STATES[category])) failures.push(`${category} catalogue is missing its protected empty state`);
   if (members.length > 0 && page?.html.includes(EMPTY_STATES[category])) failures.push(`${category} catalogue incorrectly renders its empty state`);
 }
