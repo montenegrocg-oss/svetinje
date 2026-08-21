@@ -232,8 +232,9 @@ test("the map loading surface is neutral and cannot reveal the decorative fallba
 });
 
 test("public catalogue pages share discovery policy, category mapping, filters, and pagination", async () => {
-  const [catalogue, card, pagination, paginationModel, featuredModel, areas, monasteries, churches, general, filters, discovery, detailHero] = await Promise.all([
+  const [catalogue, toolbar, card, pagination, paginationModel, featuredModel, areas, monasteries, churches, general, filters, discovery, detailHero] = await Promise.all([
     source("src/components/CategoryCatalogue.astro"),
+    source("src/components/CatalogueToolbar.astro"),
     source("src/components/PlaceCard.astro"),
     source("src/components/ExplorerPagination.astro"),
     source("src/lib/explorer-pagination.ts"),
@@ -252,18 +253,26 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.match(catalogue, /selectPublicDiscoveryPlaces\(await loadVisiblePlaces\(\)\)/);
   assert.match(catalogue, /PLACE_AREAS\.filter/);
   assert.match(catalogue, /selectFeaturedCataloguePlaces\(places\)/);
+  assert.match(catalogue, /const featuredPlaces = selectFeaturedCataloguePlaces\(places\)/);
+  assert.match(catalogue, /!isMonasteryCatalogue && featuredPlaces\.length > 0/);
+  assert.match(catalogue, /isMonasteryCatalogue && featuredPlaces\.length > 0/);
+  assert.match(catalogue, /class="catalogue-featured__grid catalogue-main__featured"/);
+  assert.match(catalogue, /category-page-hero--catalogue/);
+  assert.match(catalogue, /<CatalogueToolbar searchPlaceholder=\{copy\.searchPlaceholder\} areas=\{relevantAreas\} \/>/);
+  assert.match(catalogue, /statusPrefix: "Пронађено је"/);
   assert.match(catalogue, /<PlaceCard place=\{place\} variant="featured" \/>/);
   assert.match(catalogue, /<PlaceCard place=\{place\} variant="catalogue" \/>/);
   assert.match(catalogue, /data-catalogue-featured-item/);
   assert.match(catalogue, /data-catalogue-item/);
   assert.match(catalogue, /<ExplorerPagination totalPlaces=\{cataloguePlaces\.length\} \/>/);
-  assert.match(catalogue, /data-catalogue-search/);
-  assert.match(catalogue, /data-catalogue-area/);
-  assert.match(catalogue, /href="\/mapa\/"/);
-  assert.match(catalogue, /data-catalogue-reset/);
+  assert.match(toolbar, /data-catalogue-search/);
+  assert.match(toolbar, /data-catalogue-area/);
+  assert.match(toolbar, /href="\/mapa\/"/);
+  assert.match(toolbar, /data-catalogue-reset hidden disabled/);
   assert.match(catalogue, /matchedItems\.forEach\(\(item, index\)/);
   assert.match(catalogue, /item\.hidden = index < pageStart \|\| index >= pageEnd/);
   assert.match(catalogue, /const matchedTotal = matchedFeaturedItems\.length \+ matchedItems\.length/);
+  assert.match(catalogue, /resultStatus\.textContent = `\$\{statusPrefix\} \$\{matchedTotal\} \$\{statusNoun\}`/);
   assert.match(catalogue, /currentPage = 1;[\s\S]*?renderPage\(1\)/);
   assert.match(card, /place\.previewImageSrc && variant !== "catalogue"/);
   assert.match(pagination, /data-catalogue-pagination/);
