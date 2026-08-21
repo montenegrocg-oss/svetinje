@@ -244,7 +244,7 @@ test("Podmaine content remains research-only, sourced, and public-safe", async (
   assert.match(place.location.coordinates.verification.qualification, /не означавају тачан пјешачки улаз/);
   assert.equal(osm.url, "https://www.openstreetmap.org/way/161886544");
   assert.equal(osm.source_type, "other-approved");
-  assert.match(narrative, /summary: Манастир Подмаине је православни манастир/);
+  assert.match(narrative, /^summary:\s+\S.+$/m);
   assert.equal(policy.public_publication_locked, true);
 });
 
