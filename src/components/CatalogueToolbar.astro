@@ -1,0 +1,32 @@
+---
+interface Props {
+  searchPlaceholder: string;
+  areas: ReadonlyArray<{ id: string; label: string }>;
+  statusText?: string;
+}
+
+const { searchPlaceholder, areas, statusText } = Astro.props;
+---
+
+<div class="catalogue-toolbar" data-catalogue-toolbar>
+  <label class="catalogue-toolbar__search">
+    <span class="sr-only">{searchPlaceholder}</span>
+    <input type="search" placeholder={searchPlaceholder} autocomplete="off" data-catalogue-search />
+  </label>
+  <label class="catalogue-toolbar__area">
+    <span class="sr-only">Изаберите област</span>
+    <select data-catalogue-area>
+      <option value="">Све области</option>
+      {areas.map((area) => <option value={area.id}>{area.label}</option>)}
+    </select>
+  </label>
+  {statusText && (
+    <p class="catalogue-toolbar__status" data-catalogue-result-status role="status" aria-live="polite">
+      {statusText}
+    </p>
+  )}
+  <div class="catalogue-toolbar__actions">
+    <a href="/mapa/">Прикажи на карти <span aria-hidden="true">→</span></a>
+    <button type="button" data-catalogue-reset hidden disabled>Очисти филтере</button>
+  </div>
+</div>
