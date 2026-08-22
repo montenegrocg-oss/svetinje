@@ -1,7 +1,13 @@
 ---
 import LocalizedPublicPage from "../../components/LocalizedPublicPage.astro";
+import PlaceDetailPage from "../../components/PlaceDetailPage.astro";
+import { placeDetailRoot, type Locale } from "../../i18n/config";
+import { localizedSlugsForPlace } from "../../lib/content/localized-publication";
 import { localizedStaticPaths } from "../../lib/localized-static-paths";
 export function getStaticPaths() { return localizedStaticPaths("en"); }
 const props = Astro.props as any;
+const localeLinks: Partial<Record<Locale, string>> = props.page === "place" ? Object.fromEntries(Object.entries(await localizedSlugsForPlace(props.place.id)).map(([locale, slug]) => [locale, `${placeDetailRoot[locale as Locale]}${slug}/`])) : {};
 ---
-<LocalizedPublicPage {...props} />
+{props.page === "place"
+  ? <PlaceDetailPage place={props.place} locale="en" relatedPlaces={props.relatedPlaces} routes={props.routes} localeLinks={localeLinks} />
+  : <LocalizedPublicPage locale="en" page={props.page} />}

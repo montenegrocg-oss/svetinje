@@ -25,7 +25,7 @@ interface Props {
   catalogueHeading?: string;
   monasticCommunity?: MonasticCommunityFilter | undefined;
   locale?: Locale;
-  places?: VisiblePlace[];
+  places?: VisiblePlace[] | undefined;
 }
 
 const { heading, description, category, emptyHeading, catalogueHeading, monasticCommunity, locale = "sr", places: suppliedPlaces } = Astro.props;

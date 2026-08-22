@@ -58,12 +58,13 @@ test("preview news is suppressed when its related place is not visible", async (
   assert.equal(preview.length, 4);
 });
 
-test("news UI remains isolated to its archive and uses semantic linked rows", async () => {
-  const [homepage, feed, item, archive] = await Promise.all([
+test("news UI remains isolated to its shared archive and uses semantic linked rows", async () => {
+  const [homepage, feed, item, route, archive] = await Promise.all([
     readFile(path.join(PROJECT_ROOT, "src", "pages", "index.astro"), "utf8"),
     readFile(path.join(PROJECT_ROOT, "src", "components", "news", "NewsFeed.astro"), "utf8"),
     readFile(path.join(PROJECT_ROOT, "src", "components", "news", "NewsFeedItem.astro"), "utf8"),
     readFile(path.join(PROJECT_ROOT, "src", "pages", "novosti", "index.astro"), "utf8"),
+    readFile(path.join(PROJECT_ROOT, "src", "components", "NewsArchivePage.astro"), "utf8"),
   ]);
   assert.match(item, /<article[^>]*data-news-item/);
   assert.match(item, /<a class="news-feed-item__link" href=\{item\.href\}>/);
@@ -73,11 +74,12 @@ test("news UI remains isolated to its archive and uses semantic linked rows", as
   assert.doesNotMatch(`${feed}\n${item}`, /<img|carousel|slider/i);
   assert.doesNotMatch(item, /bookmark/i);
   assert.doesNotMatch(homepage, /loadVisibleNews|selectLatestNews|NewsFeed|homepage-news|data-news-item/);
-  assert.match(archive, /<NewsFeed items=\{news\} variant="archive"/);
+  assert.match(route, /<NewsArchivePage items=\{news\} locale="sr"/);
+  assert.match(archive, /<NewsFeed items=\{items\} variant="archive"/);
 });
 
 test("news archive derives dates and filters from visible records", async () => {
-  const archive = await readFile(path.join(PROJECT_ROOT, "src", "pages", "novosti", "index.astro"), "utf8");
+  const archive = await readFile(path.join(PROJECT_ROOT, "src", "components", "NewsArchivePage.astro"), "utf8");
   assert.deepEqual(serbianNewsDateParts("2026-08-04T12:00:00Z"), {
     day: "04",
     monthYear: "авг 2026.",
@@ -92,5 +94,5 @@ test("news archive derives dates and filters from visible records", async () => 
   assert.match(archive, /data-news-month/);
   assert.match(archive, /selectedCategory === "all" \|\| item\.dataset\.newsType === selectedCategory/);
   assert.match(archive, /selectedMonth === "all" \|\| item\.dataset\.newsMonth === selectedMonth/);
-  assert.match(archive, /Нема новости за изабрани период и категорију\./);
+  assert.match(archive, /copy\.empty/);
 });

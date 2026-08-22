@@ -1,17 +1,21 @@
 ---
 import { parsePlaceNarrativeBlocks } from "../../lib/place-content.ts";
+import type { Locale } from "../../i18n/config";
+import { publicCopy } from "../../i18n/public-copy";
 
 interface Props {
   body: string;
   heading: string;
+  locale?: Locale;
 }
 
-const { body, heading } = Astro.props;
+const { body, heading, locale = "sr" } = Astro.props;
+const genericHeading = publicCopy[locale].pages.placeDetail.about.other;
 const parsedBlocks = parsePlaceNarrativeBlocks(body);
 const blocks = parsedBlocks.filter((block, index) => !(
   index === 0
   && block.kind === "heading"
-  && (block.text === heading || block.text === "О светињи")
+    && (block.text === heading || block.text === genericHeading)
 ));
 ---
 

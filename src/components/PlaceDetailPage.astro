@@ -1,0 +1,65 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import type { Locale } from "../i18n/config";
+import { placeDetailRoot } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
+import type { VisiblePlace } from "../lib/content/publication";
+import type { LocalizedVisiblePlace } from "../lib/content/localized-publication";
+import type { VisibleRoute } from "../lib/content/routes";
+import type { RelatedPlace } from "../lib/related-places";
+import PlaceDetailGallery from "./place-detail/PlaceDetailGallery.astro";
+import PlaceDetailHero from "./place-detail/PlaceDetailHero.astro";
+import PlaceNarrativeArticle from "./place-detail/PlaceNarrativeArticle.astro";
+import PlacePracticalPanel from "./place-detail/PlacePracticalPanel.astro";
+import PlaceRelatedShelf from "./place-detail/PlaceRelatedShelf.astro";
+import PlaceRouteBacklinks from "./routes/PlaceRouteBacklinks.astro";
+
+interface Props {
+  place: VisiblePlace & Partial<Pick<LocalizedVisiblePlace, "seoTitle" | "seoDescription">>;
+  locale?: Locale;
+  relatedPlaces: RelatedPlace[];
+  routes: VisibleRoute[];
+  localeLinks: Partial<Record<Locale, string>>;
+}
+
+const { place, locale = "sr", relatedPlaces, routes, localeLinks } = Astro.props;
+const copy = publicCopy[locale].pages.placeDetail;
+const metadataTitle = place.seoTitle ?? place.name;
+const metadataDescription = place.seoDescription ?? place.summary;
+const aboutLabel = place.placeType === "monastery"
+  ? copy.about.monastery
+  : ["church", "chapel", "cathedral"].includes(place.placeType)
+    ? copy.about.church
+    : copy.about.other;
+---
+
+<BaseLayout
+  title={metadataTitle}
+  description={metadataDescription}
+  canonicalPath={`${placeDetailRoot[locale]}${place.slug}/`}
+  noindex={place.preview}
+  locale={locale}
+  localeLinks={localeLinks}
+>
+  <div data-testid="place-detail-page" data-place-detail-locale={locale}>
+    <PlaceDetailHero place={place} locale={locale} />
+
+    <section class="place-profile-body">
+      <div class="shell place-profile-grid">
+        <article class="place-profile-about prose" aria-labelledby="place-about-title">
+          <h2 id="place-about-title">{aboutLabel}</h2>
+          {place.narrativeBody.trim() ? (
+            <PlaceNarrativeArticle body={place.narrativeBody} heading={aboutLabel} locale={locale} />
+          ) : (
+            <p>{copy.about.empty}</p>
+          )}
+        </article>
+
+        <PlaceDetailGallery place={place} locale={locale} />
+        <PlacePracticalPanel place={place} locale={locale} />
+        <PlaceRelatedShelf currentPlace={place} relatedPlaces={relatedPlaces} locale={locale} />
+        <PlaceRouteBacklinks placeId={place.id} routes={routes} locale={locale} />
+      </div>
+    </section>
+  </div>
+</BaseLayout>

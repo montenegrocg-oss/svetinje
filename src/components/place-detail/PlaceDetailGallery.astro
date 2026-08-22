@@ -1,47 +1,50 @@
 ---
 import type { VisiblePlace } from "../../lib/content/publication";
+import type { Locale } from "../../i18n/config";
+import { publicCopy } from "../../i18n/public-copy";
 
-interface Props { place: VisiblePlace; }
-const { place } = Astro.props;
+interface Props { place: VisiblePlace; locale?: Locale; }
+const { place, locale = "sr" } = Astro.props;
+const copy = publicCopy[locale].pages.placeDetail.gallery;
 const [primaryImage, ...secondaryImages] = place.galleryImages;
 const placeholderSlots = [1, 2, 3, 4] as const;
 const galleryId = `place-gallery-${place.id}`;
 ---
 
 <section class="place-detail-gallery" aria-labelledby="place-gallery-title" data-testid="place-detail-gallery" data-place-gallery={galleryId}>
-  <div class="place-section-heading"><h2 id="place-gallery-title">Фотографије</h2></div>
+  <div class="place-section-heading"><h2 id="place-gallery-title">{copy.title}</h2></div>
   <div class="place-detail-gallery__grid">
     {primaryImage ? (
-      <button class="place-detail-gallery__main place-detail-gallery__button" type="button" data-gallery-open data-gallery-index="0" aria-label={`Увећај фотографију: ${primaryImage.alt}`}>
+      <button class="place-detail-gallery__main place-detail-gallery__button" type="button" data-gallery-open data-gallery-index="0" aria-label={`${copy.enlarge}: ${primaryImage.alt}`}>
         <img src={primaryImage.src} alt={primaryImage.alt} width={primaryImage.width} height={primaryImage.height} loading="lazy" decoding="async" />
       </button>
     ) : (
-      <div class="place-detail-gallery__main place-detail-gallery__placeholder"><span aria-hidden="true"></span><p>Ауторска фотографија биће додата</p></div>
+      <div class="place-detail-gallery__main place-detail-gallery__placeholder"><span aria-hidden="true"></span><p>{copy.authorPending}</p></div>
     )}
     {secondaryImages.map((image, index) => (
-      <button class="place-detail-gallery__image place-detail-gallery__button" type="button" data-gallery-open data-gallery-index={String(index + 1)} aria-label={`Увећај фотографију: ${image.alt}`}>
+      <button class="place-detail-gallery__image place-detail-gallery__button" type="button" data-gallery-open data-gallery-index={String(index + 1)} aria-label={`${copy.enlarge}: ${image.alt}`}>
         <img src={image.src} alt={image.alt} width={image.width} height={image.height} loading="lazy" decoding="async" />
       </button>
     ))}
     {placeholderSlots.slice(secondaryImages.length).map((slot) => (
-      <div class="place-detail-gallery__placeholder" data-gallery-slot={slot}><span aria-hidden="true"></span><p>{slot === 4 ? "Галерија у припреми" : "Још фотографија биће додато"}</p></div>
+      <div class="place-detail-gallery__placeholder" data-gallery-slot={slot}><span aria-hidden="true"></span><p>{slot === 4 ? copy.galleryPending : copy.morePending}</p></div>
     ))}
   </div>
 
   {place.youtubeVideoId && (
     <section class="place-detail-video" aria-labelledby={`${galleryId}-video-title`}>
-      <h2 id={`${galleryId}-video-title`}>Видео</h2>
-      <div class="place-detail-video__frame"><iframe src={`https://www.youtube-nocookie.com/embed/${place.youtubeVideoId}`} title={`Видео — ${place.name}`} loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+      <h2 id={`${galleryId}-video-title`}>{copy.video}</h2>
+      <div class="place-detail-video__frame"><iframe src={`https://www.youtube-nocookie.com/embed/${place.youtubeVideoId}`} title={`${copy.videoTitle} — ${place.name}`} loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
     </section>
   )}
 
   {primaryImage && (
-    <dialog class="place-gallery-lightbox" data-gallery-dialog aria-label={`Галерија — ${place.name}`}>
+    <dialog class="place-gallery-lightbox" data-gallery-dialog aria-label={`${copy.aria} — ${place.name}`}>
       <div class="place-gallery-lightbox__surface">
-        <button class="place-gallery-lightbox__close" type="button" data-gallery-close aria-label="Затвори галерију">×</button>
-        <button class="place-gallery-lightbox__nav place-gallery-lightbox__nav--previous" type="button" data-gallery-previous aria-label="Претходна фотографија">‹</button>
+        <button class="place-gallery-lightbox__close" type="button" data-gallery-close aria-label={copy.close}>×</button>
+        <button class="place-gallery-lightbox__nav place-gallery-lightbox__nav--previous" type="button" data-gallery-previous aria-label={copy.previous}>‹</button>
         <figure><img data-gallery-image src={primaryImage.src} alt={primaryImage.alt} /><figcaption data-gallery-counter>1 / {place.galleryImages.length}</figcaption></figure>
-        <button class="place-gallery-lightbox__nav place-gallery-lightbox__nav--next" type="button" data-gallery-next aria-label="Следећа фотографија">›</button>
+        <button class="place-gallery-lightbox__nav place-gallery-lightbox__nav--next" type="button" data-gallery-next aria-label={copy.next}>›</button>
       </div>
     </dialog>
   )}

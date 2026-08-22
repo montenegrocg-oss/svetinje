@@ -1,67 +1,24 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import CategoryCatalogue from "./CategoryCatalogue.astro";
-import DedicatedMap from "./DedicatedMap.astro";
-import { routeFor, staticLocaleLinksForRoute, type Locale, type RouteKey } from "../i18n/config";
-import { publicCopy } from "../i18n/public-copy";
-import { loadLocalizedVisiblePlaces, localizedSlugsForPlace, type LocalizedVisiblePlace } from "../lib/content/localized-publication";
+import type { Locale } from "../i18n/config";
+import { loadLocalizedVisiblePlaces } from "../lib/content/localized-publication";
+import AboutPage from "./AboutPage.astro";
+import CalendarIndexPage from "./CalendarIndexPage.astro";
+import CataloguePage from "./CataloguePage.astro";
+import MapPage from "./MapPage.astro";
+import NewsArchivePage from "./NewsArchivePage.astro";
+import RouteCataloguePage from "./RouteCataloguePage.astro";
 
-type PageKind = "monasteries" | "maleMonasteries" | "femaleMonasteries" | "churches" | "map" | "routes" | "calendar" | "news" | "about" | "place";
-interface Props { locale: Exclude<Locale, "sr">; page: PageKind; place?: LocalizedVisiblePlace; localeLinks?: Partial<Record<Locale, string>> }
-const { locale, page, place, localeLinks: suppliedLocaleLinks } = Astro.props;
-const c = publicCopy[locale];
+type PageKind = "monasteries" | "maleMonasteries" | "femaleMonasteries" | "churches" | "map" | "routes" | "calendar" | "news" | "about";
+interface Props { locale: Exclude<Locale, "sr">; page: PageKind }
+const { locale, page } = Astro.props;
 const places = await loadLocalizedVisiblePlaces(locale);
-
-const pageCopy = locale === "ru" ? {
-  monasteries: ["Монастыри", "Проверенные сведения о православных монастырях Черногории."],
-  maleMonasteries: ["Мужские монастыри", "Мужские православные монастыри Черногории."],
-  femaleMonasteries: ["Женские монастыри", "Женские православные монастыри Черногории."],
-  churches: ["Храмы", "Православные храмы и соборы Черногории."], map: ["Карта святынь", "Интерактивная карта опубликованных православных святынь Черногории."],
-  routes: ["Паломнические маршруты", "Русские описания маршрутов готовятся и не заменяются сербским текстом."],
-  calendar: ["Православный календарь", "Локализованная календарная оболочка доступна; переводы чтений готовятся."],
-  news: ["Новости", "Русские версии новостей появятся после редакционной проверки."],
-  about: ["О проекте", "Svetinje.me — цифровой путеводитель по православным монастырям и храмам Черногории."],
-} : {
-  monasteries: ["Monasteries", "Verified information about the Orthodox monasteries of Montenegro."],
-  maleMonasteries: ["Men's monasteries", "Men's Orthodox monasteries in Montenegro."],
-  femaleMonasteries: ["Women's monasteries", "Women's Orthodox monasteries in Montenegro."],
-  churches: ["Churches", "Orthodox churches and cathedrals across Montenegro."], map: ["Map of holy places", "An interactive map of published Orthodox holy places in Montenegro."],
-  routes: ["Pilgrimage routes", "English route narratives are being prepared and are not replaced with Serbian copy."],
-  calendar: ["Orthodox calendar", "The localized calendar shell is available; translated readings are being prepared."],
-  news: ["News", "English news editions will appear after editorial review."],
-  about: ["About", "Svetinje.me is a digital guide to Montenegro's Orthodox monasteries and churches."],
-} as const;
-
-const pageKey = page === "place" ? undefined : page as keyof typeof pageCopy;
-const pageText = pageKey ? pageCopy[pageKey] : undefined;
-const title = place?.seoTitle || place?.name || pageText?.[0] || c.siteName;
-const description = place?.seoDescription || place?.summary || pageText?.[1] || c.footer;
-const canonicalPath = place ? `${locale === "ru" ? "/ru/svyatyni/" : "/en/holy-places/"}${place.slug}/` : routeFor(locale, page as RouteKey);
-const localeLinks = suppliedLocaleLinks ?? (place ? Object.fromEntries(Object.entries(await localizedSlugsForPlace(place.id)).map(([key, slug]) => [key, `${key === "sr" ? "/svetinje/" : key === "ru" ? "/ru/svyatyni/" : "/en/holy-places/"}${slug}/`])) : staticLocaleLinksForRoute(page as RouteKey) ?? { [locale]: canonicalPath });
 const category = page === "monasteries" || page === "maleMonasteries" || page === "femaleMonasteries" ? "monasteries" : page === "churches" ? "churches" : undefined;
 const community = page === "maleMonasteries" ? "male" : page === "femaleMonasteries" ? "female" : undefined;
-const bodyParagraphs = place?.narrativeBody.split(/\r?\n\s*\r?\n/).map((value) => value.trim()).filter(Boolean) ?? [];
-const catalogueText = category ? pageCopy[page as "monasteries" | "maleMonasteries" | "femaleMonasteries" | "churches"] : undefined;
 ---
 
-<BaseLayout title={title} description={description} canonicalPath={canonicalPath} locale={locale} localeLinks={localeLinks} noindex={place?.preview ?? false}>
-  {category && catalogueText && <CategoryCatalogue locale={locale} places={places} category={category} monasticCommunity={community} heading={catalogueText[0]} description={catalogueText[1]} emptyHeading={c.preparing} catalogueHeading={catalogueText[0]} />}
-
-  {page === "map" && <><header class="page-hero compact"><div class="shell narrow"><h1>{pageCopy.map[0]}</h1><p>{pageCopy.map[1]}</p></div></header><DedicatedMap places={places} locale={locale} /></>}
-
-  {["routes", "calendar", "news"].includes(page) && <header class="page-hero"><div class="shell narrow"><p class="eyebrow">{c.preparing}</p><h1>{pageCopy[page as "routes" | "calendar" | "news"][0]}</h1><div class="prose"><p>{pageCopy[page as "routes" | "calendar" | "news"][1]}</p></div></div></header>}
-
-  {page === "about" && <header class="page-hero"><div class="shell narrow"><h1>{pageCopy.about[0]}</h1><div class="prose"><p>{pageCopy.about[1]}</p><p>{locale === "ru" ? "Проект объединяет проверенные сведения, практическую информацию и медиаматериалы. Если вы заметили неточность, напишите на" : "The project brings together verified facts, practical information and media. If you notice an error, email"} <a href="mailto:info@svetinje.me">info@svetinje.me</a>.</p></div></div></header>}
-
-  {page === "place" && place && <>
-    <header class="place-profile-hero" data-place-id={place.id}>
-      {place.previewImageSrc ? <img class="place-profile-hero__image" src={place.previewImageSrc} alt={place.name} loading="eager" decoding="async" /> : <div class="place-profile-hero__fallback" aria-hidden="true"><span></span></div>}
-      <div class="place-profile-hero__overlay" aria-hidden="true"></div>
-      <div class="shell place-profile-hero__content"><nav class="place-profile-breadcrumbs" aria-label={locale === "ru" ? "Навигационная цепочка" : "Breadcrumbs"}><a href={routeFor(locale, "home")}>{locale === "ru" ? "Главная" : "Home"}</a><span aria-hidden="true">›</span><a href={place.placeType === "monastery" ? routeFor(locale, "monasteries") : routeFor(locale, "churches")}>{place.placeType === "monastery" ? c.nav.monasteries : c.nav.churches}</a><span aria-hidden="true">›</span><span aria-current="page">{place.name}</span></nav><div class="place-profile-hero__copy"><h1>{place.name}</h1><p>{place.summary}</p><ul class="place-profile-chips"><li>{place.typeLabel}</li>{(place.settlement || place.municipality) && <li>{place.settlement ?? place.municipality}</li>}</ul></div></div>
-    </header>
-    <section class="place-profile-body"><div class="shell place-profile-grid"><article class="place-profile-about prose"><h2>{locale === "ru" ? "О святыне" : "About this holy place"}</h2>{bodyParagraphs.map((paragraph) => <p>{paragraph}</p>)}</article>
-      {place.galleryImages.length > 0 && <section class="place-detail-gallery"><div class="place-section-heading"><h2>{locale === "ru" ? "Фотографии" : "Photographs"}</h2></div><div class="place-detail-gallery__grid">{place.galleryImages.map((image) => <img src={image.src} alt={image.alt} width={image.width} height={image.height} loading="lazy" decoding="async" />)}</div></section>}
-      <aside class="place-practical-panel"><h2>{locale === "ru" ? "Практическая информация" : "Practical information"}</h2><dl class="place-practical-list"><div><dt>{locale === "ru" ? "Тип" : "Type"}</dt><dd>{place.typeLabel}</dd></div>{place.municipality && <div><dt>{locale === "ru" ? "Муниципалитет" : "Municipality"}</dt><dd>{place.municipality}</dd></div>}{place.latitude !== undefined && place.longitude !== undefined && <div><dt>{locale === "ru" ? "Координаты" : "Coordinates"}</dt><dd>{place.latitude}, {place.longitude}</dd></div>}</dl></aside>
-    </div></section>
-  </>}
-</BaseLayout>
+{category && <CataloguePage locale={locale} page={page as "monasteries" | "maleMonasteries" | "femaleMonasteries" | "churches"} category={category} monasticCommunity={community} places={places} />}
+{page === "map" && <MapPage locale={locale} places={places} />}
+{page === "routes" && <RouteCataloguePage locale={locale} routes={[]} />}
+{page === "calendar" && <CalendarIndexPage locale={locale} days={[]} />}
+{page === "news" && <NewsArchivePage locale={locale} items={[]} />}
+{page === "about" && <AboutPage locale={locale} />}
