@@ -2,25 +2,29 @@
 interface Props {
   totalPages: number;
   position: "top" | "bottom";
+  locale?: import("../i18n/config").Locale;
 }
 
-const { totalPages, position } = Astro.props;
-const positionLabel = position === "top" ? "горња" : "доња";
+import { publicCopy } from "../i18n/public-copy";
+const { totalPages, position, locale = "sr" } = Astro.props;
+const copy = publicCopy[locale].homepage.explorer.pagination;
+const positionLabel = copy[position];
+const ariaLabel = copy.aria.replace("{position}", positionLabel);
 ---
 
 <nav
   class:list={["explorer-pagination", "homepage-pagination", `homepage-pagination--${position}`]}
   data-homepage-pagination
   data-homepage-pagination-position={position}
-  aria-label={`Странице прегледа светиња — ${positionLabel} навигација`}
+  aria-label={ariaLabel}
   hidden={totalPages === 0}
 >
-  <button type="button" data-homepage-pagination-prev aria-label="Претходна страница" disabled aria-disabled="true">←</button>
+  <button type="button" data-homepage-pagination-prev aria-label={copy.previous} disabled aria-disabled="true">←</button>
   <span class="homepage-pagination__status" data-homepage-pagination-status aria-live="polite">1 / {totalPages || 1}</span>
   <button
     type="button"
     data-homepage-pagination-next
-    aria-label="Сљедећа страница"
+    aria-label={copy.next}
     disabled={totalPages <= 1}
     aria-disabled={totalPages <= 1 ? "true" : "false"}
   >→</button>

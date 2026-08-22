@@ -77,7 +77,7 @@ test("GPX parser fails closed on malformed coordinates and insufficient tracks",
 
 test("pilot route public composition remains loader-driven and key-safe", async () => {
   const [home, map, routePage, header, css] = await Promise.all([
-    readFile(new URL("../src/pages/index.astro", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/HomePage.astro", import.meta.url), "utf8"),
     readFile(new URL("../src/components/routes/RouteMap.astro", import.meta.url), "utf8"),
     readFile(new URL("../src/pages/rute/[slug]/index.astro", import.meta.url), "utf8"),
     readFile(new URL("../src/components/Header.astro", import.meta.url), "utf8"),

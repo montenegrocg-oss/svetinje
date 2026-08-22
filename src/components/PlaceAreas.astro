@@ -2,30 +2,36 @@
 import { PLACE_AREAS } from "../lib/place-areas";
 import type { VisiblePlace } from "../lib/content/publication";
 import { selectPublicDiscoveryPlaces } from "../lib/public-place-discovery";
+import { routeFor, type Locale } from "../i18n/config";
+import { areaLabels, publicCopy } from "../i18n/public-copy";
 
 interface Props {
   places: VisiblePlace[];
+  locale?: Locale;
 }
 
-const { places } = Astro.props;
+const { places, locale = "sr" } = Astro.props;
+const copy = publicCopy[locale].homepage.areas;
 const discoveryPlaces = selectPublicDiscoveryPlaces(places);
 const areas = PLACE_AREAS.map((area) => ({
   ...area,
+  label: areaLabels[locale][area.id],
   count: discoveryPlaces.filter((place) => place.browseAreaId === area.id).length,
 }));
+const homePath = routeFor(locale, "home");
 ---
 
 <section class="homepage-areas" aria-labelledby="homepage-areas-title">
   <div class="shell homepage-wide-shell homepage-areas__inner">
     <header class="homepage-areas__header">
-      <p class="map-eyebrow">ИСТРАЖИТЕ</p>
-      <h2 id="homepage-areas-title">По областима</h2>
-      <p>Откријте манастире и храмове у различитим крајевима Црне Горе.</p>
+      <p class="map-eyebrow">{copy.eyebrow}</p>
+      <h2 id="homepage-areas-title">{copy.title}</h2>
+      <p>{copy.description}</p>
     </header>
     <ul class="homepage-areas__list">
       {areas.map((area) => (
         <li>
-          <a href={`/?area=${area.id}#mapa`} data-place-area-link={area.id}>
+          <a href={`${homePath}?area=${area.id}#mapa`} data-place-area-link={area.id}>
             <span>{area.label}</span>
             {area.count > 0 && (
               <span class="homepage-areas__count" data-place-area-count={area.count}>
