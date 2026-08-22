@@ -291,6 +291,7 @@ test("Savina remains a sourced editorial-preview monastery", async () => {
   assert.equal(place.id, "manastir-savina");
   assert.equal(place.editorial_status, "research");
   assert.equal(place.place_type.value, "monastery");
+  assert.equal(preview.find((candidate) => candidate.id === place.id)?.monasticCommunity, "male");
   assert.ok(place.source_ids.includes(osm.id));
   assert.equal(osm.url, "https://www.openstreetmap.org/way/147257044");
   assert.equal(osm.source_type, "other-approved");

@@ -35,6 +35,8 @@ interface StringFact {
   verification?: Verification;
 }
 
+export type MonasticCommunity = "male" | "female";
+
 interface PlaceRecord {
   id: string;
   editorial_status: string;
@@ -45,6 +47,7 @@ interface PlaceRecord {
   };
   ecclesiastical?: {
     jurisdiction?: StringFact;
+    community_type?: StringFact;
   };
   patronal_feast?: { name?: string };
   video?: { youtube_url?: string };
@@ -121,6 +124,7 @@ export interface PublishablePlace {
   catalogueSearchText: string;
   mediaIds?: string[];
   narrativeBody: string;
+  monasticCommunity?: MonasticCommunity;
   patronalFeast?: string;
   youtubeVideoId?: string;
 }
@@ -403,6 +407,7 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
     }
 
     const browseAreaId = isPlaceAreaId(place.browse_area_id) ? place.browse_area_id : undefined;
+    const monasticCommunity = monasticCommunityValue(place.ecclesiastical?.community_type?.value);
     const youtubeVideoId = parseYoutubeVideoId(place.video?.youtube_url);
     return [{
       id: place.id,
@@ -411,6 +416,7 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
       summary: narrative.summary,
       placeType: place.place_type.value,
       narrativeBody: narrative.body,
+      ...(monasticCommunity ? { monasticCommunity } : {}),
       ...(typeof place.patronal_feast?.name === "string" ? { patronalFeast: place.patronal_feast.name } : {}),
       ...(youtubeVideoId ? { youtubeVideoId } : {}),
       ...(Array.isArray((place.relationships as { media_ids?: unknown } | undefined)?.media_ids)
@@ -470,6 +476,10 @@ function placeTypeLabel(placeType: string): string {
   if (placeType === "cathedral") return "Саборни храм";
   if (["church", "chapel"].includes(placeType)) return "Храм";
   return "Свето мјесто";
+}
+
+function monasticCommunityValue(value: unknown): MonasticCommunity | undefined {
+  return value === "male" || value === "female" ? value : undefined;
 }
 
 function assertPreviewField(condition: unknown, message: string): asserts condition {
@@ -547,6 +557,7 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
     const longitude = coordinates?.longitude;
     const coordinateAccuracy = coordinates?.accuracy;
     const ecclesiasticalJurisdiction = place.ecclesiastical?.jurisdiction?.value;
+    const monasticCommunity = monasticCommunityValue(place.ecclesiastical?.community_type?.value);
     const patronalFeast = place.patronal_feast?.name;
     const youtubeVideoId = parseYoutubeVideoId(place.video?.youtube_url);
     const mediaOrder = Array.isArray((place.relationships as { media_ids?: unknown } | undefined)?.media_ids)
@@ -576,6 +587,7 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       ...(longitude !== undefined ? { longitude } : {}),
       ...(coordinateAccuracy !== undefined ? { coordinateAccuracy } : {}),
       ...(ecclesiasticalJurisdiction !== undefined ? { ecclesiasticalJurisdiction } : {}),
+      ...(monasticCommunity !== undefined ? { monasticCommunity } : {}),
       ...(patronalFeast !== undefined ? { patronalFeast } : {}),
       ...(youtubeVideoId !== undefined ? { youtubeVideoId } : {}),
       ...previewMedia,

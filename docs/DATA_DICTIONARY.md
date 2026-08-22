@@ -502,10 +502,10 @@ Allowed keys:
 | authority_id | fact block of EntityId | Verified ecclesiastical authority relationship |
 | jurisdiction | fact block of text or EntityId | Verified jurisdiction when appropriate |
 | dedication_ids | fact block of EntityId list | Verified dedications or patrons |
-| community_type | fact block of controlled text | Verified monastic community classification |
+| community_type | fact block of MonasticCommunity | Verified monastic community classification; monasteries only |
 | associated_entity_ids | fact block of EntityId list | Saints, relics, feasts, or related entities |
 
-Until controlled registries are approved, these optional fields remain absent rather than free-form guessed values. Publication requires ecclesiastical review for every populated ecclesiastical field.
+MonasticCommunity is optional and has two controlled values: male and female. It is valid only when place_type.value is monastery. Other optional ecclesiastical fields remain absent rather than free-form guessed values until their controlled registries are approved. Publication requires ecclesiastical review for every populated ecclesiastical field.
 
 The Phase 1 project scope must not be copied automatically into authority_id or jurisdiction.
 

@@ -142,6 +142,39 @@ test("neutral draft structural records validate", async (t) => {
   assert.deepEqual(await validateRepository(root), []);
 });
 
+test("monastic community is optional, controlled, and monastery-only", async (t) => {
+  const root = await project(t);
+  const record = {
+    ...place(),
+    place_type: { value: "monastery", verification: { status: "requires-verification" } },
+  };
+  await yamlFile(root, "content/places/validation-subject/place.yaml", record);
+  assert.deepEqual(await validateRepository(root), []);
+
+  for (const value of ["male", "female"]) {
+    await yamlFile(root, "content/places/validation-subject/place.yaml", {
+      ...record,
+      ecclesiastical: { community_type: { value, verification: { status: "requires-verification" } } },
+    });
+    assert.deepEqual(await validateRepository(root), []);
+  }
+
+  for (const value of ["православни мушки манастир", "brotherhood"]) {
+    await yamlFile(root, "content/places/validation-subject/place.yaml", {
+      ...record,
+      ecclesiastical: { community_type: { value, verification: { status: "requires-verification" } } },
+    });
+    assert.ok(has(await validateRepository(root), "must be equal to one of the allowed values"));
+  }
+
+  await yamlFile(root, "content/places/validation-subject/place.yaml", {
+    ...record,
+    place_type: { value: "church", verification: { status: "requires-verification" } },
+    ecclesiastical: { community_type: { value: "male", verification: { status: "requires-verification" } } },
+  });
+  assert.ok(has(await validateRepository(root), "must be equal to constant"));
+});
+
 test("unified place narrative accepts document sources without anchored H2 sections", async (t) => {
   const root = await project(t);
   await yamlFile(root, "content/places/validation-subject/place.yaml", place());

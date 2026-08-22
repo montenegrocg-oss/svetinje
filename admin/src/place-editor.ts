@@ -17,6 +17,7 @@ export interface UpdatePlaceBody {
   shortName?: unknown;
   slug?: unknown;
   placeType?: unknown;
+  monasticCommunity?: unknown;
   browseAreaId?: unknown;
   summary?: unknown;
   jurisdiction?: unknown;
@@ -134,10 +135,19 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   const preferredName = requiredText(body.preferredName, "preferredName", errors);
   const slug = requiredText(body.slug, "slug", errors);
   const placeType = requiredText(body.placeType, "placeType", errors);
+  const monasticCommunity = text(body.monasticCommunity);
   const browseAreaId = text(body.browseAreaId);
   const summary = text(body.summary);
   if (slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) errors.slug = "Slug мора бити lowercase ASCII kebab-case.";
   if (placeType && !record.options.placeTypes.includes(placeType)) errors.placeType = "Врста објекта није подржана.";
+  if (
+    body.monasticCommunity !== undefined
+    && body.monasticCommunity !== null
+    && body.monasticCommunity !== ""
+    && (!monasticCommunity || !record.options.monasticCommunities.includes(monasticCommunity as "male" | "female"))
+  ) {
+    errors.monasticCommunity = "Тип манастира није подржан.";
+  }
   if (browseAreaId && !isPlaceAreaId(browseAreaId)) errors.browseAreaId = "Област није дио важећег каталога.";
   const latitude = parseOptionalNumber(body.latitude, "latitude", -90, 90, errors);
   const longitude = parseOptionalNumber(body.longitude, "longitude", -180, 180, errors);
@@ -170,6 +180,7 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   if (place.place_type.value !== placeType) place.place_type = { value: placeType, verification: resetVerification() };
   place.ecclesiastical ??= {};
   setFact(place.ecclesiastical, "jurisdiction", text(body.jurisdiction));
+  setFact(place.ecclesiastical, "community_type", placeType === "monastery" ? monasticCommunity : undefined);
   if (patronalFeast) place.patronal_feast = { name: patronalFeast }; else delete place.patronal_feast;
   if (youtubeUrl) place.video = { youtube_url: youtubeUrl }; else delete place.video;
   place.location ??= {};
