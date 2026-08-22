@@ -1,93 +1,21 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import PlaceDetailGallery from "../../components/place-detail/PlaceDetailGallery.astro";
-import PlaceDetailHero from "../../components/place-detail/PlaceDetailHero.astro";
-import PlaceNarrativeArticle from "../../components/place-detail/PlaceNarrativeArticle.astro";
-import PlacePracticalPanel from "../../components/place-detail/PlacePracticalPanel.astro";
-import PlaceRelatedShelf from "../../components/place-detail/PlaceRelatedShelf.astro";
-import type { VisiblePlace } from "../../lib/content/publication";
+import PlaceDetailPage from "../../components/PlaceDetailPage.astro";
 import { loadVisiblePlaces } from "../../lib/content/publication";
-import PlaceRouteBacklinks from "../../components/routes/PlaceRouteBacklinks.astro";
-import { loadVisibleRoutes, routesForPlace, type VisibleRoute } from "../../lib/content/routes";
-import { getPlaceAboutLabel } from "../../lib/place-content.ts";
+import { loadVisibleRoutes, routesForPlace } from "../../lib/content/routes";
 import { localizedSlugsForPlace } from "../../lib/content/localized-publication";
 import { placeDetailRoot, type Locale } from "../../i18n/config";
-
-interface RelatedPlace {
-  place: VisiblePlace;
-  distanceKm: number | undefined;
-}
+import { relatedPlacesFor } from "../../lib/related-places";
 
 export async function getStaticPaths() {
-  const EARTH_RADIUS_KM = 6371;
-  const toRadians = (degrees: number) => degrees * Math.PI / 180;
-  const coordinateDistance = (from: VisiblePlace, to: VisiblePlace): number | undefined => {
-    if (
-      from.latitude === undefined || from.longitude === undefined ||
-      to.latitude === undefined || to.longitude === undefined
-    ) return undefined;
-    const latitudeDelta = toRadians(to.latitude - from.latitude);
-    const longitudeDelta = toRadians(to.longitude - from.longitude);
-    const fromLatitude = toRadians(from.latitude);
-    const toLatitude = toRadians(to.latitude);
-    const haversine = Math.sin(latitudeDelta / 2) ** 2
-      + Math.cos(fromLatitude) * Math.cos(toLatitude) * Math.sin(longitudeDelta / 2) ** 2;
-    return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(haversine));
-  };
-  const relatedPlacesFor = (place: VisiblePlace, places: VisiblePlace[]): RelatedPlace[] =>
-    places
-      .filter((candidate) => candidate.id !== place.id)
-      .map((candidate) => ({
-        place: candidate,
-        distanceKm: coordinateDistance(place, candidate),
-        hasCoordinates: candidate.latitude !== undefined && candidate.longitude !== undefined,
-      }))
-      .sort((left, right) => {
-        if (left.distanceKm !== undefined && right.distanceKm !== undefined) return left.distanceKm - right.distanceKm;
-        if (left.distanceKm !== undefined) return -1;
-        if (right.distanceKm !== undefined) return 1;
-        if (left.hasCoordinates !== right.hasCoordinates) return left.hasCoordinates ? -1 : 1;
-        return left.place.name.localeCompare(right.place.name, "sr");
-      })
-      .map(({ place: candidate, distanceKm }) => ({ place: candidate, distanceKm }))
-      .slice(0, 4);
   const [places, routes] = await Promise.all([loadVisiblePlaces(), loadVisibleRoutes()]);
   return places.map((place) => ({
     params: { slug: place.slug },
-    props: { place, relatedPlaces: relatedPlacesFor(place, places), routes: routesForPlace(routes, place.id) },
+    props: { place, relatedPlaces: relatedPlacesFor(place, places, "sr"), routes: routesForPlace(routes, place.id) },
   }));
 }
 
-const { place, relatedPlaces, routes } = Astro.props as { place: VisiblePlace; relatedPlaces: RelatedPlace[]; routes: VisibleRoute[] };
-const aboutLabel = getPlaceAboutLabel(place.placeType);
+const { place, relatedPlaces, routes } = Astro.props;
 const localeLinks = Object.fromEntries(Object.entries(await localizedSlugsForPlace(place.id)).map(([locale, slug]) => [locale, `${placeDetailRoot[locale as Locale]}${slug}/`]));
 ---
 
-<BaseLayout
-  title={place.name}
-  description={place.summary}
-  canonicalPath={`/svetinje/${place.slug}/`}
-  noindex={place.preview}
-  localeLinks={localeLinks}
->
-  <PlaceDetailHero place={place} />
-
-  <section class="place-profile-body">
-    <div class="shell place-profile-grid">
-      <article class="place-profile-about prose" aria-labelledby="place-about-title">
-        <h2 id="place-about-title">{aboutLabel}</h2>
-        {place.narrativeBody.trim() ? (
-          <PlaceNarrativeArticle body={place.narrativeBody} heading={aboutLabel} />
-        ) : (
-          <p>Општи подаци о светињи су у припреми.</p>
-        )}
-      </article>
-
-      <PlaceDetailGallery place={place} />
-      <PlacePracticalPanel place={place} />
-
-      <PlaceRelatedShelf currentPlace={place} relatedPlaces={relatedPlaces} />
-      <PlaceRouteBacklinks placeId={place.id} routes={routes} />
-    </div>
-  </section>
-</BaseLayout>
+<PlaceDetailPage place={place} locale="sr" relatedPlaces={relatedPlaces} routes={routes} localeLinks={localeLinks} />

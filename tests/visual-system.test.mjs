@@ -195,8 +195,9 @@ test("the homepage is composed from reusable map-explorer components", async () 
 });
 
 test("the dedicated map route reuses the shared map without homepage-only UI", async () => {
-  const [page, dedicatedMap, canvas, controls, header, outputModel, styles] = await Promise.all([
+  const [page, mapPage, dedicatedMap, canvas, controls, header, outputModel, styles] = await Promise.all([
     source("src/pages/mapa/index.astro"),
+    source("src/components/MapPage.astro"),
     source("src/components/DedicatedMap.astro"),
     source("src/components/MapCanvas.astro"),
     source("src/components/MapControls.astro"),
@@ -206,9 +207,10 @@ test("the dedicated map route reuses the shared map without homepage-only UI", a
   ]);
 
   assert.match(page, /loadVisiblePlaces/);
-  assert.match(page, /selectPublicDiscoveryPlaces\(await loadVisiblePlaces\(\)\)/);
-  assert.match(page, /<DedicatedMap places=\{places\} \/>/);
-  assert.match(page, /canonicalPath="\/mapa\/"/);
+  assert.match(page, /<MapPage places=\{places\} locale="sr" \/>/);
+  assert.match(mapPage, /selectPublicDiscoveryPlaces\(places\)/);
+  assert.match(mapPage, /<DedicatedMap places=\{discoveryPlaces\} locale=\{locale\} \/>/);
+  assert.match(mapPage, /canonicalPath=\{routeFor\(locale, "map"\)\}/);
   assert.doesNotMatch(page, /MapExplorer|ExplorerSidebar|RecommendedPlaces|PopularRoutes|PlaceAreas/);
   assert.match(dedicatedMap, /<MapCanvas places=\{places\} layout="full" locale=\{locale\} \/>/);
   assert.match(dedicatedMap, /<MapControls variant="map-page" locale=\{locale\} \/>/);
@@ -257,7 +259,8 @@ test("the map loading surface is neutral and cannot reveal the decorative fallba
 });
 
 test("public catalogue pages share discovery policy, category mapping, filters, and pagination", async () => {
-  const [catalogue, toolbar, card, pagination, paginationModel, featuredModel, areas, monasteries, churches, general, filters, discovery, detailHero, styles, outputVerifier] = await Promise.all([
+  const [cataloguePage, catalogue, toolbar, card, pagination, paginationModel, featuredModel, areas, monasteries, churches, general, filters, discovery, detailHero, styles, outputVerifier, copy] = await Promise.all([
+    source("src/components/CataloguePage.astro"),
     source("src/components/CategoryCatalogue.astro"),
     source("src/components/CatalogueToolbar.astro"),
     source("src/components/PlaceCard.astro"),
@@ -273,6 +276,7 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
     source("src/components/place-detail/PlaceDetailHero.astro"),
     source("src/styles/global.css"),
     source("scripts/verify-production-output.mjs"),
+    source("src/i18n/public-copy.ts"),
   ]);
   const [maleMonasteries, femaleMonasteries] = await Promise.all([
     source("src/pages/manastiri/muski/index.astro"),
@@ -330,13 +334,14 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.match(areas, /Будва и Паштровићи/);
   assert.doesNotMatch(paginationModel, /primaryPlaces|continuationPlaces|CONTINUATION/);
   assert.match(monasteries, /category="monasteries"/);
-  assert.match(monasteries, /heading="Манастири"/);
-  assert.match(maleMonasteries, /title="Мушки манастири"[\s\S]*?canonicalPath="\/manastiri\/muski\/"/);
-  assert.match(maleMonasteries, /heading="Мушки манастири"[\s\S]*?category="monasteries"[\s\S]*?catalogueHeading="Мушки манастири"[\s\S]*?monasticCommunity="male"/);
-  assert.match(maleMonasteries, /Још нема мушких манастира спремних за приказ\./);
-  assert.match(femaleMonasteries, /title="Женски манастири"[\s\S]*?canonicalPath="\/manastiri\/zenski\/"/);
-  assert.match(femaleMonasteries, /heading="Женски манастири"[\s\S]*?category="monasteries"[\s\S]*?catalogueHeading="Женски манастири"[\s\S]*?monasticCommunity="female"/);
-  assert.match(femaleMonasteries, /Још нема женских манастира спремних за приказ\./);
+  assert.match(monasteries, /<CataloguePage locale="sr" page="monasteries" category="monasteries" \/>/);
+  assert.match(maleMonasteries, /<CataloguePage locale="sr" page="maleMonasteries" category="monasteries" monasticCommunity="male"/);
+  assert.match(femaleMonasteries, /<CataloguePage locale="sr" page="femaleMonasteries" category="monasteries" monasticCommunity="female"/);
+  assert.match(cataloguePage, /publicCopy\[locale\]\.pages\.catalogues\[page\]/);
+  assert.match(cataloguePage, /canonicalPath=\{routeFor\(locale, page\)\}/);
+  assert.match(cataloguePage, /<CategoryCatalogue[\s\S]*?heading=\{copy\.title\}[\s\S]*?category=\{category\}[\s\S]*?monasticCommunity=\{monasticCommunity\}/);
+  assert.match(copy, /maleMonasteries: \{ title: "Мушки манастири"[\s\S]*?empty: "Још нема мушких манастира спремних за приказ\."/);
+  assert.match(copy, /femaleMonasteries: \{ title: "Женски манастири"[\s\S]*?empty: "Још нема женских манастира спремних за приказ\."/);
   assert.match(outputVerifier, /MONASTERY_SUBCATEGORY_HTML_ROUTES/);
   assert.match(outputVerifier, /model\.monasteryCommunityMembership\[community\]/);
   assert.match(outputVerifier, /verifyCataloguePagination\(page, members, `\$\{community\} monastery catalogue`, failures, false\)/);
@@ -350,7 +355,8 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.match(discovery, /PUBLIC_DISCOVERY_CATEGORIES = \["monasteries", "churches"\]/);
   assert.match(discovery, /selectPublicDiscoveryPlaces/);
   assert.doesNotMatch(detailHero, /\/sveta-mjesta\/|label: "Света мјеста"/);
-  assert.match(detailHero, /\{ href: "\/svetinje\/", label: "Светиње" \}/);
+  assert.match(detailHero, /routeFor\(locale, "holyPlaces"\)/);
+  assert.match(detailHero, /routeFor\(locale, "map"\)/);
 });
 
 test("map controls, search, and filters expose accessible states and honest feedback", async () => {

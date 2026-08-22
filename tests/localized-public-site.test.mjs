@@ -59,7 +59,7 @@ test("localized route layer exposes exact archives without restoring holy-place 
   assert.match(metadata, /x-default/);
   assert.match(switcher, /destinations\[locale\]/);
   assert.match(catalogue, /places: suppliedPlaces/);
-  assert.match(localizedPage, /DedicatedMap places=\{places\} locale=\{locale\}/);
+  assert.match(localizedPage, /<MapPage locale=\{locale\} places=\{places\} \/>/);
   assert.doesNotMatch(localizedPage, /routeFor\(locale, "holyPlaces"\)/);
 });
 
@@ -87,12 +87,16 @@ test("available static routes expose symmetric Serbian, Russian, and English equ
     assert.equal(staticEquivalentForPath(path), undefined);
   }
 
-  const [layout, localizedPage] = await Promise.all([
+  const [layout, localizedPage, cataloguePage, mapPage] = await Promise.all([
     source("src/layouts/BaseLayout.astro"), source("src/components/LocalizedPublicPage.astro"),
+    source("src/components/CataloguePage.astro"), source("src/components/MapPage.astro"),
   ]);
   assert.match(layout, /staticEquivalentForPath\(canonicalPath\)/);
   assert.doesNotMatch(layout, /Object\.values\(routeConfig\)/);
-  assert.match(localizedPage, /staticLocaleLinksForRoute\(page as RouteKey\)/);
+  assert.match(localizedPage, /<CataloguePage locale=\{locale\}/);
+  assert.match(localizedPage, /<MapPage locale=\{locale\}/);
+  assert.match(cataloguePage, /canonicalPath=\{routeFor\(locale, page\)\}/);
+  assert.match(mapPage, /canonicalPath=\{routeFor\(locale, "map"\)\}/);
 });
 
 test("Serbian, Russian, and English home routes share the complete homepage architecture", async () => {

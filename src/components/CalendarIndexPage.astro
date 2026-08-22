@@ -1,0 +1,44 @@
+---
+import { routeFor, type Locale } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
+import { localizedCalendarDate, type CalendarDay } from "../lib/calendar/content";
+import { podgoricaDateKey } from "../lib/calendar/today-calendar";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+interface Props { days: CalendarDay[]; locale?: Locale; metadataTitle?: string | undefined; metadataDescription?: string | undefined }
+const { days, locale = "sr", metadataTitle, metadataDescription } = Astro.props;
+const copy = publicCopy[locale].pages.calendar;
+const today = podgoricaDateKey(new Date());
+const selected = locale === "sr" && today.startsWith("2026-") ? days.find((day) => day.date === today) : undefined;
+const interactive = locale === "sr";
+const pendingText = (locale === "sr" ? copy.pending : copy.translationPending).replace("{year}", today.slice(0, 4));
+---
+
+<BaseLayout title={metadataTitle ?? copy.title} description={metadataDescription ?? copy.description} canonicalPath={routeFor(locale, "calendar")} locale={locale}>
+  <section class="calendar-index shell" data-testid="calendar-index-page" data-calendar-index-locale={locale}>
+    <p class="page-eyebrow">{copy.eyebrow}</p>
+    <h1>{copy.title}</h1>
+    <p>{copy.description}</p>
+    <form class="calendar-picker" action={routeFor(locale, "calendar")} data-calendar-picker data-calendar-base={routeFor(locale, "calendar")} data-calendar-interactive={String(interactive)}>
+      <label for={`calendar-date-${locale}`}>{copy.date}</label>
+      <input id={`calendar-date-${locale}`} name="date" type="date" min="2026-01-01" max="2026-12-31" value={selected?.date ?? "2026-01-01"} disabled={!interactive} />
+      <button type="submit" disabled={!interactive}>{copy.open}</button>
+    </form>
+    {selected ? (
+      <a class="calendar-index__today" href={`/kalendar/${selected.date}/`}>{localizedCalendarDate(selected.date, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}: {selected.title}</a>
+    ) : (
+      <p class="calendar-index__pending">{pendingText}</p>
+    )}
+  </section>
+</BaseLayout>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>("[data-calendar-picker]").forEach((picker) => {
+    picker.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (picker.dataset.calendarInteractive !== "true") return;
+      const input = picker.querySelector<HTMLInputElement>('input[type="date"]');
+      if (input?.value) window.location.href = `${picker.dataset.calendarBase}${input.value}/`;
+    });
+  });
+</script>

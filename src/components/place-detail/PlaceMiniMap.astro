@@ -1,20 +1,24 @@
 ---
 import { resolveMarkerAsset } from "../../lib/map-marker-assets";
+import { routeFor, type Locale } from "../../i18n/config";
+import { publicCopy } from "../../i18n/public-copy";
 
 interface Props {
   latitude: number;
   longitude: number;
   name: string;
   placeType: string;
+  locale?: Locale;
 }
 
-const { latitude, longitude, name, placeType } = Astro.props;
+const { latitude, longitude, name, placeType, locale = "sr" } = Astro.props;
+const copy = publicCopy[locale].pages.placeDetail.miniMap;
 const markerSrc = resolveMarkerAsset(placeType)?.src;
 ---
 
 <section
   class="place-mini-map"
-  aria-label={`Мала карта положаја — ${name}`}
+  aria-label={`${copy.aria} — ${name}`}
   data-place-mini-map
   data-latitude={latitude}
   data-longitude={longitude}
@@ -24,7 +28,7 @@ const markerSrc = resolveMarkerAsset(placeType)?.src;
 >
   <div class="place-mini-map__viewport" data-place-mini-map-renderer aria-hidden="true">
     <div class="place-mini-map__canvas" data-place-mini-map-canvas></div>
-    <div class="place-mini-map__attribution" data-place-mini-map-attribution aria-label="Извори картографских података" hidden>
+    <div class="place-mini-map__attribution" data-place-mini-map-attribution aria-label={copy.attribution} hidden>
       <a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener noreferrer">© MapTiler</a>
       <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a>
     </div>
@@ -33,7 +37,7 @@ const markerSrc = resolveMarkerAsset(placeType)?.src;
     <span aria-hidden="true"></span>
     <p>{latitude}, {longitude}</p>
   </div>
-  <a class="place-mini-map__link" href="/#mapa">Отвори на главној карти <span aria-hidden="true">→</span></a>
+  <a class="place-mini-map__link" href={`${routeFor(locale, "home")}#mapa`}>{copy.open} <span aria-hidden="true">→</span></a>
 </section>
 
 <script>

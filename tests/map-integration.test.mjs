@@ -187,15 +187,18 @@ test("public map marker and cluster inventory excludes coordinate-bearing holy p
 });
 
 test("homepage and dedicated map use the shared public-discovery inventory", async () => {
-  const [explorer, mapPage] = await Promise.all([
+  const [explorer, mapRoute, mapPage] = await Promise.all([
     source("src/components/MapExplorer.astro"),
     source("src/pages/mapa/index.astro"),
+    source("src/components/MapPage.astro"),
   ]);
 
   assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
   assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} locale=\{locale\} \/>/);
   assert.doesNotMatch(explorer, /mapOnlyPlaceIds|data-map-only-place-ids/);
-  assert.match(mapPage, /selectPublicDiscoveryPlaces\(await loadVisiblePlaces\(\)\)/);
+  assert.match(mapRoute, /<MapPage places=\{places\} locale="sr" \/>/);
+  assert.match(mapPage, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
+  assert.match(mapPage, /<DedicatedMap places=\{discoveryPlaces\} locale=\{locale\} \/>/);
 });
 
 test("nearby visible places cluster with an accurate count and separate after zoom-in", () => {

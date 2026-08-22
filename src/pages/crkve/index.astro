@@ -1,17 +1,4 @@
 ---
-import CategoryCatalogue from "../../components/CategoryCatalogue.astro";
-import BaseLayout from "../../layouts/BaseLayout.astro";
+import CataloguePage from "../../components/CataloguePage.astro";
 ---
-
-<BaseLayout
-  title="Цркве"
-  description="Истражите православне храмове, цркве, капеле и саборне храмове Црне Горе."
-  canonicalPath="/crkve/"
->
-  <CategoryCatalogue
-    heading="Цркве"
-    description="Истражите православне храмове, цркве, капеле и саборне храмове Црне Горе."
-    category="churches"
-    emptyHeading="Још нема храмова спремних за јавно објављивање."
-  />
-</BaseLayout>
+<CataloguePage locale="sr" page="churches" category="churches" />

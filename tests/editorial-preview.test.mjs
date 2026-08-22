@@ -202,11 +202,11 @@ test("editorial preview loads a research place without summary, sections, or nar
   const [card, hero, detail] = await Promise.all([
     source("src/components/PlaceCard.astro"),
     source("src/components/place-detail/PlaceDetailHero.astro"),
-    source("src/pages/svetinje/[slug].astro"),
+    source("src/components/PlaceDetailPage.astro"),
   ]);
   assert.match(card, /\{place\.summary && <p class="editorial-place-card__summary">/);
   assert.match(hero, /\{place\.summary && <p>\{place\.summary\}<\/p>\}/);
-  assert.match(detail, /place\.narrativeBody\.trim\(\)[\s\S]*Општи подаци о светињи су у припреми\./);
+  assert.match(detail, /place\.narrativeBody\.trim\(\)[\s\S]*copy\.about\.empty/);
   assert.doesNotMatch(detail, /historySections|Историјски подаци су у припреми\./);
 });
 
@@ -432,6 +432,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
     mapCanvas,
     explorer,
     card,
+    detailRoute,
     detail,
     detailHero,
     detailGallery,
@@ -439,6 +440,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
     practicalPanel,
     miniMap,
     relatedShelf,
+    relatedModel,
     baseLayout,
     metadata,
     styles,
@@ -450,12 +452,14 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
     source("src/components/MapExplorer.astro"),
     source("src/components/PlaceCard.astro"),
     source("src/pages/svetinje/[slug].astro"),
+    source("src/components/PlaceDetailPage.astro"),
     source("src/components/place-detail/PlaceDetailHero.astro"),
     source("src/components/place-detail/PlaceDetailGallery.astro"),
     source("src/components/place-detail/PlaceNarrativeArticle.astro"),
     source("src/components/place-detail/PlacePracticalPanel.astro"),
     source("src/components/place-detail/PlaceMiniMap.astro"),
     source("src/components/place-detail/PlaceRelatedShelf.astro"),
+    source("src/lib/related-places.ts"),
     source("src/layouts/BaseLayout.astro"),
     source("src/components/PageMetadata.astro"),
     source("src/styles/global.css"),
@@ -476,13 +480,14 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.match(card, /place\.previewImageSrc/);
   assert.match(card, /class="editorial-place-card__image"/);
   assert.match(card, /alt=\{place\.previewImageAlt \?\? place\.name\}/);
-  assert.match(detail, /getStaticPaths/);
-  assert.match(detail, /loadVisiblePlaces/);
-  assert.match(detail, /coordinateDistance/);
-  assert.match(detail, /candidate\.id !== place\.id/);
-  assert.match(detail, /hasCoordinates: candidate\.latitude !== undefined/);
-  assert.match(detail, /getPlaceAboutLabel\(place\.placeType\)/);
-  assert.match(detail, /<PlaceNarrativeArticle body=\{place\.narrativeBody\} heading=\{aboutLabel\}/);
+  assert.match(detailRoute, /getStaticPaths/);
+  assert.match(detailRoute, /loadVisiblePlaces/);
+  assert.match(detailRoute, /relatedPlacesFor\(place, places, "sr"\)/);
+  assert.match(relatedModel, /coordinateDistance/);
+  assert.match(relatedModel, /candidate\.id !== place\.id/);
+  assert.match(relatedModel, /hasCoordinates: candidate\.latitude !== undefined/);
+  assert.match(detail, /const aboutLabel = place\.placeType === "monastery"/);
+  assert.match(detail, /<PlaceNarrativeArticle body=\{place\.narrativeBody\} heading=\{aboutLabel\} locale=\{locale\}/);
   assert.doesNotMatch(detail, /place-history-title|place-arrival-title|PlaceNarrativeSegments/);
   assert.match(detail, /<PlacePracticalPanel place=\{place\}/);
   assert.doesNotMatch(detail, /Уређивачки преглед|Траг извора|Извори и напомене|place-profile-sources/);
@@ -503,8 +508,8 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.doesNotMatch(narrativeArticle, /sourceIds|<sup\b|#source-/);
   assert.match(practicalPanel, /data-copy-coordinates/);
   assert.match(practicalPanel, /aria-live="polite"/);
-  assert.match(practicalPanel, /label: "Епархија"/);
-  assert.match(practicalPanel, /label: "Слава"/);
+  assert.match(practicalPanel, /label: copy\.jurisdiction/);
+  assert.match(practicalPanel, /label: copy\.feast/);
   assert.doesNotMatch(practicalPanel, /Црквена припадност|Тачност положаја|Статус записа|Напомена о подацима|practicalSections/);
   assert.match(miniMap, /import\.meta\.env\.PUBLIC_MAPTILER_KEY/);
   assert.match(miniMap, /019fc7d8-717c-701d-9ca5-a53d9438d3ce/);

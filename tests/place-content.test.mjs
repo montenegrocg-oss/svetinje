@@ -64,14 +64,16 @@ test("unified narrative compatibility retains every real non-empty heading and p
   assert.ok(checked >= 27);
 });
 
-test("place detail keeps one article, ordered interactive gallery, optional video, and optional feast", async () => {
-  const [page, gallery, practical, publication] = await Promise.all([
+test("place detail keeps one shared article, ordered interactive gallery, optional video, and optional feast", async () => {
+  const [route, page, gallery, practical, publication] = await Promise.all([
     source("src/pages/svetinje/[slug].astro"),
+    source("src/components/PlaceDetailPage.astro"),
     source("src/components/place-detail/PlaceDetailGallery.astro"),
     source("src/components/place-detail/PlacePracticalPanel.astro"),
     source("src/lib/content/publication.ts"),
   ]);
-  assert.match(page, /<PlaceNarrativeArticle body=\{place\.narrativeBody\} heading=\{aboutLabel\}/);
+  assert.match(route, /<PlaceDetailPage place=\{place\} locale="sr"/);
+  assert.match(page, /<PlaceNarrativeArticle body=\{place\.narrativeBody\} heading=\{aboutLabel\} locale=\{locale\}/);
   assert.doesNotMatch(page, /place-history-title|place-arrival-title|Историјски подаци су у припреми/);
   assert.match(gallery, /secondaryImages\.map/);
   assert.match(gallery, /data-gallery-index=\{String\(index \+ 1\)\}/);
@@ -81,5 +83,5 @@ test("place detail keeps one article, ordered interactive gallery, optional vide
   assert.match(practical, /value: place\.patronalFeast/);
   assert.match(publication, /mediaOrder/);
   assert.match(publication, /order\.get\(left\.id\)/);
-  assert.match(await source("src/components/place-detail/PlaceNarrativeArticle.astro"), /block\.text === heading \|\| block\.text === "О светињи"/);
+  assert.match(await source("src/components/place-detail/PlaceNarrativeArticle.astro"), /block\.text === heading \|\| block\.text === genericHeading/);
 });

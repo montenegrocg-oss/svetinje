@@ -1,27 +1,6 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import RouteCard from "../../components/routes/RouteCard.astro";
+import RouteCataloguePage from "../../components/RouteCataloguePage.astro";
 import { loadVisibleRoutes } from "../../lib/content/routes";
 const routes = await loadVisibleRoutes();
 ---
-
-<BaseLayout title="Пјешачке руте до светиња" description="Провјерене пјешачке руте до православних светиња Црне Горе." canonicalPath="/rute/">
-  <header class="route-catalogue-hero"><div class="shell"><p class="section-eyebrow">Руте</p><h1>Пјешачке руте до светиња</h1><p>Трасе засноване на стварним GPS записима, са јасно означеним провјереним и непровјереним практичним подацима.</p></div></header>
-  <section class="shell route-catalogue" aria-labelledby="route-list-title">
-    <div class="route-filters" aria-label="Филтери тежине">
-      {[['all','Све'],['easy','Лаке'],['moderate','Средње'],['demanding','Захтјевне']].map(([id,label]) => <button type="button" data-route-filter={id} aria-pressed={id === 'all'}>{label}</button>)}
-    </div>
-    <h2 id="route-list-title" class="visually-hidden">Доступне руте</h2>
-    {routes.length ? <div class="route-catalogue__grid">{routes.map((route) => <div data-route-difficulty={route.difficulty}><RouteCard route={route} /></div>)}</div> : <p class="route-empty">Још нема рута спремних за јавно објављивање.</p>}
-  </section>
-</BaseLayout>
-
-<script>
-  const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-route-filter]")];
-  const cards = [...document.querySelectorAll<HTMLElement>("[data-route-difficulty]")];
-  buttons.forEach((button) => button.addEventListener("click", () => {
-    const filter = button.dataset.routeFilter ?? "all";
-    buttons.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
-    cards.forEach((card) => { card.hidden = filter !== "all" && card.dataset.routeDifficulty !== filter; });
-  }));
-</script>
+<RouteCataloguePage routes={routes} locale="sr" metadataDescription="Провјерене пјешачке руте до православних светиња Црне Горе." />
