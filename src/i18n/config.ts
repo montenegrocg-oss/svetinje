@@ -9,13 +9,13 @@ export const localeConfig = {
     htmlLang: "ru",
     label: "Русский",
     prefix: "/ru",
-    available: false,
+    available: true,
   },
   en: {
     htmlLang: "en",
     label: "English",
     prefix: "/en",
-    available: false,
+    available: true,
   },
 } as const;
 

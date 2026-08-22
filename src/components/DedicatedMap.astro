@@ -5,14 +5,15 @@ import MapControls from "./MapControls.astro";
 
 interface Props {
   places: VisiblePlace[];
+  locale?: import("../i18n/config").Locale;
 }
 
-const { places } = Astro.props;
+const { places, locale = "sr" } = Astro.props;
 ---
 
-<section class="dedicated-map-page" aria-label="Интерактивна карта православних светиња">
+<section class="dedicated-map-page" aria-label={locale === "ru" ? "Интерактивная карта православных святынь" : locale === "en" ? "Interactive map of Orthodox holy places" : "Интерактивна карта православних светиња"}>
   <div class="map-stage dedicated-map-page__stage">
-    <MapCanvas places={places} layout="full" />
-    <MapControls variant="map-page" />
+    <MapCanvas places={places} layout="full" locale={locale} />
+    <MapControls variant="map-page" locale={locale} />
   </div>
 </section>

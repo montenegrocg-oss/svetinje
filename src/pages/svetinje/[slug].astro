@@ -10,6 +10,8 @@ import { loadVisiblePlaces } from "../../lib/content/publication";
 import PlaceRouteBacklinks from "../../components/routes/PlaceRouteBacklinks.astro";
 import { loadVisibleRoutes, routesForPlace, type VisibleRoute } from "../../lib/content/routes";
 import { getPlaceAboutLabel } from "../../lib/place-content.ts";
+import { localizedSlugsForPlace } from "../../lib/content/localized-publication";
+import { placeDetailRoot, type Locale } from "../../i18n/config";
 
 interface RelatedPlace {
   place: VisiblePlace;
@@ -58,6 +60,7 @@ export async function getStaticPaths() {
 
 const { place, relatedPlaces, routes } = Astro.props as { place: VisiblePlace; relatedPlaces: RelatedPlace[]; routes: VisibleRoute[] };
 const aboutLabel = getPlaceAboutLabel(place.placeType);
+const localeLinks = Object.fromEntries(Object.entries(await localizedSlugsForPlace(place.id)).map(([locale, slug]) => [locale, `${placeDetailRoot[locale as Locale]}${slug}/`]));
 ---
 
 <BaseLayout
@@ -65,6 +68,7 @@ const aboutLabel = getPlaceAboutLabel(place.placeType);
   description={place.summary}
   canonicalPath={`/svetinje/${place.slug}/`}
   noindex={place.preview}
+  localeLinks={localeLinks}
 >
   <PlaceDetailHero place={place} />
 

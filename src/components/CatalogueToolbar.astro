@@ -3,9 +3,13 @@ interface Props {
   searchPlaceholder: string;
   areas: ReadonlyArray<{ id: string; label: string }>;
   statusText?: string;
+  locale?: import("../i18n/config").Locale;
 }
 
-const { searchPlaceholder, areas, statusText } = Astro.props;
+import { routeFor, type Locale } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
+const { searchPlaceholder, areas, statusText, locale = "sr" } = Astro.props;
+const copy = publicCopy[locale as Locale];
 ---
 
 <div class="catalogue-toolbar" data-catalogue-toolbar>
@@ -14,9 +18,9 @@ const { searchPlaceholder, areas, statusText } = Astro.props;
     <input type="search" placeholder={searchPlaceholder} autocomplete="off" data-catalogue-search />
   </label>
   <label class="catalogue-toolbar__area">
-    <span class="sr-only">Изаберите област</span>
+    <span class="sr-only">{copy.chooseArea}</span>
     <select data-catalogue-area>
-      <option value="">Све области</option>
+      <option value="">{copy.allAreas}</option>
       {areas.map((area) => <option value={area.id}>{area.label}</option>)}
     </select>
   </label>
@@ -26,7 +30,7 @@ const { searchPlaceholder, areas, statusText } = Astro.props;
     </p>
   )}
   <div class="catalogue-toolbar__actions">
-    <a href="/mapa/">Прикажи на карти <span aria-hidden="true">→</span></a>
-    <button type="button" data-catalogue-reset hidden disabled>Очисти филтере</button>
+    <a href={routeFor(locale, "map")}>{copy.showMap} <span aria-hidden="true">→</span></a>
+    <button type="button" data-catalogue-reset hidden disabled>{copy.clear}</button>
   </div>
 </div>

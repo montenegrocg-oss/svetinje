@@ -3,9 +3,11 @@ import InterfaceIcon from "./InterfaceIcon.astro";
 
 interface Props {
   variant?: "homepage" | "map-page";
+  locale?: import("../i18n/config").Locale;
 }
 
-const { variant = "homepage" } = Astro.props;
+const { variant = "homepage", locale = "sr" } = Astro.props;
+const c = locale === "ru" ? { controls: "Управление картой", layers: "Слои", layersTitle: "Слои карты", layersBody: "Активен базовый слой Outdoor. Дополнительные слои появятся позже.", zoom: "Масштаб карты", zin: "Увеличить", zout: "Уменьшить", reset: "Показать Черногорию", help: "Как пользоваться картой?", helpTitle: "Интерактивная карта", helpBody: "Карту можно перемещать и масштабировать. Откройте метку, чтобы перейти к святыне." } : locale === "en" ? { controls: "Map controls", layers: "Layers", layersTitle: "Map layers", layersBody: "The Outdoor base layer is active. Additional layers will be available later.", zoom: "Map zoom", zin: "Zoom in", zout: "Zoom out", reset: "Show Montenegro", help: "How to use the map", helpTitle: "Interactive map", helpBody: "Pan and zoom the map. Open a marker to visit the holy-place page." } : { controls: "Контроле карте", layers: "Слојеви", layersTitle: "Слојеви карте", layersBody: "Основни Outdoor приказ је активан. Избор додатних картографских слојева биће доступан у каснијој фази.", zoom: "Зумирање карте", zin: "Увећај карту", zout: "Умањи карту", reset: "Прикажи поново Црну Гору", help: "Како користити карту?", helpTitle: "Интерактивна основна карта", helpBody: "Карту можете помјерати и зумирати. Ознаке светиња и руте неће бити приказане док подаци не прођу уредничко одобрење." };
 ---
 
 {variant === "homepage" && (
@@ -18,26 +20,24 @@ const { variant = "homepage" } = Astro.props;
   </div>
 )}
 
-<div class:list={["map-tool-stack", { "map-tool-stack--page": variant === "map-page" }]} aria-label="Контроле карте">
+<div class:list={["map-tool-stack", { "map-tool-stack--page": variant === "map-page" }]} aria-label={c.controls}>
   <details class="map-popover map-layers">
-    <summary><InterfaceIcon name="layers" size={21} /><span>Слојеви</span></summary>
+    <summary><InterfaceIcon name="layers" size={21} /><span>{c.layers}</span></summary>
     <div class="map-popover__panel">
-      <strong>Слојеви карте</strong>
-      <p>Основни Outdoor приказ је активан. Избор додатних картографских слојева биће доступан у каснијој фази.</p>
+      <strong>{c.layersTitle}</strong><p>{c.layersBody}</p>
     </div>
   </details>
-  <div class="map-zoom" aria-label="Зумирање карте">
-    <button type="button" data-map-zoom-in disabled aria-label="Увећај карту"><InterfaceIcon name="plus" size={21} /></button>
-    <button type="button" data-map-zoom-out disabled aria-label="Умањи карту"><InterfaceIcon name="minus" size={21} /></button>
+  <div class="map-zoom" aria-label={c.zoom}>
+    <button type="button" data-map-zoom-in disabled aria-label={c.zin}><InterfaceIcon name="plus" size={21} /></button>
+    <button type="button" data-map-zoom-out disabled aria-label={c.zout}><InterfaceIcon name="minus" size={21} /></button>
   </div>
-  <button class="map-target" type="button" data-map-reset disabled aria-label="Прикажи поново Црну Гору"><InterfaceIcon name="target" size={21} /></button>
+  <button class="map-target" type="button" data-map-reset disabled aria-label={c.reset}><InterfaceIcon name="target" size={21} /></button>
 </div>
 
 <details class:list={["map-popover", "map-help", { "map-help--page": variant === "map-page" }]}>
-  <summary><InterfaceIcon name="info" size={18} /><span>Како користити карту?</span></summary>
+  <summary><InterfaceIcon name="info" size={18} /><span>{c.help}</span></summary>
   <div class="map-popover__panel">
-    <strong>Интерактивна основна карта</strong>
-    <p>Карту можете помјерати и зумирати. Ознаке светиња и руте неће бити приказане док подаци не прођу уредничко одобрење.</p>
+    <strong>{c.helpTitle}</strong><p>{c.helpBody}</p>
   </div>
 </details>
 

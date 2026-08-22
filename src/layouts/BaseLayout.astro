@@ -2,6 +2,8 @@
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import PageMetadata from "../components/PageMetadata.astro";
+import { localeConfig, routeConfig, type Locale } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
 import "../styles/global.css";
 
 interface Props {
@@ -9,14 +11,19 @@ interface Props {
   description: string;
   canonicalPath: string;
   noindex?: boolean;
+  locale?: Locale;
+  localeLinks?: Partial<Record<Locale, string>>;
 }
 
-const { title, description, canonicalPath, noindex = false } = Astro.props;
+const { title, description, canonicalPath, noindex = false, locale = "sr", localeLinks: suppliedLocaleLinks } = Astro.props;
 const editorialPreview = process.env.EDITORIAL_PREVIEW === "true";
+const staticRoute = Object.values(routeConfig).find((paths) => Object.values(paths).includes(canonicalPath as never));
+const localeLinks = suppliedLocaleLinks ?? (staticRoute ? { sr: staticRoute.sr, ru: staticRoute.ru, en: staticRoute.en } : { [locale]: canonicalPath });
+const copy = publicCopy[locale];
 ---
 
 <!doctype html>
-<html lang="sr-Cyrl-ME">
+<html lang={localeConfig[locale].htmlLang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -26,14 +33,16 @@ const editorialPreview = process.env.EDITORIAL_PREVIEW === "true";
       description={description}
       canonicalPath={canonicalPath}
       noindex={noindex || editorialPreview}
+      locale={locale}
+      localeLinks={localeLinks}
     />
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Пређи на главни садржај</a>
-    <Header currentPath={Astro.url.pathname} />
+    <a class="skip-link" href="#main-content">{copy.skip}</a>
+    <Header currentPath={Astro.url.pathname} locale={locale} localeLinks={localeLinks} />
     <main id="main-content">
       <slot />
     </main>
-    <Footer />
+    <Footer locale={locale} />
   </body>
 </html>

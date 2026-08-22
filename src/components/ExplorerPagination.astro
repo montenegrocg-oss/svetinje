@@ -3,16 +3,19 @@ import { pageCountForPlaces } from "../lib/explorer-pagination";
 
 interface Props {
   totalPlaces: number;
+  locale?: import("../i18n/config").Locale;
 }
 
-const { totalPlaces } = Astro.props;
+import { publicCopy } from "../i18n/public-copy";
+const { totalPlaces, locale = "sr" } = Astro.props;
+const copy = publicCopy[locale];
 const totalPages = pageCountForPlaces(totalPlaces);
 const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
 ---
 
 <nav
   class="explorer-pagination catalogue-pagination"
-  aria-label="Странице резултата"
+  aria-label={locale === "ru" ? "Страницы результатов" : locale === "en" ? "Result pages" : "Странице резултата"}
   data-catalogue-pagination
   data-total-pages={totalPages}
   hidden={totalPages <= 1}
@@ -21,7 +24,7 @@ const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
     class="explorer-pagination__arrow"
     type="button"
     data-pagination-previous
-    aria-label="Претходна страница"
+    aria-label={locale === "ru" ? "Предыдущая страница" : locale === "en" ? "Previous page" : "Претходна страница"}
     disabled
   >
     <span aria-hidden="true">←</span>
@@ -31,7 +34,7 @@ const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
       <button
         type="button"
         data-pagination-page={page}
-        aria-label={`Страница ${page}`}
+        aria-label={`${copy.page} ${page}`}
         aria-current={page === 1 ? "page" : undefined}
       >
         {page}
@@ -42,11 +45,11 @@ const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
     class="explorer-pagination__arrow"
     type="button"
     data-pagination-next
-    aria-label="Сљедећа страница"
+    aria-label={locale === "ru" ? "Следующая страница" : locale === "en" ? "Next page" : "Сљедећа страница"}
   >
     <span aria-hidden="true">→</span>
   </button>
   <p class="explorer-pagination__status" data-pagination-status aria-live="polite">
-    Страница 1 од {totalPages}
+    {copy.page} 1 {copy.of} {totalPages}
   </p>
 </nav>
