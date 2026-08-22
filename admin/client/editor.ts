@@ -166,12 +166,24 @@ const collectAlternateNames = () => [...form.querySelectorAll<HTMLElement>("[dat
   context: row.querySelector<HTMLTextAreaElement>("[data-alt-context]")?.value ?? "",
   verificationStatus: (row.querySelector("[data-alt-status]") as HTMLSelectElement | null)?.value ?? "requires-verification",
 }));
+const placeTypeInput = field("placeType") as HTMLSelectElement;
+const monasticCommunityInput = field("monasticCommunity") as HTMLSelectElement;
+const monasticCommunityField = form.querySelector<HTMLElement>("[data-monastic-community-field]");
+const syncMonasticCommunityField = () => {
+  const enabled = placeTypeInput.value === "monastery";
+  if (monasticCommunityField) monasticCommunityField.hidden = !enabled;
+  monasticCommunityInput.disabled = !enabled;
+  if (!enabled) monasticCommunityInput.value = "";
+};
+placeTypeInput.addEventListener("change", syncMonasticCommunityField);
+syncMonasticCommunityField();
 const body = () => ({
   expectedHeadSha: form.dataset.headSha,
   preferredName: field("preferredName").value,
   shortName: field("shortName").value,
   slug: field("slug").value,
   placeType: field("placeType").value,
+  monasticCommunity: monasticCommunityInput.disabled ? "" : monasticCommunityInput.value,
   browseAreaId: field("browseAreaId").value,
   summary: field("summary").value,
   jurisdiction: field("jurisdiction").value,

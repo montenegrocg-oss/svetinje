@@ -5,11 +5,14 @@ import { PLACE_AREAS } from "../../src/lib/place-areas.ts";
 import { AdminError, internalFailure } from "./errors.ts";
 import type { BranchState, GitRepository, TreeEntry } from "./types.ts";
 
+export type MonasticCommunity = "male" | "female";
+
 export interface AdminPlace {
   id: string;
   preferredName: string;
   slug?: string;
   placeType?: string;
+  monasticCommunity?: MonasticCommunity;
   editorialStatus: string;
   browseAreaId?: string;
   municipality?: string;
@@ -49,6 +52,7 @@ export interface AdminMedia {
 
 export interface CanonicalOptions {
   placeTypes: string[];
+  monasticCommunities: MonasticCommunity[];
   browseAreas: typeof PLACE_AREAS;
   coordinateAccuracy: string[];
   publicationSafety: string[];
@@ -113,6 +117,11 @@ const factValue = (record: unknown): string | undefined => {
   return typeof value === "string" ? value : undefined;
 };
 
+const monasticCommunityValue = (record: unknown): MonasticCommunity | undefined => {
+  const value = factValue(record);
+  return value === "male" || value === "female" ? value : undefined;
+};
+
 async function readBlobContents(repository: GitRepository, entries: TreeEntry[]): Promise<Map<string, string>> {
   const shas = entries.map((entry) => entry.sha);
   const contents = repository.readBlobs
@@ -143,6 +152,7 @@ function schemaEnums(placeSchema: any, _narrativeSchema: any, commonSchema: any)
   };
   return {
     placeTypes: stringArray(placeSchema.$defs?.placeType?.enum, "place types"),
+    monasticCommunities: stringArray(placeSchema.$defs?.monasticCommunity?.enum, "monastic communities") as MonasticCommunity[],
     browseAreas: PLACE_AREAS,
     coordinateAccuracy: stringArray(placeSchema.$defs?.coordinateAccuracy?.enum, "coordinate accuracy"),
     publicationSafety: stringArray(commonSchema.$defs?.publicationSafety?.enum, "publication safety"),
@@ -206,6 +216,7 @@ export async function loadAdminRepository(repository: GitRepository, branch: str
     const narrative = narrativeEntry ? parseNarrative(contentFor(contents, narrativeEntry)).frontMatter : {};
     const sourceIds = new Set([...(Array.isArray(record.source_ids) ? record.source_ids : []), ...(Array.isArray(narrative.source_ids) ? narrative.source_ids : [])].filter((value): value is string => typeof value === "string"));
     const coordinates = record.location?.coordinates;
+    const monasticCommunity = monasticCommunityValue(record.ecclesiastical?.community_type);
     const municipality = factValue(record.location?.municipality);
     const settlement = factValue(record.location?.settlement);
     return {
@@ -213,6 +224,7 @@ export async function loadAdminRepository(repository: GitRepository, branch: str
       preferredName: typeof narrative.preferred_name === "string" ? narrative.preferred_name : id,
       ...(typeof narrative.slug === "string" ? { slug: narrative.slug } : {}),
       ...(typeof record.place_type?.value === "string" ? { placeType: record.place_type.value } : {}),
+      ...(monasticCommunity ? { monasticCommunity } : {}),
       editorialStatus: typeof record.editorial_status === "string" ? record.editorial_status : "unknown",
       ...(typeof record.browse_area_id === "string" ? { browseAreaId: record.browse_area_id } : {}),
       ...(municipality ? { municipality } : {}),
@@ -283,6 +295,7 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
     }];
   });
   const jurisdiction = factValue(rawPlace.ecclesiastical?.jurisdiction);
+  const monasticCommunity = monasticCommunityValue(rawPlace.ecclesiastical?.community_type);
   const countryCode = factValue(rawPlace.location?.country_code);
   const municipality = factValue(rawPlace.location?.municipality);
   const settlement = factValue(rawPlace.location?.settlement);
@@ -301,6 +314,7 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
       editorialStatus: String(rawPlace.editorial_status ?? "unknown"),
       ...(typeof rawPlace.browse_area_id === "string" ? { browseAreaId: rawPlace.browse_area_id } : {}),
       ...(jurisdiction ? { jurisdiction } : {}),
+      ...(monasticCommunity ? { monasticCommunity } : {}),
       ...(countryCode ? { countryCode } : {}),
       ...(municipality ? { municipality } : {}),
       ...(settlement ? { settlement } : {}),

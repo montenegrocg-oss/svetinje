@@ -17,6 +17,7 @@ class BatchRepository {
     this.add("schemas/place.schema.json", JSON.stringify({
       $defs: {
         placeType: { enum: ["monastery", "church"] },
+        monasticCommunity: { enum: ["male", "female"] },
         coordinateAccuracy: { enum: ["complex-centroid"] },
       },
     }));

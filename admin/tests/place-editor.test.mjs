@@ -21,12 +21,21 @@ place_type:
   value: monastery
   verification: { status: verified, source_ids: [source-one], reviewed_by: [maxim], reviewed_at: 2026-08-01 }
 ecclesiastical:
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
+    verification: { status: requires-verification, source_ids: [source-one] }
   jurisdiction:
     value: Existing jurisdiction
     verification: { status: verified, source_ids: [source-one], reviewed_by: [maxim], reviewed_at: 2026-08-01 }
   community_type:
-    value: brotherhood
-    verification: { status: requires-verification }
+    value: male
+    verification: { status: verified, source_ids: [source-one], reviewed_by: [maxim], reviewed_at: 2026-08-01, qualification: Existing classification }
+  dedication_ids:
+    value: [existing-dedication]
+    verification: { status: requires-verification, source_ids: [source-one] }
+  associated_entity_ids:
+    value: [existing-entity]
+    verification: { status: requires-verification, source_ids: [source-one] }
 location:
   country_code:
     value: ME
@@ -185,7 +194,7 @@ const session = { subject: "user", email: "editor@example.com", actor: "editor-u
 const newPlaceBody = { preferredName: "Нови објекат", id: "novi-objekat", slug: "novi-objekat", placeType: "monastery", expectedHeadSha: HEAD };
 const body = (place) => ({
   expectedHeadSha: HEAD, preferredName: place.preferredName, shortName: place.shortName ?? "", slug: place.slug, placeType: place.placeType, browseAreaId: place.browseAreaId, summary: place.summary,
-  jurisdiction: place.jurisdiction ?? "", municipality: place.municipality ?? "", settlement: place.settlement ?? "",
+  monasticCommunity: place.monasticCommunity ?? "", jurisdiction: place.jurisdiction ?? "", municipality: place.municipality ?? "", settlement: place.settlement ?? "",
   latitude: place.latitude, longitude: place.longitude, alternateNames: place.alternateNames,
   narrativeBody: place.narrativeBody, patronalFeast: place.patronalFeast ?? "", youtubeUrl: place.youtubeUrl ?? "",
 });
@@ -218,9 +227,21 @@ test("GET editable model exposes one unified narrative body", async () => {
   assert.match(model.place.narrativeBody, /## Увод \{#introduction\}[\s\S]*## Историја \{#history\}/);
   assert.deepEqual(model.options.placeTypes.slice(0, 2), ["monastery", "church"]);
   assert.equal(model.options.placeTypes.includes("cathedral"), true);
+  assert.deepEqual(model.options.monasticCommunities, ["male", "female"]);
+  assert.equal(model.place.monasticCommunity, "male");
   assert.equal(model.place.inPreview, true);
   assert.equal("placeSourceIds" in model.place, false);
   assert.equal("sourceIds" in model.place.alternateNames[0], false);
+});
+
+test("admin reads normalized male and female monastic communities", async () => {
+  const male = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
+  assert.equal(male.place.monasticCommunity, "male");
+
+  const femaleRepository = new Repository();
+  femaleRepository.blobs.place = PLACE.replace("value: male", "value: female");
+  const female = await loadEditablePlace(femaleRepository, "editorial/work", "existing-place");
+  assert.equal(female.place.monasticCommunity, "female");
 });
 
 test("editorial preview add, duplicate add, remove, and duplicate remove stay atomic and canonical", async () => {
@@ -334,7 +355,65 @@ test("PATCH round trip updates basic, location, coordinates and narrative in one
   assert.equal(nextPlace.location.country_code.verification.status, "verified");
   assert.deepEqual(nextPlace.location.country_code.verification.source_ids, ["source-one"]);
   assert.equal(nextPlace.location.coordinates.verification.status, "requires-verification");
-  assert.equal(nextPlace.ecclesiastical.community_type.value, "brotherhood");
+  assert.equal(nextPlace.ecclesiastical.community_type.value, "male");
+});
+
+test("monastic community saves and clears without losing other ecclesiastical facts", async () => {
+  const loaded = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
+  const female = await updateCanonicalPlace(
+    loaded,
+    { ...body(loaded.place), monasticCommunity: "female" },
+    "editor-user",
+    new Date("2026-08-22T12:00:00Z"),
+  );
+  assert.equal(female.place.ecclesiastical.community_type.value, "female");
+  assert.deepEqual(female.place.ecclesiastical.community_type.verification, { status: "requires-verification" });
+  assert.deepEqual(female.place.ecclesiastical.jurisdiction, loaded.rawPlace.ecclesiastical.jurisdiction);
+  assert.deepEqual(female.place.ecclesiastical.authority_id, loaded.rawPlace.ecclesiastical.authority_id);
+  assert.deepEqual(female.place.ecclesiastical.dedication_ids, loaded.rawPlace.ecclesiastical.dedication_ids);
+  assert.deepEqual(female.place.ecclesiastical.associated_entity_ids, loaded.rawPlace.ecclesiastical.associated_entity_ids);
+
+  const femaleRepository = new Repository();
+  femaleRepository.blobs.place = PLACE.replace("value: male", "value: female");
+  const loadedFemale = await loadEditablePlace(femaleRepository, "editorial/work", "existing-place");
+  const male = await updateCanonicalPlace(
+    loadedFemale,
+    { ...body(loadedFemale.place), monasticCommunity: "male" },
+    "editor-user",
+    new Date("2026-08-22T12:00:30Z"),
+  );
+  assert.equal(male.place.ecclesiastical.community_type.value, "male");
+
+  const cleared = await updateCanonicalPlace(
+    loaded,
+    { ...body(loaded.place), monasticCommunity: "" },
+    "editor-user",
+    new Date("2026-08-22T12:01:00Z"),
+  );
+  assert.equal(cleared.place.ecclesiastical.community_type, undefined);
+  assert.deepEqual(cleared.place.ecclesiastical.jurisdiction, loaded.rawPlace.ecclesiastical.jurisdiction);
+});
+
+test("changing a monastery to a non-monastery clears its monastic community", async () => {
+  const loaded = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
+  const changed = await updateCanonicalPlace(
+    loaded,
+    { ...body(loaded.place), placeType: "church", monasticCommunity: "male" },
+    "editor-user",
+    new Date("2026-08-22T12:02:00Z"),
+  );
+  assert.equal(changed.place.place_type.value, "church");
+  assert.equal(changed.place.ecclesiastical.community_type, undefined);
+});
+
+test("admin rejects unsupported monastic community values", async () => {
+  const loaded = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
+  for (const monasticCommunity of ["brotherhood", "православни мушки манастир", 42]) {
+    await assert.rejects(
+      () => updateCanonicalPlace(loaded, { ...body(loaded.place), monasticCommunity }, "editor-user", new Date("2026-08-22T12:03:00Z")),
+      (error) => error.code === "invalid_form_data" && Boolean(error.fields?.monasticCommunity),
+    );
+  }
 });
 
 test("unchanged facts retain verification exactly and coordinates can be cleared", async () => {
@@ -344,6 +423,7 @@ test("unchanged facts retain verification exactly and coordinates can be cleared
   assert.equal(unchanged.unchanged, true);
   assert.deepEqual(unchanged.place.place_type.verification, parse(PLACE).place_type.verification);
   assert.deepEqual(unchanged.place.location.coordinates.verification, parse(PLACE).location.coordinates.verification);
+  assert.deepEqual(unchanged.place.ecclesiastical.community_type.verification, parse(PLACE).ecclesiastical.community_type.verification);
   assert.deepEqual(unchanged.place.audit, parse(PLACE).audit);
   assert.deepEqual(unchanged.narrative.audit, parseNarrative(NARRATIVE).frontMatter.audit);
   const cleared = await updateCanonicalPlace(loaded, { ...update, latitude: "", longitude: "" }, "editor-user", new Date("2026-08-13T12:00:00Z"));
@@ -564,7 +644,21 @@ test("place editor UI has one dynamic narrative field and no section controls", 
   assert.equal((html.match(/name="narrativeBody"/g) ?? []).length, 1);
   assert.match(html, /name="youtubeUrl"/);
   assert.match(html, /name="patronalFeast"/);
+  assert.match(html, /Тип манастира<select name="monasticCommunity">/);
+  assert.match(html, /<option value="">— није одређено —<\/option>/);
+  assert.match(html, /<option value="male" selected>Мушки<\/option>/);
+  assert.match(html, /<option value="female">Женски<\/option>/);
   assert.doesNotMatch(html, /data-add-section|data-section-title|data-remove-paragraph|Додај канонски одјељак/);
+
+  record.place.placeType = "church";
+  delete record.place.monasticCommunity;
+  const churchHtml = await editPlacePage(session, record).text();
+  assert.match(churchHtml, /data-monastic-community-field hidden/);
+  assert.match(churchHtml, /name="monasticCommunity" disabled/);
+
+  const clientSource = await readFile(new URL("../client/editor.ts", import.meta.url), "utf8");
+  assert.match(clientSource, /placeTypeInput\.value === "monastery"/);
+  assert.match(clientSource, /monasticCommunityInput\.value = ""/);
 });
 
 test("place editor exposes compact draft and published visibility management", async () => {
