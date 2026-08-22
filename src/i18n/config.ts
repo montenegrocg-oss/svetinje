@@ -38,6 +38,33 @@ export const routeConfig = {
 
 export type RouteKey = keyof typeof routeConfig;
 
+export const localizedStaticRouteKeys = [
+  "home",
+  "monasteries",
+  "maleMonasteries",
+  "femaleMonasteries",
+  "churches",
+  "map",
+  "routes",
+  "calendar",
+  "news",
+  "about",
+] as const satisfies readonly RouteKey[];
+
+export type LocalizedStaticRouteKey = (typeof localizedStaticRouteKeys)[number];
+
+const localizedStaticRouteKeySet = new Set<RouteKey>(localizedStaticRouteKeys);
+
+export function staticLocaleLinksForRoute(route: RouteKey): Record<Locale, string> | undefined {
+  if (!localizedStaticRouteKeySet.has(route)) return undefined;
+  return { ...routeConfig[route] };
+}
+
+export function staticEquivalentForPath(path: string): Record<Locale, string> | undefined {
+  const route = localizedStaticRouteKeys.find((key) => Object.values(routeConfig[key]).some((candidate) => candidate === path));
+  return route ? staticLocaleLinksForRoute(route) : undefined;
+}
+
 export const placeDetailRoot = {
   sr: "/svetinje/",
   ru: "/ru/svyatyni/",

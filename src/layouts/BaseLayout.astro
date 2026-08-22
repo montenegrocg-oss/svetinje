@@ -2,7 +2,7 @@
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import PageMetadata from "../components/PageMetadata.astro";
-import { localeConfig, routeConfig, type Locale } from "../i18n/config";
+import { localeConfig, staticEquivalentForPath, type Locale } from "../i18n/config";
 import { publicCopy } from "../i18n/public-copy";
 import "../styles/global.css";
 
@@ -17,8 +17,7 @@ interface Props {
 
 const { title, description, canonicalPath, noindex = false, locale = "sr", localeLinks: suppliedLocaleLinks } = Astro.props;
 const editorialPreview = process.env.EDITORIAL_PREVIEW === "true";
-const staticRoute = Object.values(routeConfig).find((paths) => Object.values(paths).includes(canonicalPath as never));
-const localeLinks = suppliedLocaleLinks ?? (staticRoute ? { sr: staticRoute.sr, ru: staticRoute.ru, en: staticRoute.en } : { [locale]: canonicalPath });
+const localeLinks = suppliedLocaleLinks ?? staticEquivalentForPath(canonicalPath) ?? { [locale]: canonicalPath };
 const copy = publicCopy[locale];
 ---
 

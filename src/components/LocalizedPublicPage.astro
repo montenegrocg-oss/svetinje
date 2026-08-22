@@ -2,7 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import CategoryCatalogue from "./CategoryCatalogue.astro";
 import DedicatedMap from "./DedicatedMap.astro";
-import { routeFor, type Locale, type RouteKey } from "../i18n/config";
+import { routeFor, staticLocaleLinksForRoute, type Locale, type RouteKey } from "../i18n/config";
 import { publicCopy } from "../i18n/public-copy";
 import { loadLocalizedVisiblePlaces, localizedSlugsForPlace, type LocalizedVisiblePlace } from "../lib/content/localized-publication";
 
@@ -39,7 +39,7 @@ const pageText = pageKey ? pageCopy[pageKey] : undefined;
 const title = place?.seoTitle || place?.name || pageText?.[0] || c.siteName;
 const description = place?.seoDescription || place?.summary || pageText?.[1] || c.footer;
 const canonicalPath = place ? `${locale === "ru" ? "/ru/svyatyni/" : "/en/holy-places/"}${place.slug}/` : routeFor(locale, page as RouteKey);
-const localeLinks = suppliedLocaleLinks ?? (place ? Object.fromEntries(Object.entries(await localizedSlugsForPlace(place.id)).map(([key, slug]) => [key, `${key === "sr" ? "/svetinje/" : key === "ru" ? "/ru/svyatyni/" : "/en/holy-places/"}${slug}/`])) : { [locale]: canonicalPath });
+const localeLinks = suppliedLocaleLinks ?? (place ? Object.fromEntries(Object.entries(await localizedSlugsForPlace(place.id)).map(([key, slug]) => [key, `${key === "sr" ? "/svetinje/" : key === "ru" ? "/ru/svyatyni/" : "/en/holy-places/"}${slug}/`])) : staticLocaleLinksForRoute(page as RouteKey) ?? { [locale]: canonicalPath });
 const category = page === "monasteries" || page === "maleMonasteries" || page === "femaleMonasteries" ? "monasteries" : page === "churches" ? "churches" : undefined;
 const community = page === "maleMonasteries" ? "male" : page === "femaleMonasteries" ? "female" : undefined;
 const bodyParagraphs = place?.narrativeBody.split(/\r?\n\s*\r?\n/).map((value) => value.trim()).filter(Boolean) ?? [];

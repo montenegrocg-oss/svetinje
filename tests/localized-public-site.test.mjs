@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
-import { routeConfig } from "../src/i18n/config.ts";
+import {
+  localizedStaticRouteKeys,
+  routeConfig,
+  staticEquivalentForPath,
+  staticLocaleLinksForRoute,
+} from "../src/i18n/config.ts";
 import { loadLocalizedVisiblePlaces, localizedSlugsForPlace, translationIsVisible } from "../src/lib/content/localized-publication.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
@@ -56,4 +61,36 @@ test("localized route layer exposes exact archives without restoring holy-place 
   assert.match(catalogue, /places: suppliedPlaces/);
   assert.match(localizedPage, /DedicatedMap places=\{places\} locale=\{locale\}/);
   assert.doesNotMatch(localizedPage, /routeFor\(locale, "holyPlaces"\)/);
+});
+
+test("available static routes expose symmetric Serbian, Russian, and English equivalents", async () => {
+  assert.deepEqual(localizedStaticRouteKeys, [
+    "home", "monasteries", "maleMonasteries", "femaleMonasteries", "churches",
+    "map", "routes", "calendar", "news", "about",
+  ]);
+
+  for (const route of ["maleMonasteries", "churches", "map"]) {
+    const expected = routeConfig[route];
+    assert.deepEqual(staticLocaleLinksForRoute(route), expected);
+    for (const path of Object.values(expected)) assert.deepEqual(staticEquivalentForPath(path), expected);
+  }
+
+  assert.deepEqual(staticEquivalentForPath("/ru/monastyri/muzhskie/"), {
+    sr: "/manastiri/muski/",
+    ru: "/ru/monastyri/muzhskie/",
+    en: "/en/monasteries/men/",
+  });
+  assert.deepEqual(staticEquivalentForPath("/en/monasteries/men/"), routeConfig.maleMonasteries);
+  assert.equal(staticLocaleLinksForRoute("holyPlaces"), undefined);
+  assert.equal(staticLocaleLinksForRoute("sources"), undefined);
+  for (const path of [...Object.values(routeConfig.holyPlaces), ...Object.values(routeConfig.sources)]) {
+    assert.equal(staticEquivalentForPath(path), undefined);
+  }
+
+  const [layout, localizedPage] = await Promise.all([
+    source("src/layouts/BaseLayout.astro"), source("src/components/LocalizedPublicPage.astro"),
+  ]);
+  assert.match(layout, /staticEquivalentForPath\(canonicalPath\)/);
+  assert.doesNotMatch(layout, /Object\.values\(routeConfig\)/);
+  assert.match(localizedPage, /staticLocaleLinksForRoute\(page as RouteKey\)/);
 });
