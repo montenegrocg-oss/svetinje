@@ -15,6 +15,10 @@ ecclesiastical:
       status: requires-verification
       source_ids:
         - mitropolija-zenski-manastiri
+  community_type:
+    value: female
+    verification:
+      status: requires-verification
 location:
   settlement:
     value: Острво Бешка
@@ -43,7 +47,7 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T21:03:00Z
+  updated_at: 2026-08-22T18:11:38Z
   updated_by: montenegro-cg
 patronal_feast:
   name: Благовести 7. април
