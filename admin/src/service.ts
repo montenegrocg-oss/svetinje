@@ -14,6 +14,12 @@ import {
 import { loadAdminRepository, loadEditablePlace, loadPlaceDeletionRecord } from "./repository-content.ts";
 import { fingerprintCanonicalSchemas } from "./schema-fingerprint.ts";
 import { updateCanonicalPlace, type UpdatePlaceBody } from "./place-editor.ts";
+import {
+  assertEditableNarrativeLocale,
+  markLocalizedNarrativeOutdated,
+  updateLocalizedNarrative,
+  type UpdateLocalizedNarrativeBody,
+} from "./localized-narrative-editor.ts";
 import { deleteCommittedR2Objects, isSafeR2ObjectKey } from "./media.ts";
 import type { AdminEnv, AdminSession, GitRepository, RepositoryFile } from "./types.ts";
 import { serializeResearchPlaceScaffold } from "../../scripts/lib/place-scaffold.mjs";
@@ -179,17 +185,54 @@ export async function updatePlace(
   if (updated.unchanged) {
     return { commitSha: expectedHeadSha, branch, placeId: id, unchanged: true };
   }
+  const files: RepositoryFile[] = [
+    { path: `content/places/${id}/place.yaml`, content: updated.placeYaml },
+    { path: `content/places/${id}/narratives/sr.md`, content: updated.narrativeMarkdown },
+  ];
+  if (updated.localizedContentChanged) {
+    for (const locale of ["ru", "en"] as const) {
+      const content = markLocalizedNarrativeOutdated(record, locale, session.actor, now);
+      if (content) files.push({ path: `content/places/${id}/narratives/${locale}.md`, content });
+    }
+  }
   const result = await repository.commitFilesAtomic({
     branch,
     expectedHeadSha,
     baseTreeSha: record.state.treeSha,
-    files: [
-      { path: `content/places/${id}/place.yaml`, content: updated.placeYaml },
-      { path: `content/places/${id}/narratives/sr.md`, content: updated.narrativeMarkdown },
-    ],
+    files,
     message: `Update research place ${id}`,
   });
   return { commitSha: result.commitSha, branch: result.branch, placeId: id, unchanged: false };
+}
+
+export async function updatePlaceNarrative(
+  repository: GitRepository,
+  env: AdminEnv,
+  session: AdminSession,
+  id: string,
+  localeValue: string,
+  body: UpdateLocalizedNarrativeBody,
+  now = new Date(),
+) {
+  assertEditableNarrativeLocale(localeValue);
+  const locale = localeValue;
+  const branch = editorialBranch(env);
+  const record = await loadEditablePlace(repository, branch, id);
+  const expectedHeadSha = asString(body.expectedHeadSha);
+  if (!expectedHeadSha || !/^[0-9a-f]{40}$/.test(expectedHeadSha)) {
+    throw new AdminError("invalid_form_data", 400, "Expected branch HEAD is invalid", { expectedHeadSha: "HEAD ревизија није важећа." });
+  }
+  if (expectedHeadSha !== record.state.headSha) throw new AdminError("git_conflict", 409, "Editorial branch moved before translation save");
+  const updated = await updateLocalizedNarrative(record, locale, body, session.actor, now);
+  if (updated.unchanged) return { commitSha: expectedHeadSha, branch, placeId: id, locale, unchanged: true };
+  const result = await repository.commitFilesAtomic({
+    branch,
+    expectedHeadSha,
+    baseTreeSha: record.state.treeSha,
+    files: [{ path: `content/places/${id}/narratives/${locale}.md`, content: updated.content }],
+    message: `Update ${locale.toUpperCase()} translation for ${id}`,
+  });
+  return { commitSha: result.commitSha, branch: result.branch, placeId: id, locale, unchanged: false };
 }
 
 export async function updatePlacePreview(

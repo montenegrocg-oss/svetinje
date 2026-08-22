@@ -2,7 +2,7 @@ import { authenticateRequest } from "./auth.ts";
 import { AdminError, errorResponse, logInternalDiagnostic } from "./errors.ts";
 import { GitHubRepository } from "./github.ts";
 import { deletePlacePhoto, MAX_PHOTO_COUNT, MAX_UPLOAD_BYTES, updatePlacePhoto, uploadPlacePhotos } from "./media.ts";
-import { createPlace, deletePlace, getEditablePlace, getPlace, listPlaces, updatePlace, updatePlacePreview } from "./service.ts";
+import { createPlace, deletePlace, getEditablePlace, getPlace, listPlaces, updatePlace, updatePlaceNarrative, updatePlacePreview } from "./service.ts";
 import type { AdminEnv } from "./types.ts";
 import { dashboardPage, editPlacePage, newPlacePage, placePage, placesPage } from "./ui.ts";
 import { createRoute, deleteRoute, getEditableRoute, listRoutes, removeRouteTrack, updateRoute, updateRoutePreview, uploadRouteGpx } from "./route-service.ts";
@@ -103,10 +103,15 @@ export async function handleRequest(request: Request, env: AdminEnv): Promise<Re
       requireSameOrigin(request);
       return Response.json(await updatePlacePreview(repository, env, session, apiPreviewMatch[1], await jsonBody(request)), { headers: JSON_HEADERS });
     }
+    const apiNarrativeMatch = url.pathname.match(/^\/api\/places\/([a-z0-9]+(?:-[a-z0-9]+)*)\/narratives\/([a-z]{2})$/);
+    if (request.method === "PATCH" && apiNarrativeMatch?.[1] && apiNarrativeMatch[2]) {
+      requireSameOrigin(request);
+      return Response.json(await updatePlaceNarrative(repository, env, session, apiNarrativeMatch[1], apiNarrativeMatch[2], await jsonBody(request)), { headers: JSON_HEADERS });
+    }
     const apiPlaceMatch = url.pathname.match(/^\/api\/places\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
     if (request.method === "GET" && apiPlaceMatch?.[1]) {
       const record = await getEditablePlace(repository, env, apiPlaceMatch[1]);
-      return Response.json({ place: record.place, options: record.options, branch: record.branch, headSha: record.state.headSha }, { headers: JSON_HEADERS });
+      return Response.json({ place: record.place, narratives: record.place.narratives, options: record.options, branch: record.branch, headSha: record.state.headSha }, { headers: JSON_HEADERS });
     }
     if (request.method === "PATCH" && apiPlaceMatch?.[1]) {
       requireSameOrigin(request);

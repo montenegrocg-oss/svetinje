@@ -17,6 +17,7 @@
     "build": "pnpm run validate:content && astro build && pnpm run test:production-output",
     "test:production-output": "node scripts/verify-production-output.mjs",
     "new:place": "node scripts/new-place.mjs",
+    "translations:status": "node scripts/translations-status.mjs",
     "preview": "astro preview"
   },
   "dependencies": {
