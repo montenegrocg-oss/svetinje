@@ -94,15 +94,18 @@ test("desktop and mobile navigation expose the required Serbian guide sections",
   assert.doesNotMatch(header, /\{ href: "\/svetinje\/", label: "Цркве" \}/);
   assert.match(header, /const monasteryNavigation = \[[\s\S]*?\/manastiri\/muski\/[\s\S]*?Мушки манастири[\s\S]*?\/manastiri\/zenski\/[\s\S]*?Женски манастири/);
   assert.match(header, /const mobileMonasteryNavigation = \[[\s\S]*?\/manastiri\/[\s\S]*?Сви манастири[\s\S]*?\.\.\.monasteryNavigation/);
-  assert.match(header, /<li class="desktop-navigation__submenu-item">[\s\S]*?<a href=\{item\.href\} aria-current=\{isMonasteryActive \? "page" : undefined\}>[\s\S]*?desktop-navigation__submenu/);
+  assert.match(header, /<li class="desktop-navigation__submenu-item">[\s\S]*?href=\{item\.href\}[\s\S]*?aria-current=\{isExactPage\(item\.href\) \? "page" : undefined\}[\s\S]*?data-section-active=\{isMonasteryActive \? "true" : undefined\}[\s\S]*?desktop-navigation__submenu/);
   assert.match(header, /monasteryNavigation\.map[\s\S]*?aria-current=\{isExactPage\(subcategory\.href\) \? "page" : undefined\}/);
-  assert.match(header, /<details class="mobile-navigation__submenu" open=\{isMonasteryActive\}>[\s\S]*?<summary aria-current=\{isMonasteryActive \? "true" : undefined\}>Манастири<\/summary>/);
+  assert.match(header, /<details class="mobile-navigation__submenu" open=\{isMonasteryActive\}>[\s\S]*?<summary data-section-active=\{isMonasteryActive \? "true" : undefined\}>Манастири<\/summary>/);
+  assert.doesNotMatch(header, /<summary[^>]*aria-current/);
   assert.match(header, /mobileMonasteryNavigation\.map[\s\S]*?aria-current=\{isExactPage\(subcategory\.href\) \? "page" : undefined\}/);
   assert.doesNotMatch(header, /<script>|addEventListener/);
   assert.match(styles, /\.desktop-navigation__submenu-item:hover > \.desktop-navigation__submenu,[\s\S]*?\.desktop-navigation__submenu-item:focus-within > \.desktop-navigation__submenu/);
   assert.match(styles, /\.desktop-navigation__submenu\s*\{[\s\S]*?position: absolute;[\s\S]*?z-index: 95;[\s\S]*?top: calc\(100% - 0\.2rem\);/);
+  assert.match(styles, /\.primary-navigation a\[data-section-active="true"\]::after/);
   assert.match(styles, /\.primary-navigation \.desktop-navigation__submenu a\[aria-current="page"\][\s\S]*?background: var\(--paper\);/);
   assert.match(styles, /\.mobile-navigation__submenu > summary\s*\{[\s\S]*?min-height: 2\.85rem;/);
+  assert.match(styles, /\.mobile-navigation__submenu > summary\[data-section-active="true"\][\s\S]*?color: var\(--gold\);/);
   assert.match(styles, /\.mobile-navigation-panel nav \.mobile-navigation__submenu a\s*\{[\s\S]*?min-height: 2\.75rem;[\s\S]*?padding-left: 0\.65rem;/);
 });
 

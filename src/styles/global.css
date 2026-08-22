@@ -529,7 +529,8 @@
   }
 
   .primary-navigation a:hover::after,
-  .primary-navigation a[aria-current="page"]::after {
+  .primary-navigation a[aria-current="page"]::after,
+  .primary-navigation a[data-section-active="true"]::after {
     transform: scaleX(1);
     transform-origin: left;
   }
@@ -753,7 +754,7 @@
     content: "−";
   }
 
-  .mobile-navigation__submenu > summary[aria-current="true"] {
+  .mobile-navigation__submenu > summary[data-section-active="true"] {
     color: var(--gold);
   }
 
