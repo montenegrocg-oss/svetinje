@@ -3,7 +3,11 @@ import { categoryForPlaceType } from "../lib/place-filters";
 import { loadVisiblePlaces } from "../lib/content/publication";
 import type { PublicDiscoveryCategory } from "../lib/public-place-discovery";
 import { selectPublicDiscoveryPlaces } from "../lib/public-place-discovery";
-import { selectFeaturedCataloguePlaces } from "../lib/category-catalogue";
+import {
+  selectFeaturedCataloguePlaces,
+  selectMonasticCommunityPlaces,
+  type MonasticCommunityFilter,
+} from "../lib/category-catalogue";
 import { PLACES_PER_PAGE } from "../lib/explorer-pagination";
 import { PLACE_AREAS } from "../lib/place-areas";
 import CatalogueToolbar from "./CatalogueToolbar.astro";
@@ -15,13 +19,18 @@ interface Props {
   description: string;
   category?: PublicDiscoveryCategory;
   emptyHeading: string;
+  catalogueHeading?: string;
+  monasticCommunity?: MonasticCommunityFilter;
 }
 
-const { heading, description, category, emptyHeading } = Astro.props;
+const { heading, description, category, emptyHeading, catalogueHeading, monasticCommunity } = Astro.props;
 const visiblePlaces = selectPublicDiscoveryPlaces(await loadVisiblePlaces());
-const places = category
+const categoryPlaces = category
   ? visiblePlaces.filter((place) => categoryForPlaceType(place.placeType) === category)
   : visiblePlaces;
+const places = category === "monasteries"
+  ? selectMonasticCommunityPlaces(categoryPlaces, monasticCommunity)
+  : categoryPlaces;
 const isMonasteryCatalogue = category === "monasteries";
 const featuredPlaces = isMonasteryCatalogue ? [] : selectFeaturedCataloguePlaces(places);
 const featuredPlaceIds = new Set(featuredPlaces.map((place) => place.id));
@@ -35,7 +44,7 @@ const copy = category === "monasteries"
       statusPrefix: "Пронађено је",
       statusNoun: "манастира",
       featuredHeading: "Издвојени манастири",
-      allHeading: "Сви манастири",
+      allHeading: catalogueHeading ?? "Сви манастири",
       countForms: ["православни манастир", "православна манастира", "православних манастира"],
     }
   : category === "churches"
@@ -71,6 +80,7 @@ const countAwareDescription = `Истражите ${places.length} ${copy.countF
   data-catalogue-page-size={PLACES_PER_PAGE}
   data-catalogue-status-noun={copy.statusNoun}
   data-catalogue-status-prefix={copy.statusPrefix}
+  data-monastic-community={monasticCommunity}
 >
   <header class="page-hero compact category-page-hero">
     <div class="shell narrow">

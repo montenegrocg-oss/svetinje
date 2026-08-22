@@ -6,6 +6,7 @@ import { loadExcludedContentMarkers } from "../src/lib/content/publication.ts";
 import { loadExcludedNewsMarkers } from "../src/lib/content/news.ts";
 import {
   CATEGORY_HTML_ROUTES,
+  MONASTERY_SUBCATEGORY_HTML_ROUTES,
   createOutputExpectations,
 } from "./lib/output-expectations.mjs";
 import { PLACE_AREAS } from "../src/lib/place-areas.ts";
@@ -18,6 +19,8 @@ import { containsUnsupportedReferenceScreenshotContent } from "./lib/reference-s
 
 const EMPTY_STATES = {
   monasteries: "Још нема манастира спремних за јавно објављивање.",
+  male: "Још нема мушких манастира спремних за приказ.",
+  female: "Још нема женских манастира спремних за приказ.",
   churches: "Још нема храмова спремних за јавно објављивање.",
 };
 
@@ -500,6 +503,15 @@ for (const [category, route] of Object.entries(CATEGORY_HTML_ROUTES)) {
   verifyCataloguePagination(page, members, `${category} catalogue`, failures, useFeaturedTier);
   if (members.length === 0 && !page?.html.includes(EMPTY_STATES[category])) failures.push(`${category} catalogue is missing its protected empty state`);
   if (members.length > 0 && page?.html.includes(EMPTY_STATES[category])) failures.push(`${category} catalogue incorrectly renders its empty state`);
+}
+
+for (const [community, route] of Object.entries(MONASTERY_SUBCATEGORY_HTML_ROUTES)) {
+  const page = pagesByRoute.get(route);
+  const members = model.monasteryCommunityMembership[community];
+  verifyCards(page, members, model.places, `${community} monastery catalogue`, failures, new Set());
+  verifyCataloguePagination(page, members, `${community} monastery catalogue`, failures, false);
+  if (members.length === 0 && !page?.html.includes(EMPTY_STATES[community])) failures.push(`${community} monastery catalogue is missing its protected empty state`);
+  if (members.length > 0 && page?.html.includes(EMPTY_STATES[community])) failures.push(`${community} monastery catalogue incorrectly renders its empty state`);
 }
 
 const markerPayload = parseMarkerPayload(homepageHtml, failures);

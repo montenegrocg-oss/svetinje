@@ -21,6 +21,7 @@ import {
 import {
   FEATURED_CATALOGUE_LIMIT,
   selectFeaturedCataloguePlaces,
+  selectMonasticCommunityPlaces,
 } from "../src/lib/category-catalogue.ts";
 import {
   buildCatalogueSearchText,
@@ -102,6 +103,29 @@ test("category catalogues feature the first two image-bearing places without cha
   assert.deepEqual(selectFeaturedCataloguePlaces(places).map(({ id }) => id), ["image-1", "image-2"]);
   assert.deepEqual(selectFeaturedCataloguePlaces(places.slice(0, 3)).map(({ id }) => id), ["image-1"]);
   assert.deepEqual(selectFeaturedCataloguePlaces([{ id: "text-only" }]), []);
+});
+
+test("monastery community scope precedes search and area filters and survives reset", () => {
+  const records = [
+    { id: "male-coast", placeType: "monastery", monasticCommunity: "male", browseAreaId: "coast", searchText: "манастир савина" },
+    { id: "male-central", placeType: "skete", monasticCommunity: "male", browseAreaId: "central", searchText: "мушки скит" },
+    { id: "female-coast", placeType: "monastery", monasticCommunity: "female", browseAreaId: "coast", searchText: "женски манастир" },
+    { id: "unclassified", placeType: "hermitage", browseAreaId: "coast", searchText: "пустиња" },
+    { id: "church", placeType: "church", monasticCommunity: "male", browseAreaId: "coast", searchText: "савина" },
+  ];
+  const monasteries = records.filter((record) => categoryForPlaceType(record.placeType) === "monasteries");
+  const maleScope = selectMonasticCommunityPlaces(monasteries, "male");
+  const femaleScope = selectMonasticCommunityPlaces(monasteries, "female");
+  const allScope = selectMonasticCommunityPlaces(monasteries);
+
+  assert.deepEqual(allScope.map(({ id }) => id), ["male-coast", "male-central", "female-coast", "unclassified"]);
+  assert.deepEqual(maleScope.map(({ id }) => id), ["male-coast", "male-central"]);
+  assert.deepEqual(femaleScope.map(({ id }) => id), ["female-coast"]);
+  assert.deepEqual(maleScope.filter((record) => matchesCatalogueSearch(record.searchText, "савина")).map(({ id }) => id), ["male-coast"]);
+  assert.deepEqual(femaleScope.filter((record) => matchesCatalogueSearch(record.searchText, "савина")), []);
+  assert.deepEqual(maleScope.filter((record) => record.browseAreaId === "coast").map(({ id }) => id), ["male-coast"]);
+  assert.deepEqual(femaleScope.filter((record) => record.browseAreaId === "central"), []);
+  assert.deepEqual(selectMonasticCommunityPlaces(monasteries, "male"), maleScope, "reset must retain the route community scope");
 });
 
 test("homepage sidebar preview paginates matched places three at a time", () => {

@@ -63,7 +63,10 @@ test("approved map pins are optimized RGBA assets", async () => {
 });
 
 test("desktop and mobile navigation expose the required Serbian guide sections", async () => {
-  const header = await source("src/components/Header.astro");
+  const [header, styles] = await Promise.all([
+    source("src/components/Header.astro"),
+    source("src/styles/global.css"),
+  ]);
   const navigation = header.match(/const navigation = \[[\s\S]*?\n\];/)?.[0] ?? "";
   const expectedItems = [
     ["/manastiri/", "Манастири"],
@@ -89,6 +92,18 @@ test("desktop and mobile navigation expose the required Serbian guide sections",
   assert.doesNotMatch(header, /\/sveta-mjesta\/|Света мјеста/);
   assert.doesNotMatch(header, /\{ href: "\/svetinje\/", label: "Манастири" \}/);
   assert.doesNotMatch(header, /\{ href: "\/svetinje\/", label: "Цркве" \}/);
+  assert.match(header, /const monasteryNavigation = \[[\s\S]*?\/manastiri\/muski\/[\s\S]*?Мушки манастири[\s\S]*?\/manastiri\/zenski\/[\s\S]*?Женски манастири/);
+  assert.match(header, /const mobileMonasteryNavigation = \[[\s\S]*?\/manastiri\/[\s\S]*?Сви манастири[\s\S]*?\.\.\.monasteryNavigation/);
+  assert.match(header, /<li class="desktop-navigation__submenu-item">[\s\S]*?<a href=\{item\.href\} aria-current=\{isMonasteryActive \? "page" : undefined\}>[\s\S]*?desktop-navigation__submenu/);
+  assert.match(header, /monasteryNavigation\.map[\s\S]*?aria-current=\{isExactPage\(subcategory\.href\) \? "page" : undefined\}/);
+  assert.match(header, /<details class="mobile-navigation__submenu" open=\{isMonasteryActive\}>[\s\S]*?<summary aria-current=\{isMonasteryActive \? "true" : undefined\}>Манастири<\/summary>/);
+  assert.match(header, /mobileMonasteryNavigation\.map[\s\S]*?aria-current=\{isExactPage\(subcategory\.href\) \? "page" : undefined\}/);
+  assert.doesNotMatch(header, /<script>|addEventListener/);
+  assert.match(styles, /\.desktop-navigation__submenu-item:hover > \.desktop-navigation__submenu,[\s\S]*?\.desktop-navigation__submenu-item:focus-within > \.desktop-navigation__submenu/);
+  assert.match(styles, /\.desktop-navigation__submenu\s*\{[\s\S]*?position: absolute;[\s\S]*?z-index: 95;[\s\S]*?top: calc\(100% - 0\.2rem\);/);
+  assert.match(styles, /\.primary-navigation \.desktop-navigation__submenu a\[aria-current="page"\][\s\S]*?background: var\(--paper\);/);
+  assert.match(styles, /\.mobile-navigation__submenu > summary\s*\{[\s\S]*?min-height: 2\.85rem;/);
+  assert.match(styles, /\.mobile-navigation-panel nav \.mobile-navigation__submenu a\s*\{[\s\S]*?min-height: 2\.75rem;[\s\S]*?padding-left: 0\.65rem;/);
 });
 
 test("unavailable locales remain visibly unavailable rather than becoming links", async () => {
@@ -249,10 +264,17 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
     source("src/styles/global.css"),
     source("scripts/verify-production-output.mjs"),
   ]);
+  const [maleMonasteries, femaleMonasteries] = await Promise.all([
+    source("src/pages/manastiri/muski/index.astro"),
+    source("src/pages/manastiri/zenski/index.astro"),
+  ]);
 
   assert.match(catalogue, /categoryForPlaceType\(place\.placeType\) === category/);
   assert.match(catalogue, /loadVisiblePlaces/);
   assert.match(catalogue, /selectPublicDiscoveryPlaces\(await loadVisiblePlaces\(\)\)/);
+  assert.match(catalogue, /const categoryPlaces = category[\s\S]*?const places = category === "monasteries"[\s\S]*?selectMonasticCommunityPlaces\(categoryPlaces, monasticCommunity\)/);
+  assert.ok(catalogue.indexOf("selectMonasticCommunityPlaces(categoryPlaces, monasticCommunity)") < catalogue.indexOf("const relevantAreaIds"));
+  assert.match(catalogue, /data-monastic-community=\{monasticCommunity\}/);
   assert.match(catalogue, /PLACE_AREAS\.filter/);
   assert.match(catalogue, /selectFeaturedCataloguePlaces\(places\)/);
   assert.match(catalogue, /const featuredPlaces = isMonasteryCatalogue \? \[\] : selectFeaturedCataloguePlaces\(places\)/);
@@ -298,6 +320,16 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.match(areas, /Будва и Паштровићи/);
   assert.doesNotMatch(paginationModel, /primaryPlaces|continuationPlaces|CONTINUATION/);
   assert.match(monasteries, /category="monasteries"/);
+  assert.match(monasteries, /heading="Манастири"/);
+  assert.match(maleMonasteries, /title="Мушки манастири"[\s\S]*?canonicalPath="\/manastiri\/muski\/"/);
+  assert.match(maleMonasteries, /heading="Мушки манастири"[\s\S]*?category="monasteries"[\s\S]*?catalogueHeading="Мушки манастири"[\s\S]*?monasticCommunity="male"/);
+  assert.match(maleMonasteries, /Још нема мушких манастира спремних за приказ\./);
+  assert.match(femaleMonasteries, /title="Женски манастири"[\s\S]*?canonicalPath="\/manastiri\/zenski\/"/);
+  assert.match(femaleMonasteries, /heading="Женски манастири"[\s\S]*?category="monasteries"[\s\S]*?catalogueHeading="Женски манастири"[\s\S]*?monasticCommunity="female"/);
+  assert.match(femaleMonasteries, /Још нема женских манастира спремних за приказ\./);
+  assert.match(outputVerifier, /MONASTERY_SUBCATEGORY_HTML_ROUTES/);
+  assert.match(outputVerifier, /model\.monasteryCommunityMembership\[community\]/);
+  assert.match(outputVerifier, /verifyCataloguePagination\(page, members, `\$\{community\} monastery catalogue`, failures, false\)/);
   assert.match(churches, /category="churches"/);
   await assert.rejects(source("src/pages/sveta-mjesta/index.astro"), /ENOENT/);
   assert.doesNotMatch(general, /category=/);
