@@ -14,8 +14,18 @@ const navigation = [
   { href: "/rute/", label: "Руте" },
   { href: "/o-projektu/", label: "О пројекту" },
 ];
+const monasteryNavigation = [
+  { href: "/manastiri/muski/", label: "Мушки манастири" },
+  { href: "/manastiri/zenski/", label: "Женски манастири" },
+];
+const mobileMonasteryNavigation = [
+  { href: "/manastiri/", label: "Сви манастири" },
+  ...monasteryNavigation,
+];
 
 const isActive = (href: string) => !href.includes("#") && currentPath.startsWith(href);
+const isExactPage = (href: string) => currentPath === href;
+const isMonasteryActive = isActive("/manastiri/");
 ---
 
 <header class="site-header">
@@ -35,7 +45,24 @@ const isActive = (href: string) => !href.includes("#") && currentPath.startsWith
 
     <nav class="primary-navigation desktop-navigation" aria-label="Главна навигација">
       <ul>
-        {navigation.map((item) => (
+        {navigation.map((item) => item.href === "/manastiri/" ? (
+          <li class="desktop-navigation__submenu-item">
+            <a href={item.href} aria-current={isMonasteryActive ? "page" : undefined}>
+              {item.label}
+            </a>
+            <div class="desktop-navigation__submenu">
+              <ul aria-label="Категорије манастира">
+                {monasteryNavigation.map((subcategory) => (
+                  <li>
+                    <a href={subcategory.href} aria-current={isExactPage(subcategory.href) ? "page" : undefined}>
+                      {subcategory.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </li>
+        ) : (
           <li>
             <a href={item.href} aria-current={isActive(item.href) ? "page" : undefined}>
               {item.label}
@@ -64,7 +91,22 @@ const isActive = (href: string) => !href.includes("#") && currentPath.startsWith
       <div class="mobile-navigation-panel">
         <nav aria-label="Главна мобилна навигација">
           <ul>
-            {navigation.map((item) => (
+            {navigation.map((item) => item.href === "/manastiri/" ? (
+              <li>
+                <details class="mobile-navigation__submenu" open={isMonasteryActive}>
+                  <summary aria-current={isMonasteryActive ? "true" : undefined}>Манастири</summary>
+                  <ul aria-label="Категорије манастира">
+                    {mobileMonasteryNavigation.map((subcategory) => (
+                      <li>
+                        <a href={subcategory.href} aria-current={isExactPage(subcategory.href) ? "page" : undefined}>
+                          {subcategory.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              </li>
+            ) : (
               <li>
                 <a href={item.href} aria-current={isActive(item.href) ? "page" : undefined}>
                   {item.label}

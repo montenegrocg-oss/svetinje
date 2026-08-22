@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CALENDAR_HTML_ROUTES, CATEGORY_HTML_ROUTES, STATIC_HTML_ROUTES, createOutputModel } from "../scripts/lib/output-expectations.mjs";
+import {
+  CALENDAR_HTML_ROUTES,
+  CATEGORY_HTML_ROUTES,
+  MONASTERY_SUBCATEGORY_HTML_ROUTES,
+  STATIC_HTML_ROUTES,
+  createOutputModel,
+} from "../scripts/lib/output-expectations.mjs";
 
 const place = (id, placeType, options = {}) => ({
   id,
@@ -102,6 +108,24 @@ test("public output omits the holy-places category route while retaining direct 
   assert.deepEqual(model.discoveryPlaces, []);
   assert.deepEqual(model.detailRoutes.map(({ route }) => route), ["svetinje/canonical-holy-place-slug/index.html"]);
   assert.equal(model.detailRoutes[0].categoryHref, "/svetinje/");
+});
+
+test("monastery subcategory routes derive strict community inventories", () => {
+  const male = place("male-monastery", "monastery", { monasticCommunity: "male" });
+  const female = place("female-monastery", "skete", { monasticCommunity: "female" });
+  const unclassified = place("unclassified-monastery", "hermitage");
+  const church = place("male-church", "church", { monasticCommunity: "male" });
+  const model = createOutputModel([male, female, unclassified, church]);
+
+  assert.deepEqual(model.categoryMembership.monasteries, [male, female, unclassified]);
+  assert.deepEqual(model.monasteryCommunityMembership.male, [male]);
+  assert.deepEqual(model.monasteryCommunityMembership.female, [female]);
+  assert.equal(model.monasteryCommunityMembership.male.includes(church), false);
+  assert.equal(model.monasteryCommunityMembership.female.includes(church), false);
+  assert.ok(STATIC_HTML_ROUTES.includes(MONASTERY_SUBCATEGORY_HTML_ROUTES.male));
+  assert.ok(STATIC_HTML_ROUTES.includes(MONASTERY_SUBCATEGORY_HTML_ROUTES.female));
+  assert.ok(model.allExpectedRoutes.includes("manastiri/muski/index.html"));
+  assert.ok(model.allExpectedRoutes.includes("manastiri/zenski/index.html"));
 });
 
 test("news routes extend the derived output model without fixed page counts", () => {

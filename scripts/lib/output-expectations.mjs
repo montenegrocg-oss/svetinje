@@ -12,6 +12,8 @@ export const STATIC_HTML_ROUTES = Object.freeze([
   "mapa/index.html",
   "svetinje/index.html",
   "manastiri/index.html",
+  "manastiri/muski/index.html",
+  "manastiri/zenski/index.html",
   "crkve/index.html",
   "o-projektu/index.html",
   "izvori/index.html",
@@ -30,6 +32,11 @@ export const CALENDAR_HTML_ROUTES = Object.freeze(
 export const CATEGORY_HTML_ROUTES = Object.freeze({
   monasteries: "manastiri/index.html",
   churches: "crkve/index.html",
+});
+
+export const MONASTERY_SUBCATEGORY_HTML_ROUTES = Object.freeze({
+  male: "manastiri/muski/index.html",
+  female: "manastiri/zenski/index.html",
 });
 
 export const CATEGORY_HREFS = Object.freeze({
@@ -63,6 +70,10 @@ export function createOutputModel(places, news = [], routes = []) {
     };
   });
   const expectedRealRelatedCount = Math.min(4, Math.max(0, normalizedPlaces.length - 1));
+  const monasteryCommunityMembership = {
+    male: categoryMembership.monasteries.filter((place) => place.monasticCommunity === "male"),
+    female: categoryMembership.monasteries.filter((place) => place.monasticCommunity === "female"),
+  };
   const cataloguePagination = paginatePlaces(discoveryPlaces, 1);
   const homepagePreviewPlaces = discoveryPlaces.slice(0, HOMEPAGE_PREVIEW_LIMIT);
   const newsDetailRoutes = news.flatMap((item) => item.slug ? [{
@@ -92,6 +103,7 @@ export function createOutputModel(places, news = [], routes = []) {
     ],
     expectedPageCount: STATIC_HTML_ROUTES.length + normalizedPlaces.length + newsDetailRoutes.length + routeDetailRoutes.length + CALENDAR_HTML_ROUTES.length,
     categoryMembership,
+    monasteryCommunityMembership,
     areaMembership,
     placesById: new Map(normalizedPlaces.map((place) => [place.id, place])),
     discoveryPlacesById: new Map(discoveryPlaces.map((place) => [place.id, place])),
