@@ -1,18 +1,23 @@
 ---
+import { routeFor, type Locale } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
+interface Props { locale?: Locale }
+const { locale = "sr" } = Astro.props;
 const year = new Date().getUTCFullYear();
+const copy = publicCopy[locale];
 ---
 
 <footer class="site-footer">
   <div class="shell footer-grid">
     <div>
-      <p class="footer-brand">Светиње</p>
+      <p class="footer-brand">{copy.siteName.replace(".me", "")}</p>
       <p class="footer-domain">svetinje.me</p>
-      <p class="footer-note">Дигитални водич кроз православну баштину Црне Горе.</p>
+      <p class="footer-note">{copy.footer}</p>
     </div>
-    <nav aria-label="Навигација у подножју">
-      <a href="/o-projektu/">О пројекту</a>
-      <a href="/izvori/">Извори и уређивачка политика</a>
+    <nav aria-label={copy.footerNav}>
+      <a href={routeFor(locale, "about")}>{copy.nav.about}</a>
+      {locale === "sr" && <a href={routeFor(locale, "sources")}>{copy.nav.sources}</a>}
     </nav>
-    <p class="footer-meta">© {year} Светиње.me</p>
+    <p class="footer-meta">© {year} {copy.siteName}</p>
   </div>
 </footer>

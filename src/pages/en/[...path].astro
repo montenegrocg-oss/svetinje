@@ -1,0 +1,7 @@
+---
+import LocalizedPublicPage from "../../components/LocalizedPublicPage.astro";
+import { localizedStaticPaths } from "../../lib/localized-static-paths";
+export function getStaticPaths() { return localizedStaticPaths("en"); }
+const props = Astro.props as any;
+---
+<LocalizedPublicPage {...props} />
