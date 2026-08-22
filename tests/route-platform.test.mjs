@@ -85,7 +85,7 @@ test("pilot route public composition remains loader-driven and key-safe", async 
   ]);
   assert.match(home, /loadVisibleRoutes/);
   assert.match(home, /<MapExplorer places=\{places\} routes=\{routes\}/);
-  assert.match(header, /href: "\/rute\/", label: "Руте"/);
+  assert.match(header, /href: routeFor\(locale, "routes"\), label: copy\.nav\.routes/);
   assert.match(map, /fetch\(data\.trackUrl/);
   assert.match(map, /new ResizeObserver/);
   assert.match(map, /map\.resize\(\)/);

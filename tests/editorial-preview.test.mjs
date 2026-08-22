@@ -466,7 +466,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   const combined = [mapCanvas, explorer, card, detailSources].join("\n");
 
   assert.match(mapCanvas, /new maplibregl\.Marker/);
-  assert.match(mapCanvas, /aria-label.*отвори страницу/);
+  assert.match(mapCanvas, /data-open-page-label=\{publicCopy\[locale\]\.openPage\}/);
   assert.match(mapCanvas, /document\.createElement\("a"\)/);
   assert.match(homepage, /loadVisiblePlaces/);
   assert.match(homepage, /loadVisibleRoutes/);

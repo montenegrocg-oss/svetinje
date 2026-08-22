@@ -301,15 +301,15 @@ test("filtering has accessible preview feedback and catalogue pagination remains
   assert.match(toolbar, /data-catalogue-reset hidden disabled/);
   assert.match(catalogue, /data-catalogue-result-status role="status" aria-live="polite"/);
   assert.match(catalogue, /data-catalogue-featured-item/);
-  assert.match(catalogue, /<ExplorerPagination totalPlaces=\{cataloguePlaces\.length\} \/>/);
+  assert.match(catalogue, /<ExplorerPagination totalPlaces=\{cataloguePlaces\.length\} locale=\{locale\} \/>/);
   assert.match(catalogue, /matchedItems = items\.filter/);
   assert.match(catalogue, /currentPage = 1;[\s\S]*?renderPage\(1\)/);
   assert.match(catalogue, /button\.hidden = !hasFilters/);
   assert.match(catalogue, /pagination\.hidden = totalPages <= 1/);
   assert.match(catalogue, /renderPage\(currentPage - 1\)/);
   assert.match(catalogue, /renderPage\(currentPage \+ 1\)/);
-  assert.match(pagination, /aria-label="Претходна страница"/);
-  assert.match(pagination, /aria-label="Сљедећа страница"/);
+  assert.match(pagination, /locale === "ru" \? "Предыдущая страница"/);
+  assert.match(pagination, /locale === "ru" \? "Следующая страница"/);
   assert.match(pagination, /aria-current=\{page === 1 \? "page" : undefined\}/);
   assert.match(styles, /\.explorer-pagination button\s*\{[\s\S]*?min-width: 2\.75rem;[\s\S]*?min-height: 2\.75rem;/);
   assert.doesNotMatch(styles, /explorer-continuation|--explorer-continuation-height/);

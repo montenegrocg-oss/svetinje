@@ -82,7 +82,7 @@ test("translation schema requires source_revision and loader rejects locale mism
   await assert.rejects(() => loadLocalizedNarrative(root, "synthetic-place", "en"), /identity does not match/i);
 });
 
-test("future route registry resolves equivalent pages without enabling locale routes", async () => {
+test("route registry resolves equivalent pages and enables localized public routes", async () => {
   assert.deepEqual(routeConfig.maleMonasteries, { sr: "/manastiri/muski/", ru: "/ru/monastyri/muzhskie/", en: "/en/monasteries/men/" });
   assert.deepEqual(routeConfig.femaleMonasteries, { sr: "/manastiri/zenski/", ru: "/ru/monastyri/zhenskie/", en: "/en/monasteries/women/" });
   assert.equal(placeDetailRoot.ru, "/ru/svyatyni/");
@@ -99,5 +99,6 @@ test("future route registry resolves equivalent pages without enabling locale ro
   assert.equal(seo.xDefault, "https://svetinje.me/o-projektu/");
 
   const pageFiles = await import("node:fs/promises").then(({ readdir }) => readdir(new URL("../src/pages/", import.meta.url), { recursive: true }));
-  assert.equal(pageFiles.some((file) => /^(ru|en)[\\/]/.test(file)), false);
+  assert.equal(pageFiles.some((file) => /^ru[\\/]/.test(file)), true);
+  assert.equal(pageFiles.some((file) => /^en[\\/]/.test(file)), true);
 });

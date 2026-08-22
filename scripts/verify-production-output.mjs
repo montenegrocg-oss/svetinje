@@ -16,6 +16,8 @@ import { selectFeaturedCataloguePlaces } from "../src/lib/category-catalogue.ts"
 import { getPlaceAboutLabel } from "../src/lib/place-content.ts";
 import { MOST_VISITED_PLACE_IDS } from "../src/lib/homepage-selections.ts";
 import { containsUnsupportedReferenceScreenshotContent } from "./lib/reference-screenshot-guard.mjs";
+import { localeConfig, placeDetailRoot } from "../src/i18n/config.ts";
+import { loadLocalizedNarrative } from "../src/lib/content/localized-narrative.ts";
 
 const EMPTY_STATES = {
   monasteries: "Још нема манастира спремних за јавно објављивање.",
@@ -434,6 +436,22 @@ for (const page of pages) {
   }
 }
 
+for (const locale of ["ru", "en"]) {
+  const prefix = `${locale}/`;
+  for (const page of pages.filter((candidate) => candidate.relative.startsWith(prefix))) {
+    if (!page.html.includes(`<html lang="${localeConfig[locale].htmlLang}">`)) failures.push(`${page.relative} has the wrong html lang`);
+    if (!page.html.includes(`rel="canonical"`)) failures.push(`${page.relative} is missing a canonical link`);
+  }
+  for (const place of model.localizedPlaces[locale]) {
+    const route = `${placeDetailRoot[locale].slice(1)}${place.slug}/index.html`;
+    const detail = pagesByRoute.get(route);
+    if (!detail?.html.includes(`data-place-id="${place.id}"`) || !detail.html.includes(place.name) || !detail.html.includes(place.summary)) {
+      failures.push(`${locale} detail ${place.id} is missing its localized identity or narrative summary`);
+    }
+  }
+}
+if (pagesByRoute.has("ru/svyatyni/index.html") || pagesByRoute.has("en/holy-places/index.html")) failures.push("localized holy-place discovery archive was generated");
+
 const homepage = pagesByRoute.get("index.html");
 const catalogue = pagesByRoute.get("svetinje/index.html");
 const newsArchive = pagesByRoute.get("novosti/index.html");
@@ -536,7 +554,7 @@ for (const detailCase of model.detailRoutes) {
 }
 
 for (const page of pages) {
-  if (/rating|>\s*Оцјена\s*</i.test(page.html) || /033\/459-084|manastirmaine@gmail\.com/i.test(page.html)) failures.push(`${page.relative} contains prohibited practical or commercial preview data`);
+  if (/\brating\b|>\s*Оцјена\s*</i.test(page.html) || /033\/459-084|manastirmaine@gmail\.com/i.test(page.html)) failures.push(`${page.relative} contains prohibited practical or commercial preview data`);
   if (containsUnsupportedReferenceScreenshotContent(page.html)) failures.push(`${page.relative} contains unsupported reference-screenshot content`);
 }
 
@@ -567,6 +585,19 @@ if (!editorialPreview) {
     if (Number.isFinite(marker.longitude)) excludedValues.push(String(marker.longitude));
     for (const value of excludedValues.filter((candidate) => typeof candidate === "string" && candidate.length >= 4)) {
       if (pages.some((page) => page.html.includes(value))) failures.push(`production contains excluded research value ${value}`);
+    }
+  }
+  const allPlaceIds = (await readdir(path.join(root, "content", "places"), { withFileTypes: true }))
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
+  for (const placeId of allPlaceIds) {
+    for (const locale of ["ru", "en"]) {
+      const narrative = await loadLocalizedNarrative(root, placeId, locale);
+      if (!narrative || narrative.translationStatus === "published") continue;
+      if (narrative.slug && pagesByRoute.has(`${placeDetailRoot[locale].slice(1)}${narrative.slug}/index.html`)) failures.push(`production generated excluded ${locale} translation route for ${placeId}`);
+      for (const value of [narrative.preferredName, narrative.summary].filter((item) => typeof item === "string" && item.length >= 8)) {
+        if (pages.filter((page) => page.relative.startsWith(`${locale}/`)).some((page) => page.html.includes(value))) failures.push(`production contains excluded ${locale} translation value for ${placeId}`);
+      }
     }
   }
   const excludedNews = await loadExcludedNewsMarkers(root);

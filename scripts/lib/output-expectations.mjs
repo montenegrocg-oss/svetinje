@@ -6,6 +6,12 @@ import { paginatePlaces, PLACES_PER_PAGE } from "../../src/lib/explorer-paginati
 import { HOMEPAGE_PREVIEW_LIMIT } from "../../src/lib/explorer-preview.ts";
 import { PLACE_AREAS } from "../../src/lib/place-areas.ts";
 import { loadVisibleRoutes } from "../../src/lib/content/routes.ts";
+import { loadLocalizedVisiblePlaces } from "../../src/lib/content/localized-publication.ts";
+
+export const LOCALIZED_STATIC_HTML_ROUTES = Object.freeze([
+  "ru/index.html", "ru/monastyri/index.html", "ru/monastyri/muzhskie/index.html", "ru/monastyri/zhenskie/index.html", "ru/tserkvi/index.html", "ru/karta/index.html", "ru/marshruty/index.html", "ru/kalendar/index.html", "ru/novosti/index.html", "ru/o-proekte/index.html",
+  "en/index.html", "en/monasteries/index.html", "en/monasteries/men/index.html", "en/monasteries/women/index.html", "en/churches/index.html", "en/map/index.html", "en/routes/index.html", "en/calendar/index.html", "en/news/index.html", "en/about/index.html",
+]);
 
 export const STATIC_HTML_ROUTES = Object.freeze([
   "index.html",
@@ -48,7 +54,7 @@ export const CATEGORY_HREFS = Object.freeze({
 const hasCoordinates = (place) =>
   Number.isFinite(place.latitude) && Number.isFinite(place.longitude);
 
-export function createOutputModel(places, news = [], routes = []) {
+export function createOutputModel(places, news = [], routes = [], localizedPlaces = { ru: [], en: [] }) {
   const normalizedPlaces = [...places];
   const discoveryPlaces = selectPublicDiscoveryPlaces(normalizedPlaces);
   const categoryMembership = {
@@ -84,24 +90,32 @@ export function createOutputModel(places, news = [], routes = []) {
     PLACE_AREAS.map((area) => [area.id, discoveryPlaces.filter((place) => place.browseAreaId === area.id)]),
   );
   const routeDetailRoutes = routes.map((route) => ({ route, path: `rute/${route.slug}/index.html` }));
+  const localizedDetailRoutes = [
+    ...localizedPlaces.ru.map((place) => ({ locale: "ru", place, route: `ru/svyatyni/${place.slug}/index.html` })),
+    ...localizedPlaces.en.map((place) => ({ locale: "en", place, route: `en/holy-places/${place.slug}/index.html` })),
+  ];
 
   return {
     places: normalizedPlaces,
     discoveryPlaces,
-    staticRoutes: [...STATIC_HTML_ROUTES],
+    staticRoutes: [...STATIC_HTML_ROUTES, ...LOCALIZED_STATIC_HTML_ROUTES],
     detailRoutes,
     news: [...news],
     newsDetailRoutes,
     routes: [...routes],
     routeDetailRoutes,
+    localizedPlaces,
+    localizedDetailRoutes,
     allExpectedRoutes: [
       ...STATIC_HTML_ROUTES,
+      ...LOCALIZED_STATIC_HTML_ROUTES,
       ...detailRoutes.map(({ route }) => route),
       ...newsDetailRoutes.map(({ route }) => route),
       ...routeDetailRoutes.map(({ path }) => path),
       ...CALENDAR_HTML_ROUTES,
+      ...localizedDetailRoutes.map(({ route }) => route),
     ],
-    expectedPageCount: STATIC_HTML_ROUTES.length + normalizedPlaces.length + newsDetailRoutes.length + routeDetailRoutes.length + CALENDAR_HTML_ROUTES.length,
+    expectedPageCount: STATIC_HTML_ROUTES.length + LOCALIZED_STATIC_HTML_ROUTES.length + normalizedPlaces.length + newsDetailRoutes.length + routeDetailRoutes.length + CALENDAR_HTML_ROUTES.length + localizedDetailRoutes.length,
     categoryMembership,
     monasteryCommunityMembership,
     areaMembership,
@@ -121,8 +135,12 @@ export function createOutputModel(places, news = [], routes = []) {
 }
 
 export async function createOutputExpectations(root, { editorialPreview }) {
-  const places = await loadVisiblePlaces(root, { editorialPreview });
+  const [places, ruPlaces, enPlaces] = await Promise.all([
+    loadVisiblePlaces(root, { editorialPreview }),
+    loadLocalizedVisiblePlaces("ru", root, { editorialPreview }),
+    loadLocalizedVisiblePlaces("en", root, { editorialPreview }),
+  ]);
   const news = await loadVisibleNews(root, { editorialPreview, visiblePlaces: places });
   const routes = await loadVisibleRoutes(root, { editorialPreview });
-  return createOutputModel(places, news, routes);
+  return createOutputModel(places, news, routes, { ru: ruPlaces, en: enPlaces });
 }
