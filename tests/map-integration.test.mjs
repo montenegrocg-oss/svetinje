@@ -193,7 +193,7 @@ test("homepage and dedicated map use the shared public-discovery inventory", asy
   ]);
 
   assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
-  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} \/>/);
+  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} locale=\{locale\} \/>/);
   assert.doesNotMatch(explorer, /mapOnlyPlaceIds|data-map-only-place-ids/);
   assert.match(mapPage, /selectPublicDiscoveryPlaces\(await loadVisiblePlaces\(\)\)/);
 });

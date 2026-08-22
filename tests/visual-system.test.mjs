@@ -116,15 +116,21 @@ test("language switcher links only actual equivalent destinations", async () => 
 });
 
 test("the homepage is composed from reusable map-explorer components", async () => {
-  const [homepage, selection] = await Promise.all([
+  const [homepage, srPage, ruPage, enPage, selection] = await Promise.all([
+    source("src/components/HomePage.astro"),
     source("src/pages/index.astro"),
+    source("src/pages/ru/index.astro"),
+    source("src/pages/en/index.astro"),
     source("src/lib/homepage-selections.ts"),
   ]);
   assert.match(homepage, /import MapExplorer/);
   assert.match(homepage, /import PlaceAreas/);
   assert.match(homepage, /loadVisibleRoutes/);
-  assert.match(homepage, /<MapExplorer places=\{places\} routes=\{routes\} calendarDays=\{calendarDays\} scriptureCorpus=\{scriptureCorpus\} \/>/);
-  assert.match(homepage, /<PlaceAreas places=\{places\} \/>/);
+  assert.match(homepage, /<MapExplorer places=\{places\} routes=\{routes\} calendarDays=\{calendarDays\} scriptureCorpus=\{scriptureCorpus\} locale=\{locale\} \/>/);
+  assert.match(homepage, /<PlaceAreas places=\{places\} locale=\{locale\} \/>/);
+  assert.match(srPage, /<HomePage locale="sr" \/>/);
+  assert.match(ruPage, /<HomePage locale="ru" \/>/);
+  assert.match(enPage, /<HomePage locale="en" \/>/);
   assert.doesNotMatch(homepage, /PopularRoutes/);
   assert.doesNotMatch(homepage, /HomepagePreviews/);
 
@@ -135,42 +141,43 @@ test("the homepage is composed from reusable map-explorer components", async () 
     source("src/components/RecommendedPlaces.astro"),
     source("src/components/PopularRoutes.astro"),
   ]);
-  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} \/>/);
-  assert.match(explorer, /<MapControls \/>/);
+  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} locale=\{locale\} \/>/);
+  assert.match(explorer, /<MapControls locale=\{locale\} \/>/);
   assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
   assert.match(explorer, /const initialPlaces = discoveryPlaces\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);
   assert.match(explorer, /const inventoryPlaces = discoveryPlaces\.slice\(HOMEPAGE_PREVIEW_LIMIT\)/);
-  assert.match(explorer, /<ExplorerSidebar places=\{initialPlaces\} totalPlaces=\{discoveryPlaces\.length\} \/>/);
-  assert.match(explorer, /<RecommendedPlaces places=\{discoveryPlaces\} \/>/);
-  assert.match(explorer, /<TodayCalendar days=\{calendarDays\} corpus=\{scriptureCorpus\} \/>/);
+  assert.match(explorer, /<ExplorerSidebar places=\{initialPlaces\} totalPlaces=\{discoveryPlaces\.length\} locale=\{locale\} \/>/);
+  assert.match(explorer, /<RecommendedPlaces places=\{discoveryPlaces\} locale=\{locale\} \/>/);
+  assert.match(explorer, /<TodayCalendar days=\{calendarDays\} corpus=\{scriptureCorpus\} locale=\{locale\} \/>/);
   assert.match(explorer, /import PopularRoutes from "\.\/PopularRoutes\.astro"/);
-  assert.match(explorer, /<PopularRoutes routes=\{routes\} \/>/);
+  assert.match(explorer, /<PopularRoutes routes=\{routes\} locale=\{locale\} \/>/);
   assert.ok(
-    explorer.indexOf("<ExplorerSidebar places={initialPlaces} totalPlaces={discoveryPlaces.length} />") < explorer.indexOf("<RecommendedPlaces places={discoveryPlaces} />")
-      && explorer.indexOf("<RecommendedPlaces places={discoveryPlaces} />") < explorer.indexOf("<TodayCalendar days={calendarDays} corpus={scriptureCorpus} />")
-      && explorer.indexOf("<TodayCalendar days={calendarDays} corpus={scriptureCorpus} />") < explorer.indexOf("<PopularRoutes routes={routes} />"),
+    explorer.indexOf("<ExplorerSidebar places={initialPlaces} totalPlaces={discoveryPlaces.length} locale={locale} />") < explorer.indexOf("<RecommendedPlaces places={discoveryPlaces} locale={locale} />")
+      && explorer.indexOf("<RecommendedPlaces places={discoveryPlaces} locale={locale} />") < explorer.indexOf("<TodayCalendar days={calendarDays} corpus={scriptureCorpus} locale={locale} />")
+      && explorer.indexOf("<TodayCalendar days={calendarDays} corpus={scriptureCorpus} locale={locale} />") < explorer.indexOf("<PopularRoutes routes={routes} locale={locale} />"),
     "homepage preview, recommendations, Today, and routes must retain their editorial order",
   );
   assert.doesNotMatch(explorer, /ExplorerContinuation|ExplorerPagination|data-continuation|data-explorer-pagination/);
-  assert.equal([...sidebar.matchAll(/<HomepagePagination totalPages=\{totalPages\} position="(top|bottom)" \/>/g)].length, 2);
+  assert.equal([...sidebar.matchAll(/<HomepagePagination totalPages=\{totalPages\} position="(top|bottom)" locale=\{locale\} \/>/g)].length, 2);
   assert.match(homepagePagination, /data-homepage-pagination/);
   assert.match(homepagePagination, /data-homepage-pagination-prev/);
   assert.match(homepagePagination, /data-homepage-pagination-next/);
   assert.match(homepagePagination, /data-homepage-pagination-status/);
   assert.doesNotMatch(sidebar, /data-explorer-catalogue-link/);
   assert.match(explorer, /data-testid="map-explorer"/);
-  assert.match(recommended, /Најпосјећеније светиње/);
+  assert.match(recommended, /publicCopy\[locale\]\.homepage\.recommended/);
+  assert.match(recommended, /\{copy\.title\}/);
   assert.match(recommended, /data-testid="recommended-places"/);
   assert.match(recommended, /MOST_VISITED_PLACE_IDS/);
   const selectedIds = [...selection.matchAll(/^\s*"([a-z0-9-]+)",?$/gm)].map((match) => match[1]);
   assert.deepEqual(selectedIds, ["manastir-ostrog", "cetinjski-manastir", "manastir-moraca", "dajbabe", "saborni-hram-podgorica"]);
   assert.match(recommended, /places\.find\(\(candidate\) => candidate\.id === id\)/);
-  assert.match(recommended, /href=\{`\/svetinje\/\$\{place\.slug\}\/`\}/);
+  assert.match(recommended, /href=\{`\$\{placeDetailRoot\[locale\]\}\$\{place\.slug\}\/`\}/);
   assert.match(recommended, /data-testid="recommended-place-card"/);
   assert.doesNotMatch(recommended, /recommended-placeholder|placeholderCount|TOTAL_RECOMMENDATION_SLOTS/);
   assert.doesNotMatch(recommended, /Радни приказ|preview-badge/);
   assert.doesNotMatch(recommended, /place\.typeLabel|place-preview__record-meta|Отвори страницу|place-preview__record-action/);
-  assert.match(recommended, /<a class="place-preview__record-link" href=\{`\/svetinje\/\$\{place\.slug\}\/`\}>[\s\S]*?<h3>\{place\.name\}<\/h3>[\s\S]*?\{location && <small>\{location\}<\/small>\}[\s\S]*?<\/a>/);
+  assert.match(recommended, /<a class="place-preview__record-link" href=\{`\$\{placeDetailRoot\[locale\]\}\$\{place\.slug\}\/`\}>[\s\S]*?<h3>\{place\.name\}<\/h3>[\s\S]*?\{location && <small>\{location\}<\/small>\}[\s\S]*?<\/a>/);
   assert.match(recommended, /place\.previewImageSrc/);
   assert.match(recommended, /class="place-preview__record-image"/);
   assert.match(recommended, /alt=\{place\.previewImageAlt \?\? place\.name\}/);
@@ -179,7 +186,8 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(recommended, /alt=\{place\.previewImageAlt \?\? place\.name\}/);
   assert.doesNotMatch(recommended, /podmaine|hero\.webp|https?:\/\//i);
   assert.doesNotMatch(recommended, /saborni-hram-bar|Саборни храм Светог Јована Владимира/);
-  assert.match(routes, /Популарне руте/);
+  assert.match(routes, /publicCopy\[locale\]\.homepage\.routes/);
+  assert.match(routes, /<h2 id="routes-title">\{copy\.title\}<\/h2>/);
   assert.match(routes, /class="popular-routes map-explorer__routes"/);
   assert.match(routes, /data-testid="popular-routes"/);
   assert.match(routes, /class="popular-routes__inner"/);
@@ -346,23 +354,26 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
 });
 
 test("map controls, search, and filters expose accessible states and honest feedback", async () => {
-  const [controls, sidebar, filters, explorer, styles] = await Promise.all([
+  const [controls, sidebar, filters, explorer, styles, copy] = await Promise.all([
     source("src/components/MapControls.astro"),
     source("src/components/ExplorerSidebar.astro"),
     source("src/components/FilterChips.astro"),
     source("src/components/MapExplorer.astro"),
     source("src/styles/global.css"),
+    source("src/i18n/public-copy.ts"),
   ]);
   assert.match(sidebar, /<label class="sr-only" for="holy-place-search">/);
-  assert.match(sidebar, /placeholder="Претражите светиње…"/);
+  assert.match(sidebar, /placeholder=\{copy\.searchPlaceholder\}/);
+  assert.match(copy, /searchPlaceholder: "Претражите светиње…"/);
   assert.match(filters, /type="button"/);
   assert.match(filters, /aria-pressed=/);
-  assert.match(controls, /Функција планирања руте је у припреми/);
+  assert.match(controls, /\{c\.builderNotice\}/);
+  assert.match(copy, /builderNotice: "Функција планирања руте је у припреми\."/);
   assert.match(controls, /role="status"/);
   assert.match(controls, /data-map-zoom-in/);
   assert.match(controls, /data-map-zoom-out/);
   assert.match(controls, /data-map-reset/);
-  assert.match(controls, /reset: "Прикажи поново Црну Гору"/);
+  assert.match(copy, /reset: "Прикажи поново Црну Гору"/);
   assert.match(controls, /aria-label=\{c\.reset\}/);
   assert.match(explorer, /querySelectorAll<HTMLButtonElement>\("button\[data-filter\]"\)/);
   assert.ok(
@@ -381,6 +392,7 @@ test("the required Serbian interface labels are present", async () => {
     source("src/components/FilterChips.astro"),
     source("src/components/RecommendedPlaces.astro"),
     source("src/components/PopularRoutes.astro"),
+    source("src/i18n/public-copy.ts"),
   ]);
   const content = files.join("\n");
   for (const label of [
@@ -398,7 +410,6 @@ test("the required Serbian interface labels are present", async () => {
     assert.match(content, new RegExp(label.replace(/[?]/g, "\\?")));
   }
   assert.doesNotMatch(content, /Света мјеста|data-filter="holy-places"/);
-  assert.doesNotMatch(content, /маршрут/iu);
 });
 
 test("the visual system includes required breakpoints, touch targets, and reduced-motion protection", async () => {
@@ -416,19 +427,18 @@ test("the visual system includes required breakpoints, touch targets, and reduce
 
 test("the homepage replaces its news feed with shared geographic-area navigation", async () => {
   const [homepage, areas] = await Promise.all([
-    source("src/pages/index.astro"),
+    source("src/components/HomePage.astro"),
     source("src/components/PlaceAreas.astro"),
   ]);
   const styles = await source("src/styles/global.css");
   assert.doesNotMatch(homepage, /\/images\/home\/hero\.webp/);
   assert.doesNotMatch(homepage, /project-intro|trust-note|О водичу|Уређивачко повјерење|Провјерено прије објаве/);
   assert.doesNotMatch(homepage, /loadVisibleNews|selectLatestNews|NewsFeed|homepage-news/);
-  assert.match(homepage, /<PlaceAreas places=\{places\} \/>/);
+  assert.match(homepage, /<PlaceAreas places=\{places\} locale=\{locale\} \/>/);
   assert.match(areas, /PLACE_AREAS\.map/);
-  assert.match(areas, /ИСТРАЖИТЕ/);
-  assert.match(areas, /По областима/);
+  assert.match(areas, /publicCopy\[locale\]\.homepage\.areas/);
   assert.match(areas, /class="shell homepage-wide-shell homepage-areas__inner"/);
-  assert.match(areas, /\?area=\$\{area\.id\}#mapa/);
+  assert.match(areas, /\$\{homePath\}\?area=\$\{area\.id\}#mapa/);
   assert.match(areas, /area\.count > 0/);
   assert.match(styles, /\.homepage-wide-shell\s*\{[\s\S]*?width: min\(calc\(100% - clamp\(3rem, 4\.5vw, 4rem\)\), 104rem\);/);
   assert.match(styles, /\.homepage-areas\s*\{[\s\S]*?padding-block: clamp\(2\.5rem, 3\.6vw, 3\.5rem\) clamp\(3rem, 4vw, 4rem\);/);

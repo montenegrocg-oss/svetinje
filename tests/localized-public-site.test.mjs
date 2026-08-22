@@ -94,3 +94,34 @@ test("available static routes expose symmetric Serbian, Russian, and English equ
   assert.doesNotMatch(layout, /Object\.values\(routeConfig\)/);
   assert.match(localizedPage, /staticLocaleLinksForRoute\(page as RouteKey\)/);
 });
+
+test("Serbian, Russian, and English home routes share the complete homepage architecture", async () => {
+  const [srPage, ruPage, enPage, home, explorer, localizedPage, copy, today, routes, areas, card] = await Promise.all([
+    source("src/pages/index.astro"), source("src/pages/ru/index.astro"), source("src/pages/en/index.astro"),
+    source("src/components/HomePage.astro"), source("src/components/MapExplorer.astro"), source("src/components/LocalizedPublicPage.astro"),
+    source("src/i18n/public-copy.ts"), source("src/components/TodayCalendar.astro"), source("src/components/PopularRoutes.astro"),
+    source("src/components/PlaceAreas.astro"), source("src/components/PlaceCard.astro"),
+  ]);
+  assert.match(srPage, /<HomePage locale="sr" \/>/);
+  assert.match(ruPage, /<HomePage locale="ru" \/>/);
+  assert.match(enPage, /<HomePage locale="en" \/>/);
+  assert.match(home, /loadLocalizedVisiblePlaces\(locale\)/);
+  assert.match(home, /<MapExplorer[\s\S]*?locale=\{locale\}/);
+  assert.match(home, /<PlaceAreas places=\{places\} locale=\{locale\} \/>/);
+  assert.doesNotMatch(localizedPage, /page === "home"|pageCopy\.home/);
+
+  for (const component of ["ExplorerSidebar", "RecommendedPlaces", "TodayCalendar", "PopularRoutes"]) {
+    assert.match(explorer, new RegExp(`<${component}[^>]+locale=\\{locale\\}`));
+  }
+  assert.match(explorer, /data-explorer-copy/);
+  assert.match(explorer, /runtimeCopy\.status/);
+  assert.doesNotMatch(explorer, /Нема резултата|Нема записа|Приказана су|Страница \$\{currentPage\}/);
+  assert.match(copy, /searchPlaceholder: "Поиск по святыням…"/);
+  assert.match(copy, /searchPlaceholder: "Search holy places…"/);
+  assert.match(card, /placeDetailRoot\[locale\]/);
+  assert.match(today, /locale !== "sr"[\s\S]*?copy\.translationTitle/);
+  assert.match(today, /locale === "sr" && <TodayCalendarHydration \/>/);
+  assert.match(routes, /const featuredRoutes = locale === "sr"/);
+  assert.match(areas, /areaLabels\[locale\]/);
+  assert.match(areas, /routeFor\(locale, "home"\)/);
+});

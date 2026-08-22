@@ -1,12 +1,17 @@
 ---
 import type { VisiblePlace } from "../lib/content/publication";
 import { MOST_VISITED_PLACE_IDS } from "../lib/homepage-selections";
+import { placeDetailRoot, routeFor, type Locale } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
 
 interface Props {
   places: VisiblePlace[];
+  locale?: Locale;
 }
 
-const { places } = Astro.props;
+const { places, locale = "sr" } = Astro.props;
+const copy = publicCopy[locale].homepage.recommended;
+const browseHref = locale === "sr" ? routeFor(locale, "holyPlaces") : routeFor(locale, "map");
 const recommendations = MOST_VISITED_PLACE_IDS.flatMap((id) => {
   const place = places.find((candidate) => candidate.id === id);
   return place ? [place] : [];
@@ -15,16 +20,16 @@ const recommendations = MOST_VISITED_PLACE_IDS.flatMap((id) => {
 
 <section class="recommended-shelf map-explorer__recommended" aria-labelledby="recommended-title" data-testid="recommended-places">
   <header class="shelf-heading">
-    <h2 id="recommended-title">Најпосјећеније светиње</h2>
-    <a href="/svetinje/">Прикажи све</a>
+    <h2 id="recommended-title">{copy.title}</h2>
+    <a href={browseHref}>{copy.showAll}</a>
   </header>
-  <div class="place-previews" role="list" aria-label="Најпосјећеније светиње">
+  <div class="place-previews" role="list" aria-label={copy.aria}>
     {recommendations.map((place) => {
       const location = [place.municipality, place.settlement].filter(Boolean).join(" · ");
 
       return (
         <article class="place-preview place-preview--record" role="listitem" data-testid="recommended-place-card" data-recommended-place={place.id}>
-          <a class="place-preview__record-link" href={`/svetinje/${place.slug}/`}>
+          <a class="place-preview__record-link" href={`${placeDetailRoot[locale]}${place.slug}/`}>
             <div class:list={["place-preview__media", place.previewImageSrc && "place-preview__media--image"]}>
               {place.previewImageSrc ? (
                 <img

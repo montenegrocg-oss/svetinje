@@ -1,22 +1,26 @@
 ---
 import InterfaceIcon from "./InterfaceIcon.astro";
+import type { Locale } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
 
 interface Props {
   group: string;
   compact?: boolean;
   includeRoutes?: boolean;
+  locale?: Locale;
 }
 
-const { group, compact = false, includeRoutes = true } = Astro.props;
+const { group, compact = false, includeRoutes = true, locale = "sr" } = Astro.props;
+const copy = publicCopy[locale].homepage;
 const filters = [
-  { id: "all", label: "Све", icon: "grid" as const },
-  { id: "monasteries", label: "Манастири", icon: "monastery" as const },
-  { id: "churches", label: "Цркве", icon: "church" as const },
-  { id: "routes", label: "Поклоничке руте", icon: "route" as const },
+  { id: "all", label: copy.filters.all, icon: "grid" as const },
+  { id: "monasteries", label: copy.filters.monasteries, icon: "monastery" as const },
+  { id: "churches", label: copy.filters.churches, icon: "church" as const },
+  { id: "routes", label: copy.filters.routes, icon: "route" as const },
 ].filter((filter) => includeRoutes || filter.id !== "routes");
 ---
 
-<div class:list={["filter-chips", { "filter-chips--compact": compact }]} data-filter-group={group} aria-label="Филтери каталога">
+<div class:list={["filter-chips", { "filter-chips--compact": compact }]} data-filter-group={group} aria-label={copy.filters.aria}>
   {filters.map((filter, index) => (
     <button
       class="filter-chip"

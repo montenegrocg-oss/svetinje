@@ -189,11 +189,11 @@ test("the explorer keeps one shared filter and pagination state across cards, co
   assert.match(explorer, /new CustomEvent\("svetinje:filter-change"/);
   assert.match(explorer, /new CustomEvent\("svetinje:place-visibility-change"/);
   assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
-  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} \/>/);
+  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} locale=\{locale\} \/>/);
   assert.doesNotMatch(explorer, /discoveryPlaceIds|mapOnlyPlaceIds|data-map-only-place-ids/);
   assert.match(explorer, /const initialPlaces = discoveryPlaces\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);
   assert.match(explorer, /const inventoryPlaces = discoveryPlaces\.slice\(HOMEPAGE_PREVIEW_LIMIT\)/);
-  assert.match(explorer, /<ExplorerSidebar places=\{initialPlaces\} totalPlaces=\{discoveryPlaces\.length\} \/>/);
+  assert.match(explorer, /<ExplorerSidebar places=\{initialPlaces\} totalPlaces=\{discoveryPlaces\.length\} locale=\{locale\} \/>/);
   assert.match(explorer, /data-explorer-card-pool hidden/);
   assert.match(explorer, /matchedCards = placeCards\.filter/);
   assert.match(explorer, /paginateHomepagePreview\(matchedCards, currentPage\)/);
@@ -205,7 +205,7 @@ test("the explorer keeps one shared filter and pagination state across cards, co
   assert.match(explorer, /paginations\.forEach\(\(pagination\) => \{[\s\S]*?previousButton\.disabled = page <= 1;[\s\S]*?nextButton\.disabled = page >= totalPages;[\s\S]*?status\.textContent = `\$\{page\} \/ \$\{totalPages\}`/);
   assert.match(explorer, /paginations\.forEach\(\(pagination\) => \{[\s\S]*?data-homepage-pagination-prev[\s\S]*?currentPage -= 1;[\s\S]*?data-homepage-pagination-next[\s\S]*?currentPage \+= 1/);
   assert.doesNotMatch(explorer, /pageForHomepagePreviewPlace\(matchedCards|selectedPlaceId/);
-  assert.equal([...sidebar.matchAll(/<HomepagePagination totalPages=\{totalPages\} position="(top|bottom)" \/>/g)].length, 2);
+  assert.equal([...sidebar.matchAll(/<HomepagePagination totalPages=\{totalPages\} position="(top|bottom)" locale=\{locale\} \/>/g)].length, 2);
   assert.match(sidebar, /position="top"[\s\S]*?explorer-results[\s\S]*?position="bottom"/);
   assert.match(homepagePagination, /data-homepage-pagination-position=\{position\}/);
   assert.match(homepagePagination, /data-homepage-pagination-prev/);
@@ -220,7 +220,7 @@ test("the explorer keeps one shared filter and pagination state across cards, co
   assert.match(mapCanvas, /link\.hidden = !visible/);
   assert.match(filters, /id: "all"/);
   assert.match(controls, /data-filter="all" aria-pressed="true"/);
-  assert.match(controls, /<InterfaceIcon name="grid" size=\{18\} \/><span>Све<\/span>/);
+  assert.match(controls, /<InterfaceIcon name="grid" size=\{18\} \/><span>\{copy\.filters\.all\}<\/span>/);
   assert.ok(
     controls.indexOf('data-filter="all"') < controls.indexOf('data-filter="monasteries"'),
     "the map all filter must appear before monasteries",
@@ -250,7 +250,7 @@ test("mobile map and panel filters expose distinct responsive sets with one shar
   assert.doesNotMatch(controls, /data-filter="holy-places"|Света мјеста/);
   assert.match(controls, /data-filter="routes"/);
   assert.match(controls, /map-action--primary map-action--mobile-hidden/);
-  assert.match(sidebar, /<FilterChips group="catalogue" includeRoutes=\{false\} \/>/);
+  assert.match(sidebar, /<FilterChips group="catalogue" includeRoutes=\{false\} locale=\{locale\} \/>/);
   assert.match(filters, /includeRoutes \|\| filter\.id !== "routes"/);
   assert.doesNotMatch(filters, /id: "holy-places"|Света мјеста/);
 
@@ -282,20 +282,19 @@ test("filtering has accessible preview feedback and catalogue pagination remains
   ]);
 
   assert.match(sidebar, /data-explorer-no-results hidden role="status" aria-live="polite"/);
-  assert.match(explorer, /Поклоничке руте су у припреми/);
-  assert.match(explorer, /Нема храмова у овом приказу/);
+  assert.match(explorer, /noResults: copy\.explorer\.noResults/);
+  assert.match(explorer, /const noResultCopy = runtimeCopy\.noResults/);
   assert.doesNotMatch(explorer, /Нема светих мјеста у овом приказу/);
-  assert.match(explorer, /Нема резултата/);
-  assert.match(explorer, /Нема записа за изабрани филтер\./);
-  assert.match(explorer, /Приказана су \$\{shown\} од \$\{matched\} резултата\. \$\{pageCopy\}/);
-  assert.match(explorer, /Страница \$\{currentPage\} од \$\{totalPages\}/);
+  assert.match(explorer, /resultStatus\.textContent = runtimeCopy\.status\.none/);
+  assert.match(explorer, /formatCopy\(runtimeCopy\.status\.many, \{ shown, matched, page: pageCopy \}\)/);
+  assert.match(explorer, /formatCopy\(runtimeCopy\.status\.page, \{ current: currentPage, total: totalPages \}\)/);
   assert.match(explorer, /document\.addEventListener\("astro:before-swap"/);
   assert.doesNotMatch(explorer, /svetinje:place-select|svetinje:place-selection-cleared/);
   assert.match(styles, /\.explorer-no-results\s*\{/);
   assert.match(styles, /\.map-explorer__content\s*\{[\s\S]*?align-items: start/);
-  assert.match(homepagePagination, /aria-label=\{`Странице прегледа светиња — \$\{positionLabel\} навигација`\}/);
-  assert.match(homepagePagination, /aria-label="Претходна страница"/);
-  assert.match(homepagePagination, /aria-label="Сљедећа страница"/);
+  assert.match(homepagePagination, /aria-label=\{ariaLabel\}/);
+  assert.match(homepagePagination, /aria-label=\{copy\.previous\}/);
+  assert.match(homepagePagination, /aria-label=\{copy\.next\}/);
   assert.match(toolbar, /data-catalogue-search/);
   assert.match(toolbar, /data-catalogue-area/);
   assert.match(toolbar, /data-catalogue-reset hidden disabled/);

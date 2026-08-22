@@ -91,6 +91,7 @@ test("the map-first homepage contains no research dossier or fictional sacred-pl
   const { readFile } = await import("node:fs/promises");
   const files = [
     "src/pages/index.astro",
+    "src/components/HomePage.astro",
     "src/components/MapExplorer.astro",
     "src/components/MapCanvas.astro",
     "src/components/ExplorerSidebar.astro",
@@ -101,10 +102,11 @@ test("the map-first homepage contains no research dossier or fictional sacred-pl
   const homepageSource = (await Promise.all(
     files.map((file) => readFile(path.join(PROJECT_ROOT, file), "utf8")),
   )).join("\n");
+  const copySource = await readFile(path.join(PROJECT_ROOT, "src/i18n/public-copy.ts"), "utf8");
 
-  assert.match(homepageSource, /Православна Црна Гора/);
-  assert.match(homepageSource, /Каталог светиња је у припреми/);
-  assert.match(homepageSource, /Поклоничке руте су у припреми/);
+  assert.match(copySource, /Православна Црна Гора/);
+  assert.match(copySource, /Каталог светиња је у припреми/);
+  assert.match(copySource, /Поклоничке руте су у припреми/);
   assert.doesNotMatch(
     homepageSource,
     /Подмаине|podmaine|Острог|Морача|Савина|Пива|Цетињски манастир|Манастир [А-Ш]/iu,

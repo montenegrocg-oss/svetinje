@@ -445,7 +445,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
     previewWorkflow,
     productionWorkflow,
   ] = await Promise.all([
-    source("src/pages/index.astro"),
+    source("src/components/HomePage.astro"),
     source("src/components/MapCanvas.astro"),
     source("src/components/MapExplorer.astro"),
     source("src/components/PlaceCard.astro"),
@@ -470,7 +470,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.match(mapCanvas, /document\.createElement\("a"\)/);
   assert.match(homepage, /loadVisiblePlaces/);
   assert.match(homepage, /loadVisibleRoutes/);
-  assert.match(homepage, /<MapExplorer places=\{places\} routes=\{routes\} calendarDays=\{calendarDays\} scriptureCorpus=\{scriptureCorpus\} \/>/);
+  assert.match(homepage, /<MapExplorer places=\{places\} routes=\{routes\} calendarDays=\{calendarDays\} scriptureCorpus=\{scriptureCorpus\} locale=\{locale\} \/>/);
   assert.doesNotMatch(explorer, /loadVisiblePlaces/);
   assert.doesNotMatch(card, /Радни приказ|У радном приказу|Није у радном приказу/);
   assert.match(card, /place\.previewImageSrc/);

@@ -6,14 +6,13 @@ import { routeFor, staticLocaleLinksForRoute, type Locale, type RouteKey } from 
 import { publicCopy } from "../i18n/public-copy";
 import { loadLocalizedVisiblePlaces, localizedSlugsForPlace, type LocalizedVisiblePlace } from "../lib/content/localized-publication";
 
-type PageKind = "home" | "monasteries" | "maleMonasteries" | "femaleMonasteries" | "churches" | "map" | "routes" | "calendar" | "news" | "about" | "place";
+type PageKind = "monasteries" | "maleMonasteries" | "femaleMonasteries" | "churches" | "map" | "routes" | "calendar" | "news" | "about" | "place";
 interface Props { locale: Exclude<Locale, "sr">; page: PageKind; place?: LocalizedVisiblePlace; localeLinks?: Partial<Record<Locale, string>> }
 const { locale, page, place, localeLinks: suppliedLocaleLinks } = Astro.props;
 const c = publicCopy[locale];
 const places = await loadLocalizedVisiblePlaces(locale);
 
 const pageCopy = locale === "ru" ? {
-  home: ["Православная Черногория", "Откройте монастыри и храмы Черногории на интерактивной карте."],
   monasteries: ["Монастыри", "Проверенные сведения о православных монастырях Черногории."],
   maleMonasteries: ["Мужские монастыри", "Мужские православные монастыри Черногории."],
   femaleMonasteries: ["Женские монастыри", "Женские православные монастыри Черногории."],
@@ -23,7 +22,6 @@ const pageCopy = locale === "ru" ? {
   news: ["Новости", "Русские версии новостей появятся после редакционной проверки."],
   about: ["О проекте", "Svetinje.me — цифровой путеводитель по православным монастырям и храмам Черногории."],
 } : {
-  home: ["Orthodox Montenegro", "Discover Montenegro's monasteries and churches on an interactive map."],
   monasteries: ["Monasteries", "Verified information about the Orthodox monasteries of Montenegro."],
   maleMonasteries: ["Men's monasteries", "Men's Orthodox monasteries in Montenegro."],
   femaleMonasteries: ["Women's monasteries", "Women's Orthodox monasteries in Montenegro."],
@@ -47,12 +45,6 @@ const catalogueText = category ? pageCopy[page as "monasteries" | "maleMonasteri
 ---
 
 <BaseLayout title={title} description={description} canonicalPath={canonicalPath} locale={locale} localeLinks={localeLinks} noindex={place?.preview ?? false}>
-  {page === "home" && <>
-    <header class="page-hero compact"><div class="shell narrow"><p class="eyebrow">{locale === "ru" ? "Цифровой путеводитель" : "Digital guide"}</p><h1>{pageCopy.home[0]}</h1><p>{pageCopy.home[1]}</p></div></header>
-    <DedicatedMap places={places} locale={locale} />
-    <CategoryCatalogue locale={locale} places={places} heading={locale === "ru" ? "Святыни Черногории" : "Holy places of Montenegro"} description={c.unavailable} emptyHeading={c.preparing} />
-  </>}
-
   {category && catalogueText && <CategoryCatalogue locale={locale} places={places} category={category} monasticCommunity={community} heading={catalogueText[0]} description={catalogueText[1]} emptyHeading={c.preparing} catalogueHeading={catalogueText[0]} />}
 
   {page === "map" && <><header class="page-hero compact"><div class="shell narrow"><h1>{pageCopy.map[0]}</h1><p>{pageCopy.map[1]}</p></div></header><DedicatedMap places={places} locale={locale} /></>}
