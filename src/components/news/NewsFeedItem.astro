@@ -1,6 +1,6 @@
 ---
 import { formatNewsDate, type VisibleNewsItem } from "../../lib/content/news";
-import { serbianNewsDateParts } from "../../lib/news-types";
+import { newsDateParts } from "../../lib/news-types";
 
 interface Props {
   item: VisibleNewsItem;
@@ -8,7 +8,7 @@ interface Props {
 }
 
 const { item, variant = "homepage" } = Astro.props;
-const date = serbianNewsDateParts(item.publishedAt);
+const date = newsDateParts(item.publishedAt, item.locale);
 ---
 
 <article
