@@ -3,7 +3,7 @@ schema_version: 1
 place_id: dajbabe
 locale: en
 editorial_status: research
-translation_status: draft
+translation_status: outdated
 slug: dajbabe-monastery
 preferred_name: Dajbabe Monastery
 summary: A cave monastery of the Dormition of the Most Holy Theotokos near Podgorica, founded in the late nineteenth century by Venerable Simeon of Dajbabe.
@@ -12,8 +12,8 @@ approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-22T19:23:49Z
-  updated_by: codex
+  updated_at: 2026-08-22T23:48:28Z
+  updated_by: montenegro-cg
 ---
 
 Dajbabe Monastery, dedicated to the Dormition of the Most Holy Theotokos, stands on the slopes of Dajbabska Gora near Podgorica. It is an active men’s monastery of the Metropolitanate of Montenegro and the Littoral and one of Montenegro’s most unusual cave holy places. Venerable Simeon of Dajbabe called it the “underground home of the Queen of Heaven” because its main church was formed within a natural cave and dedicated to the Dormition.
