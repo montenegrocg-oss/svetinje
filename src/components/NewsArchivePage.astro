@@ -2,7 +2,7 @@
 import type { Locale } from "../i18n/config";
 import { publicCopy } from "../i18n/public-copy";
 import type { VisibleNewsItem } from "../lib/content/news";
-import { NEWS_TYPES, serbianNewsDateParts } from "../lib/news-types";
+import { NEWS_TYPES, newsDateParts } from "../lib/news-types";
 import InterfaceIcon from "./InterfaceIcon.astro";
 import NewsFeed from "./news/NewsFeed.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
@@ -14,7 +14,7 @@ const copy = publicCopy[locale].pages.news;
 const categories = NEWS_TYPES.map((type) => ({ type, label: copy.types[type], count: items.filter((item) => item.type === type).length }));
 const archiveByKey = new Map<string, { key: string; label: string; count: number }>();
 for (const item of items) {
-  const date = serbianNewsDateParts(item.publishedAt);
+  const date = newsDateParts(item.publishedAt, locale);
   const existing = archiveByKey.get(date.archiveKey);
   archiveByKey.set(date.archiveKey, { key: date.archiveKey, label: date.archiveLabel, count: (existing?.count ?? 0) + 1 });
 }

@@ -40,6 +40,10 @@ export type MonasticCommunity = "male" | "female";
 interface PlaceRecord {
   id: string;
   editorial_status: string;
+  audit: {
+    created_at: string;
+    updated_at: string;
+  };
   browse_area_id?: string;
   place_type?: {
     value?: string;
@@ -116,6 +120,7 @@ interface MediaRecord {
 
 export interface PublishablePlace {
   id: string;
+  createdAt: string;
   slug: string;
   name: string;
   summary: string;
@@ -411,6 +416,7 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
     const youtubeVideoId = parseYoutubeVideoId(place.video?.youtube_url);
     return [{
       id: place.id,
+      createdAt: place.audit.created_at,
       slug: narrative.slug,
       name: narrative.preferred_name,
       summary: narrative.summary,
@@ -566,6 +572,7 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
     const previewMedia = await previewMediaForPlace(root, place.id, preferredName, media, "editorial-preview", policy, mediaOrder);
     return {
       id: place.id,
+      createdAt: place.audit.created_at,
       slug,
       name: preferredName,
       summary,

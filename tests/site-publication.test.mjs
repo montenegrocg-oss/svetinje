@@ -67,6 +67,7 @@ test("a reviewed published place can be selected without a source registry", asy
       place_type: { value: "monastery", verification: { status: "verified" } },
       ecclesiastical: { community_type: { value: "male", verification: { status: "verified" } } },
       relationships: {},
+      audit: { created_at: "2026-08-04T00:00:00Z", updated_at: "2026-08-22T00:00:00Z" },
       approvals: [approval("factual"), approval("ecclesiastical"), approval("publishing")],
     }), "utf8");
     const narrative = {
