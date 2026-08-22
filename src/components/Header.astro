@@ -47,7 +47,11 @@ const isMonasteryActive = isActive("/manastiri/");
       <ul>
         {navigation.map((item) => item.href === "/manastiri/" ? (
           <li class="desktop-navigation__submenu-item">
-            <a href={item.href} aria-current={isMonasteryActive ? "page" : undefined}>
+            <a
+              href={item.href}
+              aria-current={isExactPage(item.href) ? "page" : undefined}
+              data-section-active={isMonasteryActive ? "true" : undefined}
+            >
               {item.label}
             </a>
             <div class="desktop-navigation__submenu">
@@ -94,7 +98,7 @@ const isMonasteryActive = isActive("/manastiri/");
             {navigation.map((item) => item.href === "/manastiri/" ? (
               <li>
                 <details class="mobile-navigation__submenu" open={isMonasteryActive}>
-                  <summary aria-current={isMonasteryActive ? "true" : undefined}>Манастири</summary>
+                  <summary data-section-active={isMonasteryActive ? "true" : undefined}>Манастири</summary>
                   <ul aria-label="Категорије манастира">
                     {mobileMonasteryNavigation.map((subcategory) => (
                       <li>
