@@ -4,7 +4,7 @@ import test from "node:test";
 import { parse } from "yaml";
 import { updateCanonicalPlace } from "../src/place-editor.ts";
 import { loadEditablePlace, parseNarrative } from "../src/repository-content.ts";
-import { createPlace, updatePlace, updatePlacePreview } from "../src/service.ts";
+import { createPlace, updatePlace, updatePlaceNarrative, updatePlacePreview } from "../src/service.ts";
 import { editPlacePage } from "../src/ui.ts";
 
 const HEAD = "a".repeat(40);
@@ -106,6 +106,34 @@ audit: { created_at: 2026-08-01T00:00:00Z, created_by: maxim, updated_at: 2026-0
 ---
 `;
 
+const RU_NARRATIVE = `---
+schema_version: 1
+place_id: existing-place
+locale: ru
+editorial_status: research
+translation_status: draft
+slug: existing-place-ru
+preferred_name: Синтетический объект
+summary: Синтетическое описание
+source_revision: ${HEAD}
+alternate_names:
+  - name: Сохранённое имя
+    context: Synthetic test metadata
+    verification_status: requires-verification
+approvals: []
+audit: { created_at: 2026-08-01T00:00:00Z, created_by: maxim, updated_at: 2026-08-01T00:00:00Z, updated_by: maxim }
+---
+
+Синтетический текст.
+`;
+
+const EN_NARRATIVE = RU_NARRATIVE
+  .replace("locale: ru", "locale: en")
+  .replace("slug: existing-place-ru", "slug: existing-place-en")
+  .replace("preferred_name: Синтетический объект", "preferred_name: Synthetic place")
+  .replace("summary: Синтетическое описание", "summary: Synthetic summary")
+  .replace("Синтетический текст.", "Synthetic body.");
+
 class Repository {
   committed;
   constructor() {
@@ -118,6 +146,20 @@ class Repository {
   ].map(([path, sha]) => ({ path, sha, type: "blob", mode: "100644" })); }
   async readBlob(sha) { return this.blobs[sha]; }
   async commitFilesAtomic(input) { this.committed = input; return { commitSha: "d".repeat(40), branch: input.branch }; }
+}
+
+class LocalizedRepository extends Repository {
+  constructor({ ru = true, en = true } = {}) {
+    super();
+    if (ru) this.blobs.ruNarrative = RU_NARRATIVE;
+    if (en) this.blobs.enNarrative = EN_NARRATIVE;
+  }
+  async readTree() {
+    const tree = await super.readTree();
+    if (this.blobs.ruNarrative) tree.push({ path: "content/places/existing-place/narratives/ru.md", sha: "ruNarrative", type: "blob", mode: "100644" });
+    if (this.blobs.enNarrative) tree.push({ path: "content/places/existing-place/narratives/en.md", sha: "enNarrative", type: "blob", mode: "100644" });
+    return tree;
+  }
 }
 
 class RoundTripRepository extends Repository {
@@ -232,6 +274,122 @@ test("GET editable model exposes one unified narrative body", async () => {
   assert.equal(model.place.inPreview, true);
   assert.equal("placeSourceIds" in model.place, false);
   assert.equal("sourceIds" in model.place.alternateNames[0], false);
+});
+
+test("admin locale-keyed model loads existing translations and accepts missing ones", async () => {
+  const existing = await loadEditablePlace(new LocalizedRepository(), "editorial/work", "existing-place");
+  assert.equal(existing.place.narratives.sr.translationStatus, "source");
+  assert.equal(existing.place.narratives.ru.preferredName, "Синтетический объект");
+  assert.equal(existing.place.narratives.en.preferredName, "Synthetic place");
+  assert.equal(existing.place.narratives.ru.sourceRevision, HEAD);
+
+  const missing = await loadEditablePlace(new LocalizedRepository({ ru: false, en: false }), "editorial/work", "existing-place");
+  assert.equal(missing.place.narratives.ru.exists, false);
+  assert.equal(missing.place.narratives.ru.translationStatus, "missing");
+  assert.equal(missing.place.narratives.en.exists, false);
+
+  const mismatched = new LocalizedRepository({ en: false });
+  mismatched.blobs.ruNarrative = RU_NARRATIVE.replace("locale: ru", "locale: en");
+  await assert.rejects(
+    () => loadEditablePlace(mismatched, "editorial/work", "existing-place"),
+    (error) => error.code === "internal_error" && error.fields?.stage === "catalog_tree_processing_failed",
+  );
+});
+
+test("localized saves are isolated, preserve deferred metadata, and no-op without a commit", async () => {
+  const ruRepository = new LocalizedRepository();
+  const ru = await updatePlaceNarrative(ruRepository, env, session, "existing-place", "ru", {
+    expectedHeadSha: HEAD,
+    preferredName: "Новый синтетический объект",
+    slug: "existing-place-ru",
+    summary: "Синтетическое описание",
+    narrativeBody: "Синтетический текст.",
+    translationStatus: "draft",
+  }, new Date("2026-08-20T12:00:00Z"));
+  assert.equal(ru.unchanged, false);
+  assert.deepEqual(ruRepository.committed.files.map(({ path }) => path), ["content/places/existing-place/narratives/ru.md"]);
+  assert.equal(parseNarrative(ruRepository.committed.files[0].content).frontMatter.alternate_names[0].name, "Сохранённое имя");
+
+  const enRepository = new LocalizedRepository();
+  await updatePlaceNarrative(enRepository, env, session, "existing-place", "en", {
+    expectedHeadSha: HEAD,
+    preferredName: "Updated synthetic place",
+    slug: "existing-place-en",
+    summary: "Synthetic summary",
+    narrativeBody: "Synthetic body.",
+    translationStatus: "draft",
+  }, new Date("2026-08-20T12:00:00Z"));
+  assert.deepEqual(enRepository.committed.files.map(({ path }) => path), ["content/places/existing-place/narratives/en.md"]);
+
+  const noOpRepository = new LocalizedRepository();
+  const noOp = await updatePlaceNarrative(noOpRepository, env, session, "existing-place", "en", {
+    expectedHeadSha: HEAD,
+    preferredName: "Synthetic place",
+    slug: "existing-place-en",
+    summary: "Synthetic summary",
+    narrativeBody: "Synthetic body.",
+    translationStatus: "draft",
+  });
+  assert.equal(noOp.unchanged, true);
+  assert.equal(noOpRepository.committed, undefined);
+
+  const missingRepository = new LocalizedRepository({ ru: false, en: false });
+  const created = await updatePlaceNarrative(missingRepository, env, session, "existing-place", "ru", {
+    expectedHeadSha: HEAD,
+    preferredName: "",
+    shortName: "",
+    slug: "",
+    summary: "",
+    seoTitle: "",
+    seoDescription: "",
+    narrativeBody: "",
+    translationStatus: "draft",
+  }, new Date("2026-08-20T12:00:00Z"));
+  assert.equal(created.unchanged, false);
+  assert.deepEqual(missingRepository.committed.files.map(({ path }) => path), ["content/places/existing-place/narratives/ru.md"]);
+  const scaffold = parseNarrative(missingRepository.committed.files[0].content);
+  assert.equal(scaffold.frontMatter.source_revision, HEAD);
+  assert.equal(scaffold.frontMatter.translation_status, "draft");
+  assert.equal(scaffold.frontMatter.preferred_name, undefined);
+  assert.equal(scaffold.body.trim(), "");
+});
+
+test("localized saves preserve HEAD conflicts and reject arbitrary locale paths", async () => {
+  const repository = new LocalizedRepository();
+  await assert.rejects(
+    () => updatePlaceNarrative(repository, env, session, "existing-place", "ru", { expectedHeadSha: "f".repeat(40), narrativeBody: "", translationStatus: "draft" }),
+    (error) => error.code === "git_conflict" && error.status === 409,
+  );
+  await assert.rejects(
+    () => updatePlaceNarrative(repository, env, session, "existing-place", "../../secret", { expectedHeadSha: HEAD, narrativeBody: "", translationStatus: "draft" }),
+    (error) => error.code === "not_found" && error.status === 404,
+  );
+});
+
+test("Serbian prose changes stale translations while coordinate-only changes leave them untouched", async () => {
+  const proseRepository = new LocalizedRepository();
+  const proseRecord = await loadEditablePlace(proseRepository, "editorial/work", "existing-place");
+  await updatePlace(proseRepository, env, session, "existing-place", {
+    ...body(proseRecord.place),
+    summary: "Нови синтетички сажетак",
+  }, new Date("2026-08-20T12:00:00Z"));
+  const translationFiles = proseRepository.committed.files.filter(({ path }) => /\/narratives\/(ru|en)\.md$/.test(path));
+  assert.equal(translationFiles.length, 2);
+  for (const file of translationFiles) {
+    const parsed = parseNarrative(file.content);
+    assert.equal(parsed.frontMatter.translation_status, "outdated");
+    assert.equal(parsed.frontMatter.source_revision, HEAD);
+    assert.match(parsed.body, /Synthetic|Синтетический/);
+  }
+
+  const coordinateRepository = new LocalizedRepository();
+  const coordinateRecord = await loadEditablePlace(coordinateRepository, "editorial/work", "existing-place");
+  await updatePlace(coordinateRepository, env, session, "existing-place", {
+    ...body(coordinateRecord.place),
+    latitude: 42.25,
+    longitude: 18.95,
+  }, new Date("2026-08-20T12:00:00Z"));
+  assert.equal(coordinateRepository.committed.files.some(({ path }) => /\/narratives\/(ru|en)\.md$/.test(path)), false);
 });
 
 test("admin reads normalized male and female monastic communities", async () => {
@@ -636,12 +794,15 @@ test("place editor rejects unsafe video URLs without weakening optional fields",
   assert.equal(optional.unchanged, true);
 });
 
-test("place editor UI has one dynamic narrative field and no section controls", async () => {
+test("place editor UI keeps one narrative field per locale and no legacy section controls", async () => {
   const record = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
   const html = await editPlacePage(session, record).text();
   assert.match(html, /<h2>О манастиру<\/h2>/);
   assert.match(html, /<textarea name="narrativeBody"/);
-  assert.equal((html.match(/name="narrativeBody"/g) ?? []).length, 1);
+  assert.equal((html.match(/name="narrativeBody"/g) ?? []).length, 3);
+  assert.match(html, /data-language-tab="sr">Српски/);
+  assert.match(html, /data-language-tab="ru">Русский/);
+  assert.match(html, /data-language-tab="en">English/);
   assert.match(html, /name="youtubeUrl"/);
   assert.match(html, /name="patronalFeast"/);
   assert.match(html, /Тип манастира<select name="monasticCommunity">/);

@@ -37,6 +37,7 @@ export interface UpdatedCanonicalFiles {
   place: Record<string, any>;
   narrative: Record<string, any>;
   unchanged: boolean;
+  localizedContentChanged: boolean;
 }
 
 const text = (value: unknown) => typeof value === "string" ? value.trim() : undefined;
@@ -201,6 +202,28 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   const shortName = text(body.shortName);
   if (shortName) narrative.short_name = shortName; else delete narrative.short_name;
   if (alternateNames.length > 0) narrative.alternate_names = alternateNames; else delete narrative.alternate_names;
+  const localizedContentChanged = !same(
+    {
+      preferred_name: narrative.preferred_name,
+      short_name: narrative.short_name,
+      slug: narrative.slug,
+      summary: narrative.summary,
+      seo_title: narrative.seo_title,
+      seo_description: narrative.seo_description,
+      alternate_names: narrative.alternate_names,
+      body: narrativeBody,
+    },
+    {
+      preferred_name: record.rawNarrative.preferred_name,
+      short_name: record.rawNarrative.short_name,
+      slug: record.rawNarrative.slug,
+      summary: record.rawNarrative.summary,
+      seo_title: record.rawNarrative.seo_title,
+      seo_description: record.rawNarrative.seo_description,
+      alternate_names: record.rawNarrative.alternate_names,
+      body: normalizeUnifiedNarrativeBody(record.narrativeBody),
+    },
+  );
   const unchanged = same(place, record.rawPlace)
     && same(narrative, record.rawNarrative)
     && narrativeBody === normalizeUnifiedNarrativeBody(record.narrativeBody);
@@ -221,5 +244,5 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   if (!validatePlace(place)) for (const error of validatePlace.errors ?? []) canonicalErrors[`place${error.instancePath || "/"}`] = error.message ?? "Није важеће.";
   if (!validateNarrative(narrative)) for (const error of validateNarrative.errors ?? []) canonicalErrors[`narrative${error.instancePath || "/"}`] = error.message ?? "Није важеће.";
   if (Object.keys(canonicalErrors).length > 0) throw new AdminError("invalid_form_data", 400, "Canonical schema validation failed", canonicalErrors);
-  return { placeYaml, narrativeMarkdown, place, narrative, unchanged };
+  return { placeYaml, narrativeMarkdown, place, narrative, unchanged, localizedContentChanged };
 }

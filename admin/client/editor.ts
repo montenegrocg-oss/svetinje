@@ -10,12 +10,52 @@ const dirtyStatus = form.querySelector<HTMLElement>("[data-dirty-status]");
 const summary = form.querySelector<HTMLElement>("[data-validation-summary]");
 const saveButton = form.querySelector<HTMLButtonElement>("[data-save]");
 let dirty = false;
+let translationDirty = false;
 const markDirty = () => {
   dirty = true;
   if (dirtyStatus) { dirtyStatus.textContent = "Имате несачуване измјене."; dirtyStatus.className = "is-dirty"; }
 };
 form.addEventListener("input", (event) => { if (!(event.target as HTMLElement).closest("#foto")) markDirty(); });
-window.addEventListener("beforeunload", (event) => { if (dirty) event.preventDefault(); });
+window.addEventListener("beforeunload", (event) => { if (dirty || translationDirty) event.preventDefault(); });
+
+const languageTabs = [...document.querySelectorAll<HTMLButtonElement>("[data-language-tab]")];
+const languagePanels = [...document.querySelectorAll<HTMLElement>("[data-language-panel]")];
+const serbianSectionNav = document.querySelector<HTMLElement>("[data-serbian-section-nav]");
+for (const tab of languageTabs) tab.addEventListener("click", () => {
+  const locale = tab.dataset.languageTab;
+  for (const panel of languagePanels) panel.hidden = panel.dataset.languagePanel !== locale;
+  for (const candidate of languageTabs) candidate.classList.toggle("secondary", candidate !== tab);
+  if (serbianSectionNav) serbianSectionNav.hidden = locale !== "sr";
+});
+
+for (const translationForm of document.querySelectorAll<HTMLFormElement>("[data-translation-editor]")) {
+  translationForm.addEventListener("input", () => { translationDirty = true; });
+  translationForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const locale = translationForm.dataset.locale;
+    if (locale !== "ru" && locale !== "en") return;
+    const translationStatus = translationForm.querySelector<HTMLElement>("[data-translation-status]");
+    const submit = translationForm.querySelector<HTMLButtonElement>('button[type="submit"]');
+    if (submit) submit.disabled = true;
+    if (translationStatus) translationStatus.textContent = "Чување…";
+    const values = Object.fromEntries(new FormData(translationForm));
+    const response = await fetch(`/api/places/${encodeURIComponent(form.dataset.placeId ?? "")}/narratives/${locale}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...values, expectedHeadSha: form.dataset.headSha }),
+    });
+    const result = await response.json() as any;
+    if (!response.ok) {
+      if (translationStatus) translationStatus.textContent = response.status === 409 ? "Конфликт: освјежите страницу." : result.error?.message ?? "Превод није сачуван.";
+    } else {
+      form.dataset.headSha = result.commitSha;
+      translationDirty = false;
+      if (translationStatus) translationStatus.textContent = result.unchanged ? "Нема измјена за чување." : `Commit ${result.commitSha}`;
+      if (!result.unchanged && submit) submit.textContent = "Сачувај превод";
+    }
+    if (submit) submit.disabled = false;
+  });
+}
 
 const renderValidationErrors = (result: any) => {
   if (!summary) return;
