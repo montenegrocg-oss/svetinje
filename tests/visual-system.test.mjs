@@ -29,11 +29,12 @@ test("the approved transparent logo replaces the generated header lockup", async
     pngInfo("public/images/brand/logo-svetinje.png"),
   ]);
 
-  assert.match(header, /href="\/" aria-label="Светиње — почетна страница"/);
+  assert.match(header, /href=\{routeFor\(locale, "home"\)\}/);
+  assert.match(header, /aria-label=\{`\$\{copy\.siteName\}/);
   assert.match(header, /src="\/images\/brand\/logo-svetinje\.png"/);
   assert.match(header, /width="1000"/);
   assert.match(header, /height="321"/);
-  assert.match(header, /alt="Светиње"/);
+  assert.match(header, /alt=\{copy\.siteName\}/);
   assert.match(header, /loading="eager"/);
   assert.match(header, /fetchpriority="high"/);
   assert.doesNotMatch(header, /BrandMark|brand-mark|brand-lockup|brand-name|brand-domain/);
@@ -69,34 +70,31 @@ test("desktop and mobile navigation expose the required Serbian guide sections",
   ]);
   const navigation = header.match(/const navigation = \[[\s\S]*?\n\];/)?.[0] ?? "";
   const expectedItems = [
-    ["/manastiri/", "Манастири"],
-    ["/crkve/", "Цркве"],
-    ["/mapa/", "Мапа"],
-    ["/rute/", "Руте"],
-    ["/o-projektu/", "О пројекту"],
+    ["monasteries", "monasteries"], ["churches", "churches"], ["map", "map"], ["routes", "routes"],
+    ["calendar", "calendar"], ["news", "news"], ["about", "about"],
   ];
   let previousIndex = -1;
-  for (const [href, label] of expectedItems) {
-    const index = navigation.indexOf(`{ href: "${href}", label: "${label}" }`);
+  for (const [route, label] of expectedItems) {
+    const index = navigation.indexOf(`{ href: routeFor(locale, "${route}"), label: copy.nav.${label} }`);
     assert.ok(index > previousIndex, `${label} must follow the required navigation order`);
     previousIndex = index;
   }
   assert.doesNotMatch(navigation, /Почетна|href: "\/"/);
   assert.equal((header.match(/navigation\.map/g) ?? []).length, 2);
   assert.match(header, /<details class="mobile-navigation">/);
-  assert.match(header, /aria-label="Отвори главни мени"/);
+  assert.match(header, /aria-label=\{copy\.openMenu\}/);
   assert.match(header, /Омиљене светиње — 0/);
   assert.doesNotMatch(header, /header-search|aria-label="Претрага светиња"|> Претрага</);
-  assert.match(header, /\{ href: "\/manastiri\/", label: "Манастири" \}/);
-  assert.match(header, /\{ href: "\/crkve\/", label: "Цркве" \}/);
+  assert.match(header, /routeFor\(locale, "monasteries"\)/);
+  assert.match(header, /routeFor\(locale, "churches"\)/);
   assert.doesNotMatch(header, /\/sveta-mjesta\/|Света мјеста/);
   assert.doesNotMatch(header, /\{ href: "\/svetinje\/", label: "Манастири" \}/);
   assert.doesNotMatch(header, /\{ href: "\/svetinje\/", label: "Цркве" \}/);
-  assert.match(header, /const monasteryNavigation = \[[\s\S]*?\/manastiri\/muski\/[\s\S]*?Мушки манастири[\s\S]*?\/manastiri\/zenski\/[\s\S]*?Женски манастири/);
-  assert.match(header, /const mobileMonasteryNavigation = \[[\s\S]*?\/manastiri\/[\s\S]*?Сви манастири[\s\S]*?\.\.\.monasteryNavigation/);
+  assert.match(header, /const monasteryNavigation = \[[\s\S]*?maleMonasteries[\s\S]*?femaleMonasteries/);
+  assert.match(header, /const mobileMonasteryNavigation = \[[\s\S]*?allMonasteries[\s\S]*?\.\.\.monasteryNavigation/);
   assert.match(header, /<li class="desktop-navigation__submenu-item">[\s\S]*?href=\{item\.href\}[\s\S]*?aria-current=\{isExactPage\(item\.href\) \? "page" : undefined\}[\s\S]*?data-section-active=\{isMonasteryActive \? "true" : undefined\}[\s\S]*?desktop-navigation__submenu/);
   assert.match(header, /monasteryNavigation\.map[\s\S]*?aria-current=\{isExactPage\(subcategory\.href\) \? "page" : undefined\}/);
-  assert.match(header, /<details class="mobile-navigation__submenu" open=\{isMonasteryActive\}>[\s\S]*?<summary data-section-active=\{isMonasteryActive \? "true" : undefined\}>Манастири<\/summary>/);
+  assert.match(header, /<details class="mobile-navigation__submenu" open=\{isMonasteryActive\}>[\s\S]*?<summary data-section-active=\{isMonasteryActive \? "true" : undefined\}>\{copy\.nav\.monasteries\}<\/summary>/);
   assert.doesNotMatch(header, /<summary[^>]*aria-current/);
   assert.match(header, /mobileMonasteryNavigation\.map[\s\S]*?aria-current=\{isExactPage\(subcategory\.href\) \? "page" : undefined\}/);
   assert.doesNotMatch(header, /<script>|addEventListener/);
@@ -109,11 +107,12 @@ test("desktop and mobile navigation expose the required Serbian guide sections",
   assert.match(styles, /\.mobile-navigation-panel nav \.mobile-navigation__submenu a\s*\{[\s\S]*?min-height: 2\.75rem;[\s\S]*?padding-left: 0\.65rem;/);
 });
 
-test("unavailable locales remain visibly unavailable rather than becoming links", async () => {
+test("language switcher links only actual equivalent destinations", async () => {
   const languages = await source("src/components/LanguageSwitcher.astro");
   assert.match(languages, /class="language-unavailable"/);
   assert.match(languages, /aria-disabled="true"/);
-  assert.match(languages, /<small>ускоро<\/small>/);
+  assert.match(languages, /config\.available && destinations\[locale\]/);
+  assert.match(languages, /href=\{destinations\[locale\]\}/);
 });
 
 test("the homepage is composed from reusable map-explorer components", async () => {
@@ -203,13 +202,13 @@ test("the dedicated map route reuses the shared map without homepage-only UI", a
   assert.match(page, /<DedicatedMap places=\{places\} \/>/);
   assert.match(page, /canonicalPath="\/mapa\/"/);
   assert.doesNotMatch(page, /MapExplorer|ExplorerSidebar|RecommendedPlaces|PopularRoutes|PlaceAreas/);
-  assert.match(dedicatedMap, /<MapCanvas places=\{places\} layout="full" \/>/);
-  assert.match(dedicatedMap, /<MapControls variant="map-page" \/>/);
+  assert.match(dedicatedMap, /<MapCanvas places=\{places\} layout="full" locale=\{locale\} \/>/);
+  assert.match(dedicatedMap, /<MapControls variant="map-page" locale=\{locale\} \/>/);
   assert.match(canvas, /data-map-layout=\{layout\}/);
   assert.match(canvas, /if \(layout === "full"\)/);
   assert.match(controls, /variant === "homepage"/);
   assert.match(controls, /map-tool-stack--page/);
-  assert.match(header, /\{ href: "\/mapa\/", label: "Мапа" \}/);
+  assert.match(header, /routeFor\(locale, "map"\), label: copy\.nav\.map/);
   assert.doesNotMatch(header, /\{ href: "\/#mapa", label: "Мапа" \}/);
   assert.match(outputModel, /"mapa\/index\.html"/);
   assert.match(styles, /\.dedicated-map-page__stage\s*\{[\s\S]*?100dvh/);
@@ -274,7 +273,7 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
 
   assert.match(catalogue, /categoryForPlaceType\(place\.placeType\) === category/);
   assert.match(catalogue, /loadVisiblePlaces/);
-  assert.match(catalogue, /selectPublicDiscoveryPlaces\(await loadVisiblePlaces\(\)\)/);
+  assert.match(catalogue, /selectPublicDiscoveryPlaces\(suppliedPlaces \?\? await loadVisiblePlaces\(\)\)/);
   assert.match(catalogue, /const categoryPlaces = category[\s\S]*?const places = category === "monasteries"[\s\S]*?selectMonasticCommunityPlaces\(categoryPlaces, monasticCommunity\)/);
   assert.ok(catalogue.indexOf("selectMonasticCommunityPlaces(categoryPlaces, monasticCommunity)") < catalogue.indexOf("const relevantAreaIds"));
   assert.match(catalogue, /data-monastic-community=\{monasticCommunity\}/);
@@ -285,16 +284,16 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.doesNotMatch(catalogue, /\{isMonasteryCatalogue && featuredPlaces\.length > 0/);
   assert.doesNotMatch(catalogue, /catalogue-main__featured|category-page-hero--catalogue|category-page-hero__layout/);
   assert.match(catalogue, /<header class="page-hero compact category-page-hero">[\s\S]*?<div class="shell narrow">/);
-  assert.match(catalogue, /<aside class="catalogue-sidebar"[\s\S]*?<CatalogueToolbar searchPlaceholder=\{copy\.searchPlaceholder\} areas=\{relevantAreas\} \/>[\s\S]*?<section class="catalogue-main"/);
+  assert.match(catalogue, /<aside class="catalogue-sidebar"[\s\S]*?<CatalogueToolbar searchPlaceholder=\{copy\.searchPlaceholder\} areas=\{relevantAreas\} locale=\{locale\} \/>[\s\S]*?<section class="catalogue-main"/);
   assert.match(catalogue, /statusPrefix: "Пронађено је"/);
-  assert.match(catalogue, /<PlaceCard place=\{place\} variant="featured" \/>/);
-  assert.match(catalogue, /<PlaceCard place=\{place\} variant="catalogue" \/>/);
+  assert.match(catalogue, /<PlaceCard place=\{place\} variant="featured" locale=\{locale\} \/>/);
+  assert.match(catalogue, /<PlaceCard place=\{place\} variant="catalogue" locale=\{locale\} \/>/);
   assert.match(catalogue, /data-catalogue-featured-item/);
   assert.match(catalogue, /data-catalogue-item/);
-  assert.match(catalogue, /<ExplorerPagination totalPlaces=\{cataloguePlaces\.length\} \/>/);
+  assert.match(catalogue, /<ExplorerPagination totalPlaces=\{cataloguePlaces\.length\} locale=\{locale\} \/>/);
   assert.match(toolbar, /data-catalogue-search/);
   assert.match(toolbar, /data-catalogue-area/);
-  assert.match(toolbar, /href="\/mapa\/"/);
+  assert.match(toolbar, /href=\{routeFor\(locale, "map"\)\}/);
   assert.match(toolbar, /data-catalogue-reset hidden disabled/);
   assert.match(catalogue, /matchedItems\.forEach\(\(item, index\)/);
   assert.match(catalogue, /item\.hidden = index < pageStart \|\| index >= pageEnd/);
@@ -363,7 +362,8 @@ test("map controls, search, and filters expose accessible states and honest feed
   assert.match(controls, /data-map-zoom-in/);
   assert.match(controls, /data-map-zoom-out/);
   assert.match(controls, /data-map-reset/);
-  assert.match(controls, /aria-label="Прикажи поново Црну Гору"/);
+  assert.match(controls, /reset: "Прикажи поново Црну Гору"/);
+  assert.match(controls, /aria-label=\{c\.reset\}/);
   assert.match(explorer, /querySelectorAll<HTMLButtonElement>\("button\[data-filter\]"\)/);
   assert.ok(
     controls.indexOf("map-layers") < controls.indexOf("data-map-zoom-in")

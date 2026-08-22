@@ -5,6 +5,7 @@ import {
   CATEGORY_HTML_ROUTES,
   MONASTERY_SUBCATEGORY_HTML_ROUTES,
   STATIC_HTML_ROUTES,
+  LOCALIZED_STATIC_HTML_ROUTES,
   createOutputModel,
 } from "../scripts/lib/output-expectations.mjs";
 
@@ -33,7 +34,7 @@ test("four-place output model derives routes, categories, markers, and media", (
   ];
   const model = createOutputModel(places);
 
-  assert.equal(model.expectedPageCount, STATIC_HTML_ROUTES.length + CALENDAR_HTML_ROUTES.length + 4);
+  assert.equal(model.expectedPageCount, STATIC_HTML_ROUTES.length + LOCALIZED_STATIC_HTML_ROUTES.length + CALENDAR_HTML_ROUTES.length + 4);
   assert.deepEqual(model.detailRoutes.map(({ route }) => route), places.map(({ slug }) => `svetinje/${slug}/index.html`));
   assert.deepEqual(model.categoryMembership.monasteries.map(({ id }) => id), ["alpha", "gamma"]);
   assert.deepEqual(model.categoryMembership.churches.map(({ id }) => id), ["beta"]);
@@ -139,7 +140,7 @@ test("news routes extend the derived output model without fixed page counts", ()
   assert.ok(STATIC_HTML_ROUTES.includes("novosti/index.html"));
   assert.deepEqual(model.newsDetailRoutes.map(({ route }) => route), ["novosti/article-update/index.html"]);
   assert.ok(model.allExpectedRoutes.includes("novosti/article-update/index.html"));
-  assert.equal(model.expectedPageCount, STATIC_HTML_ROUTES.length + CALENDAR_HTML_ROUTES.length + places.length + 1);
+  assert.equal(model.expectedPageCount, STATIC_HTML_ROUTES.length + LOCALIZED_STATIC_HTML_ROUTES.length + CALENDAR_HTML_ROUTES.length + places.length + 1);
 });
 
 test("the dedicated map is a derived static route", () => {

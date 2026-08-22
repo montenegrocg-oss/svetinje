@@ -53,7 +53,7 @@ test("the homepage renders a safe no-key fallback and a key-backed loading state
   assert.match(mapCanvas, /data-map-state=\{hasMapTilerKey \? "loading" : "fallback"\}/);
   assert.match(mapCanvas, /class="map-fallback"[\s\S]*?hidden=\{hasMapTilerKey\}[\s\S]*?aria-hidden=\{hasMapTilerKey \? "true" : "false"\}/);
   assert.match(mapCanvas, /class="map-renderer"[\s\S]*?hidden=\{!hasMapTilerKey\}[\s\S]*?aria-hidden=\{hasMapTilerKey \? "false" : "true"\}/);
-  assert.match(mapCanvas, /class="map-loading-surface"[\s\S]*?data-map-loading-status[\s\S]*?Учитавање карте/);
+  assert.match(mapCanvas, /class="map-loading-surface"[\s\S]*?data-map-loading-status[\s\S]*?mapCopy\.loading/);
   assert.match(mapCanvas, /data-map-fallback-notice[\s\S]*?hidden=\{hasMapTilerKey\}/);
   assert.match(mapCanvas, /if \(!MAPTILER_KEY \|\| !mapContainer \|\| !renderer\)/);
   assert.match(mapCanvas, /const showFallback = \(\) => \{/);
@@ -164,8 +164,8 @@ test("the map accepts only server-selected marker data and adds no route geometr
   assert.match(mapSource, /const marker = new maplibregl\.Marker\(\{ element: link, anchor: "bottom" \}\)/);
   assert.match(mapSource, /dataset\.mapMarker/);
   assert.match(mapSource, /const link = document\.createElement\("a"\)/);
-  assert.match(mapSource, /link\.href = `\/svetinje\/\$\{encodeURIComponent\(place\.slug\)\}\/`/);
-  assert.match(mapSource, /link\.setAttribute\("aria-label", `\$\{place\.name\} — отвори страницу`\)/);
+  assert.match(mapSource, /link\.href = `\$\{placeDetailRoot\}\$\{encodeURIComponent\(place\.slug\)\}\/`/);
+  assert.match(mapSource, /link\.setAttribute\("aria-label", `\$\{place\.name\} — \$\{openPageLabel\}`\)/);
   assert.doesNotMatch(mapSource, /addSource\s*\(|addLayer\s*\(|FeatureCollection|LineString|routeCoordinates/i);
   assert.doesNotMatch(mapSource, /42\.29799|18\.84452|Манастир Подмаине/iu);
 });
@@ -279,7 +279,7 @@ test("cluster activation zooms without selecting a place or opening its popup", 
   assert.match(mapCanvas, /const MARKER_CLUSTER_RADIUS = 52;/);
   assert.match(mapCanvas, /const MARKER_CLUSTER_MAX_ZOOM = 12;/);
   assert.match(mapCanvas, /button\.dataset\.clusterCount = String\(group\.length\)/);
-  assert.match(mapCanvas, /button\.setAttribute\("aria-label", `\$\{group\.length\} светиње — приближи карту`\)/);
+  assert.match(mapCanvas, /button\.setAttribute\("aria-label", `\$\{group\.length\} \$\{clusterLabel\}`\)/);
   assert.match(clusterClick, /closePreview\(\)/);
   assert.match(clusterClick, /map\.easeTo\(\{/);
   assert.match(clusterClick, /getClusterExpansionZoom/);
@@ -410,9 +410,9 @@ test("one accessible marker preview preserves desktop navigation and pins touch 
   assert.match(mapCanvas, /activePreview = \{ place, link, card, pinned \};[\s\S]*?root\.dataset\.popupOpen = "true"/);
   assert.match(mapCanvas, /activePreview = \{ place, link, card, pinned \}/);
   assert.match(mapCanvas, /if \(activePreview\?\.place\.id === id\) closePreview\(\)/);
-  assert.match(mapCanvas, /link\.href = `\/svetinje\/\$\{encodeURIComponent\(place\.slug\)\}\/`/);
-  assert.match(mapCanvas, /map-place-preview__link[\s\S]*?link\.href = `\/svetinje\/\$\{encodeURIComponent\(place\.slug\)\}\/`/);
-  assert.match(mapCanvas, /notice\.textContent = "Ауторска фотографија биће додата"/);
+  assert.match(mapCanvas, /link\.href = `\$\{placeDetailRoot\}\$\{encodeURIComponent\(place\.slug\)\}\/`/);
+  assert.match(mapCanvas, /map-place-preview__link[\s\S]*?link\.href = `\$\{placeDetailRoot\}\$\{encodeURIComponent\(place\.slug\)\}\/`/);
+  assert.match(mapCanvas, /notice\.textContent = photoPlaceholder/);
   assert.match(mapCanvas, /image\.alt = place\.previewImageAlt \?\? place\.name/);
 
   assert.match(publication, /previewImageSrc\?: string/);
