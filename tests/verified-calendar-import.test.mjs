@@ -42,12 +42,13 @@ test("PostgreSQL seed is deterministic and idempotent by civil date", async () =
   const client = {
     async query(sql, values) {
       if (sql === UPSERT_CALENDAR_DAY_SQL) stored.set(values[0], values);
+      if (sql.startsWith("SELECT COUNT(*)")) return { rows: [{ count: stored.size }] };
       return { rowCount: 0 };
     },
   };
 
-  assert.deepEqual(await seedVerifiedCalendar(client, dataset), { processed: 153 });
-  assert.deepEqual(await seedVerifiedCalendar(client, dataset), { processed: 153 });
+  assert.deepEqual(await seedVerifiedCalendar(client, dataset), { processed: 153, rows_in_range: 153 });
+  assert.deepEqual(await seedVerifiedCalendar(client, dataset), { processed: 153, rows_in_range: 153 });
   assert.equal(stored.size, 153);
   assert.equal(stored.get("2026-08-14")[4], "АВГУСТ – Изношење Часног Крста (Почетак поста)");
   assert.match(UPSERT_CALENDAR_DAY_SQL, /ON CONFLICT \(date\) DO UPDATE/);
