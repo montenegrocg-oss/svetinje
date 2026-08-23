@@ -3665,6 +3665,15 @@
     align-items: start;
   }
 
+  .place-profile-grid--has-schedule {
+    grid-template-areas:
+      "about"
+      "gallery"
+      "schedule"
+      "practical"
+      "related";
+  }
+
   .place-profile-about {
     grid-area: about;
     min-width: 0;
@@ -3696,6 +3705,29 @@
   .place-detail-gallery {
     grid-area: gallery;
     min-width: 0;
+  }
+
+  .place-service-schedule {
+    grid-area: schedule;
+    min-width: 0;
+    padding: clamp(1rem, 2vw, 1.35rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--white);
+    box-shadow: 0 10px 30px rgba(10, 41, 68, 0.08);
+  }
+
+  .place-service-schedule h2 {
+    margin: 0;
+    color: var(--navy-950);
+    font-size: clamp(1.35rem, 2vw, 1.75rem);
+  }
+
+  .place-service-schedule p {
+    margin: 0.8rem 0 0;
+    color: var(--ink-reading);
+    line-height: 1.65;
+    white-space: pre-line;
   }
 
   .place-detail-gallery__grid {
@@ -3837,6 +3869,14 @@
     color: var(--ink-soft);
     font-size: 0.7rem;
     font-weight: 750;
+  }
+
+  .place-practical-feasts {
+    display: grid;
+    gap: 0.28rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
   .place-practical-list dd {
@@ -4388,6 +4428,14 @@
         "related related";
       grid-template-columns: minmax(0, 1.18fr) minmax(19rem, 0.82fr);
     }
+
+    .place-profile-grid--has-schedule {
+      grid-template-areas:
+        "about practical"
+        "gallery practical"
+        "schedule practical"
+        "related related";
+    }
   }
 
   @media (min-width: 75rem) {
@@ -4396,6 +4444,13 @@
         "about gallery practical"
         "related related practical";
       grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.95fr) minmax(20rem, 0.9fr);
+    }
+
+    .place-profile-grid--has-schedule {
+      grid-template-areas:
+        "about gallery practical"
+        "about schedule practical"
+        "related related practical";
     }
 
     .place-practical-panel {

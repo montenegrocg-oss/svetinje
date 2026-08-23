@@ -30,6 +30,18 @@ for (const tab of languageTabs) tab.addEventListener("click", () => {
 
 for (const translationForm of document.querySelectorAll<HTMLFormElement>("[data-translation-editor]")) {
   translationForm.addEventListener("input", () => { translationDirty = true; });
+  translationForm.addEventListener("click", (event) => {
+    const target = event.target as HTMLElement;
+    if (target.closest("[data-remove-feast]")) {
+      target.closest("[data-feast-row]")?.remove();
+      translationDirty = true;
+    }
+    if (target.closest("[data-add-feast]")) {
+      const template = translationForm.querySelector<HTMLTemplateElement>("[data-feast-template]");
+      if (template) translationForm.querySelector("[data-feast-list]")?.appendChild(template.content.cloneNode(true));
+      translationDirty = true;
+    }
+  });
   translationForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const locale = translationForm.dataset.locale;
@@ -39,10 +51,11 @@ for (const translationForm of document.querySelectorAll<HTMLFormElement>("[data-
     if (submit) submit.disabled = true;
     if (translationStatus) translationStatus.textContent = "Чување…";
     const values = Object.fromEntries(new FormData(translationForm));
+    const patronalFeasts = [...translationForm.querySelectorAll<HTMLInputElement>("[data-feast-name]")].map((input) => input.value);
     const response = await fetch(`/api/places/${encodeURIComponent(form.dataset.placeId ?? "")}/narratives/${locale}`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ...values, expectedHeadSha: form.dataset.headSha }),
+      body: JSON.stringify({ ...values, patronalFeasts, expectedHeadSha: form.dataset.headSha }),
     });
     const result = await response.json() as any;
     if (!response.ok) {
@@ -206,6 +219,7 @@ const collectAlternateNames = () => [...form.querySelectorAll<HTMLElement>("[dat
   context: row.querySelector<HTMLTextAreaElement>("[data-alt-context]")?.value ?? "",
   verificationStatus: (row.querySelector("[data-alt-status]") as HTMLSelectElement | null)?.value ?? "requires-verification",
 }));
+const collectPatronalFeasts = () => [...form.querySelectorAll<HTMLInputElement>("[data-feast-name]")].map((input) => input.value);
 const placeTypeInput = field("placeType") as HTMLSelectElement;
 const monasticCommunityInput = field("monasticCommunity") as HTMLSelectElement;
 const monasticCommunityField = form.querySelector<HTMLElement>("[data-monastic-community-field]");
@@ -231,7 +245,8 @@ const body = () => ({
   settlement: field("settlement").value,
   latitude: field("latitude").value,
   longitude: field("longitude").value,
-  patronalFeast: field("patronalFeast").value,
+  patronalFeasts: collectPatronalFeasts(),
+  serviceSchedule: field("serviceSchedule").value,
   youtubeUrl: field("youtubeUrl").value,
   narrativeBody: field("narrativeBody").value,
   alternateNames: collectAlternateNames(),
@@ -242,6 +257,11 @@ form.addEventListener("click", (event) => {
   if (target.closest("[data-add-alternate]")) {
     const template = document.querySelector<HTMLTemplateElement>("[data-alternate-template]");
     if (template) form.querySelector("[data-alternate-list]")?.appendChild(template.content.cloneNode(true));
+  }
+  if (target.closest("[data-remove-feast]")) target.closest("[data-feast-row]")?.remove();
+  if (target.closest("[data-add-feast]")) {
+    const template = document.querySelector<HTMLTemplateElement>("[data-serbian-feast-template]");
+    if (template) form.querySelector("[data-feast-list]")?.appendChild(template.content.cloneNode(true));
   }
   if (target.closest("button") && !target.closest("#foto")) markDirty();
 });

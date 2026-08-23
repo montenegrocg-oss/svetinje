@@ -11,6 +11,7 @@ import PlaceDetailGallery from "./place-detail/PlaceDetailGallery.astro";
 import PlaceDetailHero from "./place-detail/PlaceDetailHero.astro";
 import PlaceNarrativeArticle from "./place-detail/PlaceNarrativeArticle.astro";
 import PlacePracticalPanel from "./place-detail/PlacePracticalPanel.astro";
+import PlaceServiceSchedule from "./place-detail/PlaceServiceSchedule.astro";
 import PlaceRelatedShelf from "./place-detail/PlaceRelatedShelf.astro";
 import PlaceRouteBacklinks from "./routes/PlaceRouteBacklinks.astro";
 
@@ -45,7 +46,7 @@ const aboutLabel = place.placeType === "monastery"
     <PlaceDetailHero place={place} locale={locale} />
 
     <section class="place-profile-body">
-      <div class="shell place-profile-grid">
+      <div class:list={["shell", "place-profile-grid", { "place-profile-grid--has-schedule": place.serviceSchedule?.trim() }]}>
         <article class="place-profile-about prose" aria-labelledby="place-about-title">
           <h2 id="place-about-title">{aboutLabel}</h2>
           {place.narrativeBody.trim() ? (
@@ -56,6 +57,7 @@ const aboutLabel = place.placeType === "monastery"
         </article>
 
         <PlaceDetailGallery place={place} locale={locale} />
+        <PlaceServiceSchedule schedule={place.serviceSchedule} locale={locale} />
         <PlacePracticalPanel place={place} locale={locale} />
         <PlaceRelatedShelf currentPlace={place} relatedPlaces={relatedPlaces} locale={locale} />
         <PlaceRouteBacklinks placeId={place.id} routes={routes} locale={locale} />

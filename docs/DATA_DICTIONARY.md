@@ -117,7 +117,7 @@ Rules:
 - The directory must reference an existing place ID.
 - Filename must equal the id field.
 - One file represents one independently reviewable volatile item.
-- Schedules, visiting hours, contacts, access conditions, and temporary notices must not be embedded in historical narrative.
+- Visiting hours, contacts, access conditions, and temporary notices must not be embedded in historical narrative. The optional localized `service_schedule` front-matter field is the single exception for ordinary-text worship schedules displayed on place detail pages.
 - Independent files allow withdrawal or re-verification without changing unrelated facts.
 
 ### 3.5 Media metadata
@@ -460,6 +460,7 @@ File:
 | place_type | fact block | Yes after identity research |
 | parent_place_id | fact block | No |
 | ecclesiastical | object | No, but required facts must be researched before publication |
+| patronal_feasts | list of `{ name }` objects | No; one or more items when present |
 | location | object | No |
 | relationships | object | Yes; empty lists allowed only in research or draft |
 | source_ids | SourceId list | Yes from fact-review onward |
@@ -509,7 +510,11 @@ MonasticCommunity is optional and has two controlled values: male and female. It
 
 The Phase 1 project scope must not be copied automatically into authority_id or jurisdiction.
 
-### 7.6 location object
+### 7.6 patronal_feasts
+
+`patronal_feasts` is the canonical ordered list of patronal feast names. Each item contains exactly one non-empty `name`. The list is omitted when no feast has been recorded and must not be persisted as an empty array. The legacy singular `patronal_feast: { name }` remains readable and schema-valid during natural migration, but a record must never contain both forms. Admin saves normalize edited records to `patronal_feasts` without a repository-wide migration.
+
+### 7.7 location object
 
 Allowed keys:
 
@@ -535,7 +540,7 @@ Coordinate block:
 
 Latitude and longitude must be both present or both absent. Zero is a valid numeric value and must never be used as a placeholder. Decimal precision must not exceed evidence.
 
-### 7.7 relationships object
+### 7.8 relationships object
 
 Allowed keys:
 
@@ -546,7 +551,7 @@ Allowed keys:
 
 All values are deduplicated EntityId lists. References must resolve. Relationships do not prove geography, ecclesiastical authority, or historical association without supporting claim references.
 
-### 7.8 Place publication gate
+### 7.9 Place publication gate
 
 place.yaml may use editorial_status published only when:
 
@@ -586,6 +591,8 @@ File:
 | summary | localized text | Required from language-review onward |
 | seo_title | localized text | Required from approved onward |
 | seo_description | localized text | Required from approved onward |
+| patronal_feasts | ordered list of non-empty localized strings | No; ru/en never fall back to Serbian values |
+| service_schedule | non-empty localized multiline text | No; omitted when blank |
 | source_revision | 40-character Git SHA | Required for ru and en |
 | source_ids | SourceId list | Required for factual prose |
 | section_sources | map | Required when factual sections exist |
@@ -593,6 +600,8 @@ File:
 | audit | AuditBlock | Yes |
 
 Serbian preferred_name, summary, and body must be Serbian Cyrillic except for proper names, abbreviations, quotations, or technical forms approved by the Serbian-language reviewer.
+
+`service_schedule` stores optional locale-specific plain text, preserves meaningful line breaks, and is rendered only for the current visible locale. Serbian changes to `patronal_feasts` or `service_schedule` make existing Russian and English translations outdated without overwriting their localized values.
 
 ### 8.2 alternate_names item
 

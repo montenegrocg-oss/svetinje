@@ -13,6 +13,8 @@ export interface UpdateLocalizedNarrativeBody {
   summary?: unknown;
   seoTitle?: unknown;
   seoDescription?: unknown;
+  patronalFeasts?: unknown;
+  serviceSchedule?: unknown;
   narrativeBody?: unknown;
   translationStatus?: unknown;
 }
@@ -30,6 +32,24 @@ const canonical = (value: unknown): unknown => {
     .map(([key, entry]) => [key, canonical(entry)]));
 };
 const same = (left: unknown, right: unknown) => JSON.stringify(canonical(left)) === JSON.stringify(canonical(right));
+const normalizedOptionalText = (value: unknown): string | undefined => typeof value === "string"
+  ? value.replaceAll("\r\n", "\n").replaceAll("\r", "\n").trim() || undefined
+  : undefined;
+
+function optionalTextList(value: unknown, field: string, errors: Record<string, string>): string[] {
+  if (!Array.isArray(value)) {
+    errors[field] = "Поље мора бити листа.";
+    return [];
+  }
+  return value.flatMap((entry, index) => {
+    if (typeof entry !== "string") {
+      errors[`${field}.${index}`] = "Вриједност мора бити текст.";
+      return [];
+    }
+    const normalized = entry.trim();
+    return normalized ? [normalized] : [];
+  });
+}
 
 function assertSafeMarkdown(body: string): void {
   if (/<\/?(?:script|iframe|object|embed|form|input|button|style|link|meta)\b/i.test(body) || /\son[a-z]+\s*=/i.test(body) || /(?:javascript|data|vbscript):/i.test(body)) {
@@ -50,6 +70,7 @@ export async function updateLocalizedNarrative(
   actor: string,
   now: Date,
 ): Promise<{ content: string; unchanged: boolean }> {
+  const original = record.rawNarratives[locale];
   const errors: Record<string, string> = {};
   const translationStatus = text(body.translationStatus) ?? "draft";
   if (!record.options.translationStatuses.includes(translationStatus) || translationStatus === "source" || translationStatus === "missing") {
@@ -58,11 +79,14 @@ export async function updateLocalizedNarrative(
   const slug = text(body.slug);
   if (slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) errors.slug = "Slug мора бити lowercase ASCII kebab-case.";
   const narrativeBody = normalizedBody(body.narrativeBody);
+  const patronalFeasts = optionalTextList(body.patronalFeasts ?? original?.patronal_feasts ?? [], "patronalFeasts", errors);
+  const serviceSchedule = body.serviceSchedule === undefined
+    ? normalizedOptionalText(original?.service_schedule)
+    : normalizedOptionalText(body.serviceSchedule);
   if (narrativeBody === undefined) errors.narrativeBody = "Текст превода мора бити текстуално поље.";
   if (Object.keys(errors).length > 0) throw new AdminError("invalid_form_data", 400, "Translation update is invalid", errors);
   assertSafeMarkdown(narrativeBody ?? "");
 
-  const original = record.rawNarratives[locale];
   const timestamp = now.toISOString().replace(/\.\d{3}Z$/, "Z");
   const narrative = original ? structuredClone(original) : {
     schema_version: 1,
@@ -81,10 +105,16 @@ export async function updateLocalizedNarrative(
   assign("summary", text(body.summary));
   assign("seo_title", text(body.seoTitle));
   assign("seo_description", text(body.seoDescription));
+  if (patronalFeasts.length > 0) narrative.patronal_feasts = patronalFeasts; else delete narrative.patronal_feasts;
+  assign("service_schedule", serviceSchedule);
   narrative.translation_status = translationStatus;
 
   const originalBody = normalizedBody(record.narrativeBodies[locale] ?? "") ?? "";
-  const unchanged = Boolean(original) && same(narrative, original) && narrativeBody === originalBody;
+  const comparableOriginal = original ? structuredClone(original) : undefined;
+  if (comparableOriginal && typeof comparableOriginal.service_schedule === "string") {
+    comparableOriginal.service_schedule = normalizedOptionalText(comparableOriginal.service_schedule);
+  }
+  const unchanged = Boolean(comparableOriginal) && same(narrative, comparableOriginal) && narrativeBody === originalBody;
   if (unchanged) return { content: serializeNarrative(narrative, narrativeBody ?? ""), unchanged: true };
 
   narrative.source_revision = record.state.headSha;

@@ -64,7 +64,7 @@ test("unified narrative compatibility retains every real non-empty heading and p
   assert.ok(checked >= 27);
 });
 
-test("place detail keeps one shared article, ordered interactive gallery, optional video, and optional feast", async () => {
+test("place detail keeps one shared article, ordered gallery, service schedule, optional video, and plural feasts", async () => {
   const [route, page, gallery, practical, publication] = await Promise.all([
     source("src/pages/svetinje/[slug].astro"),
     source("src/components/PlaceDetailPage.astro"),
@@ -80,7 +80,8 @@ test("place detail keeps one shared article, ordered interactive gallery, option
   assert.match(gallery, /place\.youtubeVideoId &&/);
   assert.match(gallery, /youtube-nocookie\.com\/embed/);
   assert.match(gallery, /alt=\{primaryImage\.alt\}/);
-  assert.match(practical, /value: place\.patronalFeast/);
+  assert.match(practical, /place\.patronalFeasts\.filter/);
+  assert.match(page, /<PlaceDetailGallery[\s\S]*<PlaceServiceSchedule[\s\S]*<PlacePracticalPanel/);
   assert.match(publication, /mediaOrder/);
   assert.match(publication, /order\.get\(left\.id\)/);
   assert.match(await source("src/components/place-detail/PlaceNarrativeArticle.astro"), /block\.text === heading \|\| block\.text === genericHeading/);

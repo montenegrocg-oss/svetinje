@@ -20,7 +20,7 @@ test("Serbian, Russian, and English place routes use one complete PlaceDetailPag
   assert.match(enRoute, /<PlaceDetailPage place=\{props\.place\} locale="en"/);
   assert.doesNotMatch(localizedPage, /page === "place"|place-profile-hero|place-profile-about|place-detail-gallery|place-practical-panel|narrativeBody\.split/);
 
-  for (const component of ["PlaceDetailHero", "PlaceNarrativeArticle", "PlaceDetailGallery", "PlacePracticalPanel", "PlaceRelatedShelf", "PlaceRouteBacklinks"]) {
+  for (const component of ["PlaceDetailHero", "PlaceNarrativeArticle", "PlaceDetailGallery", "PlaceServiceSchedule", "PlacePracticalPanel", "PlaceRelatedShelf", "PlaceRouteBacklinks"]) {
     assert.match(detailPage, new RegExp(`<${component}[^>]+locale=\\{locale\\}`));
   }
   assert.match(detailPage, /<BaseLayout[\s\S]*?canonicalPath=\{`\$\{placeDetailRoot\[locale\]\}\$\{place\.slug\}\/`\}[\s\S]*?locale=\{locale\}[\s\S]*?localeLinks=\{localeLinks\}/);
@@ -53,7 +53,7 @@ test("shared place detail preserves hero, gallery, practical, related, route, an
   assert.match(gallery, /place\.youtubeVideoId &&/);
   assert.match(styles, /\.place-detail-gallery__main img,[\s\S]*?\.place-detail-gallery__image img[\s\S]*?object-fit: cover;/);
   assert.match(styles, /\.place-detail-gallery__main\s*\{[\s\S]*?aspect-ratio: 16 \/ 10;/);
-  for (const field of ["place.settlement", "place.address", "place.typeLabel", "place.ecclesiasticalJurisdiction", "place.patronalFeast", "coordinateText"]) assert.match(practical, new RegExp(field.replaceAll(".", "\\.")));
+  for (const field of ["place.settlement", "place.address", "place.typeLabel", "place.ecclesiasticalJurisdiction", "place.patronalFeasts", "coordinateText"]) assert.match(practical, new RegExp(field.replaceAll(".", "\\.")));
   assert.match(practical, /<PlaceMiniMap[\s\S]*?locale=\{locale\}/);
   assert.match(miniMap, /publicCopy\[locale\]\.pages\.placeDetail\.miniMap/);
   assert.match(related, /placeDetailRoot\[locale\]/);
