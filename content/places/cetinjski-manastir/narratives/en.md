@@ -3,7 +3,7 @@ schema_version: 1
 place_id: cetinjski-manastir
 locale: en
 editorial_status: research
-translation_status: draft
+translation_status: outdated
 slug: cetinje-monastery
 preferred_name: Cetinje Monastery
 summary: Cetinje Monastery is the Monastery of the Nativity of the Most Holy Theotokos in Cetinje; the source dates its construction to 1484.
@@ -12,8 +12,8 @@ approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-22T19:23:49Z
-  updated_by: codex
+  updated_at: 2026-08-23T11:48:22Z
+  updated_by: montenegro-cg
 ---
 
 Cetinje Monastery, dedicated to the Nativity of the Most Holy Theotokos, stands in the historic centre of Cetinje beneath Orlov Krš. Ivan Crnojević, ruler of Zeta, founded it in 1484, as Ottoman pressure was shifting Zeta’s political and spiritual centre inland from the Lake Skadar region. In the following year, Ivan issued the monastery’s founding charter and established the seat of the Metropolitanate of Zeta there.
