@@ -134,12 +134,14 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.doesNotMatch(homepage, /PopularRoutes/);
   assert.doesNotMatch(homepage, /HomepagePreviews/);
 
-  const [explorer, sidebar, homepagePagination, recommended, routes] = await Promise.all([
+  const [explorer, sidebar, homepagePagination, recommended, routes, copy, styles] = await Promise.all([
     source("src/components/MapExplorer.astro"),
     source("src/components/ExplorerSidebar.astro"),
     source("src/components/HomepagePagination.astro"),
     source("src/components/RecommendedPlaces.astro"),
     source("src/components/PopularRoutes.astro"),
+    source("src/i18n/public-copy.ts"),
+    source("src/styles/global.css"),
   ]);
   assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} locale=\{locale\} \/>/);
   assert.match(explorer, /<MapControls locale=\{locale\} \/>/);
@@ -159,6 +161,10 @@ test("the homepage is composed from reusable map-explorer components", async () 
   );
   assert.doesNotMatch(explorer, /ExplorerContinuation|ExplorerPagination|data-continuation|data-explorer-pagination/);
   assert.equal([...sidebar.matchAll(/<HomepagePagination totalPages=\{totalPages\} position="(top|bottom)" locale=\{locale\} \/>/g)].length, 2);
+  assert.match(sidebar, /<form class="explorer-search"[\s\S]*?<InterfaceIcon name="search" size=\{20\} \/>[\s\S]*?<input[\s\S]*?type="search"/);
+  assert.doesNotMatch(sidebar, /class="icon-button"|name="filter"|filterSettings(?:Label|Title)/);
+  assert.doesNotMatch(copy, /filterSettings(?:Label|Title)/);
+  assert.match(styles, /\.explorer-search\s*\{[\s\S]*?grid-template-columns: minmax\(0, 1fr\);/);
   assert.match(homepagePagination, /data-homepage-pagination/);
   assert.match(homepagePagination, /data-homepage-pagination-prev/);
   assert.match(homepagePagination, /data-homepage-pagination-next/);
@@ -224,7 +230,7 @@ test("the dedicated map route reuses the shared map without homepage-only UI", a
   assert.match(styles, /\.dedicated-map-page__stage\s*\{[\s\S]*?100dvh/);
 });
 
-test("the homepage grid keeps the sidebar below its heading and aligned with secondary content", async () => {
+test("the homepage grid keeps the sidebar below its heading while secondary content follows the map", async () => {
   const styles = await source("src/styles/global.css");
   const desktopStart = styles.lastIndexOf("@media (min-width: 68rem)", styles.indexOf("@media (min-width: 90rem)"));
   const desktopStyles = styles.slice(desktopStart);
@@ -238,14 +244,16 @@ test("the homepage grid keeps the sidebar below its heading and aligned with sec
   assert.match(desktopStyles, /\.map-explorer__heading\s*\{[\s\S]*?grid-row: 1;[\s\S]*?margin-top: 1rem;/);
   assert.match(desktopStyles, /\.map-explorer__content\s*\{[\s\S]*?display: contents;/);
   assert.match(desktopStyles, /\.explorer-sidebar\s*\{[\s\S]*?grid-row: 3 \/ 5;/);
-  assert.match(desktopStyles, /\.map-explorer__secondary\s*\{[\s\S]*?grid-row: 4;[\s\S]*?padding-top: var\(--explorer-content-block-padding\);/);
+  assert.match(desktopStyles, /\.map-explorer__secondary\s*\{[\s\S]*?grid-row: 1 \/ -1;[\s\S]*?grid-template-rows: var\(--map-stage-height\) auto;[\s\S]*?row-gap: 1\.25rem;/);
+  assert.match(desktopStyles, /\.map-explorer__secondary-content\s*\{[\s\S]*?grid-row: 2;/);
   assert.match(desktopStyles, /\.map-attribution\s*\{[\s\S]*?left: calc\(var\(--explorer-panel-left\) \+ var\(--explorer-panel-width\) \+ 1rem\);/);
   assert.match(desktopStyles, /\.map-actions\s*\{[\s\S]*?left: calc\(var\(--explorer-panel-left\) \+ var\(--explorer-panel-width\) \+ 1rem\);/);
   assert.match(desktopStyles, /--explorer-panel-left: max\([\s\S]*?clamp\(1\.5rem, 2\.25vw, 2rem\),[\s\S]*?calc\(\(100vw - 104rem\) \/ 2\)[\s\S]*?\);/);
   assert.match(desktopStyles, /\.map-actions\s*\{[\s\S]*?right: var\(--explorer-panel-left\);/);
   assert.match(desktopStyles, /\.map-tool-stack,[\s\S]*?\.map-help\s*\{[\s\S]*?right: var\(--explorer-panel-left\);/);
   assert.doesNotMatch(styles, /--explorer-sidebar-map-offset|\.explorer-sidebar\s*\{[\s\S]*?margin-block-start:/);
-  assert.doesNotMatch(styles, /\.map-explorer__secondary\s*\{[\s\S]*?margin-(?:top|block-start):\s*-/);
+  assert.doesNotMatch(desktopStyles, /\.map-explorer__secondary\s*\{[^}]*?(?:grid-row: 4|padding-top:)/);
+  assert.doesNotMatch(styles, /\.map-explorer__secondary(?:-content)?\s*\{[^}]*?(?:margin-(?:top|block-start):\s*-|transform:)/);
 });
 
 test("the map loading surface is neutral and cannot reveal the decorative fallback", async () => {

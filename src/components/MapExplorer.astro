@@ -50,9 +50,11 @@ const explorerRuntimeCopy = JSON.stringify({
   <div class="map-explorer__content">
     <ExplorerSidebar places={initialPlaces} totalPlaces={discoveryPlaces.length} locale={locale} />
     <div class="map-explorer__secondary">
-      <RecommendedPlaces places={discoveryPlaces} locale={locale} />
-      <TodayCalendar days={calendarDays} corpus={scriptureCorpus} locale={locale} />
-      <PopularRoutes routes={routes} locale={locale} />
+      <div class="map-explorer__secondary-content">
+        <RecommendedPlaces places={discoveryPlaces} locale={locale} />
+        <TodayCalendar days={calendarDays} corpus={scriptureCorpus} locale={locale} />
+        <PopularRoutes routes={routes} locale={locale} />
+      </div>
     </div>
   </div>
 
