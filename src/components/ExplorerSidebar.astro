@@ -41,9 +41,6 @@ const initialStatus = visiblePlaceCount === 1 && totalPlaces === 1
       autocomplete="off"
       aria-describedby="catalogue-status"
     />
-    <button class="icon-button" type="button" disabled aria-label={copy.filterSettingsLabel} title={copy.filterSettingsTitle}>
-      <InterfaceIcon name="filter" size={20} />
-    </button>
   </form>
 
   <FilterChips group="catalogue" includeRoutes={false} locale={locale} />

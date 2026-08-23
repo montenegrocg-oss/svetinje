@@ -14,7 +14,6 @@ export const publicCopy = {
       filters: { aria: "Филтери каталога", all: "Све", monasteries: "Манастири", churches: "Цркве", routes: "Поклоничке руте" },
       explorer: {
         aria: "Претрага и филтри каталога", searchLabel: "Претражите светиње", searchPlaceholder: "Претражите светиње…",
-        filterSettingsLabel: "Подешавања филтера — ускоро", filterSettingsTitle: "Подешавања филтера су у припреми",
         areaPrefix: "Област", clearArea: "Уклони филтер области", noResultsEyebrow: "Претрага каталога",
         empty: { seal: "С", title: "Каталог светиња је у припреми.", body: "Провјерени записи ће се појавити овдје након завршене стручне и језичке провјере.", link: "Како садржај постаје јаван" },
         pagination: { top: "горња", bottom: "доња", aria: "Странице прегледа светиња — {position} навигација", previous: "Претходна страница", next: "Сљедећа страница" },
@@ -69,7 +68,6 @@ export const publicCopy = {
       filters: { aria: "Фильтры каталога", all: "Все", monasteries: "Монастыри", churches: "Храмы", routes: "Маршруты" },
       explorer: {
         aria: "Поиск и фильтры каталога", searchLabel: "Искать святыни", searchPlaceholder: "Поиск по святыням…",
-        filterSettingsLabel: "Настройки фильтров — скоро", filterSettingsTitle: "Настройки фильтров готовятся",
         areaPrefix: "Регион", clearArea: "Убрать фильтр региона", noResultsEyebrow: "Поиск по каталогу",
         empty: { seal: "С", title: "Каталог святынь готовится.", body: "Проверенные материалы появятся здесь после редакционной и языковой проверки.", link: "Как публикуются материалы" },
         pagination: { top: "верхняя", bottom: "нижняя", aria: "Страницы списка святынь — {position} навигация", previous: "Предыдущая страница", next: "Следующая страница" },
@@ -124,7 +122,6 @@ export const publicCopy = {
       filters: { aria: "Catalogue filters", all: "All", monasteries: "Monasteries", churches: "Churches", routes: "Routes" },
       explorer: {
         aria: "Catalogue search and filters", searchLabel: "Search holy places", searchPlaceholder: "Search holy places…",
-        filterSettingsLabel: "Filter settings — coming soon", filterSettingsTitle: "Filter settings are being prepared",
         areaPrefix: "Region", clearArea: "Remove region filter", noResultsEyebrow: "Catalogue search",
         empty: { seal: "H", title: "The holy-place catalogue is being prepared.", body: "Verified entries will appear here after editorial and language review.", link: "How content is published" },
         pagination: { top: "top", bottom: "bottom", aria: "Holy-place result pages — {position} navigation", previous: "Previous page", next: "Next page" },
