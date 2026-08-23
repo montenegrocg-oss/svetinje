@@ -7,6 +7,7 @@ import { HOMEPAGE_PREVIEW_LIMIT } from "../../src/lib/explorer-preview.ts";
 import { PLACE_AREAS } from "../../src/lib/place-areas.ts";
 import { loadVisibleRoutes } from "../../src/lib/content/routes.ts";
 import { loadLocalizedVisiblePlaces } from "../../src/lib/content/localized-publication.ts";
+import { VERIFIED_CALENDAR_END, VERIFIED_CALENDAR_START } from "../../src/lib/calendar/verified-dataset.ts";
 
 export const LOCALIZED_STATIC_HTML_ROUTES = Object.freeze([
   "ru/index.html", "ru/monastyri/index.html", "ru/monastyri/muzhskie/index.html", "ru/monastyri/zhenskie/index.html", "ru/tserkvi/index.html", "ru/karta/index.html", "ru/marshruty/index.html", "ru/kalendar/index.html", "ru/novosti/index.html", "ru/o-proekte/index.html",
@@ -29,10 +30,13 @@ export const STATIC_HTML_ROUTES = Object.freeze([
 ]);
 
 export const CALENDAR_HTML_ROUTES = Object.freeze(
-  Array.from({ length: 365 }, (_, index) => {
-    const date = new Date(Date.UTC(2026, 0, index + 1));
-    return `kalendar/${date.toISOString().slice(0, 10)}/index.html`;
-  }),
+  (() => {
+    const routes = [];
+    for (let date = new Date(`${VERIFIED_CALENDAR_START}T00:00:00Z`); date.toISOString().slice(0, 10) <= VERIFIED_CALENDAR_END; date.setUTCDate(date.getUTCDate() + 1)) {
+      routes.push(`kalendar/${date.toISOString().slice(0, 10)}/index.html`);
+    }
+    return routes;
+  })(),
 );
 
 export const CATEGORY_HTML_ROUTES = Object.freeze({

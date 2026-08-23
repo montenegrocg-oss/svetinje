@@ -1,17 +1,15 @@
 ---
 import { localizedCalendarDate, type CalendarDay } from "../lib/calendar/content";
 import { createTodayCalendarModel } from "../lib/calendar/today-calendar";
-import { presentCalendarTitle } from "../lib/presentation/calendar-title";
 import { localeConfig, routeFor, type Locale } from "../i18n/config";
 import { publicCopy } from "../i18n/public-copy";
 import TodayCalendarHydration from "./TodayCalendarHydration.astro";
 
 interface Props { days: CalendarDay[]; corpus: any; locale?: Locale }
-const { days, corpus, locale = "sr" } = Astro.props;
+const { days, locale = "sr" } = Astro.props;
 const copy = publicCopy[locale].homepage.today;
-const model = locale === "sr" ? createTodayCalendarModel(days, corpus, new Date()) : undefined;
+const model = locale === "sr" ? createTodayCalendarModel(days, new Date()) : undefined;
 const fallback = model?.day;
-const reading = model?.reading;
 const currentDate = new Intl.DateTimeFormat(localeConfig[locale].htmlLang, { timeZone: "Europe/Podgorica", day: "numeric", month: "long", year: "numeric" }).format(new Date());
 ---
 
@@ -22,11 +20,9 @@ const currentDate = new Intl.DateTimeFormat(localeConfig[locale].htmlLang, { tim
   </header>
   <div class="today-calendar__calendar">
     <p class="map-eyebrow">{copy.calendar}</p>
-    <h2 id="today-calendar-title" data-calendar-title>{locale === "sr" ? (fallback ? presentCalendarTitle(fallback.title) : copy.calendarPreparing) : copy.translationTitle}</h2>
+    <h2 id="today-calendar-title" data-calendar-title>{locale === "sr" ? (fallback ? fallback.commemoration_sr : copy.calendarPreparing) : copy.translationTitle}</h2>
     {locale === "sr" ? <>
-      <ul data-calendar-commemorations>
-        {fallback?.commemorations.slice(0, 2).map((item) => <li>{item}</li>)}
-      </ul>
+      {fallback && <p data-calendar-week-context>{fallback.week_context_sr}</p>}
       <a data-calendar-day-link href={fallback ? `/kalendar/${fallback.date}/` : "/kalendar/"}>{copy.openCalendar} <span aria-hidden="true">→</span></a>
     </> : <>
       <p>{copy.translationBody}</p>
@@ -38,13 +34,7 @@ const currentDate = new Intl.DateTimeFormat(localeConfig[locale].htmlLang, { tim
     {locale !== "sr" ? <>
       <h3 data-calendar-reading>{copy.translationTitle}</h3>
       <p class="today-calendar__excerpt" data-calendar-empty>{copy.translationBody}</p>
-    </> : reading && fallback ? (
-      <>
-        <h3 data-calendar-reading>{model?.reference}</h3>
-        <p class="today-calendar__excerpt" data-calendar-excerpt>{model?.excerpt}</p>
-        <a data-calendar-gospel-link href={`/kalendar/${fallback.date}/#jevandjelje`}>{copy.read} <span aria-hidden="true">→</span></a>
-      </>
-    ) : <p data-calendar-empty>{copy.readingMissing}</p>}
+    </> : <p data-calendar-empty>{copy.readingMissing}</p>}
   </article>
 </section>
 {locale === "sr" && <TodayCalendarHydration />}

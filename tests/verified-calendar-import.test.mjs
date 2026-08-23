@@ -7,12 +7,13 @@ import {
   UPSERT_CALENDAR_DAY_SQL,
   validateVerifiedCalendarDataset,
 } from "../scripts/lib/verified-calendar-seed.mjs";
+import { loadCalendarDays } from "../src/lib/calendar/content.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 
 test("verified August-December dataset is complete, continuous, and source-backed", async () => {
   const dataset = await loadVerifiedCalendarDataset(ROOT);
-  const days = validateVerifiedCalendarDataset(dataset);
+  const days = validateVerifiedCalendarDataset(dataset).days;
 
   assert.equal(days.length, 153);
   assert.equal(days[0].date, "2026-08-01");
@@ -31,9 +32,24 @@ test("verified commemoration text keeps source casing and abbreviations exactly"
 
   assert.equal(byDate.get("2026-08-14").commemoration_sr, "АВГУСТ – Изношење Часног Крста (Почетак поста)");
   assert.equal(byDate.get("2026-08-19").commemoration_sr, "Преображење Господње");
+  assert.equal(byDate.get("2026-08-20").commemoration_sr, "Свети преподобномученик Дометије; Преподобни Ор");
   assert.equal(byDate.get("2026-09-13").commemoration_sr, "Полагање појаса Пресвете Богородице; Св. муч. Јасеновачки");
   assert.equal(byDate.get("2026-12-08").commemoration_sr, "Св. свештеномуч. Климент Римски; Св. Петар Александ.");
   assert.equal(byDate.get("2026-12-14").commemoration_sr, "ДЕЦЕМБАР – Св. пророк Наум; Св. Филарет Милостиви");
+});
+
+test("frontend projection stays structurally identical without internal source_ref", async () => {
+  const [dataset, publicDays] = await Promise.all([
+    loadVerifiedCalendarDataset(ROOT),
+    loadCalendarDays(ROOT),
+  ]);
+  assert.equal(publicDays.length, dataset.days.length);
+  for (const [index, publicDay] of publicDays.entries()) {
+    const { source_ref, ...expectedPublicDay } = dataset.days[index];
+    assert.ok(source_ref);
+    assert.deepEqual(publicDay, expectedPublicDay);
+    assert.equal(JSON.stringify(publicDay).includes("source_ref"), false);
+  }
 });
 
 test("PostgreSQL seed is deterministic and idempotent by civil date", async () => {

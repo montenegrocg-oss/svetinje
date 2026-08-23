@@ -1,8 +1,13 @@
-import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
+import {
+  loadVerifiedCalendarDataset,
+  validateVerifiedCalendarDataset,
+} from "../../src/lib/calendar/verified-dataset.ts";
 
-export const VERIFIED_CALENDAR_DATASET = "data/calendar/2026-08-01_2026-12-31.json";
+export {
+  VERIFIED_CALENDAR_DATASET,
+  loadVerifiedCalendarDataset,
+  validateVerifiedCalendarDataset,
+} from "../../src/lib/calendar/verified-dataset.ts";
 
 export const UPSERT_CALENDAR_DAY_SQL = `
 INSERT INTO calendar_days (
@@ -25,68 +30,8 @@ ON CONFLICT (date) DO UPDATE SET
   verification_status = EXCLUDED.verification_status,
   updated_at = CURRENT_TIMESTAMP`;
 
-function nextDate(date) {
-  const value = new Date(`${date}T00:00:00Z`);
-  value.setUTCDate(value.getUTCDate() + 1);
-  return value.toISOString().slice(0, 10);
-}
-
-export function validateVerifiedCalendarDataset(dataset) {
-  if (dataset?.schema_version !== 1 || !Array.isArray(dataset.days)) {
-    throw new Error("Unsupported verified calendar dataset");
-  }
-  if (dataset.days.length !== 153) throw new Error(`Expected 153 days, found ${dataset.days.length}`);
-  if (dataset.days[0]?.date !== "2026-08-01" || dataset.days.at(-1)?.date !== "2026-12-31") {
-    throw new Error("Verified calendar dataset boundaries are invalid");
-  }
-
-  const fields = [
-    "date",
-    "julian_date",
-    "weekday_sr",
-    "week_context_sr",
-    "commemoration_sr",
-    "source_emphasis",
-    "source_ref",
-    "verification_status",
-  ];
-  const sourceRefs = new Set(dataset.source?.source_registry?.map((source) => source.source_ref) ?? []);
-  const dates = new Set();
-  for (const [index, day] of dataset.days.entries()) {
-    for (const field of fields) {
-      if (typeof day[field] !== "string" || day[field].length === 0) {
-        throw new Error(`${day.date ?? `row ${index + 1}`}: missing ${field}`);
-      }
-    }
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(day.date) || !/^\d{4}-\d{2}-\d{2}$/.test(day.julian_date)) {
-      throw new Error(`${day.date}: invalid date format`);
-    }
-    if (day.verification_status !== "verified") throw new Error(`${day.date}: record is not verified`);
-    if (!sourceRefs.has(day.source_ref)) throw new Error(`${day.date}: unknown source_ref ${day.source_ref}`);
-    if (dates.has(day.date)) throw new Error(`${day.date}: duplicate civil date`);
-    dates.add(day.date);
-    if (index > 0 && day.date !== nextDate(dataset.days[index - 1].date)) {
-      throw new Error(`${day.date}: civil dates are not continuous`);
-    }
-  }
-
-  const commemorationSha256 = createHash("sha256")
-    .update(JSON.stringify(dataset.days.map((day) => day.commemoration_sr)))
-    .digest("hex");
-  if (commemorationSha256 !== dataset.source?.commemoration_sha256) {
-    throw new Error("Commemoration text or casing differs from the verified source checksum");
-  }
-  return dataset.days;
-}
-
-export async function loadVerifiedCalendarDataset(root = path.resolve(import.meta.dirname, "../..")) {
-  const value = JSON.parse(await readFile(path.join(root, VERIFIED_CALENDAR_DATASET), "utf8"));
-  validateVerifiedCalendarDataset(value);
-  return value;
-}
-
 export async function seedVerifiedCalendar(database, dataset) {
-  const days = validateVerifiedCalendarDataset(dataset);
+  const days = validateVerifiedCalendarDataset(dataset).days;
   const client = typeof database.connect === "function" ? await database.connect() : database;
   let transactionStarted = false;
   try {

@@ -11,6 +11,8 @@ const copy = publicCopy[locale].pages.calendar;
 const today = podgoricaDateKey(new Date());
 const selected = locale === "sr" && today.startsWith("2026-") ? days.find((day) => day.date === today) : undefined;
 const interactive = locale === "sr";
+const firstDate = days[0]?.date ?? "";
+const lastDate = days.at(-1)?.date ?? "";
 const pendingText = (locale === "sr" ? copy.pending : copy.translationPending).replace("{year}", today.slice(0, 4));
 ---
 
@@ -21,11 +23,11 @@ const pendingText = (locale === "sr" ? copy.pending : copy.translationPending).r
     <p>{copy.description}</p>
     <form class="calendar-picker" action={routeFor(locale, "calendar")} data-calendar-picker data-calendar-base={routeFor(locale, "calendar")} data-calendar-interactive={String(interactive)}>
       <label for={`calendar-date-${locale}`}>{copy.date}</label>
-      <input id={`calendar-date-${locale}`} name="date" type="date" min="2026-01-01" max="2026-12-31" value={selected?.date ?? "2026-01-01"} disabled={!interactive} />
+      <input id={`calendar-date-${locale}`} name="date" type="date" min={firstDate} max={lastDate} value={selected?.date ?? firstDate} disabled={!interactive || !firstDate} />
       <button type="submit" disabled={!interactive}>{copy.open}</button>
     </form>
     {selected ? (
-      <a class="calendar-index__today" href={`/kalendar/${selected.date}/`}>{localizedCalendarDate(selected.date, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}: {selected.title}</a>
+      <a class="calendar-index__today" href={`/kalendar/${selected.date}/`}>{localizedCalendarDate(selected.date, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}: {selected.commemoration_sr}</a>
     ) : (
       <p class="calendar-index__pending">{pendingText}</p>
     )}

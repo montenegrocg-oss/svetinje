@@ -5,6 +5,7 @@ import addFormats from "ajv-formats";
 import { parseDocument } from "yaml";
 import { isPlaceAreaId } from "../src/lib/place-areas.ts";
 import { ROUTE_ENDPOINT_THRESHOLD_M, validateRouteGeoJson } from "../src/lib/routes/gpx.ts";
+import { loadVerifiedCalendarDataset } from "../src/lib/calendar/verified-dataset.ts";
 
 const SCHEMA_FILES = {
   place: "place.schema.json",
@@ -16,7 +17,6 @@ const SCHEMA_FILES = {
   route: "route.schema.json",
   routeNarrative: "route-narrative.schema.json",
   policy: "publication-policy.schema.json",
-  calendarDay: "calendar-day.schema.json",
   scripture: "scripture-gospels.schema.json",
   lectionary: "lectionary-map.schema.json",
 };
@@ -33,7 +33,6 @@ const ENTITY_PATHS = [
   { kind: "route", pattern: /^content\/routes\/([^/]+)\/route\.yaml$/ },
   { kind: "routeNarrative", pattern: /^content\/routes\/([^/]+)\/narratives\/(sr|ru|en)\.md$/ },
   { kind: "routeTrack", pattern: /^content\/routes\/([^/]+)\/track\.geojson$/ },
-  { kind: "calendarDay", pattern: /^content\/calendar\/2026\/(2026-\d{2}-\d{2})\.yaml$/ },
   { kind: "scripture", pattern: /^content\/scripture\/sr-vuk-karadzic-1847\/gospels\.json$/ },
   { kind: "lectionary", pattern: /^content\/lectionary\/gospel-zachalo-map\.json$/ },
 ];
@@ -48,7 +47,6 @@ const COUNT_KEY = {
   route: "routes",
   routeNarrative: "routeNarratives",
   routeTrack: "routeTracks",
-  calendarDay: "calendarDays",
   scripture: "scriptureCorpora",
   lectionary: "lectionaryMaps",
 };
@@ -174,7 +172,6 @@ function validatePath(record) {
     if (data.route_id !== match[1]) errors.push(issue(file, "/route_id", `route_id must match directory ${match[1]}`));
     if (data.locale !== match[2]) errors.push(issue(file, "/locale", `locale must match filename ${match[2]}.md`));
   }
-  if (kind === "calendarDay" && data.date !== match[1]) errors.push(issue(file, "/date", `date must match filename ${match[1]}.yaml`));
   return errors;
 }
 
@@ -536,7 +533,7 @@ export async function validateRepositoryWithSummary(root) {
   const records = [];
   for (const absoluteFile of files) {
     const file = path.relative(root, absoluteFile).replaceAll("\\", "/");
-    if (file === "content/README.md" || file === "content/calendar/2026/_provenance.yaml" || file === "content/calendar/2026/_reading-overrides.yaml") continue;
+    if (file === "content/README.md" || file === "content/calendar/2026/_reading-overrides.yaml") continue;
     const classification = classify(file);
     if (!classification) {
       errors.push(issue(file, "/", "file is not in an allowed content path"));
@@ -578,31 +575,11 @@ export async function validateRepositoryWithSummary(root) {
   }
   errors.push(...validateUniqueness(records), ...validateReferences(records));
 
-  const calendarDays = records.filter((record) => record.kind === "calendarDay" && record.data);
-  const corpus = records.find((record) => record.kind === "scripture" && record.data)?.data;
-  const hasCalendarPlatform = records.some((record) => ["calendarDay", "scripture", "lectionary"].includes(record.kind));
-  if (hasCalendarPlatform && calendarDays.length !== 365) errors.push(issue("content/calendar/2026", "/", `calendar must contain exactly 365 days, found ${calendarDays.length}`));
-  const seenCalendarDates = new Set();
-  for (const record of calendarDays) {
-    const day = record.data;
-    if (seenCalendarDates.has(day.date)) errors.push(issue(record.file, "/date", "calendar dates must be unique"));
-    seenCalendarDates.add(day.date);
-    const expectedJulian = new Date(`${day.date}T00:00:00Z`);
-    expectedJulian.setUTCDate(expectedJulian.getUTCDate() - 13);
-    if (day.julian_date !== expectedJulian.toISOString().slice(0, 10)) errors.push(issue(record.file, "/julian_date", "Julian date must be 13 days before the Gregorian date"));
-    if (day.gospel && day.gospel.primary_reading >= day.gospel.readings.length) errors.push(issue(record.file, "/gospel/primary_reading", "primary_reading must reference an existing reading"));
-    for (const [readingIndex, reading] of (day.gospel?.readings ?? []).entries()) {
-      for (const range of reading.ranges) {
-        for (const verseSpec of range.verses) {
-          const [start, end = start] = verseSpec.split("-").map(Number);
-          for (let verse = start; verse <= end; verse += 1) {
-            if (!corpus?.books?.[reading.book]?.[String(range.chapter)]?.[String(verse)]) {
-              errors.push(issue(record.file, `/gospel/readings/${readingIndex}/ranges`, `missing Scripture verse ${reading.book} ${range.chapter}:${verse}`));
-            }
-          }
-        }
-      }
-    }
+  try {
+    const dataset = await loadVerifiedCalendarDataset(root);
+    counts.calendarDays = dataset.days.length;
+  } catch (error) {
+    if (error?.code !== "ENOENT") errors.push(issue("data/calendar/2026-08-01_2026-12-31.json", "/", error.message));
   }
 
   const routes = new Map(records.filter((record) => record.kind === "route" && record.data).map((record) => [record.data.id, record]));
