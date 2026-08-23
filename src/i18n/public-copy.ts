@@ -1,0 +1,187 @@
+import type { Locale, RouteKey } from "./config.ts";
+
+export const publicCopy = {
+  sr: {
+    siteName: "Светиње.me", skip: "Пређи на главни садржај", menu: "Мени", openMenu: "Отвори главни мени",
+    nav: { monasteries: "Манастири", maleMonasteries: "Мушки манастири", femaleMonasteries: "Женски манастири", churches: "Цркве", map: "Мапа", routes: "Руте", calendar: "Календар", news: "Новости", about: "О пројекту", sources: "Извори" },
+    allMonasteries: "Сви манастири", catalogue: "Каталог", allAreas: "Све области", chooseArea: "Изаберите област",
+    showMap: "Прикажи на карти", clear: "Очисти филтере", openPage: "Отвори страницу", page: "Страница", of: "од",
+    footer: "Дигитални водич кроз православну баштину Црне Горе.", footerNav: "Навигација у подножју",
+    unavailable: "Садржај се објављује након завршене провјере.", preparing: "Садржај је у припреми",
+    homepage: {
+      metadata: { title: "Светиње — Православна Црна Гора", description: "Дигитални водич кроз православне светиње, поклоничке руте и духовно насљеђе Црне Горе." },
+      hero: { eyebrow: "Дигитални водич", title: "Православна Црна Гора", description: "Откријте манастире и храмове широм Црне Горе." },
+      filters: { aria: "Филтери каталога", all: "Све", monasteries: "Манастири", churches: "Цркве", routes: "Поклоничке руте" },
+      explorer: {
+        aria: "Претрага и филтри каталога", searchLabel: "Претражите светиње", searchPlaceholder: "Претражите светиње…",
+        areaPrefix: "Област", clearArea: "Уклони филтер области", noResultsEyebrow: "Претрага каталога",
+        empty: { seal: "С", title: "Каталог светиња је у припреми.", body: "Провјерени записи ће се појавити овдје након завршене стручне и језичке провјере.", link: "Како садржај постаје јаван" },
+        pagination: { top: "горња", bottom: "доња", aria: "Странице прегледа светиња — {position} навигација", previous: "Претходна страница", next: "Сљедећа страница" },
+        status: { none: "Нема записа за изабрани филтер.", page: "Страница {current} од {total}.", one: "Приказан је један резултат. {page}", many: "Приказана су {shown} од {matched} резултата. {page}" },
+        noResults: {
+          monasteries: { title: "Нема манастира у овом приказу", body: "Тренутно нема манастира који одговарају изабраном филтеру и претрази." },
+          churches: { title: "Нема храмова у овом приказу", body: "Тренутно нема храмова који одговарају изабраном филтеру и претрази." },
+          routes: { title: "Поклоничке руте су у припреми", body: "Руте ће бити приказане након провјере свих укључених мјеста и практичних података." },
+          all: { title: "Нема резултата", body: "Покушајте са другим називом или изаберите другу категорију." },
+        },
+      },
+      recommended: { title: "Најпосјећеније светиње", showAll: "Прикажи све", aria: "Најпосјећеније светиње" },
+      today: { label: "ДАНАС", calendar: "ПРАВОСЛАВНИ КАЛЕНДАР", calendarPreparing: "Календар је у припреми", openCalendar: "Отвори календар", gospel: "ИЗ ДАНАШЊЕГ ЈЕВАНЂЕЉА", readingMissing: "За овај дан литургијско јеванђељско читање није наведено.", read: "Прочитај читање", translationTitle: "Превод читања је у припреми", translationBody: "Календарска читања биће доступна након језичке и уредничке провјере." },
+      routes: { title: "Популарне руте", showAll: "Прикажи све", preparingLabel: "У припреми", preparingTitle: "Поклоничке руте су у припреми.", preparingBody: "Путање ће бити приказане тек након провјере свих укључених мјеста и практичних података." },
+      areas: { eyebrow: "ИСТРАЖИТЕ", title: "По областима", description: "Откријте манастире и храмове у различитим крајевима Црне Горе." },
+      mapControls: { quickAria: "Брзи избор на карти", builder: "Изгради руту", builderNotice: "Функција планирања руте је у припреми.", controls: "Контроле карте", layers: "Слојеви", layersTitle: "Слојеви карте", layersBody: "Основни Outdoor приказ је активан. Избор додатних картографских слојева биће доступан у каснијој фази.", zoom: "Зумирање карте", zoomIn: "Увећај карту", zoomOut: "Умањи карту", reset: "Прикажи поново Црну Гору", help: "Како користити карту?", helpTitle: "Интерактивна основна карта", helpBody: "Карту можете помјерати и зумирати. Ознаке светиња и руте неће бити приказане док подаци не прођу уредничко одобрење." },
+    },
+    pages: {
+      catalogues: {
+        monasteries: { title: "Манастири", description: "Истражите православне манастире Црне Горе.", empty: "Још нема манастира спремних за јавно објављивање." },
+        maleMonasteries: { title: "Мушки манастири", description: "Истражите мушке православне манастире Црне Горе.", empty: "Још нема мушких манастира спремних за приказ." },
+        femaleMonasteries: { title: "Женски манастири", description: "Истражите женске православне манастире Црне Горе.", empty: "Још нема женских манастира спремних за приказ." },
+        churches: { title: "Цркве", description: "Истражите православне храмове, цркве, капеле и саборне храмове Црне Горе.", empty: "Још нема храмова спремних за јавно објављивање." },
+      },
+      map: { title: "Мапа — Светиње", description: "Интерактивна карта православних манастира и храмова у Црној Гори.", aria: "Интерактивна карта православних светиња" },
+      routes: { eyebrow: "Руте", title: "Пјешачке руте до светиња", description: "Трасе засноване на стварним GPS записима, са јасно означеним провјереним и непровјереним практичним подацима.", filtersAria: "Филтери тежине", filters: { all: "Све", easy: "Лаке", moderate: "Средње", demanding: "Захтјевне" }, list: "Доступне руте", empty: "Још нема рута спремних за јавно објављивање." },
+      calendar: { eyebrow: "Православни календар", title: "Календар за 2026. годину", description: "Изаберите датум за спомене дана и литургијско јеванђелско читање.", date: "Датум", open: "Отвори дан", pending: "Календар за {year}. годину је у припреми.", translationPending: "Преводи календарских читања су у припреми." },
+      news: { title: "Новости", description: "Последње додато и новости о развоју сајта.", info: "Сајт је у фази постепеног додавања објеката.", allNews: "Све новости", shown: "Приказано је {count} новости.", empty: "Нема новости за изабрани период и категорију.", categories: "Категорије", allCategories: "Све категорије", archive: "Архива", allPeriods: "Сви периоди", reset: "Поништи филтере", statusTitle: "У току је додавање нових објеката.", statusBody: "Сајт се постепено допуњава провјереним садржајем.", placeAddedTitle: "{name} додат на сајт", types: { "place-added": "НОВИ ОБЈЕКАТ", "place-updated": "АЖУРИРАНО", "site-update": "САЈТ", announcement: "ОБАВЈЕШТЕЊЕ", news: "НОВОСТ" } },
+      about: { title: "О пројекту", description: "О пројекту svetinje.me и допуњавању базе православних манастира и храмова у Црној Гори.", paragraphs: ["Циљ svetinje.me је да на једном мјесту представи све православне манастире и храмове на територији Црне Горе.", "Сајт се тренутно активно допуњује новим светињама, фотографијама и подацима. Ако уочите нетачност у постојећем садржају или желите да предложите манастир или цркву који још нису уврштени, пишите нам на"] },
+      placeDetail: {
+        breadcrumbs: "Путања странице", home: "Почетна", facts: "Основни подаци", actions: "Радње за посјету", plan: "Планирај посјету", route: "Изгради руту", save: "Сачувај", openMap: "Отвори главну карту",
+        actionMessages: { plan: "Функција планирања посјете је у припреми.", route: "Израда персонализоване руте је у припреми.", save: "Чување омиљених светиња је у припреми." },
+        about: { monastery: "О манастиру", church: "О цркви", other: "О светињи", empty: "Општи подаци о светињи су у припреми." },
+        gallery: { title: "Фотографије", enlarge: "Увећај фотографију", authorPending: "Ауторска фотографија биће додата", morePending: "Још фотографија биће додато", galleryPending: "Галерија у припреми", video: "Видео", videoTitle: "Видео", aria: "Галерија", close: "Затвори галерију", previous: "Претходна фотографија", next: "Следећа фотографија" },
+        practical: { title: "Практичне информације", location: "Локација", address: "Адреса", type: "Тип", jurisdiction: "Епархија", feast: "Слава", feasts: "Славе", coordinates: "Координате", copy: "Копирај координате", copied: "Координате су копиране.", copyFailed: "Координате није могуће копирати.", cathedralNote: "Координате означавају центар храмовног комплекса, а не тачан главни улаз.", placeNote: "Координате означавају центроид комплекса, а не тачан пјешачки улаз." },
+        serviceSchedule: { title: "Распоред богослужења" },
+        miniMap: { aria: "Мала карта положаја", attribution: "Извори картографских података", open: "Отвори на главној карти" },
+        related: { eyebrow: "Наставите истраживање", title: "Сличне светиње у близини", showAll: "Прикажи све", distance: "≈ {distance} км ваздушном линијом", placeholderTitle: "Запис у припреми", placeholderBody: "Подаци ће бити додати након провјере." },
+        backlinks: { title: "Поклоничке руте", from: "Руте од ове светиње", to: "Руте до ове светиње", empty: "Руте повезане са овом светињом још нису објављене." },
+      },
+    },
+  },
+  ru: {
+    siteName: "Святыни.me", skip: "Перейти к основному содержанию", menu: "Меню", openMenu: "Открыть главное меню",
+    nav: { monasteries: "Монастыри", maleMonasteries: "Мужские монастыри", femaleMonasteries: "Женские монастыри", churches: "Храмы", map: "Карта", routes: "Маршруты", calendar: "Календарь", news: "Новости", about: "О проекте", sources: "Источники" },
+    allMonasteries: "Все монастыри", catalogue: "Каталог", allAreas: "Все регионы", chooseArea: "Выберите регион",
+    showMap: "Показать на карте", clear: "Сбросить фильтры", openPage: "Открыть страницу", page: "Страница", of: "из",
+    footer: "Цифровой путеводитель по православному наследию Черногории.", footerNav: "Навигация в подвале",
+    unavailable: "Материал появится после редакционной проверки.", preparing: "Материал готовится",
+    homepage: {
+      metadata: { title: "Святыни — Православная Черногория", description: "Цифровой путеводитель по православным святыням, паломническим маршрутам и духовному наследию Черногории." },
+      hero: { eyebrow: "Цифровой путеводитель", title: "Православная Черногория", description: "Откройте монастыри и храмы Черногории." },
+      filters: { aria: "Фильтры каталога", all: "Все", monasteries: "Монастыри", churches: "Храмы", routes: "Маршруты" },
+      explorer: {
+        aria: "Поиск и фильтры каталога", searchLabel: "Искать святыни", searchPlaceholder: "Поиск по святыням…",
+        areaPrefix: "Регион", clearArea: "Убрать фильтр региона", noResultsEyebrow: "Поиск по каталогу",
+        empty: { seal: "С", title: "Каталог святынь готовится.", body: "Проверенные материалы появятся здесь после редакционной и языковой проверки.", link: "Как публикуются материалы" },
+        pagination: { top: "верхняя", bottom: "нижняя", aria: "Страницы списка святынь — {position} навигация", previous: "Предыдущая страница", next: "Следующая страница" },
+        status: { none: "Для выбранного фильтра записей нет.", page: "Страница {current} из {total}.", one: "Показан один результат. {page}", many: "Показано {shown} из {matched} результатов. {page}" },
+        noResults: {
+          monasteries: { title: "Монастыри не найдены", body: "Нет монастырей, соответствующих выбранным фильтрам и поиску." },
+          churches: { title: "Храмы не найдены", body: "Нет храмов, соответствующих выбранным фильтрам и поиску." },
+          routes: { title: "Паломнические маршруты готовятся", body: "Маршруты появятся после проверки всех мест и практических данных." },
+          all: { title: "Нет результатов", body: "Попробуйте другое название или выберите другую категорию." },
+        },
+      },
+      recommended: { title: "Самые посещаемые святыни", showAll: "Показать все", aria: "Самые посещаемые святыни" },
+      today: { label: "СЕГОДНЯ", calendar: "ПРАВОСЛАВНЫЙ КАЛЕНДАРЬ", calendarPreparing: "Календарь готовится", openCalendar: "Открыть календарь", gospel: "ЧТЕНИЯ НА СЕГОДНЯ", readingMissing: "Чтение на этот день пока не опубликовано.", read: "Прочитать", translationTitle: "Перевод чтений готовится", translationBody: "Переведённые календарные чтения появятся после языковой и редакционной проверки." },
+      routes: { title: "Популярные маршруты", showAll: "Показать все", preparingLabel: "Готовится", preparingTitle: "Паломнические маршруты готовятся.", preparingBody: "Переводы маршрутов появятся после языковой и редакционной проверки." },
+      areas: { eyebrow: "ИССЛЕДУЙТЕ", title: "По регионам", description: "Откройте монастыри и храмы в разных регионах Черногории." },
+      mapControls: { quickAria: "Быстрый выбор на карте", builder: "Построить маршрут", builderNotice: "Планировщик маршрутов готовится.", controls: "Управление картой", layers: "Слои", layersTitle: "Слои карты", layersBody: "Активен базовый слой Outdoor. Дополнительные слои появятся позже.", zoom: "Масштаб карты", zoomIn: "Увеличить", zoomOut: "Уменьшить", reset: "Показать Черногорию", help: "Как пользоваться картой?", helpTitle: "Интерактивная карта", helpBody: "Карту можно перемещать и масштабировать. Откройте метку, чтобы перейти к святыне." },
+    },
+    pages: {
+      catalogues: {
+        monasteries: { title: "Монастыри", description: "Откройте православные монастыри Черногории.", empty: "Пока нет монастырей, готовых к публикации." },
+        maleMonasteries: { title: "Мужские монастыри", description: "Откройте мужские православные монастыри Черногории.", empty: "Пока нет мужских монастырей, готовых к публикации." },
+        femaleMonasteries: { title: "Женские монастыри", description: "Откройте женские православные монастыри Черногории.", empty: "Пока нет женских монастырей, готовых к публикации." },
+        churches: { title: "Храмы", description: "Откройте православные храмы, церкви, часовни и соборы Черногории.", empty: "Пока нет храмов, готовых к публикации." },
+      },
+      map: { title: "Карта святынь", description: "Интерактивная карта православных монастырей и храмов Черногории.", aria: "Интерактивная карта православных святынь" },
+      routes: { eyebrow: "Маршруты", title: "Пешеходные маршруты к святыням", description: "Маршруты на основе реальных GPS-треков с ясным обозначением проверенных и непроверенных практических данных.", filtersAria: "Фильтры сложности", filters: { all: "Все", easy: "Лёгкие", moderate: "Средние", demanding: "Сложные" }, list: "Доступные маршруты", empty: "Переводы паломнических маршрутов готовятся." },
+      calendar: { eyebrow: "Православный календарь", title: "Календарь на 2026 год", description: "Выберите дату, чтобы открыть памятования дня и литургическое евангельское чтение.", date: "Дата", open: "Открыть день", pending: "Календарь на {year} год готовится.", translationPending: "Переводы календарских чтений готовятся." },
+      news: { title: "Новости", description: "Последние материалы и новости о развитии сайта.", info: "Сайт постепенно пополняется новыми объектами.", allNews: "Все новости", shown: "Показано новостей: {count}.", empty: "Нет новостей за выбранный период и категорию.", categories: "Категории", allCategories: "Все категории", archive: "Архив", allPeriods: "Все периоды", reset: "Сбросить фильтры", statusTitle: "Добавляются новые объекты.", statusBody: "Сайт постепенно пополняется проверенными материалами.", placeAddedTitle: "{name} добавлен на сайт", types: { "place-added": "НОВЫЙ ОБЪЕКТ", "place-updated": "ОБНОВЛЕНО", "site-update": "САЙТ", announcement: "ОБЪЯВЛЕНИЕ", news: "НОВОСТЬ" } },
+      about: { title: "О проекте", description: "О проекте svetinje.me и пополнении базы православных монастырей и храмов Черногории.", paragraphs: ["Цель svetinje.me — представить в одном месте православные монастыри и храмы Черногории.", "Сайт активно пополняется новыми святынями, фотографиями и сведениями. Если вы заметили неточность или хотите предложить монастырь либо храм, которого ещё нет в каталоге, напишите нам на"] },
+      placeDetail: {
+        breadcrumbs: "Навигационная цепочка", home: "Главная", facts: "Основные сведения", actions: "Действия для посещения", plan: "Запланировать посещение", route: "Построить маршрут", save: "Сохранить", openMap: "Открыть главную карту",
+        actionMessages: { plan: "Планирование посещения готовится.", route: "Построение персонального маршрута готовится.", save: "Сохранение избранных святынь готовится." },
+        about: { monastery: "О монастыре", church: "О храме", other: "О святыне", empty: "Общие сведения о святыне готовятся." },
+        gallery: { title: "Фотографии", enlarge: "Увеличить фотографию", authorPending: "Авторская фотография будет добавлена", morePending: "Будут добавлены новые фотографии", galleryPending: "Галерея готовится", video: "Видео", videoTitle: "Видео", aria: "Галерея", close: "Закрыть галерею", previous: "Предыдущая фотография", next: "Следующая фотография" },
+        practical: { title: "Практическая информация", location: "Местоположение", address: "Адрес", type: "Тип", jurisdiction: "Церковная юрисдикция", feast: "Престольный праздник", feasts: "Престольные праздники", coordinates: "Координаты", copy: "Скопировать координаты", copied: "Координаты скопированы.", copyFailed: "Не удалось скопировать координаты.", cathedralNote: "Координаты указывают центр храмового комплекса, а не точный главный вход.", placeNote: "Координаты указывают центр комплекса, а не точный пешеходный вход." },
+        serviceSchedule: { title: "Расписание богослужений" },
+        miniMap: { aria: "Небольшая карта местоположения", attribution: "Источники картографических данных", open: "Открыть на главной карте" },
+        related: { eyebrow: "Продолжить знакомство", title: "Похожие святыни поблизости", showAll: "Показать все", distance: "≈ {distance} км по прямой", placeholderTitle: "Материал готовится", placeholderBody: "Сведения появятся после проверки." },
+        backlinks: { title: "Паломнические маршруты", from: "Маршруты от этой святыни", to: "Маршруты к этой святыне", empty: "Связанные с этой святыней маршруты ещё не опубликованы." },
+      },
+    },
+  },
+  en: {
+    siteName: "Holy Places.me", skip: "Skip to main content", menu: "Menu", openMenu: "Open main menu",
+    nav: { monasteries: "Monasteries", maleMonasteries: "Men's monasteries", femaleMonasteries: "Women's monasteries", churches: "Churches", map: "Map", routes: "Routes", calendar: "Calendar", news: "News", about: "About", sources: "Sources" },
+    allMonasteries: "All monasteries", catalogue: "Catalogue", allAreas: "All regions", chooseArea: "Choose a region",
+    showMap: "Show on map", clear: "Clear filters", openPage: "Open page", page: "Page", of: "of",
+    footer: "A digital guide to the Orthodox heritage of Montenegro.", footerNav: "Footer navigation",
+    unavailable: "Content is published after editorial review.", preparing: "Content is being prepared",
+    homepage: {
+      metadata: { title: "Holy Places — Orthodox Montenegro", description: "A digital guide to Montenegro's Orthodox holy places, pilgrimage routes, and spiritual heritage." },
+      hero: { eyebrow: "Digital guide", title: "Orthodox Montenegro", description: "Discover Montenegro's monasteries and churches." },
+      filters: { aria: "Catalogue filters", all: "All", monasteries: "Monasteries", churches: "Churches", routes: "Routes" },
+      explorer: {
+        aria: "Catalogue search and filters", searchLabel: "Search holy places", searchPlaceholder: "Search holy places…",
+        areaPrefix: "Region", clearArea: "Remove region filter", noResultsEyebrow: "Catalogue search",
+        empty: { seal: "H", title: "The holy-place catalogue is being prepared.", body: "Verified entries will appear here after editorial and language review.", link: "How content is published" },
+        pagination: { top: "top", bottom: "bottom", aria: "Holy-place result pages — {position} navigation", previous: "Previous page", next: "Next page" },
+        status: { none: "There are no entries for the selected filter.", page: "Page {current} of {total}.", one: "One result is shown. {page}", many: "Showing {shown} of {matched} results. {page}" },
+        noResults: {
+          monasteries: { title: "No monasteries found", body: "No monasteries match the selected filters and search." },
+          churches: { title: "No churches found", body: "No churches match the selected filters and search." },
+          routes: { title: "Pilgrimage routes are being prepared", body: "Routes will appear after all places and practical details have been reviewed." },
+          all: { title: "No results", body: "Try another name or choose a different category." },
+        },
+      },
+      recommended: { title: "Most visited holy places", showAll: "View all", aria: "Most visited holy places" },
+      today: { label: "TODAY", calendar: "ORTHODOX CALENDAR", calendarPreparing: "The calendar is being prepared", openCalendar: "Open calendar", gospel: "TODAY'S READINGS", readingMissing: "A reading has not yet been published for this day.", read: "Read the passage", translationTitle: "Translated readings are being prepared", translationBody: "Translated calendar readings will appear after language and editorial review." },
+      routes: { title: "Popular routes", showAll: "View all", preparingLabel: "In preparation", preparingTitle: "Pilgrimage routes are being prepared.", preparingBody: "Translated routes will appear after language and editorial review." },
+      areas: { eyebrow: "EXPLORE", title: "Browse by region", description: "Discover monasteries and churches across Montenegro's regions." },
+      mapControls: { quickAria: "Quick map filters", builder: "Build a route", builderNotice: "Route planning is being prepared.", controls: "Map controls", layers: "Layers", layersTitle: "Map layers", layersBody: "The Outdoor base layer is active. Additional layers will be available later.", zoom: "Map zoom", zoomIn: "Zoom in", zoomOut: "Zoom out", reset: "Show Montenegro", help: "How to use the map", helpTitle: "Interactive map", helpBody: "Pan and zoom the map. Open a marker to visit the holy-place page." },
+    },
+    pages: {
+      catalogues: {
+        monasteries: { title: "Monasteries", description: "Explore Montenegro's Orthodox monasteries.", empty: "No monasteries are ready for publication yet." },
+        maleMonasteries: { title: "Men's monasteries", description: "Explore Montenegro's men's Orthodox monasteries.", empty: "No men's monasteries are ready for publication yet." },
+        femaleMonasteries: { title: "Women's monasteries", description: "Explore Montenegro's women's Orthodox monasteries.", empty: "No women's monasteries are ready for publication yet." },
+        churches: { title: "Churches", description: "Explore Montenegro's Orthodox churches, chapels, and cathedrals.", empty: "No churches are ready for publication yet." },
+      },
+      map: { title: "Map of holy places", description: "An interactive map of Montenegro's Orthodox monasteries and churches.", aria: "Interactive map of Orthodox holy places" },
+      routes: { eyebrow: "Routes", title: "Walking routes to holy places", description: "Routes based on real GPS tracks, with verified and unverified practical details clearly identified.", filtersAria: "Difficulty filters", filters: { all: "All", easy: "Easy", moderate: "Moderate", demanding: "Demanding" }, list: "Available routes", empty: "Translated pilgrimage routes are being prepared." },
+      calendar: { eyebrow: "Orthodox calendar", title: "Calendar for 2026", description: "Choose a date to open the day's commemorations and liturgical Gospel reading.", date: "Date", open: "Open day", pending: "The calendar for {year} is being prepared.", translationPending: "Translated calendar readings are being prepared." },
+      news: { title: "News", description: "The latest additions and news about the site's development.", info: "New places are being added to the site gradually.", allNews: "All news", shown: "Showing {count} news items.", empty: "No news matches the selected period and category.", categories: "Categories", allCategories: "All categories", archive: "Archive", allPeriods: "All periods", reset: "Reset filters", statusTitle: "New places are being added.", statusBody: "The site is gradually expanding with verified content.", placeAddedTitle: "{name} added to the site", types: { "place-added": "NEW PLACE", "place-updated": "UPDATED", "site-update": "SITE", announcement: "ANNOUNCEMENT", news: "NEWS" } },
+      about: { title: "About", description: "About svetinje.me and the growing catalogue of Montenegro's Orthodox monasteries and churches.", paragraphs: ["The goal of svetinje.me is to present Montenegro's Orthodox monasteries and churches in one place.", "The site is actively being expanded with new holy places, photographs, and information. If you notice an error or would like to suggest a monastery or church that is not yet included, email us at"] },
+      placeDetail: {
+        breadcrumbs: "Breadcrumbs", home: "Home", facts: "Essential information", actions: "Visit actions", plan: "Plan a visit", route: "Build a route", save: "Save", openMap: "Open the main map",
+        actionMessages: { plan: "Visit planning is being prepared.", route: "Personal route building is being prepared.", save: "Saving favourite holy places is being prepared." },
+        about: { monastery: "About the monastery", church: "About the church", other: "About this holy place", empty: "General information about this holy place is being prepared." },
+        gallery: { title: "Photographs", enlarge: "Enlarge photograph", authorPending: "An original photograph will be added", morePending: "More photographs will be added", galleryPending: "The gallery is being prepared", video: "Video", videoTitle: "Video", aria: "Gallery", close: "Close gallery", previous: "Previous photograph", next: "Next photograph" },
+        practical: { title: "Practical information", location: "Location", address: "Address", type: "Type", jurisdiction: "Ecclesiastical jurisdiction", feast: "Patronal feast", feasts: "Patronal feasts", coordinates: "Coordinates", copy: "Copy coordinates", copied: "Coordinates copied.", copyFailed: "Coordinates could not be copied.", cathedralNote: "The coordinates mark the centre of the cathedral complex, not the exact main entrance.", placeNote: "The coordinates mark the centre of the complex, not the exact pedestrian entrance." },
+        serviceSchedule: { title: "Service schedule" },
+        miniMap: { aria: "Small location map", attribution: "Map data sources", open: "Open on the main map" },
+        related: { eyebrow: "Continue exploring", title: "Similar holy places nearby", showAll: "View all", distance: "≈ {distance} km as the crow flies", placeholderTitle: "Entry in preparation", placeholderBody: "Details will be added after review." },
+        backlinks: { title: "Pilgrimage routes", from: "Routes from this holy place", to: "Routes to this holy place", empty: "Routes connected with this holy place have not been published yet." },
+      },
+    },
+  },
+} as const;
+
+export type PublicCopy = (typeof publicCopy)[Locale];
+export const navigationRouteKeys = ["monasteries", "churches", "map", "routes", "calendar", "news", "about"] as const satisfies readonly RouteKey[];
+
+export const areaLabels: Record<Locale, Record<string, string>> = {
+  sr: { "budva-pastrovici": "Будва и Паштровићи", "boka-kotorska": "Бока Которска", "cetinje-okolina": "Цетиње и околина", "podgorica-zeta": "Подгорица и Зета", "bar-crmnica-skadarsko-jezero": "Бар, Црмница и Скадарско језеро", "ostrog-sredisnja-crna-gora": "Острог и средишња Црна Гора", "sjever-crne-gore": "Сјевер Црне Горе" },
+  ru: { "budva-pastrovici": "Будва и Паштровичи", "boka-kotorska": "Бока-Которская", "cetinje-okolina": "Цетине и окрестности", "podgorica-zeta": "Подгорица и Зета", "bar-crmnica-skadarsko-jezero": "Бар, Црмница и Скадарское озеро", "ostrog-sredisnja-crna-gora": "Острог и Центральная Черногория", "sjever-crne-gore": "Север Черногории" },
+  en: { "budva-pastrovici": "Budva and Paštrovići", "boka-kotorska": "Bay of Kotor", "cetinje-okolina": "Cetinje and surroundings", "podgorica-zeta": "Podgorica and Zeta", "bar-crmnica-skadarsko-jezero": "Bar, Crmnica and Lake Skadar", "ostrog-sredisnja-crna-gora": "Ostrog and Central Montenegro", "sjever-crne-gore": "Northern Montenegro" },
+};
+
+export function localizedPlaceType(locale: Locale, value: string): string {
+  const labels: Record<Locale, Record<string, string>> = {
+    sr: { monastery: "Манастир", cathedral: "Саборни храм", church: "Храм", chapel: "Храм", other: "Свето мјесто" },
+    ru: { monastery: "Монастырь", cathedral: "Собор", church: "Храм", chapel: "Часовня", other: "Святое место" },
+    en: { monastery: "Monastery", cathedral: "Cathedral", church: "Church", chapel: "Chapel", other: "Holy place" },
+  };
+  return labels[locale][value] ?? labels[locale].other!;
+}

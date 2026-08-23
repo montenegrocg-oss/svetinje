@@ -1,0 +1,35 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { routeFor, type Locale } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
+import type { MonasticCommunityFilter } from "../lib/category-catalogue";
+import type { VisiblePlace } from "../lib/content/publication";
+import type { PublicDiscoveryCategory } from "../lib/public-place-discovery";
+import CategoryCatalogue from "./CategoryCatalogue.astro";
+
+type CataloguePageKind = "monasteries" | "maleMonasteries" | "femaleMonasteries" | "churches";
+interface Props {
+  locale?: Locale;
+  page: CataloguePageKind;
+  category: PublicDiscoveryCategory;
+  monasticCommunity?: MonasticCommunityFilter | undefined;
+  places?: VisiblePlace[] | undefined;
+  metadataTitle?: string | undefined;
+  metadataDescription?: string | undefined;
+}
+const { locale = "sr", page, category, monasticCommunity, places, metadataTitle, metadataDescription } = Astro.props;
+const copy = publicCopy[locale].pages.catalogues[page];
+---
+
+<BaseLayout title={metadataTitle ?? copy.title} description={metadataDescription ?? copy.description} canonicalPath={routeFor(locale, page)} locale={locale}>
+  <CategoryCatalogue
+    heading={copy.title}
+    description={copy.description}
+    category={category}
+    catalogueHeading={copy.title}
+    monasticCommunity={monasticCommunity}
+    emptyHeading={copy.empty}
+    locale={locale}
+    places={places}
+  />
+</BaseLayout>

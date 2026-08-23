@@ -3,18 +3,19 @@ import { localeConfig, type Locale } from "../i18n/config";
 
 interface Props {
   currentLocale?: Locale;
+  destinations?: Partial<Record<Locale, string>>;
 }
 
-const { currentLocale = "sr" } = Astro.props;
+const { currentLocale = "sr", destinations = { sr: "/" } } = Astro.props;
 const locales = Object.entries(localeConfig) as [Locale, (typeof localeConfig)[Locale]][];
 ---
 
-<nav class="language-switcher" aria-label="Избор језика">
+<nav class="language-switcher" aria-label={currentLocale === "ru" ? "Выбор языка" : currentLocale === "en" ? "Language selector" : "Избор језика"}>
   <ul>
     {locales.map(([locale, config]) => (
       <li>
-        {config.available ? (
-          <a class="language-current" href="/" lang={config.htmlLang} aria-current={locale === currentLocale ? "page" : undefined}>
+        {config.available && destinations[locale] ? (
+          <a class:list={[locale === currentLocale && "language-current"]} href={destinations[locale]} lang={config.htmlLang} aria-current={locale === currentLocale ? "page" : undefined}>
             {config.label}
           </a>
         ) : (
@@ -22,10 +23,10 @@ const locales = Object.entries(localeConfig) as [Locale, (typeof localeConfig)[L
             class="language-unavailable"
             lang={config.htmlLang}
             aria-disabled="true"
-            title="Превод још није доступан"
+            title={currentLocale === "ru" ? "Перевод пока недоступен" : currentLocale === "en" ? "Translation is not available" : "Превод још није доступан"}
           >
             <span>{config.label}</span>
-            <small>ускоро</small>
+            <small>{currentLocale === "ru" ? "скоро" : currentLocale === "en" ? "soon" : "ускоро"}</small>
           </span>
         )}
       </li>

@@ -11,12 +11,12 @@ alternate_names:
     context: Старији назив острвског манастира.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
   - name: Манастир Благовијести – Бешка
     context: Назив према храму Благовијести.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Острвски манастир Балшића на Скадарском језеру, са храмовима Светог Георгија и Благовијести Пресвете Богородице.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -24,7 +24,7 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T21:03:00Z
+  updated_at: 2026-08-22T18:11:38Z
   updated_by: montenegro-cg
 ---
 

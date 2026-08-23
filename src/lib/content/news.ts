@@ -1,7 +1,10 @@
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { parseDocument } from "yaml";
+import { placeDetailRoot, type Locale } from "../../i18n/config.ts";
+import { areaLabels, publicCopy } from "../../i18n/public-copy.ts";
 import { isNewsType, newsTypeLabel, type NewsType } from "../news-types.ts";
+import { loadLocalizedVisiblePlaces } from "./localized-publication.ts";
 import { loadVisiblePlaces, type VisiblePlace } from "./publication.ts";
 
 interface Approval {
@@ -39,7 +42,7 @@ export interface NewsRecord {
 
 export interface VisibleNewsItem {
   id: string;
-  locale: "sr";
+  locale: Locale;
   type: NewsType;
   typeLabel: string;
   publishedAt: string;
@@ -64,6 +67,7 @@ export interface ExcludedNewsMarker {
 interface LoadVisibleNewsOptions {
   editorialPreview?: boolean;
   visiblePlaces?: VisiblePlace[];
+  locale?: Locale;
 }
 
 const ENTITY_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -236,6 +240,42 @@ function normalizeNews(record: NewsRecord, placesById: Map<string, VisiblePlace>
   };
 }
 
+function derivedPlaceSummary(place: VisiblePlace, locale: Locale): string {
+  const location = [place.municipality, place.settlement].filter((value): value is string => Boolean(value?.trim()));
+  if (location.length > 0) return location.join(" · ");
+  if (place.browseAreaId) return areaLabels[locale][place.browseAreaId] ?? place.summary;
+  return place.summary;
+}
+
+export function derivePlaceAddedNews(places: VisiblePlace[], locale: Locale = "sr"): VisibleNewsItem[] {
+  const copy = publicCopy[locale].pages.news;
+  return sortVisibleNews(places.map((place) => ({
+    id: `place-added-${place.id}`,
+    locale,
+    type: "place-added",
+    typeLabel: copy.types["place-added"],
+    publishedAt: place.createdAt,
+    title: copy.placeAddedTitle.replace("{name}", place.name),
+    summary: derivedPlaceSummary(place, locale),
+    href: `${placeDetailRoot[locale]}${place.slug}/`,
+    relatedPlaceId: place.id,
+    preview: place.preview,
+  })));
+}
+
+export function mergeDerivedAndManualNews(
+  derivedItems: VisibleNewsItem[],
+  manualItems: VisibleNewsItem[],
+): VisibleNewsItem[] {
+  const derivedIds = new Set(derivedItems.map((item) => item.id));
+  const derivedPlaceIds = new Set(derivedItems.flatMap((item) => item.relatedPlaceId ? [item.relatedPlaceId] : []));
+  const uniqueManualItems = manualItems.filter((item) => (
+    !derivedIds.has(item.id) &&
+    !(item.type === "place-added" && item.relatedPlaceId && derivedPlaceIds.has(item.relatedPlaceId))
+  ));
+  return sortVisibleNews([...derivedItems, ...uniqueManualItems]);
+}
+
 export function sortVisibleNews(items: VisibleNewsItem[]): VisibleNewsItem[] {
   return [...items].sort((left, right) =>
     right.publishedAt.localeCompare(left.publishedAt) || left.id.localeCompare(right.id),
@@ -257,20 +297,26 @@ export async function loadVisibleNews(
   options: LoadVisibleNewsOptions = {},
 ): Promise<VisibleNewsItem[]> {
   const editorialPreview = options.editorialPreview ?? process.env.EDITORIAL_PREVIEW === "true";
+  const locale = options.locale ?? "sr";
   const [records, policy, visiblePlaces] = await Promise.all([
     readNewsRecords(root),
     loadPolicy(root),
-    options.visiblePlaces ?? loadVisiblePlaces(root, { editorialPreview }),
+    options.visiblePlaces ?? (locale === "sr"
+      ? loadVisiblePlaces(root, { editorialPreview })
+      : loadLocalizedVisiblePlaces(locale, root, { editorialPreview })),
   ]);
   const placesById = new Map(visiblePlaces.map((place) => [place.id, place]));
-  const publicItems = policy.public_publication_locked
+  const derivedItems = derivePlaceAddedNews(visiblePlaces, locale);
+  const publicItems = locale !== "sr" || policy.public_publication_locked
     ? []
     : records.flatMap((record) => {
         if (record.editorial_status !== "published" || !hasPublicationApprovals(record, policy)) return [];
         const item = normalizeNews(record, placesById, false);
         return item ? [item] : [];
       });
-  if (!editorialPreview) return sortVisibleNews(publicItems);
+  if (!editorialPreview) return mergeDerivedAndManualNews(derivedItems, publicItems);
+
+  if (locale !== "sr") return derivedItems;
 
   const allowlist = await loadPreviewAllowlist(root, new Set(records.map((record) => record.id)));
   const recordById = new Map(records.map((record) => [record.id, record]));
@@ -282,7 +328,10 @@ export async function loadVisibleNews(
     return item ? [item] : [];
   });
   const previewIds = new Set(previewItems.map((item) => item.id));
-  return sortVisibleNews([...publicItems.filter((item) => !previewIds.has(item.id)), ...previewItems]);
+  return mergeDerivedAndManualNews(
+    derivedItems,
+    [...publicItems.filter((item) => !previewIds.has(item.id)), ...previewItems],
+  );
 }
 
 export async function loadExcludedNewsMarkers(root = process.cwd()): Promise<ExcludedNewsMarker[]> {

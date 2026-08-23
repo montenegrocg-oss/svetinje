@@ -7,49 +7,63 @@ import PopularRoutes from "./PopularRoutes.astro";
 import RecommendedPlaces from "./RecommendedPlaces.astro";
 import TodayCalendar from "./TodayCalendar.astro";
 import { HOMEPAGE_PREVIEW_LIMIT } from "../lib/explorer-preview";
+import { selectPublicDiscoveryPlaces } from "../lib/public-place-discovery";
 import type { VisiblePlace } from "../lib/content/publication";
 import type { VisibleRoute } from "../lib/content/routes";
 import type { CalendarDay } from "../lib/calendar/content";
+import type { Locale } from "../i18n/config";
+import { areaLabels, publicCopy } from "../i18n/public-copy";
 
 interface Props {
   places: VisiblePlace[];
   routes: VisibleRoute[];
   calendarDays: CalendarDay[];
   scriptureCorpus: any;
+  locale?: Locale;
 }
 
-const { places, routes, calendarDays, scriptureCorpus } = Astro.props;
-const initialPlaces = places.slice(0, HOMEPAGE_PREVIEW_LIMIT);
-const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
+const { places, routes, calendarDays, scriptureCorpus, locale = "sr" } = Astro.props;
+const copy = publicCopy[locale].homepage;
+const discoveryPlaces = selectPublicDiscoveryPlaces(places);
+const initialPlaces = discoveryPlaces.slice(0, HOMEPAGE_PREVIEW_LIMIT);
+const inventoryPlaces = discoveryPlaces.slice(HOMEPAGE_PREVIEW_LIMIT);
+const explorerRuntimeCopy = JSON.stringify({
+  status: copy.explorer.status,
+  noResults: copy.explorer.noResults,
+  areas: areaLabels[locale],
+}).replaceAll("<", "\\u003c");
 ---
 
-<section class="map-explorer" id="mapa" aria-labelledby="map-explorer-title" data-testid="map-explorer">
+<section class="map-explorer" id="mapa" aria-labelledby="map-explorer-title" data-testid="map-explorer" data-explorer-locale={locale}>
   <header class="map-explorer__heading">
-    <p class="map-eyebrow">Дигитални водич</p>
-    <h1 id="map-explorer-title">Православна Црна Гора</h1>
+    <p class="map-eyebrow">{copy.hero.eyebrow}</p>
+    <h1 id="map-explorer-title">{copy.hero.title}</h1>
     <span class="title-rule" aria-hidden="true"></span>
-    <p>Откријте манастире, храмове и света мјеста широм Црне Горе.</p>
+    <p>{copy.hero.description}</p>
   </header>
 
   <div class="map-stage">
-    <MapCanvas places={places} />
-    <MapControls />
+    <MapCanvas places={discoveryPlaces} locale={locale} />
+    <MapControls locale={locale} />
   </div>
 
   <div class="map-explorer__content">
-    <ExplorerSidebar places={initialPlaces} totalPlaces={places.length} />
+    <ExplorerSidebar places={initialPlaces} totalPlaces={discoveryPlaces.length} locale={locale} />
     <div class="map-explorer__secondary">
-      <RecommendedPlaces places={places} />
-      <TodayCalendar days={calendarDays} corpus={scriptureCorpus} />
-      <PopularRoutes routes={routes} />
+      <div class="map-explorer__secondary-content">
+        <RecommendedPlaces places={discoveryPlaces} locale={locale} />
+        <TodayCalendar days={calendarDays} corpus={scriptureCorpus} locale={locale} />
+        <PopularRoutes routes={routes} locale={locale} />
+      </div>
     </div>
   </div>
 
   <div data-explorer-card-pool hidden>
     {inventoryPlaces.map((place) => (
-      <PlaceCard place={place} variant="sidebar" initialExplorerPlacement="pool" />
+      <PlaceCard place={place} variant="sidebar" initialExplorerPlacement="pool" locale={locale} />
     ))}
   </div>
+  <script type="application/json" data-explorer-copy set:html={explorerRuntimeCopy} is:inline />
 </section>
 
 <script>
@@ -74,6 +88,12 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
   const searchForm = document.querySelector<HTMLFormElement>("[data-catalogue-search]");
   const searchInput = searchForm?.querySelector<HTMLInputElement>("input[type='search']");
   const explorerRoot = document.querySelector<HTMLElement>("[data-testid='map-explorer']");
+  const copyElement = explorerRoot?.querySelector<HTMLScriptElement>("[data-explorer-copy]");
+  const runtimeCopy = JSON.parse(copyElement?.textContent ?? "{}") as {
+    status: { none: string; page: string; one: string; many: string };
+    noResults: Record<string, { title: string; body: string }>;
+    areas: Record<string, string>;
+  };
   const placeCards = [...(explorerRoot?.querySelectorAll<HTMLElement>("[data-place-card]") ?? [])];
   const primaryResults = explorerRoot?.querySelector<HTMLElement>("[data-explorer-primary-results]");
   const cardPool = explorerRoot?.querySelector<HTMLElement>("[data-explorer-card-pool]");
@@ -85,38 +105,16 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
   const areaFilter = explorerRoot?.querySelector<HTMLElement>("[data-explorer-area-filter]");
   const areaFilterLabel = areaFilter?.querySelector<HTMLElement>("[data-explorer-area-label]");
   const clearAreaFilterButton = areaFilter?.querySelector<HTMLButtonElement>("[data-clear-area-filter]");
-  const pagination = explorerRoot?.querySelector<HTMLElement>("[data-homepage-pagination]");
-  const paginationPrev = pagination?.querySelector<HTMLButtonElement>("[data-homepage-pagination-prev]");
-  const paginationNext = pagination?.querySelector<HTMLButtonElement>("[data-homepage-pagination-next]");
-  const paginationStatus = pagination?.querySelector<HTMLElement>("[data-homepage-pagination-status]");
-  const filterIds = new Set(["all", "monasteries", "churches", "holy-places", "routes"]);
+  const paginations = [...(explorerRoot?.querySelectorAll<HTMLElement>("[data-homepage-pagination]") ?? [])];
+  const filterIds = new Set(["all", "monasteries", "churches", "routes"]);
   let activeFilter = "all";
   let activeAreaId = getPlaceArea(new URL(window.location.href).searchParams.get("area"))?.id ?? null;
   let matchedCards = [...placeCards];
   let currentPage = 1;
 
-  const noResultCopy: Record<string, { title: string; body: string }> = {
-    monasteries: {
-      title: "Нема манастира у овом приказу",
-      body: "Тренутно нема манастира који одговарају изабраном филтеру и претрази.",
-    },
-    churches: {
-      title: "Нема храмова у овом приказу",
-      body: "Тренутно нема храмова који одговарају изабраном филтеру и претрази.",
-    },
-    "holy-places": {
-      title: "Нема светих мјеста у овом приказу",
-      body: "Тренутно нема светих мјеста која одговарају изабраном филтеру и претрази.",
-    },
-    routes: {
-      title: "Поклоничке руте су у припреми",
-      body: "Руте ће бити приказане након провјере свих укључених мјеста и практичних података.",
-    },
-    all: {
-      title: "Нема резултата",
-      body: "Покушајте са другим називом или изаберите другу категорију.",
-    },
-  };
+  const noResultCopy = runtimeCopy.noResults;
+  const formatCopy = (template: string, values: Record<string, string | number>) => Object.entries(values)
+    .reduce((value, [key, replacement]) => value.replaceAll(`{${key}}`, String(replacement)), template);
 
   const setCardPlacement = (card: HTMLElement, placement: "primary" | "pool") => {
     card.classList.add("editorial-place-card--sidebar");
@@ -124,14 +122,19 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
   };
 
   const updatePagination = (page: number, totalPages: number) => {
-    if (!pagination || !paginationPrev || !paginationNext || !paginationStatus) return;
-    pagination.hidden = totalPages === 0;
-    if (totalPages === 0) return;
-    paginationPrev.disabled = page <= 1;
-    paginationNext.disabled = page >= totalPages;
-    paginationPrev.setAttribute("aria-disabled", String(page <= 1));
-    paginationNext.setAttribute("aria-disabled", String(page >= totalPages));
-    paginationStatus.textContent = `${page} / ${totalPages}`;
+    paginations.forEach((pagination) => {
+      pagination.hidden = totalPages === 0;
+      if (totalPages === 0) return;
+      const previousButton = pagination.querySelector<HTMLButtonElement>("[data-homepage-pagination-prev]");
+      const nextButton = pagination.querySelector<HTMLButtonElement>("[data-homepage-pagination-next]");
+      const status = pagination.querySelector<HTMLElement>("[data-homepage-pagination-status]");
+      if (!previousButton || !nextButton || !status) return;
+      previousButton.disabled = page <= 1;
+      nextButton.disabled = page >= totalPages;
+      previousButton.setAttribute("aria-disabled", String(page <= 1));
+      nextButton.setAttribute("aria-disabled", String(page >= totalPages));
+      status.textContent = `${page} / ${totalPages}`;
+    });
   };
 
   const renderPreview = () => {
@@ -159,29 +162,24 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
   const syncAreaFilter = () => {
     const area = getPlaceArea(activeAreaId);
     if (areaFilter) areaFilter.hidden = !area;
-    if (areaFilterLabel) areaFilterLabel.textContent = area?.label ?? "";
+    if (areaFilterLabel) areaFilterLabel.textContent = area ? runtimeCopy.areas[area.id] ?? "" : "";
   };
 
   const updateResultStatus = (shown: number, matched: number) => {
     if (!resultStatus) return;
     if (matched === 0) {
-      resultStatus.textContent = "Нема записа за изабрани филтер.";
+      resultStatus.textContent = runtimeCopy.status.none;
       return;
     }
     const totalPages = pageCountForHomepagePreview(matched);
-    const pageCopy = `Страница ${currentPage} од ${totalPages}.`;
+    const pageCopy = formatCopy(runtimeCopy.status.page, { current: currentPage, total: totalPages });
     resultStatus.textContent = shown === 1 && matched === 1
-      ? `Приказан је један резултат. ${pageCopy}`
-      : `Приказана су ${shown} од ${matched} резултата. ${pageCopy}`;
+      ? formatCopy(runtimeCopy.status.one, { page: pageCopy })
+      : formatCopy(runtimeCopy.status.many, { shown, matched, page: pageCopy });
   };
 
   const applyExplorerState = (resetSelection = false) => {
     syncAreaFilter();
-    if (placeCards.length === 0) {
-      updatePagination(1, 0);
-      window.dispatchEvent(new CustomEvent("svetinje:place-visibility-change", { detail: { visibleIds: [] } }));
-      return;
-    }
     if (resetSelection) {
       currentPage = 1;
       placeCards.forEach((card) => { card.dataset.selected = "false"; });
@@ -221,17 +219,18 @@ const inventoryPlaces = places.slice(HOMEPAGE_PREVIEW_LIMIT);
     updateResultStatus(shown, matchedCards.length);
   };
 
-  paginationPrev?.addEventListener("click", () => {
-    if (currentPage <= 1) return;
-    currentPage -= 1;
-    renderCurrentPaginationPage();
-  });
-
-  paginationNext?.addEventListener("click", () => {
-    const totalPages = pageCountForHomepagePreview(matchedCards.length);
-    if (currentPage >= totalPages) return;
-    currentPage += 1;
-    renderCurrentPaginationPage();
+  paginations.forEach((pagination) => {
+    pagination.querySelector<HTMLButtonElement>("[data-homepage-pagination-prev]")?.addEventListener("click", () => {
+      if (currentPage <= 1) return;
+      currentPage -= 1;
+      renderCurrentPaginationPage();
+    });
+    pagination.querySelector<HTMLButtonElement>("[data-homepage-pagination-next]")?.addEventListener("click", () => {
+      const totalPages = pageCountForHomepagePreview(matchedCards.length);
+      if (currentPage >= totalPages) return;
+      currentPage += 1;
+      renderCurrentPaginationPage();
+    });
   });
 
   filterButtons.forEach((button) => {

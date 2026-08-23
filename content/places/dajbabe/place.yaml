@@ -17,6 +17,10 @@ ecclesiastical:
       source_ids:
         - mitropolija-muski-manastiri
       qualification: Припадност је наведена у извору Митрополије и чека црквену провјеру.
+  community_type:
+    value: male
+    verification:
+      status: requires-verification
 location:
   country_code:
     value: ME
@@ -70,7 +74,7 @@ approvals: []
 audit:
   created_at: 2026-08-04T10:32:37Z
   created_by: maxim
-  updated_at: 2026-08-15T19:17:59Z
+  updated_at: 2026-08-22T23:48:28Z
   updated_by: montenegro-cg
 patronal_feast:
   name: Успеније Пресвете Богородице - Велика Госпојина 28. августа

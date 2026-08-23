@@ -1,0 +1,21 @@
+---
+import { routeFor, type Locale } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+interface Props { locale?: Locale; metadataTitle?: string | undefined }
+const { locale = "sr", metadataTitle } = Astro.props;
+const copy = publicCopy[locale].pages.about;
+---
+
+<BaseLayout title={metadataTitle ?? copy.title} description={copy.description} canonicalPath={routeFor(locale, "about")} locale={locale}>
+  <header class="page-hero" data-testid="about-page" data-about-locale={locale}>
+    <div class="shell narrow">
+      <h1>{copy.title}</h1>
+      <div class="prose">
+        <p>{copy.paragraphs[0]}</p>
+        <p>{copy.paragraphs[1]} <a href="mailto:info@svetinje.me">info@svetinje.me</a>.</p>
+      </div>
+    </div>
+  </header>
+</BaseLayout>

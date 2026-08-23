@@ -11,12 +11,12 @@ alternate_names:
     context: Пуни назив манастира наведен у изворима Митрополије.
     source_ids:
       - mitropolija-muski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
   - name: Дајбабски манастир
     context: Краћи назив светиње.
     source_ids:
       - mitropolija-muski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Пећински манастир Успења Пресвете Богородице код Подгорице, који је крајем XIX вијека основао Преподобни Симеон Дајбабски.
 source_ids:
   - mitropolija-muski-manastiri
@@ -27,7 +27,7 @@ approvals: []
 audit:
   created_at: 2026-08-04T10:32:37Z
   created_by: maxim
-  updated_at: 2026-08-15T19:17:59Z
+  updated_at: 2026-08-22T23:48:28Z
   updated_by: montenegro-cg
 ---
 

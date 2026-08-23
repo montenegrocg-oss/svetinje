@@ -2,12 +2,16 @@
 import InterfaceIcon from "../InterfaceIcon.astro";
 import type { VisiblePlace } from "../../lib/content/publication";
 import PlaceMiniMap from "./PlaceMiniMap.astro";
+import type { Locale } from "../../i18n/config";
+import { publicCopy } from "../../i18n/public-copy";
 
 interface Props {
   place: VisiblePlace;
+  locale?: Locale;
 }
 
-const { place } = Astro.props;
+const { place, locale = "sr" } = Astro.props;
+const copy = publicCopy[locale].pages.placeDetail.practical;
 const location = [place.settlement, place.municipality].filter(Boolean).join(" · ");
 const hasCoordinates = place.latitude !== undefined && place.longitude !== undefined;
 const coordinateText = hasCoordinates ? `${place.latitude}, ${place.longitude}` : undefined;
@@ -17,19 +21,20 @@ const typeIcon = place.placeType === "monastery"
     ? "church" as const
     : "place" as const;
 const practicalRows = [
-  { label: "Локација", value: location, icon: "place" as const },
-  { label: "Адреса", value: place.address, icon: "info" as const },
-  { label: "Тип", value: place.typeLabel, icon: typeIcon },
-  { label: "Епархија", value: place.ecclesiasticalJurisdiction, icon: "church" as const },
-  { label: "Слава", value: place.patronalFeast, icon: "church" as const },
+  { label: copy.location, value: location, icon: "place" as const },
+  { label: copy.address, value: place.address, icon: "info" as const },
+  { label: copy.type, value: place.typeLabel, icon: typeIcon },
+  { label: copy.jurisdiction, value: place.ecclesiasticalJurisdiction, icon: "church" as const },
 ].filter((row) => Boolean(row.value));
+const patronalFeasts = place.patronalFeasts.filter((feast) => feast.trim());
+const feastLabel = patronalFeasts.length === 1 ? copy.feast : copy.feasts;
 const coordinateQualification = place.placeType === "cathedral"
-  ? "Координате означавају центар храмовног комплекса, а не тачан главни улаз."
-  : "Координате означавају центроид комплекса, а не тачан пјешачки улаз.";
+  ? copy.cathedralNote
+  : copy.placeNote;
 ---
 
-<aside class="place-practical-panel" aria-labelledby="place-practical-title" data-coordinate-copy-root>
-  <h2 id="place-practical-title">Практичне информације</h2>
+<aside class="place-practical-panel" aria-labelledby="place-practical-title" data-coordinate-copy-root data-copy-success={copy.copied} data-copy-failure={copy.copyFailed}>
+  <h2 id="place-practical-title">{copy.title}</h2>
   <dl class="place-practical-list">
     {practicalRows.map((row) => (
       <div>
@@ -37,12 +42,18 @@ const coordinateQualification = place.placeType === "cathedral"
         <dd>{row.value}</dd>
       </div>
     ))}
+    {patronalFeasts.length > 0 && (
+      <div>
+        <dt><InterfaceIcon name="church" size={17} />{feastLabel}</dt>
+        <dd><ul class="place-practical-feasts">{patronalFeasts.map((feast) => <li>{feast}</li>)}</ul></dd>
+      </div>
+    )}
     {coordinateText && (
       <div class="place-practical-list__coordinates">
-        <dt><InterfaceIcon name="target" size={17} />Координате</dt>
+        <dt><InterfaceIcon name="target" size={17} />{copy.coordinates}</dt>
         <dd>
           <span>{coordinateText}</span>
-          <button type="button" data-copy-coordinates={coordinateText} aria-label="Копирај координате"><span aria-hidden="true">⧉</span></button>
+          <button type="button" data-copy-coordinates={coordinateText} aria-label={copy.copy}><span aria-hidden="true">⧉</span></button>
         </dd>
       </div>
     )}
@@ -52,7 +63,7 @@ const coordinateQualification = place.placeType === "cathedral"
   <p class="place-practical-panel__copy-status" role="status" aria-live="polite" data-coordinate-copy-status></p>
 
   {hasCoordinates && (
-    <PlaceMiniMap latitude={place.latitude!} longitude={place.longitude!} name={place.name} placeType={place.placeType} />
+    <PlaceMiniMap latitude={place.latitude!} longitude={place.longitude!} name={place.name} placeType={place.placeType} locale={locale} />
   )}
 </aside>
 
@@ -67,9 +78,9 @@ const coordinateQualification = place.placeType === "cathedral"
         try {
           if (!navigator.clipboard) throw new Error("Clipboard unavailable");
           await navigator.clipboard.writeText(button.dataset.copyCoordinates ?? "");
-          if (status) status.textContent = "Координате су копиране.";
+          if (status) status.textContent = root.dataset.copySuccess ?? "";
         } catch {
-          if (status) status.textContent = "Координате није могуће копирати.";
+          if (status) status.textContent = root.dataset.copyFailure ?? "";
         }
       });
     });

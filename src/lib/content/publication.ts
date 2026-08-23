@@ -35,9 +35,15 @@ interface StringFact {
   verification?: Verification;
 }
 
+export type MonasticCommunity = "male" | "female";
+
 interface PlaceRecord {
   id: string;
   editorial_status: string;
+  audit: {
+    created_at: string;
+    updated_at: string;
+  };
   browse_area_id?: string;
   place_type?: {
     value?: string;
@@ -45,8 +51,10 @@ interface PlaceRecord {
   };
   ecclesiastical?: {
     jurisdiction?: StringFact;
+    community_type?: StringFact;
   };
   patronal_feast?: { name?: string };
+  patronal_feasts?: Array<{ name?: string }>;
   video?: { youtube_url?: string };
   location?: {
     municipality?: StringFact;
@@ -75,6 +83,7 @@ interface NarrativeRecord {
   summary?: string;
   alternate_names?: Array<{ name?: string }>;
   source_ids?: string[];
+  service_schedule?: string;
   approvals: Approval[];
   body: string;
 }
@@ -113,6 +122,7 @@ interface MediaRecord {
 
 export interface PublishablePlace {
   id: string;
+  createdAt: string;
   slug: string;
   name: string;
   summary: string;
@@ -121,7 +131,9 @@ export interface PublishablePlace {
   catalogueSearchText: string;
   mediaIds?: string[];
   narrativeBody: string;
-  patronalFeast?: string;
+  monasticCommunity?: MonasticCommunity;
+  patronalFeasts: string[];
+  serviceSchedule?: string;
   youtubeVideoId?: string;
 }
 
@@ -403,15 +415,20 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
     }
 
     const browseAreaId = isPlaceAreaId(place.browse_area_id) ? place.browse_area_id : undefined;
+    const monasticCommunity = monasticCommunityValue(place.ecclesiastical?.community_type?.value);
+    const serviceSchedule = optionalNonBlankText(narrative.service_schedule);
     const youtubeVideoId = parseYoutubeVideoId(place.video?.youtube_url);
     return [{
       id: place.id,
+      createdAt: place.audit.created_at,
       slug: narrative.slug,
       name: narrative.preferred_name,
       summary: narrative.summary,
       placeType: place.place_type.value,
       narrativeBody: narrative.body,
-      ...(typeof place.patronal_feast?.name === "string" ? { patronalFeast: place.patronal_feast.name } : {}),
+      patronalFeasts: patronalFeastNames(place),
+      ...(serviceSchedule ? { serviceSchedule } : {}),
+      ...(monasticCommunity ? { monasticCommunity } : {}),
       ...(youtubeVideoId ? { youtubeVideoId } : {}),
       ...(Array.isArray((place.relationships as { media_ids?: unknown } | undefined)?.media_ids)
         ? { mediaIds: (place.relationships as { media_ids: unknown[] }).media_ids.filter((value): value is string => typeof value === "string") }
@@ -470,6 +487,25 @@ function placeTypeLabel(placeType: string): string {
   if (placeType === "cathedral") return "Саборни храм";
   if (["church", "chapel"].includes(placeType)) return "Храм";
   return "Свето мјесто";
+}
+
+function monasticCommunityValue(value: unknown): MonasticCommunity | undefined {
+  return value === "male" || value === "female" ? value : undefined;
+}
+
+function patronalFeastNames(place: PlaceRecord): string[] {
+  const records = Array.isArray(place.patronal_feasts)
+    ? place.patronal_feasts
+    : place.patronal_feast
+      ? [place.patronal_feast]
+      : [];
+  return records.flatMap((record) => typeof record?.name === "string" && record.name.trim()
+    ? [record.name.trim()]
+    : []);
+}
+
+function optionalNonBlankText(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
 function assertPreviewField(condition: unknown, message: string): asserts condition {
@@ -547,7 +583,9 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
     const longitude = coordinates?.longitude;
     const coordinateAccuracy = coordinates?.accuracy;
     const ecclesiasticalJurisdiction = place.ecclesiastical?.jurisdiction?.value;
-    const patronalFeast = place.patronal_feast?.name;
+    const monasticCommunity = monasticCommunityValue(place.ecclesiastical?.community_type?.value);
+    const patronalFeasts = patronalFeastNames(place);
+    const serviceSchedule = optionalNonBlankText(narrative.service_schedule);
     const youtubeVideoId = parseYoutubeVideoId(place.video?.youtube_url);
     const mediaOrder = Array.isArray((place.relationships as { media_ids?: unknown } | undefined)?.media_ids)
       ? (place.relationships as { media_ids: unknown[] }).media_ids.filter((value): value is string => typeof value === "string")
@@ -555,6 +593,7 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
     const previewMedia = await previewMediaForPlace(root, place.id, preferredName, media, "editorial-preview", policy, mediaOrder);
     return {
       id: place.id,
+      createdAt: place.audit.created_at,
       slug,
       name: preferredName,
       summary,
@@ -576,7 +615,9 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       ...(longitude !== undefined ? { longitude } : {}),
       ...(coordinateAccuracy !== undefined ? { coordinateAccuracy } : {}),
       ...(ecclesiasticalJurisdiction !== undefined ? { ecclesiasticalJurisdiction } : {}),
-      ...(patronalFeast !== undefined ? { patronalFeast } : {}),
+      ...(monasticCommunity !== undefined ? { monasticCommunity } : {}),
+      patronalFeasts,
+      ...(serviceSchedule !== undefined ? { serviceSchedule } : {}),
       ...(youtubeVideoId !== undefined ? { youtubeVideoId } : {}),
       ...previewMedia,
       preview: true,

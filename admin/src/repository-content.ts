@@ -5,11 +5,33 @@ import { PLACE_AREAS } from "../../src/lib/place-areas.ts";
 import { AdminError, internalFailure } from "./errors.ts";
 import type { BranchState, GitRepository, TreeEntry } from "./types.ts";
 
+export type MonasticCommunity = "male" | "female";
+export type NarrativeLocale = "sr" | "ru" | "en";
+
+export interface AdminLocalizedNarrative {
+  locale: NarrativeLocale;
+  exists: boolean;
+  editorialStatus: string;
+  translationStatus: string;
+  sourceRevision?: string;
+  preferredName?: string;
+  shortName?: string;
+  slug?: string;
+  summary?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  patronalFeasts: string[];
+  serviceSchedule?: string;
+  alternateNames: unknown[];
+  narrativeBody: string;
+}
+
 export interface AdminPlace {
   id: string;
   preferredName: string;
   slug?: string;
   placeType?: string;
+  monasticCommunity?: MonasticCommunity;
   editorialStatus: string;
   browseAreaId?: string;
   municipality?: string;
@@ -31,7 +53,9 @@ export interface EditablePlace extends AdminPlace {
   coordinateAccuracy?: string;
   publicationSafety?: string;
   narrativeBody: string;
-  patronalFeast?: string;
+  narratives: Record<NarrativeLocale, AdminLocalizedNarrative>;
+  patronalFeasts: string[];
+  serviceSchedule?: string;
   youtubeUrl?: string;
   media: AdminMedia[];
 }
@@ -49,10 +73,12 @@ export interface AdminMedia {
 
 export interface CanonicalOptions {
   placeTypes: string[];
+  monasticCommunities: MonasticCommunity[];
   browseAreas: typeof PLACE_AREAS;
   coordinateAccuracy: string[];
   publicationSafety: string[];
   verificationStatuses: string[];
+  translationStatuses: string[];
 }
 
 export interface AdminRepositorySnapshot {
@@ -68,7 +94,9 @@ export interface EditablePlaceRecord {
   place: EditablePlace;
   rawPlace: Record<string, any>;
   rawNarrative: Record<string, any>;
+  rawNarratives: Partial<Record<NarrativeLocale, Record<string, any>>>;
   narrativeBody: string;
+  narrativeBodies: Partial<Record<NarrativeLocale, string>>;
   options: CanonicalOptions;
   branch: string;
   state: BranchState;
@@ -92,6 +120,22 @@ export interface PlaceDeletionRecord {
 
 const blob = (tree: TreeEntry[], path: string) => tree.find((entry) => entry.type === "blob" && entry.path === path);
 
+const patronalFeastNames = (place: Record<string, any>): string[] => {
+  const values = Array.isArray(place.patronal_feasts)
+    ? place.patronal_feasts
+    : place.patronal_feast
+      ? [place.patronal_feast]
+      : [];
+  return values.flatMap((entry: any) => typeof entry?.name === "string" && entry.name.trim()
+    ? [entry.name.trim()]
+    : []);
+};
+
+const localizedPatronalFeasts = (narrative: Record<string, any> | undefined): string[] =>
+  Array.isArray(narrative?.patronal_feasts)
+    ? narrative.patronal_feasts.flatMap((entry: unknown) => typeof entry === "string" && entry.trim() ? [entry.trim()] : [])
+    : [];
+
 export function parseNarrative(markdown: string): { frontMatter: Record<string, any>; body: string } {
   if (!markdown.startsWith("---\n")) throw new AdminError("internal_error", 500, "Narrative has no front matter");
   const end = markdown.indexOf("\n---\n", 4);
@@ -111,6 +155,11 @@ const factValue = (record: unknown): string | undefined => {
   if (!record || typeof record !== "object") return undefined;
   const value = (record as { value?: unknown }).value;
   return typeof value === "string" ? value : undefined;
+};
+
+const monasticCommunityValue = (record: unknown): MonasticCommunity | undefined => {
+  const value = factValue(record);
+  return value === "male" || value === "female" ? value : undefined;
 };
 
 async function readBlobContents(repository: GitRepository, entries: TreeEntry[]): Promise<Map<string, string>> {
@@ -143,10 +192,14 @@ function schemaEnums(placeSchema: any, _narrativeSchema: any, commonSchema: any)
   };
   return {
     placeTypes: stringArray(placeSchema.$defs?.placeType?.enum, "place types"),
+    monasticCommunities: stringArray(placeSchema.$defs?.monasticCommunity?.enum, "monastic communities") as MonasticCommunity[],
     browseAreas: PLACE_AREAS,
     coordinateAccuracy: stringArray(placeSchema.$defs?.coordinateAccuracy?.enum, "coordinate accuracy"),
     publicationSafety: stringArray(commonSchema.$defs?.publicationSafety?.enum, "publication safety"),
     verificationStatuses: stringArray(commonSchema.$defs?.verificationStatus?.enum, "verification statuses"),
+    translationStatuses: Array.isArray(commonSchema.$defs?.translationStatus?.enum)
+      ? stringArray(commonSchema.$defs.translationStatus.enum, "translation statuses")
+      : ["source", "missing", "draft", "in-review", "approved", "published", "outdated", "archived"],
   };
 }
 
@@ -206,6 +259,7 @@ export async function loadAdminRepository(repository: GitRepository, branch: str
     const narrative = narrativeEntry ? parseNarrative(contentFor(contents, narrativeEntry)).frontMatter : {};
     const sourceIds = new Set([...(Array.isArray(record.source_ids) ? record.source_ids : []), ...(Array.isArray(narrative.source_ids) ? narrative.source_ids : [])].filter((value): value is string => typeof value === "string"));
     const coordinates = record.location?.coordinates;
+    const monasticCommunity = monasticCommunityValue(record.ecclesiastical?.community_type);
     const municipality = factValue(record.location?.municipality);
     const settlement = factValue(record.location?.settlement);
     return {
@@ -213,6 +267,7 @@ export async function loadAdminRepository(repository: GitRepository, branch: str
       preferredName: typeof narrative.preferred_name === "string" ? narrative.preferred_name : id,
       ...(typeof narrative.slug === "string" ? { slug: narrative.slug } : {}),
       ...(typeof record.place_type?.value === "string" ? { placeType: record.place_type.value } : {}),
+      ...(monasticCommunity ? { monasticCommunity } : {}),
       editorialStatus: typeof record.editorial_status === "string" ? record.editorial_status : "unknown",
       ...(typeof record.browse_area_id === "string" ? { browseAreaId: record.browse_area_id } : {}),
       ...(municipality ? { municipality } : {}),
@@ -239,10 +294,29 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
   if (!placeEntry || !narrativeEntry) throw new AdminError("not_found", 404, "Place does not exist");
   const mediaEntries = tree.filter((entry) => entry.type === "blob" && /^content\/media\/[^/]+\.ya?ml$/.test(entry.path));
   const sourceEntries = tree.filter((entry) => entry.type === "blob" && /^content\/sources\/[^/]+\.ya?ml$/.test(entry.path));
-  const contents = await readBlobContents(repository, [placeEntry, narrativeEntry, ...mediaEntries, ...sourceEntries]);
+  const localizedEntries = (["ru", "en"] as const)
+    .map((locale) => blob(tree, `content/places/${id}/narratives/${locale}.md`))
+    .filter((entry): entry is TreeEntry => Boolean(entry));
+  const contents = await readBlobContents(repository, [placeEntry, narrativeEntry, ...localizedEntries, ...mediaEntries, ...sourceEntries]);
   const rawPlace = parseCatalogYaml(contentFor(contents, placeEntry));
   const parsedNarrative = parseNarrative(contentFor(contents, narrativeEntry));
   const rawNarrative = parsedNarrative.frontMatter;
+  const localized = Object.fromEntries(localizedEntries.map((entry) => {
+    const locale = entry.path.endsWith("/ru.md") ? "ru" : "en";
+    const parsed = parseNarrative(contentFor(contents, entry));
+    if (parsed.frontMatter.place_id !== id || parsed.frontMatter.locale !== locale) {
+      throw internalFailure("catalog_tree_processing_failed");
+    }
+    return [locale, parsed];
+  })) as Partial<Record<"ru" | "en", ReturnType<typeof parseNarrative>>>;
+  const rawNarratives: EditablePlaceRecord["rawNarratives"] = {
+    sr: rawNarrative,
+    ...Object.fromEntries(Object.entries(localized).map(([locale, parsed]) => [locale, parsed.frontMatter])),
+  };
+  const narrativeBodies: EditablePlaceRecord["narrativeBodies"] = {
+    sr: parsedNarrative.body,
+    ...Object.fromEntries(Object.entries(localized).map(([locale, parsed]) => [locale, parsed.body])),
+  };
   const coordinates = rawPlace.location?.coordinates;
   const placeSourceIds = Array.isArray(rawPlace.source_ids) ? rawPlace.source_ids.filter((value: unknown): value is string => typeof value === "string") : [];
   const narrativeSourceIds = Array.isArray(rawNarrative.source_ids) ? rawNarrative.source_ids.filter((value: unknown): value is string => typeof value === "string") : [];
@@ -283,12 +357,34 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
     }];
   });
   const jurisdiction = factValue(rawPlace.ecclesiastical?.jurisdiction);
+  const monasticCommunity = monasticCommunityValue(rawPlace.ecclesiastical?.community_type);
   const countryCode = factValue(rawPlace.location?.country_code);
   const municipality = factValue(rawPlace.location?.municipality);
   const settlement = factValue(rawPlace.location?.settlement);
   const postalAddress = factValue(rawPlace.location?.postal_address);
+  const localizedView = (locale: NarrativeLocale): AdminLocalizedNarrative => {
+    const raw = rawNarratives[locale];
+    const body = narrativeBodies[locale] ?? "";
+    return {
+      locale,
+      exists: Boolean(raw),
+      editorialStatus: typeof raw?.editorial_status === "string" ? raw.editorial_status : "research",
+      translationStatus: typeof raw?.translation_status === "string" ? raw.translation_status : locale === "sr" ? "source" : "missing",
+      ...(typeof raw?.source_revision === "string" ? { sourceRevision: raw.source_revision } : {}),
+      ...(typeof raw?.preferred_name === "string" ? { preferredName: raw.preferred_name } : {}),
+      ...(typeof raw?.short_name === "string" ? { shortName: raw.short_name } : {}),
+      ...(typeof raw?.slug === "string" ? { slug: raw.slug } : {}),
+      ...(typeof raw?.summary === "string" ? { summary: raw.summary } : {}),
+      ...(typeof raw?.seo_title === "string" ? { seoTitle: raw.seo_title } : {}),
+      ...(typeof raw?.seo_description === "string" ? { seoDescription: raw.seo_description } : {}),
+      patronalFeasts: localizedPatronalFeasts(raw),
+      ...(typeof raw?.service_schedule === "string" && raw.service_schedule.trim() ? { serviceSchedule: raw.service_schedule.trim() } : {}),
+      alternateNames: Array.isArray(raw?.alternate_names) ? structuredClone(raw.alternate_names) : [],
+      narrativeBody: body.replaceAll("\r\n", "\n").replaceAll("\r", "\n").trimEnd(),
+    };
+  };
   return {
-    rawPlace, rawNarrative, rawMedia, narrativeBody: parsedNarrative.body, options, branch, state, schemas,
+    rawPlace, rawNarrative, rawNarratives, rawMedia, narrativeBody: parsedNarrative.body, narrativeBodies, options, branch, state, schemas,
     previewPlaceIds,
     knownSourceIds,
     repositoryPaths: new Set(tree.filter((entry) => entry.type === "blob").map((entry) => entry.path)),
@@ -301,6 +397,7 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
       editorialStatus: String(rawPlace.editorial_status ?? "unknown"),
       ...(typeof rawPlace.browse_area_id === "string" ? { browseAreaId: rawPlace.browse_area_id } : {}),
       ...(jurisdiction ? { jurisdiction } : {}),
+      ...(monasticCommunity ? { monasticCommunity } : {}),
       ...(countryCode ? { countryCode } : {}),
       ...(municipality ? { municipality } : {}),
       ...(settlement ? { settlement } : {}),
@@ -310,10 +407,12 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
       ...(typeof coordinates?.accuracy === "string" ? { coordinateAccuracy: coordinates.accuracy } : {}),
       ...(typeof coordinates?.publication_safety === "string" ? { publicationSafety: coordinates.publication_safety } : {}),
       ...(typeof rawNarrative.summary === "string" ? { summary: rawNarrative.summary } : {}),
-      ...(typeof rawPlace.patronal_feast?.name === "string" ? { patronalFeast: rawPlace.patronal_feast.name } : {}),
+      patronalFeasts: patronalFeastNames(rawPlace),
+      ...(typeof rawNarrative.service_schedule === "string" && rawNarrative.service_schedule.trim() ? { serviceSchedule: rawNarrative.service_schedule.trim() } : {}),
       ...(typeof rawPlace.video?.youtube_url === "string" ? { youtubeUrl: rawPlace.video.youtube_url } : {}),
       alternateNames,
       narrativeBody: parsedNarrative.body.replaceAll("\r\n", "\n").replaceAll("\r", "\n").trimEnd(),
+      narratives: { sr: localizedView("sr"), ru: localizedView("ru"), en: localizedView("en") },
       media,
       sourcesCount: new Set([...placeSourceIds, ...narrativeSourceIds]).size,
       mediaCount: media.length,

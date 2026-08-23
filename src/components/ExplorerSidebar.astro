@@ -1,51 +1,56 @@
 ---
 import EmptyCatalogueState from "./EmptyCatalogueState.astro";
 import FilterChips from "./FilterChips.astro";
+import HomepagePagination from "./HomepagePagination.astro";
 import InterfaceIcon from "./InterfaceIcon.astro";
 import PlaceCard from "./PlaceCard.astro";
 import { pageCountForHomepagePreview } from "../lib/explorer-preview";
 import type { VisiblePlace } from "../lib/content/publication";
+import type { Locale } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
 
 interface Props {
   places?: VisiblePlace[];
   totalPlaces?: number;
+  locale?: Locale;
 }
 
-const { places = [], totalPlaces = places.length } = Astro.props;
+const { places = [], totalPlaces = places.length, locale = "sr" } = Astro.props;
+const copy = publicCopy[locale].homepage.explorer;
 const visiblePlaceCount = Math.min(places.length, totalPlaces);
 const totalPages = pageCountForHomepagePreview(totalPlaces);
-const initialPageStatus = totalPages > 0 ? `Страница 1 од ${totalPages}.` : "";
+const formatCopy = (template: string, values: Record<string, string | number>) => Object.entries(values)
+  .reduce((value, [key, replacement]) => value.replaceAll(`{${key}}`, String(replacement)), template);
+const initialPageStatus = totalPages > 0 ? formatCopy(copy.status.page, { current: 1, total: totalPages }) : "";
 const initialStatus = visiblePlaceCount === 1 && totalPlaces === 1
-  ? `Приказан је један резултат. ${initialPageStatus}`
+  ? formatCopy(copy.status.one, { page: initialPageStatus })
   : visiblePlaceCount === 0
-    ? "Нема записа за изабрани филтер."
-    : `Приказана су ${visiblePlaceCount} од ${totalPlaces} резултата. ${initialPageStatus}`;
+    ? copy.status.none
+    : formatCopy(copy.status.many, { shown: visiblePlaceCount, matched: totalPlaces, page: initialPageStatus });
 ---
 
-<aside class="explorer-sidebar" id="pretraga" aria-label="Претрага и филтри каталога" data-testid="explorer-sidebar">
+<aside class="explorer-sidebar" id="pretraga" aria-label={copy.aria} data-testid="explorer-sidebar">
   <form class="explorer-search" data-catalogue-search>
-    <label class="sr-only" for="holy-place-search">Претражите светиње</label>
+    <label class="sr-only" for="holy-place-search">{copy.searchLabel}</label>
     <span class="explorer-search__icon"><InterfaceIcon name="search" size={20} /></span>
     <input
       id="holy-place-search"
       name="q"
       type="search"
-      placeholder="Претражите светиње…"
+      placeholder={copy.searchPlaceholder}
       autocomplete="off"
       aria-describedby="catalogue-status"
     />
-    <button class="icon-button" type="button" disabled aria-label="Подешавања филтера — ускоро" title="Подешавања филтера су у припреми">
-      <InterfaceIcon name="filter" size={20} />
-    </button>
   </form>
 
-  <FilterChips group="catalogue" includeRoutes={false} />
+  <FilterChips group="catalogue" includeRoutes={false} locale={locale} />
   <div class="explorer-area-filter" data-explorer-area-filter hidden>
-    <span>Област: <strong data-explorer-area-label></strong></span>
-    <button type="button" data-clear-area-filter aria-label="Уклони филтер области">×</button>
+    <span>{copy.areaPrefix}: <strong data-explorer-area-label></strong></span>
+    <button type="button" data-clear-area-filter aria-label={copy.clearArea}>×</button>
   </div>
+  <HomepagePagination totalPages={totalPages} position="top" locale={locale} />
   {places.length === 0 ? (
-    <EmptyCatalogueState statusId="catalogue-status" />
+    <EmptyCatalogueState statusId="catalogue-status" locale={locale} />
   ) : (
     <div class="explorer-results">
       <p id="catalogue-status" class="sr-only" role="status" aria-live="polite">
@@ -53,19 +58,15 @@ const initialStatus = visiblePlaceCount === 1 && totalPlaces === 1
       </p>
       <div class="explorer-results__cards" data-explorer-primary-results>
         {places.map((place) => (
-          <PlaceCard place={place} variant="sidebar" initialExplorerPlacement="primary" />
+          <PlaceCard place={place} variant="sidebar" initialExplorerPlacement="primary" locale={locale} />
         ))}
       </div>
       <section class="explorer-no-results" data-explorer-no-results hidden role="status" aria-live="polite" aria-atomic="true">
-        <p class="eyebrow">Претрага каталога</p>
+        <p class="eyebrow">{copy.noResultsEyebrow}</p>
         <h2 data-no-results-title></h2>
         <p data-no-results-body></p>
       </section>
     </div>
   )}
-  <nav class="explorer-pagination" data-homepage-pagination aria-label="Странице прегледа светиња" hidden={totalPages === 0}>
-    <button type="button" data-homepage-pagination-prev aria-label="Претходна страница" disabled aria-disabled="true">←</button>
-    <span data-homepage-pagination-status aria-live="polite">1 / {totalPages || 1}</span>
-    <button type="button" data-homepage-pagination-next aria-label="Сљедећа страница" disabled={totalPages <= 1} aria-disabled={totalPages <= 1 ? "true" : "false"}>→</button>
-  </nav>
+  <HomepagePagination totalPages={totalPages} position="bottom" locale={locale} />
 </aside>

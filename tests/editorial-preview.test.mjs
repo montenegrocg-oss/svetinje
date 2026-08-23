@@ -144,9 +144,10 @@ test("editorial preview accepts canonical place and narrative records without so
   assert.ok(visible.some(({ id }) => id === "podmaine"));
 });
 
-test("editorial preview exposes optional canonical video and feast only when present", async (t) => {
+test("editorial preview normalizes legacy and plural feasts and exposes an optional service schedule", async (t) => {
   const root = await previewProject(t);
   const placeFile = path.join(root, "content", "places", "podmaine", "place.yaml");
+  const narrativeFile = path.join(root, "content", "places", "podmaine", "narratives", "sr.md");
   const place = parse(await readFile(placeFile, "utf8"));
   place.patronal_feast = { name: "Тестна слава" };
   place.video = { youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" };
@@ -154,15 +155,30 @@ test("editorial preview exposes optional canonical video and feast only when pre
 
   const visible = await loadEditorialPreviewPlaces(root);
   const podmaine = visible.find(({ id }) => id === "podmaine");
-  assert.equal(podmaine?.patronalFeast, "Тестна слава");
+  assert.deepEqual(podmaine?.patronalFeasts, ["Тестна слава"]);
   assert.equal(podmaine?.youtubeVideoId, "dQw4w9WgXcQ");
 
   delete place.patronal_feast;
+  place.patronal_feasts = [{ name: "Прва слава" }, { name: "Друга слава" }];
   delete place.video;
   await writeFile(placeFile, stringify(place), "utf8");
+  const markdown = (await readFile(narrativeFile, "utf8")).replaceAll("\r\n", "\n");
+  const closing = markdown.indexOf("\n---\n", 4);
+  const frontMatter = parse(markdown.slice(4, closing));
+  frontMatter.service_schedule = "Недјељом у 9:00.\nВечерње у 18:00.";
+  await writeFile(narrativeFile, `---\n${stringify(frontMatter)}---\n${markdown.slice(closing + 5)}`, "utf8");
+  const plural = (await loadEditorialPreviewPlaces(root)).find(({ id }) => id === "podmaine");
+  assert.equal(plural?.youtubeVideoId, undefined);
+  assert.deepEqual(plural?.patronalFeasts, ["Прва слава", "Друга слава"]);
+  assert.equal(plural?.serviceSchedule, "Недјељом у 9:00.\nВечерње у 18:00.");
+
+  delete place.patronal_feasts;
+  await writeFile(placeFile, stringify(place), "utf8");
+  delete frontMatter.service_schedule;
+  await writeFile(narrativeFile, `---\n${stringify(frontMatter)}---\n${markdown.slice(closing + 5)}`, "utf8");
   const withoutOptionalData = (await loadEditorialPreviewPlaces(root)).find(({ id }) => id === "podmaine");
-  assert.equal(withoutOptionalData?.youtubeVideoId, undefined);
-  assert.equal(withoutOptionalData?.patronalFeast, undefined);
+  assert.deepEqual(withoutOptionalData?.patronalFeasts, []);
+  assert.equal(withoutOptionalData?.serviceSchedule, undefined);
 });
 
 test("editorial preview loads a research place without summary, sections, or narrative sources", async (t) => {
@@ -202,11 +218,11 @@ test("editorial preview loads a research place without summary, sections, or nar
   const [card, hero, detail] = await Promise.all([
     source("src/components/PlaceCard.astro"),
     source("src/components/place-detail/PlaceDetailHero.astro"),
-    source("src/pages/svetinje/[slug].astro"),
+    source("src/components/PlaceDetailPage.astro"),
   ]);
   assert.match(card, /\{place\.summary && <p class="editorial-place-card__summary">/);
   assert.match(hero, /\{place\.summary && <p>\{place\.summary\}<\/p>\}/);
-  assert.match(detail, /place\.narrativeBody\.trim\(\)[\s\S]*Општи подаци о светињи су у припреми\./);
+  assert.match(detail, /place\.narrativeBody\.trim\(\)[\s\S]*copy\.about\.empty/);
   assert.doesNotMatch(detail, /historySections|Историјски подаци су у припреми\./);
 });
 
@@ -244,7 +260,7 @@ test("Podmaine content remains research-only, sourced, and public-safe", async (
   assert.match(place.location.coordinates.verification.qualification, /не означавају тачан пјешачки улаз/);
   assert.equal(osm.url, "https://www.openstreetmap.org/way/161886544");
   assert.equal(osm.source_type, "other-approved");
-  assert.match(narrative, /summary: Манастир Подмаине је православни манастир/);
+  assert.match(narrative, /^summary:\s+\S.+$/m);
   assert.equal(policy.public_publication_locked, true);
 });
 
@@ -291,6 +307,7 @@ test("Savina remains a sourced editorial-preview monastery", async () => {
   assert.equal(place.id, "manastir-savina");
   assert.equal(place.editorial_status, "research");
   assert.equal(place.place_type.value, "monastery");
+  assert.equal(preview.find((candidate) => candidate.id === place.id)?.monasticCommunity, "male");
   assert.ok(place.source_ids.includes(osm.id));
   assert.equal(osm.url, "https://www.openstreetmap.org/way/147257044");
   assert.equal(osm.source_type, "other-approved");
@@ -431,6 +448,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
     mapCanvas,
     explorer,
     card,
+    detailRoute,
     detail,
     detailHero,
     detailGallery,
@@ -438,23 +456,26 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
     practicalPanel,
     miniMap,
     relatedShelf,
+    relatedModel,
     baseLayout,
     metadata,
     styles,
     previewWorkflow,
     productionWorkflow,
   ] = await Promise.all([
-    source("src/pages/index.astro"),
+    source("src/components/HomePage.astro"),
     source("src/components/MapCanvas.astro"),
     source("src/components/MapExplorer.astro"),
     source("src/components/PlaceCard.astro"),
     source("src/pages/svetinje/[slug].astro"),
+    source("src/components/PlaceDetailPage.astro"),
     source("src/components/place-detail/PlaceDetailHero.astro"),
     source("src/components/place-detail/PlaceDetailGallery.astro"),
     source("src/components/place-detail/PlaceNarrativeArticle.astro"),
     source("src/components/place-detail/PlacePracticalPanel.astro"),
     source("src/components/place-detail/PlaceMiniMap.astro"),
     source("src/components/place-detail/PlaceRelatedShelf.astro"),
+    source("src/lib/related-places.ts"),
     source("src/layouts/BaseLayout.astro"),
     source("src/components/PageMetadata.astro"),
     source("src/styles/global.css"),
@@ -465,23 +486,24 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   const combined = [mapCanvas, explorer, card, detailSources].join("\n");
 
   assert.match(mapCanvas, /new maplibregl\.Marker/);
-  assert.match(mapCanvas, /aria-label.*отвори страницу/);
+  assert.match(mapCanvas, /data-open-page-label=\{publicCopy\[locale\]\.openPage\}/);
   assert.match(mapCanvas, /document\.createElement\("a"\)/);
   assert.match(homepage, /loadVisiblePlaces/);
   assert.match(homepage, /loadVisibleRoutes/);
-  assert.match(homepage, /<MapExplorer places=\{places\} routes=\{routes\} calendarDays=\{calendarDays\} scriptureCorpus=\{scriptureCorpus\} \/>/);
+  assert.match(homepage, /<MapExplorer places=\{places\} routes=\{routes\} calendarDays=\{calendarDays\} scriptureCorpus=\{scriptureCorpus\} locale=\{locale\} \/>/);
   assert.doesNotMatch(explorer, /loadVisiblePlaces/);
   assert.doesNotMatch(card, /Радни приказ|У радном приказу|Није у радном приказу/);
   assert.match(card, /place\.previewImageSrc/);
   assert.match(card, /class="editorial-place-card__image"/);
   assert.match(card, /alt=\{place\.previewImageAlt \?\? place\.name\}/);
-  assert.match(detail, /getStaticPaths/);
-  assert.match(detail, /loadVisiblePlaces/);
-  assert.match(detail, /coordinateDistance/);
-  assert.match(detail, /candidate\.id !== place\.id/);
-  assert.match(detail, /hasCoordinates: candidate\.latitude !== undefined/);
-  assert.match(detail, /getPlaceAboutLabel\(place\.placeType\)/);
-  assert.match(detail, /<PlaceNarrativeArticle body=\{place\.narrativeBody\} heading=\{aboutLabel\}/);
+  assert.match(detailRoute, /getStaticPaths/);
+  assert.match(detailRoute, /loadVisiblePlaces/);
+  assert.match(detailRoute, /relatedPlacesFor\(place, places, "sr"\)/);
+  assert.match(relatedModel, /coordinateDistance/);
+  assert.match(relatedModel, /candidate\.id !== place\.id/);
+  assert.match(relatedModel, /hasCoordinates: candidate\.latitude !== undefined/);
+  assert.match(detail, /const aboutLabel = place\.placeType === "monastery"/);
+  assert.match(detail, /<PlaceNarrativeArticle body=\{place\.narrativeBody\} heading=\{aboutLabel\} locale=\{locale\}/);
   assert.doesNotMatch(detail, /place-history-title|place-arrival-title|PlaceNarrativeSegments/);
   assert.match(detail, /<PlacePracticalPanel place=\{place\}/);
   assert.doesNotMatch(detail, /Уређивачки преглед|Траг извора|Извори и напомене|place-profile-sources/);
@@ -502,8 +524,8 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.doesNotMatch(narrativeArticle, /sourceIds|<sup\b|#source-/);
   assert.match(practicalPanel, /data-copy-coordinates/);
   assert.match(practicalPanel, /aria-live="polite"/);
-  assert.match(practicalPanel, /label: "Епархија"/);
-  assert.match(practicalPanel, /label: "Слава"/);
+  assert.match(practicalPanel, /label: copy\.jurisdiction/);
+  assert.match(practicalPanel, /copy\.feast : copy\.feasts/);
   assert.doesNotMatch(practicalPanel, /Црквена припадност|Тачност положаја|Статус записа|Напомена о подацима|practicalSections/);
   assert.match(miniMap, /import\.meta\.env\.PUBLIC_MAPTILER_KEY/);
   assert.match(miniMap, /019fc7d8-717c-701d-9ca5-a53d9438d3ce/);

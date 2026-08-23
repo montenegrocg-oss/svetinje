@@ -24,13 +24,20 @@ export function newsTypeLabel(type: NewsType): string {
   return NEWS_TYPE_LABELS[type];
 }
 
-const SERBIAN_MONTH_ABBREVIATIONS = [
-  "јан", "феб", "мар", "апр", "мај", "јун", "јул", "авг", "сеп", "окт", "нов", "дец",
-] as const;
-
-const SERBIAN_MONTH_NAMES = [
-  "јануар", "фебруар", "март", "април", "мај", "јун", "јул", "август", "септембар", "октобар", "новембар", "децембар",
-] as const;
+const MONTH_LABELS: Record<Locale, { abbreviations: readonly string[]; names: readonly string[] }> = {
+  sr: {
+    abbreviations: ["јан", "феб", "мар", "апр", "мај", "јун", "јул", "авг", "сеп", "окт", "нов", "дец"],
+    names: ["јануар", "фебруар", "март", "април", "мај", "јун", "јул", "август", "септембар", "октобар", "новембар", "децембар"],
+  },
+  ru: {
+    abbreviations: ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"],
+    names: ["январь", "февраль", "март", "апрель", "май", "июнь", "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"],
+  },
+  en: {
+    abbreviations: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    names: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+  },
+};
 
 export interface SerbianNewsDateParts {
   day: string;
@@ -39,15 +46,21 @@ export interface SerbianNewsDateParts {
   archiveLabel: string;
 }
 
-export function serbianNewsDateParts(timestamp: string): SerbianNewsDateParts {
+export function newsDateParts(timestamp: string, locale: Locale = "sr"): SerbianNewsDateParts {
   const date = new Date(timestamp);
   if (Number.isNaN(date.getTime())) throw new Error(`Cannot format invalid news timestamp ${timestamp}`);
   const month = date.getUTCMonth();
   const year = date.getUTCFullYear();
+  const labels = MONTH_LABELS[locale];
   return {
     day: String(date.getUTCDate()).padStart(2, "0"),
-    monthYear: `${SERBIAN_MONTH_ABBREVIATIONS[month]} ${year}.`,
+    monthYear: `${labels.abbreviations[month]} ${year}${locale === "en" ? "" : "."}`,
     archiveKey: `${year}-${String(month + 1).padStart(2, "0")}`,
-    archiveLabel: `${SERBIAN_MONTH_NAMES[month]} ${year}.`,
+    archiveLabel: `${labels.names[month]} ${year}${locale === "en" ? "" : "."}`,
   };
 }
+
+export function serbianNewsDateParts(timestamp: string): SerbianNewsDateParts {
+  return newsDateParts(timestamp, "sr");
+}
+import type { Locale } from "../i18n/config.ts";

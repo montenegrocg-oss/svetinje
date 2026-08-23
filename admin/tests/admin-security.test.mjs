@@ -9,7 +9,7 @@ import { editorialBranch, GitHubRepository } from "../src/github.ts";
 import { createPlace } from "../src/service.ts";
 import { handleRequest } from "../src/index.ts";
 
-const PLACE_SCHEMA = JSON.stringify({ $defs: { placeType: { enum: ["monastery", "church"] }, coordinateAccuracy: { enum: ["complex-centroid"] } } });
+const PLACE_SCHEMA = JSON.stringify({ $defs: { placeType: { enum: ["monastery", "church"] }, monasticCommunity: { enum: ["male", "female"] }, coordinateAccuracy: { enum: ["complex-centroid"] } } });
 const NARRATIVE_SCHEMA = JSON.stringify({ $defs: { sectionKey: { enum: ["introduction", "history"] } } });
 const COMMON_SCHEMA = JSON.stringify({ $defs: { publicationSafety: { enum: ["public", "review-required"] }, verificationStatus: { enum: ["verified", "requires-verification"] } } });
 const MEDIA_SCHEMA = JSON.stringify({ $id: "https://svetinje.me/schemas/media.schema.json" });

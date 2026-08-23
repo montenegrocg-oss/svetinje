@@ -11,7 +11,7 @@ alternate_names:
     context: Пуни назив према посвећењу храма.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Новији манастир Светог великомученика Димитрија на Боану Кадића, замишљен као мјесто молитве и помирења.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -19,7 +19,7 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T21:19:38Z
+  updated_at: 2026-08-22T18:13:09Z
   updated_by: montenegro-cg
 ---
 

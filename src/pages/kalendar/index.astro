@@ -1,36 +1,7 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import { loadCalendarDays, localizedCalendarDate } from "../../lib/calendar/content";
-import { podgoricaDateKey } from "../../lib/calendar/today-calendar";
+import CalendarIndexPage from "../../components/CalendarIndexPage.astro";
+import { loadCalendarDays } from "../../lib/calendar/content";
 
 const days = await loadCalendarDays();
-const today = podgoricaDateKey(new Date());
-const selected = today.startsWith("2026-") ? days.find((day) => day.date === today) : undefined;
 ---
-
-<BaseLayout title="Православни календар 2026 — Светиње" description="Православни календар и јеванђелска читања за 2026. годину." canonicalPath="/kalendar/">
-  <section class="calendar-index shell">
-    <p class="page-eyebrow">Православни календар</p>
-    <h1>Календар за 2026. годину</h1>
-    <p>Изаберите датум за спомене дана и литургијско јеванђелско читање.</p>
-    <form class="calendar-picker" action="/kalendar/" data-calendar-picker>
-      <label for="calendar-date">Датум</label>
-      <input id="calendar-date" name="date" type="date" min="2026-01-01" max="2026-12-31" value={selected?.date ?? "2026-01-01"} />
-      <button type="submit">Отвори дан</button>
-    </form>
-    {selected ? (
-      <a class="calendar-index__today" href={`/kalendar/${selected.date}/`}>{localizedCalendarDate(selected.date, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}: {selected.title}</a>
-    ) : (
-      <p class="calendar-index__pending">Календар за {today.slice(0, 4)}. годину је у припреми.</p>
-    )}
-  </section>
-</BaseLayout>
-
-<script>
-  const picker = document.querySelector<HTMLFormElement>("[data-calendar-picker]");
-  picker?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const input = picker.querySelector<HTMLInputElement>('input[type="date"]');
-    if (input?.value) window.location.href = `/kalendar/${input.value}/`;
-  });
-</script>
+<CalendarIndexPage days={days} locale="sr" metadataTitle="Православни календар 2026 — Светиње" metadataDescription="Православни календар и јеванђелска читања за 2026. годину." />

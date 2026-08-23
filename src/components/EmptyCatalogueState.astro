@@ -1,17 +1,22 @@
 ---
 interface Props {
   statusId: string;
+  locale?: import("../i18n/config").Locale;
 }
 
-const { statusId } = Astro.props;
+import { routeFor } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
+const { statusId, locale = "sr" } = Astro.props;
+const copy = publicCopy[locale].homepage.explorer.empty;
+const policyLink = locale === "sr" ? routeFor(locale, "sources") : routeFor(locale, "about");
 ---
 
 <div class="catalogue-empty" id={statusId} role="status" aria-live="polite">
   <div class="catalogue-empty__message">
-    <span class="empty-seal" aria-hidden="true">С</span>
+    <span class="empty-seal" aria-hidden="true">{copy.seal}</span>
     <div>
-      <h2>Каталог светиња је у припреми.</h2>
-      <p>Провјерени записи ће се појавити овдје након завршене стручне и језичке провјере.</p>
+      <h2>{copy.title}</h2>
+      <p>{copy.body}</p>
     </div>
   </div>
 
@@ -27,8 +32,8 @@ const { statusId } = Astro.props;
     ))}
   </div>
 
-  <a class="panel-link" href="/izvori/">
-    Како садржај постаје јаван
+  <a class="panel-link" href={policyLink}>
+    {copy.link}
     <span aria-hidden="true">→</span>
   </a>
 </div>

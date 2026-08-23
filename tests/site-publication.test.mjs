@@ -64,8 +64,10 @@ test("a reviewed published place can be selected without a source registry", asy
     await writeFile(path.join(root, "content", "places", "neutral-place", "place.yaml"), stringify({
       id: "neutral-place",
       editorial_status: "published",
-      place_type: { value: "church", verification: { status: "verified" } },
+      place_type: { value: "monastery", verification: { status: "verified" } },
+      ecclesiastical: { community_type: { value: "male", verification: { status: "verified" } } },
       relationships: {},
+      audit: { created_at: "2026-08-04T00:00:00Z", updated_at: "2026-08-22T00:00:00Z" },
       approvals: [approval("factual"), approval("ecclesiastical"), approval("publishing")],
     }), "utf8");
     const narrative = {
@@ -78,7 +80,9 @@ test("a reviewed published place can be selected without a source registry", asy
       public_publication_locked: false,
       role_assignments: { publishing: ["reviewer"], factual: ["reviewer"], ecclesiastical: ["reviewer"], "sr-language": ["reviewer"] },
     }), "utf8");
-    assert.deepEqual((await loadPublishablePlaces(root)).map(({ id }) => id), ["neutral-place"]);
+    const places = await loadPublishablePlaces(root);
+    assert.deepEqual(places.map(({ id }) => id), ["neutral-place"]);
+    assert.equal(places[0].monasticCommunity, "male");
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -88,6 +92,7 @@ test("the map-first homepage contains no research dossier or fictional sacred-pl
   const { readFile } = await import("node:fs/promises");
   const files = [
     "src/pages/index.astro",
+    "src/components/HomePage.astro",
     "src/components/MapExplorer.astro",
     "src/components/MapCanvas.astro",
     "src/components/ExplorerSidebar.astro",
@@ -98,10 +103,11 @@ test("the map-first homepage contains no research dossier or fictional sacred-pl
   const homepageSource = (await Promise.all(
     files.map((file) => readFile(path.join(PROJECT_ROOT, file), "utf8")),
   )).join("\n");
+  const copySource = await readFile(path.join(PROJECT_ROOT, "src/i18n/public-copy.ts"), "utf8");
 
-  assert.match(homepageSource, /Православна Црна Гора/);
-  assert.match(homepageSource, /Каталог светиња је у припреми/);
-  assert.match(homepageSource, /Поклоничке руте су у припреми/);
+  assert.match(copySource, /Православна Црна Гора/);
+  assert.match(copySource, /Каталог светиња је у припреми/);
+  assert.match(copySource, /Поклоничке руте су у припреми/);
   assert.doesNotMatch(
     homepageSource,
     /Подмаине|podmaine|Острог|Морача|Савина|Пива|Цетињски манастир|Манастир [А-Ш]/iu,

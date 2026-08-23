@@ -1,0 +1,41 @@
+schema_version: 1
+id: crkva-svete-nedjelje
+editorial_status: research
+place_type:
+  value: church
+  verification:
+    status: requires-verification
+relationships:
+  media_ids:
+    - photo-crkva-svete-nedjelje-c647a4247a96
+approvals: []
+audit:
+  created_at: 2026-08-21T13:31:33.584Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-21T13:38:31Z
+  updated_by: montenegro-cg
+browse_area_id: boka-kotorska
+ecclesiastical:
+  jurisdiction:
+    value: Митрополија црногорско-приморска
+    verification:
+      status: requires-verification
+patronal_feast:
+  name: Света великомученица Недјеља 10. август
+location:
+  municipality:
+    value: Котор
+    verification:
+      status: requires-verification
+  settlement:
+    value: Горњи Грбаљ
+    verification:
+      status: requires-verification
+  coordinates:
+    latitude: 42.3573153
+    longitude: 18.7670041
+    accuracy: complex-centroid
+    publication_safety: public
+    crs: EPSG:4326
+    verification:
+      status: requires-verification

@@ -77,7 +77,7 @@ test("GPX parser fails closed on malformed coordinates and insufficient tracks",
 
 test("pilot route public composition remains loader-driven and key-safe", async () => {
   const [home, map, routePage, header, css] = await Promise.all([
-    readFile(new URL("../src/pages/index.astro", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/HomePage.astro", import.meta.url), "utf8"),
     readFile(new URL("../src/components/routes/RouteMap.astro", import.meta.url), "utf8"),
     readFile(new URL("../src/pages/rute/[slug]/index.astro", import.meta.url), "utf8"),
     readFile(new URL("../src/components/Header.astro", import.meta.url), "utf8"),
@@ -85,7 +85,7 @@ test("pilot route public composition remains loader-driven and key-safe", async 
   ]);
   assert.match(home, /loadVisibleRoutes/);
   assert.match(home, /<MapExplorer places=\{places\} routes=\{routes\}/);
-  assert.match(header, /href: "\/rute\/", label: "Руте"/);
+  assert.match(header, /href: routeFor\(locale, "routes"\), label: copy\.nav\.routes/);
   assert.match(map, /fetch\(data\.trackUrl/);
   assert.match(map, /new ResizeObserver/);
   assert.match(map, /map\.resize\(\)/);

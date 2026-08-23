@@ -5,12 +5,12 @@ locale: sr
 editorial_status: research
 translation_status: source
 slug: manastir-svetog-sergija-radonjeskog
-preferred_name: Манастир светог Сергија Радоњешког
+preferred_name: Манастир Светог Сергија Радоњешког
 approvals: []
 audit:
   created_at: 2026-08-15T09:33:37.683Z
   created_by: montenegro-cg
-  updated_at: 2026-08-17T12:37:08Z
+  updated_at: 2026-08-21T10:06:06Z
   updated_by: montenegro-cg
 summary: Манастир Светог Сергија Радоњешког налази се у селу Микулући, подно планине Румије, недалеко од Бара. Посвећен је Светом Сергију Радоњешком, једном од најпоштованијих светитеља руског народа и оснивачу чувене обитељи посвећене Пресветој Тројици.
 ---

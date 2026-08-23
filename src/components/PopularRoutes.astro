@@ -2,10 +2,13 @@
 import InterfaceIcon from "./InterfaceIcon.astro";
 import RouteCard from "./routes/RouteCard.astro";
 import type { VisibleRoute } from "../lib/content/routes";
+import { routeFor, type Locale } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
 
-interface Props { routes: VisibleRoute[] }
-const { routes } = Astro.props;
-const featuredRoutes = routes.filter((route) => route.featured.enabled).sort((left, right) => left.featured.order - right.featured.order).slice(0, 3);
+interface Props { routes: VisibleRoute[]; locale?: Locale }
+const { routes, locale = "sr" } = Astro.props;
+const copy = publicCopy[locale].homepage.routes;
+const featuredRoutes = locale === "sr" ? routes.filter((route) => route.featured.enabled).sort((left, right) => left.featured.order - right.featured.order).slice(0, 3) : [];
 ---
 
 <section
@@ -16,17 +19,17 @@ const featuredRoutes = routes.filter((route) => route.featured.enabled).sort((le
 >
   <div class="popular-routes__inner">
     <header class="shelf-heading">
-      <h2 id="routes-title">Популарне руте</h2>
-      {featuredRoutes.length ? <a href="/rute/">Прикажи све</a> : <span aria-disabled="true">Прикажи све</span>}
+      <h2 id="routes-title">{copy.title}</h2>
+      {featuredRoutes.length ? <a href={routeFor(locale, "routes")}>{copy.showAll}</a> : <span aria-disabled="true">{copy.showAll}</span>}
     </header>
     {featuredRoutes.length ? <div class="popular-routes__cards">{featuredRoutes.map((route) => <RouteCard route={route} compact />)}</div> : <article class="route-placeholder">
       <div class="route-placeholder__visual" aria-hidden="true">
         <span></span><i></i><i></i><i></i>
       </div>
       <div>
-        <p class="placeholder-label">У припреми</p>
-        <h3>Поклоничке руте су у припреми.</h3>
-        <p>Путање ће бити приказане тек након провјере свих укључених мјеста и практичних података.</p>
+        <p class="placeholder-label">{copy.preparingLabel}</p>
+        <h3>{copy.preparingTitle}</h3>
+        <p>{copy.preparingBody}</p>
       </div>
       <InterfaceIcon name="route" size={22} />
     </article>}

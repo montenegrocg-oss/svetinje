@@ -1,0 +1,40 @@
+---
+import { routeFor, type Locale } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
+import type { VisibleRoute } from "../lib/content/routes";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import RouteCard from "./routes/RouteCard.astro";
+
+interface Props { routes: VisibleRoute[]; locale?: Locale; metadataDescription?: string | undefined }
+const { routes, locale = "sr", metadataDescription } = Astro.props;
+const copy = publicCopy[locale].pages.routes;
+const filters = [
+  ["all", copy.filters.all],
+  ["easy", copy.filters.easy],
+  ["moderate", copy.filters.moderate],
+  ["demanding", copy.filters.demanding],
+] as const;
+---
+
+<BaseLayout title={copy.title} description={metadataDescription ?? copy.description} canonicalPath={routeFor(locale, "routes")} locale={locale}>
+  <div data-testid="route-catalogue-page" data-route-catalogue-locale={locale}>
+    <header class="route-catalogue-hero"><div class="shell"><p class="section-eyebrow">{copy.eyebrow}</p><h1>{copy.title}</h1><p>{copy.description}</p></div></header>
+    <section class="shell route-catalogue" aria-labelledby="route-list-title">
+      <div class="route-filters" aria-label={copy.filtersAria}>
+        {filters.map(([id, label]) => <button type="button" data-route-filter={id} aria-pressed={id === "all"}>{label}</button>)}
+      </div>
+      <h2 id="route-list-title" class="visually-hidden">{copy.list}</h2>
+      {routes.length ? <div class="route-catalogue__grid">{routes.map((route) => <div data-route-difficulty={route.difficulty}><RouteCard route={route} /></div>)}</div> : <p class="route-empty">{copy.empty}</p>}
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-route-filter]")];
+  const cards = [...document.querySelectorAll<HTMLElement>("[data-route-difficulty]")];
+  buttons.forEach((button) => button.addEventListener("click", () => {
+    const filter = button.dataset.routeFilter ?? "all";
+    buttons.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+    cards.forEach((card) => { card.hidden = filter !== "all" && card.dataset.routeDifficulty !== filter; });
+  }));
+</script>

@@ -6,7 +6,7 @@ editorial_status: research
 translation_status: source
 slug: manastir-podmaine
 preferred_name: Манастир Подмаине
-summary: Манастир Подмаине је православни манастир Митрополије црногорско-приморске у Будви, познат и под називима Маине и Подострог.
+summary: Према народном предању, манастир потиче из времена Црнојевића. Најстарији поуздани податак везан за њега потиче из 1630. године, када је јеромонах Висарион из Цетињског манастира обновио живопис малог храма Ваведења Пресвете Богородице. Архитектонске особине овог храма упућују на могућност да је настао још у XV вијеку.
 source_ids:
   - mitropolija-muski-manastiri
   - spc-eparhije-i-crkvene-opstine
@@ -16,7 +16,7 @@ approvals: []
 audit:
   created_at: 2026-08-03T11:46:30Z
   created_by: maxim
-  updated_at: 2026-08-17T09:52:03Z
+  updated_at: 2026-08-21T10:04:54Z
   updated_by: montenegro-cg
 ---
 

@@ -1,14 +1,17 @@
 ---
 import type { VisiblePlace } from "../lib/content/publication";
 import { categoryForPlaceType } from "../lib/place-filters";
+import { placeDetailRoot, type Locale } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
 
 interface Props {
   place: VisiblePlace;
   variant?: "sidebar" | "catalogue" | "featured";
   initialExplorerPlacement?: "primary" | "pool";
+  locale?: Locale;
 }
 
-const { place, variant = "catalogue", initialExplorerPlacement } = Astro.props;
+const { place, variant = "catalogue", initialExplorerPlacement, locale = "sr" } = Astro.props;
 const category = categoryForPlaceType(place.placeType);
 const location = [place.municipality, place.settlement].filter(Boolean).join(" · ");
 ---
@@ -45,7 +48,7 @@ const location = [place.municipality, place.settlement].filter(Boolean).join(" �
   <h2>{place.name}</h2>
   {location && <p class="editorial-place-card__location">{location}</p>}
   {place.summary && <p class="editorial-place-card__summary">{place.summary}</p>}
-  <a class="editorial-place-card__link" href={`/svetinje/${place.slug}/`}>
-    Отвори страницу <span aria-hidden="true">→</span>
+  <a class="editorial-place-card__link" href={`${placeDetailRoot[locale]}${place.slug}/`}>
+    {publicCopy[locale].openPage} <span aria-hidden="true">→</span>
   </a>
 </article>

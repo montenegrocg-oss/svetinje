@@ -11,7 +11,7 @@ alternate_names:
     context: Пуни назив према посвећењу главног храма.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Манастир Светог Георгија између Рисна и Пераста, чија традиција оснивање везује за доба Стефана Немање.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -19,7 +19,7 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T20:55:58Z
+  updated_at: 2026-08-22T18:11:05Z
   updated_by: montenegro-cg
 ---
 

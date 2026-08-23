@@ -11,12 +11,12 @@ alternate_names:
     context: Пуни назив према главном храму.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
   - name: Манастир Светог Митра
     context: Народни назив светиње.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
 summary: Обновљени паштровски манастир у селу Војнићи, са храмовима Светог Димитрија и Светог Николе.
 source_ids:
   - mitropolija-zenski-manastiri
@@ -24,7 +24,7 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T21:25:19Z
+  updated_at: 2026-08-22T18:13:36Z
   updated_by: montenegro-cg
 ---
 

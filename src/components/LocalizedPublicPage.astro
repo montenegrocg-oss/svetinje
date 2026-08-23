@@ -1,0 +1,26 @@
+---
+import type { Locale } from "../i18n/config";
+import { loadLocalizedVisiblePlaces } from "../lib/content/localized-publication";
+import { loadVisibleNews } from "../lib/content/news";
+import AboutPage from "./AboutPage.astro";
+import CalendarIndexPage from "./CalendarIndexPage.astro";
+import CataloguePage from "./CataloguePage.astro";
+import MapPage from "./MapPage.astro";
+import NewsArchivePage from "./NewsArchivePage.astro";
+import RouteCataloguePage from "./RouteCataloguePage.astro";
+
+type PageKind = "monasteries" | "maleMonasteries" | "femaleMonasteries" | "churches" | "map" | "routes" | "calendar" | "news" | "about";
+interface Props { locale: Exclude<Locale, "sr">; page: PageKind }
+const { locale, page } = Astro.props;
+const places = await loadLocalizedVisiblePlaces(locale);
+const category = page === "monasteries" || page === "maleMonasteries" || page === "femaleMonasteries" ? "monasteries" : page === "churches" ? "churches" : undefined;
+const community = page === "maleMonasteries" ? "male" : page === "femaleMonasteries" ? "female" : undefined;
+const news = page === "news" ? await loadVisibleNews(process.cwd(), { locale, visiblePlaces: places }) : [];
+---
+
+{category && <CataloguePage locale={locale} page={page as "monasteries" | "maleMonasteries" | "femaleMonasteries" | "churches"} category={category} monasticCommunity={community} places={places} />}
+{page === "map" && <MapPage locale={locale} places={places} />}
+{page === "routes" && <RouteCataloguePage locale={locale} routes={[]} />}
+{page === "calendar" && <CalendarIndexPage locale={locale} days={[]} />}
+{page === "news" && <NewsArchivePage locale={locale} items={news} />}
+{page === "about" && <AboutPage locale={locale} />}

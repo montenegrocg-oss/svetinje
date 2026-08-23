@@ -1,49 +1,50 @@
 ---
 import InterfaceIcon from "./InterfaceIcon.astro";
+import { publicCopy } from "../i18n/public-copy";
 
 interface Props {
   variant?: "homepage" | "map-page";
+  locale?: import("../i18n/config").Locale;
 }
 
-const { variant = "homepage" } = Astro.props;
+const { variant = "homepage", locale = "sr" } = Astro.props;
+const copy = publicCopy[locale].homepage;
+const c = copy.mapControls;
 ---
 
 {variant === "homepage" && (
-  <div class="map-actions" aria-label="Брзи избор на карти" data-filter-group="map">
-    <button type="button" class="map-action" data-filter="all" aria-pressed="true"><InterfaceIcon name="grid" size={18} /><span>Све</span></button>
-    <button type="button" class="map-action" data-filter="monasteries" aria-pressed="false"><InterfaceIcon name="monastery" size={18} /><span>Манастири</span></button>
-    <button type="button" class="map-action" data-filter="churches" aria-pressed="false"><InterfaceIcon name="church" size={18} /><span>Цркве</span></button>
-    <button type="button" class="map-action map-action--mobile-hidden" data-filter="holy-places" aria-pressed="false"><InterfaceIcon name="place" size={18} /><span>Света мјеста</span></button>
-    <button type="button" class="map-action map-action--wide map-action--mobile-hidden" data-filter="routes" aria-pressed="false"><InterfaceIcon name="route" size={18} /><span>Поклоничке руте</span></button>
-    <button type="button" class="map-action map-action--primary map-action--mobile-hidden" data-notice-trigger="route-notice" aria-controls="route-notice"><InterfaceIcon name="route" size={18} /><span>Изгради руту</span></button>
+  <div class="map-actions" aria-label={c.quickAria} data-filter-group="map">
+    <button type="button" class="map-action" data-filter="all" aria-pressed="true"><InterfaceIcon name="grid" size={18} /><span>{copy.filters.all}</span></button>
+    <button type="button" class="map-action" data-filter="monasteries" aria-pressed="false"><InterfaceIcon name="monastery" size={18} /><span>{copy.filters.monasteries}</span></button>
+    <button type="button" class="map-action" data-filter="churches" aria-pressed="false"><InterfaceIcon name="church" size={18} /><span>{copy.filters.churches}</span></button>
+    <button type="button" class="map-action map-action--wide map-action--mobile-hidden" data-filter="routes" aria-pressed="false"><InterfaceIcon name="route" size={18} /><span>{copy.filters.routes}</span></button>
+    <button type="button" class="map-action map-action--primary map-action--mobile-hidden" data-notice-trigger="route-notice" aria-controls="route-notice"><InterfaceIcon name="route" size={18} /><span>{c.builder}</span></button>
   </div>
 )}
 
-<div class:list={["map-tool-stack", { "map-tool-stack--page": variant === "map-page" }]} aria-label="Контроле карте">
+<div class:list={["map-tool-stack", { "map-tool-stack--page": variant === "map-page" }]} aria-label={c.controls}>
   <details class="map-popover map-layers">
-    <summary><InterfaceIcon name="layers" size={21} /><span>Слојеви</span></summary>
+    <summary><InterfaceIcon name="layers" size={21} /><span>{c.layers}</span></summary>
     <div class="map-popover__panel">
-      <strong>Слојеви карте</strong>
-      <p>Основни Outdoor приказ је активан. Избор додатних картографских слојева биће доступан у каснијој фази.</p>
+      <strong>{c.layersTitle}</strong><p>{c.layersBody}</p>
     </div>
   </details>
-  <div class="map-zoom" aria-label="Зумирање карте">
-    <button type="button" data-map-zoom-in disabled aria-label="Увећај карту"><InterfaceIcon name="plus" size={21} /></button>
-    <button type="button" data-map-zoom-out disabled aria-label="Умањи карту"><InterfaceIcon name="minus" size={21} /></button>
+  <div class="map-zoom" aria-label={c.zoom}>
+    <button type="button" data-map-zoom-in disabled aria-label={c.zoomIn}><InterfaceIcon name="plus" size={21} /></button>
+    <button type="button" data-map-zoom-out disabled aria-label={c.zoomOut}><InterfaceIcon name="minus" size={21} /></button>
   </div>
-  <button class="map-target" type="button" data-map-reset disabled aria-label="Прикажи поново Црну Гору"><InterfaceIcon name="target" size={21} /></button>
+  <button class="map-target" type="button" data-map-reset disabled aria-label={c.reset}><InterfaceIcon name="target" size={21} /></button>
 </div>
 
 <details class:list={["map-popover", "map-help", { "map-help--page": variant === "map-page" }]}>
-  <summary><InterfaceIcon name="info" size={18} /><span>Како користити карту?</span></summary>
+  <summary><InterfaceIcon name="info" size={18} /><span>{c.help}</span></summary>
   <div class="map-popover__panel">
-    <strong>Интерактивна основна карта</strong>
-    <p>Карту можете помјерати и зумирати. Ознаке светиња и руте неће бити приказане док подаци не прођу уредничко одобрење.</p>
+    <strong>{c.helpTitle}</strong><p>{c.helpBody}</p>
   </div>
 </details>
 
 {variant === "homepage" && (
   <p class="map-notice" id="route-notice" role="status" tabindex="-1" hidden>
-    Функција планирања руте је у припреми.
+    {c.builderNotice}
   </p>
 )}

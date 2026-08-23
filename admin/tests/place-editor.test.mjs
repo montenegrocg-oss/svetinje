@@ -4,7 +4,7 @@ import test from "node:test";
 import { parse } from "yaml";
 import { updateCanonicalPlace } from "../src/place-editor.ts";
 import { loadEditablePlace, parseNarrative } from "../src/repository-content.ts";
-import { createPlace, updatePlace, updatePlacePreview } from "../src/service.ts";
+import { createPlace, updatePlace, updatePlaceNarrative, updatePlacePreview } from "../src/service.ts";
 import { editPlacePage } from "../src/ui.ts";
 
 const HEAD = "a".repeat(40);
@@ -21,12 +21,21 @@ place_type:
   value: monastery
   verification: { status: verified, source_ids: [source-one], reviewed_by: [maxim], reviewed_at: 2026-08-01 }
 ecclesiastical:
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
+    verification: { status: requires-verification, source_ids: [source-one] }
   jurisdiction:
     value: Existing jurisdiction
     verification: { status: verified, source_ids: [source-one], reviewed_by: [maxim], reviewed_at: 2026-08-01 }
   community_type:
-    value: brotherhood
-    verification: { status: requires-verification }
+    value: male
+    verification: { status: verified, source_ids: [source-one], reviewed_by: [maxim], reviewed_at: 2026-08-01, qualification: Existing classification }
+  dedication_ids:
+    value: [existing-dedication]
+    verification: { status: requires-verification, source_ids: [source-one] }
+  associated_entity_ids:
+    value: [existing-entity]
+    verification: { status: requires-verification, source_ids: [source-one] }
 location:
   country_code:
     value: ME
@@ -97,6 +106,41 @@ audit: { created_at: 2026-08-01T00:00:00Z, created_by: maxim, updated_at: 2026-0
 ---
 `;
 
+const RU_NARRATIVE = `---
+schema_version: 1
+place_id: existing-place
+locale: ru
+editorial_status: research
+translation_status: draft
+slug: existing-place-ru
+preferred_name: Синтетический объект
+summary: Синтетическое описание
+patronal_feasts: [Успение, Святитель Николай]
+service_schedule: |
+  По воскресеньям в 9:00.
+  Вечернее богослужение в 18:00.
+source_revision: ${HEAD}
+alternate_names:
+  - name: Сохранённое имя
+    context: Synthetic test metadata
+    verification_status: requires-verification
+approvals: []
+audit: { created_at: 2026-08-01T00:00:00Z, created_by: maxim, updated_at: 2026-08-01T00:00:00Z, updated_by: maxim }
+---
+
+Синтетический текст.
+`;
+
+const EN_NARRATIVE = RU_NARRATIVE
+  .replace("locale: ru", "locale: en")
+  .replace("slug: existing-place-ru", "slug: existing-place-en")
+  .replace("preferred_name: Синтетический объект", "preferred_name: Synthetic place")
+  .replace("summary: Синтетическое описание", "summary: Synthetic summary")
+  .replace("patronal_feasts: [Успение, Святитель Николай]", "patronal_feasts: [Dormition, Saint Nicholas]")
+  .replace("По воскресеньям в 9:00.", "Sundays at 9:00.")
+  .replace("Вечернее богослужение в 18:00.", "Evening service at 18:00.")
+  .replace("Синтетический текст.", "Synthetic body.");
+
 class Repository {
   committed;
   constructor() {
@@ -109,6 +153,20 @@ class Repository {
   ].map(([path, sha]) => ({ path, sha, type: "blob", mode: "100644" })); }
   async readBlob(sha) { return this.blobs[sha]; }
   async commitFilesAtomic(input) { this.committed = input; return { commitSha: "d".repeat(40), branch: input.branch }; }
+}
+
+class LocalizedRepository extends Repository {
+  constructor({ ru = true, en = true } = {}) {
+    super();
+    if (ru) this.blobs.ruNarrative = RU_NARRATIVE;
+    if (en) this.blobs.enNarrative = EN_NARRATIVE;
+  }
+  async readTree() {
+    const tree = await super.readTree();
+    if (this.blobs.ruNarrative) tree.push({ path: "content/places/existing-place/narratives/ru.md", sha: "ruNarrative", type: "blob", mode: "100644" });
+    if (this.blobs.enNarrative) tree.push({ path: "content/places/existing-place/narratives/en.md", sha: "enNarrative", type: "blob", mode: "100644" });
+    return tree;
+  }
 }
 
 class RoundTripRepository extends Repository {
@@ -185,9 +243,9 @@ const session = { subject: "user", email: "editor@example.com", actor: "editor-u
 const newPlaceBody = { preferredName: "Нови објекат", id: "novi-objekat", slug: "novi-objekat", placeType: "monastery", expectedHeadSha: HEAD };
 const body = (place) => ({
   expectedHeadSha: HEAD, preferredName: place.preferredName, shortName: place.shortName ?? "", slug: place.slug, placeType: place.placeType, browseAreaId: place.browseAreaId, summary: place.summary,
-  jurisdiction: place.jurisdiction ?? "", municipality: place.municipality ?? "", settlement: place.settlement ?? "",
+  monasticCommunity: place.monasticCommunity ?? "", jurisdiction: place.jurisdiction ?? "", municipality: place.municipality ?? "", settlement: place.settlement ?? "",
   latitude: place.latitude, longitude: place.longitude, alternateNames: place.alternateNames,
-  narrativeBody: place.narrativeBody, patronalFeast: place.patronalFeast ?? "", youtubeUrl: place.youtubeUrl ?? "",
+  narrativeBody: place.narrativeBody, patronalFeasts: place.patronalFeasts, serviceSchedule: place.serviceSchedule ?? "", youtubeUrl: place.youtubeUrl ?? "",
 });
 
 test("new place defaults to draft and immediate publication is safe", async () => {
@@ -218,9 +276,191 @@ test("GET editable model exposes one unified narrative body", async () => {
   assert.match(model.place.narrativeBody, /## Увод \{#introduction\}[\s\S]*## Историја \{#history\}/);
   assert.deepEqual(model.options.placeTypes.slice(0, 2), ["monastery", "church"]);
   assert.equal(model.options.placeTypes.includes("cathedral"), true);
+  assert.deepEqual(model.options.monasticCommunities, ["male", "female"]);
+  assert.equal(model.place.monasticCommunity, "male");
   assert.equal(model.place.inPreview, true);
   assert.equal("placeSourceIds" in model.place, false);
   assert.equal("sourceIds" in model.place.alternateNames[0], false);
+});
+
+test("legacy singular feast renders as one row and normalizes to plural on save", async () => {
+  const repository = new RoundTripRepository();
+  repository.blobs.place = PLACE.replace("location:\n", "patronal_feast:\n  name: Света Тројица\nlocation:\n");
+  const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  assert.deepEqual(loaded.place.patronalFeasts, ["Света Тројица"]);
+  const html = await editPlacePage(session, loaded).text();
+  assert.match(html, /data-feast-name value="Света Тројица"/);
+
+  await updatePlace(repository, env, session, "existing-place", body(loaded.place), new Date("2026-08-20T11:00:00Z"));
+  const saved = parse(repository.blobs.place);
+  assert.equal(saved.patronal_feast, undefined);
+  assert.deepEqual(saved.patronal_feasts, [{ name: "Света Тројица" }]);
+
+  const reopened = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  const noOp = await updatePlace(repository, env, session, "existing-place", {
+    ...body(reopened.place), expectedHeadSha: repository.headSha,
+  }, new Date("2026-08-20T11:01:00Z"));
+  assert.equal(noOp.unchanged, true);
+  assert.equal(repository.commitCount, 1);
+});
+
+test("admin locale-keyed model loads existing translations and accepts missing ones", async () => {
+  const existing = await loadEditablePlace(new LocalizedRepository(), "editorial/work", "existing-place");
+  assert.equal(existing.place.narratives.sr.translationStatus, "source");
+  assert.equal(existing.place.narratives.ru.preferredName, "Синтетический объект");
+  assert.equal(existing.place.narratives.en.preferredName, "Synthetic place");
+  assert.equal(existing.place.narratives.ru.sourceRevision, HEAD);
+  assert.deepEqual(existing.place.narratives.ru.patronalFeasts, ["Успение", "Святитель Николай"]);
+  assert.match(existing.place.narratives.en.serviceSchedule, /Sundays at 9:00/);
+
+  const missing = await loadEditablePlace(new LocalizedRepository({ ru: false, en: false }), "editorial/work", "existing-place");
+  assert.equal(missing.place.narratives.ru.exists, false);
+  assert.equal(missing.place.narratives.ru.translationStatus, "missing");
+  assert.equal(missing.place.narratives.en.exists, false);
+
+  const mismatched = new LocalizedRepository({ en: false });
+  mismatched.blobs.ruNarrative = RU_NARRATIVE.replace("locale: ru", "locale: en");
+  await assert.rejects(
+    () => loadEditablePlace(mismatched, "editorial/work", "existing-place"),
+    (error) => error.code === "internal_error" && error.fields?.stage === "catalog_tree_processing_failed",
+  );
+});
+
+test("localized saves are isolated, preserve deferred metadata, and no-op without a commit", async () => {
+  const ruRepository = new LocalizedRepository();
+  const ru = await updatePlaceNarrative(ruRepository, env, session, "existing-place", "ru", {
+    expectedHeadSha: HEAD,
+    preferredName: "Новый синтетический объект",
+    slug: "existing-place-ru",
+    summary: "Синтетическое описание",
+    patronalFeasts: ["Успение", "", "Святитель Николай"],
+    serviceSchedule: "По воскресеньям в 10:00.\r\nВечернее богослужение в 18:00.",
+    narrativeBody: "Синтетический текст.",
+    translationStatus: "draft",
+  }, new Date("2026-08-20T12:00:00Z"));
+  assert.equal(ru.unchanged, false);
+  assert.deepEqual(ruRepository.committed.files.map(({ path }) => path), ["content/places/existing-place/narratives/ru.md"]);
+  assert.equal(parseNarrative(ruRepository.committed.files[0].content).frontMatter.alternate_names[0].name, "Сохранённое имя");
+  assert.deepEqual(parseNarrative(ruRepository.committed.files[0].content).frontMatter.patronal_feasts, ["Успение", "Святитель Николай"]);
+  assert.equal(parseNarrative(ruRepository.committed.files[0].content).frontMatter.service_schedule, "По воскресеньям в 10:00.\nВечернее богослужение в 18:00.");
+
+  const enRepository = new LocalizedRepository();
+  await updatePlaceNarrative(enRepository, env, session, "existing-place", "en", {
+    expectedHeadSha: HEAD,
+    preferredName: "Updated synthetic place",
+    slug: "existing-place-en",
+    summary: "Synthetic summary",
+    patronalFeasts: ["Dormition", "Saint Nicholas"],
+    serviceSchedule: "Sundays at 9:00.\nEvening service at 18:00.",
+    narrativeBody: "Synthetic body.",
+    translationStatus: "draft",
+  }, new Date("2026-08-20T12:00:00Z"));
+  assert.deepEqual(enRepository.committed.files.map(({ path }) => path), ["content/places/existing-place/narratives/en.md"]);
+
+  const noOpRepository = new LocalizedRepository();
+  const noOp = await updatePlaceNarrative(noOpRepository, env, session, "existing-place", "en", {
+    expectedHeadSha: HEAD,
+    preferredName: "Synthetic place",
+    slug: "existing-place-en",
+    summary: "Synthetic summary",
+    patronalFeasts: ["Dormition", "Saint Nicholas"],
+    serviceSchedule: "Sundays at 9:00.\nEvening service at 18:00.",
+    narrativeBody: "Synthetic body.",
+    translationStatus: "draft",
+  });
+  assert.equal(noOp.unchanged, true);
+  assert.equal(noOpRepository.committed, undefined);
+
+  const missingRepository = new LocalizedRepository({ ru: false, en: false });
+  const created = await updatePlaceNarrative(missingRepository, env, session, "existing-place", "ru", {
+    expectedHeadSha: HEAD,
+    preferredName: "",
+    shortName: "",
+    slug: "",
+    summary: "",
+    seoTitle: "",
+    seoDescription: "",
+    narrativeBody: "",
+    translationStatus: "draft",
+  }, new Date("2026-08-20T12:00:00Z"));
+  assert.equal(created.unchanged, false);
+  assert.deepEqual(missingRepository.committed.files.map(({ path }) => path), ["content/places/existing-place/narratives/ru.md"]);
+  const scaffold = parseNarrative(missingRepository.committed.files[0].content);
+  assert.equal(scaffold.frontMatter.source_revision, HEAD);
+  assert.equal(scaffold.frontMatter.translation_status, "draft");
+  assert.equal(scaffold.frontMatter.preferred_name, undefined);
+  assert.equal(scaffold.body.trim(), "");
+});
+
+test("localized saves preserve HEAD conflicts and reject arbitrary locale paths", async () => {
+  const repository = new LocalizedRepository();
+  await assert.rejects(
+    () => updatePlaceNarrative(repository, env, session, "existing-place", "ru", { expectedHeadSha: "f".repeat(40), narrativeBody: "", translationStatus: "draft" }),
+    (error) => error.code === "git_conflict" && error.status === 409,
+  );
+  await assert.rejects(
+    () => updatePlaceNarrative(repository, env, session, "existing-place", "../../secret", { expectedHeadSha: HEAD, narrativeBody: "", translationStatus: "draft" }),
+    (error) => error.code === "not_found" && error.status === 404,
+  );
+});
+
+test("Serbian prose, schedule, and feast changes stale translations while coordinates and community do not", async () => {
+  const proseRepository = new LocalizedRepository();
+  const proseRecord = await loadEditablePlace(proseRepository, "editorial/work", "existing-place");
+  await updatePlace(proseRepository, env, session, "existing-place", {
+    ...body(proseRecord.place),
+    summary: "Нови синтетички сажетак",
+  }, new Date("2026-08-20T12:00:00Z"));
+  const translationFiles = proseRepository.committed.files.filter(({ path }) => /\/narratives\/(ru|en)\.md$/.test(path));
+  assert.equal(translationFiles.length, 2);
+  for (const file of translationFiles) {
+    const parsed = parseNarrative(file.content);
+    assert.equal(parsed.frontMatter.translation_status, "outdated");
+    assert.equal(parsed.frontMatter.source_revision, HEAD);
+    assert.match(parsed.body, /Synthetic|Синтетический/);
+  }
+
+  const coordinateRepository = new LocalizedRepository();
+  const coordinateRecord = await loadEditablePlace(coordinateRepository, "editorial/work", "existing-place");
+  await updatePlace(coordinateRepository, env, session, "existing-place", {
+    ...body(coordinateRecord.place),
+    latitude: 42.25,
+    longitude: 18.95,
+  }, new Date("2026-08-20T12:00:00Z"));
+  assert.equal(coordinateRepository.committed.files.some(({ path }) => /\/narratives\/(ru|en)\.md$/.test(path)), false);
+
+  for (const change of [
+    { serviceSchedule: "Недјељом у 9:00." },
+    { patronalFeasts: ["Света Тројица", "Свети Никола"] },
+  ]) {
+    const repository = new LocalizedRepository();
+    const record = await loadEditablePlace(repository, "editorial/work", "existing-place");
+    await updatePlace(repository, env, session, "existing-place", { ...body(record.place), ...change }, new Date("2026-08-20T12:05:00Z"));
+    const localizedFiles = repository.committed.files.filter(({ path }) => /\/narratives\/(ru|en)\.md$/.test(path));
+    assert.equal(localizedFiles.length, 2);
+    for (const file of localizedFiles) {
+      const parsed = parseNarrative(file.content);
+      assert.equal(parsed.frontMatter.translation_status, "outdated");
+      assert.match(parsed.frontMatter.service_schedule, /9:00|Sundays/);
+    }
+  }
+
+  const communityRepository = new LocalizedRepository();
+  const communityRecord = await loadEditablePlace(communityRepository, "editorial/work", "existing-place");
+  await updatePlace(communityRepository, env, session, "existing-place", {
+    ...body(communityRecord.place), monasticCommunity: "female",
+  }, new Date("2026-08-20T12:10:00Z"));
+  assert.equal(communityRepository.committed.files.some(({ path }) => /\/narratives\/(ru|en)\.md$/.test(path)), false);
+});
+
+test("admin reads normalized male and female monastic communities", async () => {
+  const male = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
+  assert.equal(male.place.monasticCommunity, "male");
+
+  const femaleRepository = new Repository();
+  femaleRepository.blobs.place = PLACE.replace("value: male", "value: female");
+  const female = await loadEditablePlace(femaleRepository, "editorial/work", "existing-place");
+  assert.equal(female.place.monasticCommunity, "female");
 });
 
 test("editorial preview add, duplicate add, remove, and duplicate remove stay atomic and canonical", async () => {
@@ -334,7 +574,65 @@ test("PATCH round trip updates basic, location, coordinates and narrative in one
   assert.equal(nextPlace.location.country_code.verification.status, "verified");
   assert.deepEqual(nextPlace.location.country_code.verification.source_ids, ["source-one"]);
   assert.equal(nextPlace.location.coordinates.verification.status, "requires-verification");
-  assert.equal(nextPlace.ecclesiastical.community_type.value, "brotherhood");
+  assert.equal(nextPlace.ecclesiastical.community_type.value, "male");
+});
+
+test("monastic community saves and clears without losing other ecclesiastical facts", async () => {
+  const loaded = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
+  const female = await updateCanonicalPlace(
+    loaded,
+    { ...body(loaded.place), monasticCommunity: "female" },
+    "editor-user",
+    new Date("2026-08-22T12:00:00Z"),
+  );
+  assert.equal(female.place.ecclesiastical.community_type.value, "female");
+  assert.deepEqual(female.place.ecclesiastical.community_type.verification, { status: "requires-verification" });
+  assert.deepEqual(female.place.ecclesiastical.jurisdiction, loaded.rawPlace.ecclesiastical.jurisdiction);
+  assert.deepEqual(female.place.ecclesiastical.authority_id, loaded.rawPlace.ecclesiastical.authority_id);
+  assert.deepEqual(female.place.ecclesiastical.dedication_ids, loaded.rawPlace.ecclesiastical.dedication_ids);
+  assert.deepEqual(female.place.ecclesiastical.associated_entity_ids, loaded.rawPlace.ecclesiastical.associated_entity_ids);
+
+  const femaleRepository = new Repository();
+  femaleRepository.blobs.place = PLACE.replace("value: male", "value: female");
+  const loadedFemale = await loadEditablePlace(femaleRepository, "editorial/work", "existing-place");
+  const male = await updateCanonicalPlace(
+    loadedFemale,
+    { ...body(loadedFemale.place), monasticCommunity: "male" },
+    "editor-user",
+    new Date("2026-08-22T12:00:30Z"),
+  );
+  assert.equal(male.place.ecclesiastical.community_type.value, "male");
+
+  const cleared = await updateCanonicalPlace(
+    loaded,
+    { ...body(loaded.place), monasticCommunity: "" },
+    "editor-user",
+    new Date("2026-08-22T12:01:00Z"),
+  );
+  assert.equal(cleared.place.ecclesiastical.community_type, undefined);
+  assert.deepEqual(cleared.place.ecclesiastical.jurisdiction, loaded.rawPlace.ecclesiastical.jurisdiction);
+});
+
+test("changing a monastery to a non-monastery clears its monastic community", async () => {
+  const loaded = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
+  const changed = await updateCanonicalPlace(
+    loaded,
+    { ...body(loaded.place), placeType: "church", monasticCommunity: "male" },
+    "editor-user",
+    new Date("2026-08-22T12:02:00Z"),
+  );
+  assert.equal(changed.place.place_type.value, "church");
+  assert.equal(changed.place.ecclesiastical.community_type, undefined);
+});
+
+test("admin rejects unsupported monastic community values", async () => {
+  const loaded = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
+  for (const monasticCommunity of ["brotherhood", "православни мушки манастир", 42]) {
+    await assert.rejects(
+      () => updateCanonicalPlace(loaded, { ...body(loaded.place), monasticCommunity }, "editor-user", new Date("2026-08-22T12:03:00Z")),
+      (error) => error.code === "invalid_form_data" && Boolean(error.fields?.monasticCommunity),
+    );
+  }
 });
 
 test("unchanged facts retain verification exactly and coordinates can be cleared", async () => {
@@ -344,6 +642,7 @@ test("unchanged facts retain verification exactly and coordinates can be cleared
   assert.equal(unchanged.unchanged, true);
   assert.deepEqual(unchanged.place.place_type.verification, parse(PLACE).place_type.verification);
   assert.deepEqual(unchanged.place.location.coordinates.verification, parse(PLACE).location.coordinates.verification);
+  assert.deepEqual(unchanged.place.ecclesiastical.community_type.verification, parse(PLACE).ecclesiastical.community_type.verification);
   assert.deepEqual(unchanged.place.audit, parse(PLACE).audit);
   assert.deepEqual(unchanged.narrative.audit, parseNarrative(NARRATIVE).frontMatter.audit);
   const cleared = await updateCanonicalPlace(loaded, { ...update, latitude: "", longitude: "" }, "editor-user", new Date("2026-08-13T12:00:00Z"));
@@ -509,39 +808,44 @@ test("place editor exposes the photo workflow and no source-registry controls", 
   assert.doesNotMatch(clientSource, /sourceIds|data-alt-sources/);
 });
 
-test("place editor saves one narrative body, YouTube video, and patronal feast", async () => {
+test("place editor saves plural patronal feasts, multiline service schedule, and YouTube video", async () => {
   const repository = new RoundTripRepository();
   const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
   const update = {
     ...body(loaded.place),
     narrativeBody: "## О манастиру\n\nЈединствени текст у више пасуса.\n\nДруги пасус.",
-    patronalFeast: "Света Тројица",
+    patronalFeasts: ["Света Тројица", "", "Свети Никола"],
+    serviceSchedule: "Недјељом у 9:00.\r\nВечерње у 18:00.",
     youtubeUrl: "https://youtu.be/dQw4w9WgXcQ",
   };
   await updatePlace(repository, env, session, "existing-place", update, new Date("2026-08-15T14:00:00Z"));
   const savedPlace = parse(repository.blobs.place);
   const savedNarrative = parseNarrative(repository.blobs.narrative);
-  assert.equal(savedPlace.patronal_feast.name, "Света Тројица");
+  assert.deepEqual(savedPlace.patronal_feasts, [{ name: "Света Тројица" }, { name: "Свети Никола" }]);
+  assert.equal(savedPlace.patronal_feast, undefined);
+  assert.equal(savedNarrative.frontMatter.service_schedule, "Недјељом у 9:00.\nВечерње у 18:00.");
   assert.equal(savedPlace.video.youtube_url, "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
   assert.match(savedNarrative.body, /Јединствени текст у више пасуса\.[\s\S]*Други пасус\./);
 
   const reopened = await loadEditablePlace(repository, "editorial/work", "existing-place");
-  assert.equal(reopened.place.patronalFeast, "Света Тројица");
+  assert.deepEqual(reopened.place.patronalFeasts, ["Света Тројица", "Свети Никола"]);
+  assert.equal(reopened.place.serviceSchedule, "Недјељом у 9:00.\nВечерње у 18:00.");
   assert.equal(reopened.place.youtubeUrl, "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
   assert.match(reopened.place.narrativeBody, /Други пасус/);
 
   await updatePlace(repository, env, session, "existing-place", {
     ...body(reopened.place), expectedHeadSha: repository.headSha,
-    patronalFeast: "Свети Никола", youtubeUrl: "https://www.youtube.com/shorts/9bZkp7q19f0",
+    patronalFeasts: ["Свети Никола"], youtubeUrl: "https://www.youtube.com/shorts/9bZkp7q19f0",
   }, new Date("2026-08-15T14:03:00Z"));
   const edited = await loadEditablePlace(repository, "editorial/work", "existing-place");
-  assert.equal(edited.place.patronalFeast, "Свети Никола");
+  assert.deepEqual(edited.place.patronalFeasts, ["Свети Никола"]);
   assert.equal(edited.place.youtubeUrl, "https://www.youtube.com/watch?v=9bZkp7q19f0");
 
   await updatePlace(repository, env, session, "existing-place", {
-    ...body(edited.place), expectedHeadSha: repository.headSha, patronalFeast: "", youtubeUrl: "",
+    ...body(edited.place), expectedHeadSha: repository.headSha, patronalFeasts: ["", "   "], serviceSchedule: "", youtubeUrl: "",
   }, new Date("2026-08-15T14:05:00Z"));
-  assert.equal(parse(repository.blobs.place).patronal_feast, undefined);
+  assert.equal(parse(repository.blobs.place).patronal_feasts, undefined);
+  assert.equal(parseNarrative(repository.blobs.narrative).frontMatter.service_schedule, undefined);
   assert.equal(parse(repository.blobs.place).video, undefined);
 });
 
@@ -552,19 +856,41 @@ test("place editor rejects unsafe video URLs without weakening optional fields",
     () => updatePlace(repository, env, session, "existing-place", { ...body(loaded.place), youtubeUrl: "https://youtube.example.com/watch?v=dQw4w9WgXcQ" }),
     (error) => error.code === "invalid_form_data" && error.fields?.youtubeUrl === "Унесите важећи YouTube линк.",
   );
-  const optional = await updateCanonicalPlace(loaded, { ...body(loaded.place), youtubeUrl: "", patronalFeast: "" }, "editor-user", new Date("2026-08-15T14:00:00Z"));
+  const optional = await updateCanonicalPlace(loaded, { ...body(loaded.place), youtubeUrl: "", patronalFeasts: [] }, "editor-user", new Date("2026-08-15T14:00:00Z"));
   assert.equal(optional.unchanged, true);
 });
 
-test("place editor UI has one dynamic narrative field and no section controls", async () => {
+test("place editor UI keeps one narrative field per locale and no legacy section controls", async () => {
   const record = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
   const html = await editPlacePage(session, record).text();
   assert.match(html, /<h2>О манастиру<\/h2>/);
   assert.match(html, /<textarea name="narrativeBody"/);
-  assert.equal((html.match(/name="narrativeBody"/g) ?? []).length, 1);
+  assert.equal((html.match(/name="narrativeBody"/g) ?? []).length, 3);
+  assert.match(html, /data-language-tab="sr">Српски/);
+  assert.match(html, /data-language-tab="ru">Русский/);
+  assert.match(html, /data-language-tab="en">English/);
   assert.match(html, /name="youtubeUrl"/);
-  assert.match(html, /name="patronalFeast"/);
+  assert.match(html, /data-add-feast>\+ Додај славу/);
+  assert.match(html, /name="serviceSchedule"/);
+  assert.equal((html.match(/name="serviceSchedule"/g) ?? []).length, 3);
+  assert.match(html, /Тип манастира<select name="monasticCommunity">/);
+  assert.match(html, /<option value="">— није одређено —<\/option>/);
+  assert.match(html, /<option value="male" selected>Мушки<\/option>/);
+  assert.match(html, /<option value="female">Женски<\/option>/);
   assert.doesNotMatch(html, /data-add-section|data-section-title|data-remove-paragraph|Додај канонски одјељак/);
+
+  record.place.placeType = "church";
+  delete record.place.monasticCommunity;
+  const churchHtml = await editPlacePage(session, record).text();
+  assert.match(churchHtml, /data-monastic-community-field hidden/);
+  assert.match(churchHtml, /name="monasticCommunity" disabled/);
+
+  const clientSource = await readFile(new URL("../client/editor.ts", import.meta.url), "utf8");
+  assert.match(clientSource, /data-remove-feast/);
+  assert.match(clientSource, /data-add-feast/);
+  assert.match(clientSource, /patronalFeasts: collectPatronalFeasts\(\)/);
+  assert.match(clientSource, /placeTypeInput\.value === "monastery"/);
+  assert.match(clientSource, /monasticCommunityInput\.value = ""/);
 });
 
 test("place editor exposes compact draft and published visibility management", async () => {

@@ -1,13 +1,17 @@
 ---
 import type { VisiblePlace } from "../lib/content/publication";
 import { categoryForPlaceType } from "../lib/place-filters";
+import { placeDetailRoot, type Locale } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
 
 interface Props {
   places?: VisiblePlace[];
   layout?: "homepage" | "full";
+  locale?: Locale;
 }
 
-const { places = [], layout = "homepage" } = Astro.props;
+const { places = [], layout = "homepage", locale = "sr" } = Astro.props;
+const mapCopy = locale === "ru" ? { fallback: "Стилизованная карта Черногории без меток святынь.", region: "Интерактивная карта Черногории", loading: "Загрузка карты…", unavailable: "Интерактивная карта сейчас недоступна.", attribution: "Источники картографических данных", photo: "Авторская фотография будет добавлена", cluster: "святынь — приблизить карту", country: ["ЧЕРНО", "ГОРИЯ"], sea: "АДРИАТИЧЕСКОЕ МОРЕ", neighbours: ["СЕРБИЯ", "АЛБАНИЯ", "БОСНИЯ И ГЕРЦЕГОВИНА", "ХОРВАТИЯ"] } : locale === "en" ? { fallback: "A stylised map of Montenegro without holy-place markers.", region: "Interactive map of Montenegro", loading: "Loading map…", unavailable: "The interactive map is currently unavailable.", attribution: "Map data sources", photo: "An original photograph will be added", cluster: "holy places — zoom in", country: ["MONTE", "NEGRO"], sea: "ADRIATIC SEA", neighbours: ["SERBIA", "ALBANIA", "BOSNIA AND HERZEGOVINA", "CROATIA"] } : { fallback: "Стилизована картографска површина Црне Горе без ознака светиња.", region: "Интерактивна карта Црне Горе", loading: "Учитавање карте…", unavailable: "Интерактивна карта тренутно није доступна.", attribution: "Извори картографских података", photo: "Ауторска фотографија биће додата", cluster: "светиње — приближи карту", country: ["ЦРНА", "ГОРА"], sea: "ЈАДРАНСКО МОРЕ", neighbours: ["СРБИЈА", "АЛБАНИЈА", "БОСНА И ХЕРЦЕГОВИНА", "ХРВАТСКА"] };
 const hasMapTilerKey = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
 const markerPlaces = places.flatMap((place) =>
   Number.isFinite(place.latitude) && Number.isFinite(place.longitude)
@@ -35,6 +39,10 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
   data-map-layout={layout}
   data-testid="map-canvas"
   data-map-state={hasMapTilerKey ? "loading" : "fallback"}
+  data-place-detail-root={placeDetailRoot[locale]}
+  data-open-page-label={publicCopy[locale].openPage}
+  data-photo-placeholder={mapCopy.photo}
+  data-cluster-label={mapCopy.cluster}
 >
   <div
     class="map-fallback"
@@ -42,7 +50,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     role="img"
     hidden={hasMapTilerKey}
     aria-hidden={hasMapTilerKey ? "true" : "false"}
-    aria-label="Стилизована картографска површина Црне Горе без ознака светиња."
+    aria-label={mapCopy.fallback}
   >
     <svg class="map-art" viewBox="0 0 1200 650" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
     <defs>
@@ -90,15 +98,15 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     </g>
 
     <g fill="#33443f" font-family="Georgia, serif" letter-spacing="7">
-      <text x="509" y="287" font-size="30">ЦРНА</text>
-      <text x="516" y="326" font-size="30">ГОРА</text>
+      <text x="509" y="287" font-size="30">{mapCopy.country[0]}</text>
+      <text x="516" y="326" font-size="30">{mapCopy.country[1]}</text>
     </g>
     <g fill="#66716b" font-family="system-ui, sans-serif" font-size="13" font-weight="650" letter-spacing="2">
-      <text x="81" y="470" transform="rotate(-17 81 470)">ЈАДРАНСКО МОРЕ</text>
-      <text x="781" y="84">СРБИЈА</text>
-      <text x="835" y="430">АЛБАНИЈА</text>
-      <text x="292" y="87">БОСНА И ХЕРЦЕГОВИНА</text>
-      <text x="267" y="359">ХРВАТСКА</text>
+      <text x="81" y="470" transform="rotate(-17 81 470)">{mapCopy.sea}</text>
+      <text x="781" y="84">{mapCopy.neighbours[0]}</text>
+      <text x="835" y="430">{mapCopy.neighbours[1]}</text>
+      <text x="292" y="87">{mapCopy.neighbours[2]}</text>
+      <text x="267" y="359">{mapCopy.neighbours[3]}</text>
     </g>
     <rect width="1200" height="650" filter="url(#map-grain)" opacity=".65" />
     </svg>
@@ -116,7 +124,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       class="maplibre-map"
       data-testid="maplibre-container"
       role="region"
-      aria-label="Интерактивна карта Црне Горе"
+      aria-label={mapCopy.region}
     ></div>
   </div>
 
@@ -126,7 +134,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     hidden={!hasMapTilerKey}
     aria-hidden={hasMapTilerKey ? "false" : "true"}
   >
-    <p class="map-loading-status" data-map-loading-status role="status" aria-live="polite">Учитавање карте…</p>
+    <p class="map-loading-status" data-map-loading-status role="status" aria-live="polite">{mapCopy.loading}</p>
   </div>
 
   <p
@@ -135,10 +143,10 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     role="status"
     hidden={hasMapTilerKey}
   >
-    Интерактивна карта тренутно није доступна.
+    {mapCopy.unavailable}
   </p>
 
-  <div class="map-attribution" data-map-attribution aria-label="Извори картографских података" hidden>
+  <div class="map-attribution" data-map-attribution aria-label={mapCopy.attribution} hidden>
     <a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener noreferrer">© MapTiler</a>
     <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>
   </div>
@@ -206,6 +214,10 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     const resetButton = stage?.querySelector<HTMLButtonElement>("[data-map-reset]");
     const mapContainer = root.querySelector<HTMLElement>("#montenegro-map");
     const markerDataElement = root.querySelector<HTMLScriptElement>("[data-map-place-data]");
+    const placeDetailRoot = root.dataset.placeDetailRoot ?? "/svetinje/";
+    const openPageLabel = root.dataset.openPageLabel ?? "Open page";
+    const photoPlaceholder = root.dataset.photoPlaceholder ?? "";
+    const clusterLabel = root.dataset.clusterLabel ?? "places — zoom in";
     const markerPlaces: MarkerPlace[] = markerDataElement?.textContent
       ? JSON.parse(markerDataElement.textContent) as MarkerPlace[]
       : [];
@@ -247,6 +259,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     }
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const mobileTouch = window.matchMedia("(max-width: 47.999rem) and (pointer: coarse)").matches;
     try {
       map = new maplibregl.Map({
         container: mapContainer,
@@ -254,7 +267,9 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
         center: [19.25, 42.7],
         zoom: 6,
         attributionControl: false,
-        cooperativeGestures: true,
+        cooperativeGestures: !mobileTouch,
+        dragPan: true,
+        touchZoomRotate: true,
         dragRotate: false,
         pitchWithRotate: false,
         fadeDuration: reducedMotion.matches ? 0 : 300,
@@ -340,7 +355,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
         ornament.setAttribute("aria-hidden", "true");
         const notice = document.createElement("span");
         notice.className = "map-place-preview__media-note";
-        notice.textContent = "Ауторска фотографија биће додата";
+        notice.textContent = photoPlaceholder;
         media.append(ornament, notice);
       }
 
@@ -365,8 +380,8 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
 
       const link = document.createElement("a");
       link.className = "map-place-preview__link";
-      link.href = `/svetinje/${encodeURIComponent(place.slug)}/`;
-      link.textContent = "Отвори страницу";
+      link.href = `${placeDetailRoot}${encodeURIComponent(place.slug)}/`;
+      link.textContent = openPageLabel;
       const arrow = document.createElement("span");
       arrow.setAttribute("aria-hidden", "true");
       arrow.textContent = "↗";
@@ -411,11 +426,11 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
 
     markerPlaces.forEach((place) => {
       const link = document.createElement("a");
-      link.href = `/svetinje/${encodeURIComponent(place.slug)}/`;
+      link.href = `${placeDetailRoot}${encodeURIComponent(place.slug)}/`;
       link.className = "holy-place-marker";
       link.dataset.mapMarker = place.id;
       link.dataset.placeCategory = place.category ?? "";
-      link.setAttribute("aria-label", `${place.name} — отвори страницу`);
+      link.setAttribute("aria-label", `${place.name} — ${openPageLabel}`);
       link.setAttribute("aria-expanded", "false");
       const markerAsset = resolveMarkerAsset(place.placeType);
       if (markerAsset) {
@@ -497,7 +512,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
         button.className = "holy-place-cluster";
         button.dataset.mapCluster = "true";
         button.dataset.clusterCount = String(group.length);
-        button.setAttribute("aria-label", `${group.length} светиње — приближи карту`);
+        button.setAttribute("aria-label", `${group.length} ${clusterLabel}`);
         const count = document.createElement("span");
         count.className = "holy-place-cluster__count";
         count.textContent = String(group.length);

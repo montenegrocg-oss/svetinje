@@ -10,12 +10,65 @@ const dirtyStatus = form.querySelector<HTMLElement>("[data-dirty-status]");
 const summary = form.querySelector<HTMLElement>("[data-validation-summary]");
 const saveButton = form.querySelector<HTMLButtonElement>("[data-save]");
 let dirty = false;
+let translationDirty = false;
 const markDirty = () => {
   dirty = true;
   if (dirtyStatus) { dirtyStatus.textContent = "Имате несачуване измјене."; dirtyStatus.className = "is-dirty"; }
 };
 form.addEventListener("input", (event) => { if (!(event.target as HTMLElement).closest("#foto")) markDirty(); });
-window.addEventListener("beforeunload", (event) => { if (dirty) event.preventDefault(); });
+window.addEventListener("beforeunload", (event) => { if (dirty || translationDirty) event.preventDefault(); });
+
+const languageTabs = [...document.querySelectorAll<HTMLButtonElement>("[data-language-tab]")];
+const languagePanels = [...document.querySelectorAll<HTMLElement>("[data-language-panel]")];
+const serbianSectionNav = document.querySelector<HTMLElement>("[data-serbian-section-nav]");
+for (const tab of languageTabs) tab.addEventListener("click", () => {
+  const locale = tab.dataset.languageTab;
+  for (const panel of languagePanels) panel.hidden = panel.dataset.languagePanel !== locale;
+  for (const candidate of languageTabs) candidate.classList.toggle("secondary", candidate !== tab);
+  if (serbianSectionNav) serbianSectionNav.hidden = locale !== "sr";
+});
+
+for (const translationForm of document.querySelectorAll<HTMLFormElement>("[data-translation-editor]")) {
+  translationForm.addEventListener("input", () => { translationDirty = true; });
+  translationForm.addEventListener("click", (event) => {
+    const target = event.target as HTMLElement;
+    if (target.closest("[data-remove-feast]")) {
+      target.closest("[data-feast-row]")?.remove();
+      translationDirty = true;
+    }
+    if (target.closest("[data-add-feast]")) {
+      const template = translationForm.querySelector<HTMLTemplateElement>("[data-feast-template]");
+      if (template) translationForm.querySelector("[data-feast-list]")?.appendChild(template.content.cloneNode(true));
+      translationDirty = true;
+    }
+  });
+  translationForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const locale = translationForm.dataset.locale;
+    if (locale !== "ru" && locale !== "en") return;
+    const translationStatus = translationForm.querySelector<HTMLElement>("[data-translation-status]");
+    const submit = translationForm.querySelector<HTMLButtonElement>('button[type="submit"]');
+    if (submit) submit.disabled = true;
+    if (translationStatus) translationStatus.textContent = "Чување…";
+    const values = Object.fromEntries(new FormData(translationForm));
+    const patronalFeasts = [...translationForm.querySelectorAll<HTMLInputElement>("[data-feast-name]")].map((input) => input.value);
+    const response = await fetch(`/api/places/${encodeURIComponent(form.dataset.placeId ?? "")}/narratives/${locale}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...values, patronalFeasts, expectedHeadSha: form.dataset.headSha }),
+    });
+    const result = await response.json() as any;
+    if (!response.ok) {
+      if (translationStatus) translationStatus.textContent = response.status === 409 ? "Конфликт: освјежите страницу." : result.error?.message ?? "Превод није сачуван.";
+    } else {
+      form.dataset.headSha = result.commitSha;
+      translationDirty = false;
+      if (translationStatus) translationStatus.textContent = result.unchanged ? "Нема измјена за чување." : `Commit ${result.commitSha}`;
+      if (!result.unchanged && submit) submit.textContent = "Сачувај превод";
+    }
+    if (submit) submit.disabled = false;
+  });
+}
 
 const renderValidationErrors = (result: any) => {
   if (!summary) return;
@@ -166,12 +219,25 @@ const collectAlternateNames = () => [...form.querySelectorAll<HTMLElement>("[dat
   context: row.querySelector<HTMLTextAreaElement>("[data-alt-context]")?.value ?? "",
   verificationStatus: (row.querySelector("[data-alt-status]") as HTMLSelectElement | null)?.value ?? "requires-verification",
 }));
+const collectPatronalFeasts = () => [...form.querySelectorAll<HTMLInputElement>("[data-feast-name]")].map((input) => input.value);
+const placeTypeInput = field("placeType") as HTMLSelectElement;
+const monasticCommunityInput = field("monasticCommunity") as HTMLSelectElement;
+const monasticCommunityField = form.querySelector<HTMLElement>("[data-monastic-community-field]");
+const syncMonasticCommunityField = () => {
+  const enabled = placeTypeInput.value === "monastery";
+  if (monasticCommunityField) monasticCommunityField.hidden = !enabled;
+  monasticCommunityInput.disabled = !enabled;
+  if (!enabled) monasticCommunityInput.value = "";
+};
+placeTypeInput.addEventListener("change", syncMonasticCommunityField);
+syncMonasticCommunityField();
 const body = () => ({
   expectedHeadSha: form.dataset.headSha,
   preferredName: field("preferredName").value,
   shortName: field("shortName").value,
   slug: field("slug").value,
   placeType: field("placeType").value,
+  monasticCommunity: monasticCommunityInput.disabled ? "" : monasticCommunityInput.value,
   browseAreaId: field("browseAreaId").value,
   summary: field("summary").value,
   jurisdiction: field("jurisdiction").value,
@@ -179,7 +245,8 @@ const body = () => ({
   settlement: field("settlement").value,
   latitude: field("latitude").value,
   longitude: field("longitude").value,
-  patronalFeast: field("patronalFeast").value,
+  patronalFeasts: collectPatronalFeasts(),
+  serviceSchedule: field("serviceSchedule").value,
   youtubeUrl: field("youtubeUrl").value,
   narrativeBody: field("narrativeBody").value,
   alternateNames: collectAlternateNames(),
@@ -190,6 +257,11 @@ form.addEventListener("click", (event) => {
   if (target.closest("[data-add-alternate]")) {
     const template = document.querySelector<HTMLTemplateElement>("[data-alternate-template]");
     if (template) form.querySelector("[data-alternate-list]")?.appendChild(template.content.cloneNode(true));
+  }
+  if (target.closest("[data-remove-feast]")) target.closest("[data-feast-row]")?.remove();
+  if (target.closest("[data-add-feast]")) {
+    const template = document.querySelector<HTMLTemplateElement>("[data-serbian-feast-template]");
+    if (template) form.querySelector("[data-feast-list]")?.appendChild(template.content.cloneNode(true));
   }
   if (target.closest("button") && !target.closest("#foto")) markDirty();
 });

@@ -1,10 +1,16 @@
 ---
 import type { VisibleRoute } from "../../lib/content/routes";
-interface Props { placeId: string; routes: VisibleRoute[] }
-const { placeId, routes } = Astro.props;
-const from = routes.filter((route) => route.startPlace.id === placeId);
-const to = routes.filter((route) => route.endPlace.id === placeId);
+import { routeFor, type Locale } from "../../i18n/config";
+import { publicCopy } from "../../i18n/public-copy";
+interface Props { placeId: string; routes: VisibleRoute[]; locale?: Locale }
+const { placeId, routes, locale = "sr" } = Astro.props;
+const copy = publicCopy[locale].pages.placeDetail.backlinks;
+const localeSafeRoutes = locale === "sr" ? routes : [];
+const from = localeSafeRoutes.filter((route) => route.startPlace.id === placeId);
+const to = localeSafeRoutes.filter((route) => route.endPlace.id === placeId);
+const routeHref = (route: VisibleRoute) => locale === "sr" ? `/rute/${route.slug}/` : routeFor(locale, "routes");
 ---
 
-{from.length > 0 && <section class="place-route-links" aria-labelledby="routes-from-title"><h2 id="routes-from-title">Руте од ове светиње</h2>{from.map((route) => <a href={`/rute/${route.slug}/`}>{route.shortName}<span aria-hidden="true">→</span></a>)}</section>}
-{to.length > 0 && <section class="place-route-links" aria-labelledby="routes-to-title"><h2 id="routes-to-title">Руте до ове светиње</h2>{to.map((route) => <a href={`/rute/${route.slug}/`}>{route.shortName}<span aria-hidden="true">→</span></a>)}</section>}
+{from.length > 0 && <section class="place-route-links" aria-labelledby="routes-from-title" data-testid="place-route-backlinks"><h2 id="routes-from-title">{copy.from}</h2>{from.map((route) => <a href={routeHref(route)}>{route.shortName}<span aria-hidden="true">→</span></a>)}</section>}
+{to.length > 0 && <section class="place-route-links" aria-labelledby="routes-to-title" data-testid="place-route-backlinks"><h2 id="routes-to-title">{copy.to}</h2>{to.map((route) => <a href={routeHref(route)}>{route.shortName}<span aria-hidden="true">→</span></a>)}</section>}
+{from.length === 0 && to.length === 0 && <section class="place-route-links" aria-labelledby="place-routes-title" data-testid="place-route-backlinks"><h2 id="place-routes-title">{copy.title}</h2><p>{copy.empty}</p></section>}

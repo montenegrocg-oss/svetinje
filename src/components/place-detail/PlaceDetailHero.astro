@@ -2,22 +2,28 @@
 import InterfaceIcon from "../InterfaceIcon.astro";
 import type { VisiblePlace } from "../../lib/content/publication";
 import { categoryForPlaceType } from "../../lib/place-filters";
+import { routeFor, type Locale } from "../../i18n/config";
+import { publicCopy } from "../../i18n/public-copy";
 
 interface Props {
   place: VisiblePlace;
+  locale?: Locale;
 }
 
-const { place } = Astro.props;
+const { place, locale = "sr" } = Astro.props;
+const copy = publicCopy[locale];
+const detailCopy = copy.pages.placeDetail;
 const category = categoryForPlaceType(place.placeType);
 const breadcrumb = category === "monasteries"
-  ? { href: "/manastiri/", label: "Манастири" }
+  ? { href: routeFor(locale, "monasteries"), label: copy.nav.monasteries }
   : category === "churches"
-    ? { href: "/crkve/", label: "Цркве" }
-    : category === "holy-places"
-      ? { href: "/sveta-mjesta/", label: "Света мјеста" }
-      : { href: "/svetinje/", label: "Светиње" };
+    ? { href: routeFor(locale, "churches"), label: copy.nav.churches }
+    : locale === "sr"
+      ? { href: routeFor(locale, "holyPlaces"), label: copy.siteName }
+      : { href: routeFor(locale, "map"), label: copy.nav.map };
 const location = place.settlement ?? place.municipality;
 const hasCoordinates = place.latitude !== undefined && place.longitude !== undefined;
+const actionMessages = JSON.stringify(detailCopy.actionMessages).replaceAll("<", "\\u003c");
 ---
 
 <header class="place-profile-hero" data-place-id={place.id} data-place-detail-actions>
@@ -36,8 +42,8 @@ const hasCoordinates = place.latitude !== undefined && place.longitude !== undef
   <div class="place-profile-hero__overlay" aria-hidden="true"></div>
 
   <div class="shell place-profile-hero__content">
-    <nav class="place-profile-breadcrumbs" aria-label="Путања странице">
-      <a href="/">Почетна</a><span aria-hidden="true">›</span>
+    <nav class="place-profile-breadcrumbs" aria-label={detailCopy.breadcrumbs}>
+      <a href={routeFor(locale, "home")}>{detailCopy.home}</a><span aria-hidden="true">›</span>
       <a href={breadcrumb.href}>{breadcrumb.label}</a><span aria-hidden="true">›</span>
       <span aria-current="page">{place.name}</span>
     </nav>
@@ -45,28 +51,29 @@ const hasCoordinates = place.latitude !== undefined && place.longitude !== undef
     <div class="place-profile-hero__copy">
       <h1>{place.name}</h1>
       {place.summary && <p>{place.summary}</p>}
-      <ul class="place-profile-chips" aria-label="Основни подаци">
+      <ul class="place-profile-chips" aria-label={detailCopy.facts}>
         {location && <li><InterfaceIcon name="place" size={16} />{location}</li>}
         <li><InterfaceIcon name={category === "monasteries" ? "monastery" : category === "churches" ? "church" : "place"} size={16} />{place.typeLabel}</li>
       </ul>
     </div>
 
-    <div class="place-profile-actions" aria-label="Радње за посјету">
+    <div class="place-profile-actions" aria-label={detailCopy.actions}>
       <button type="button" class="place-profile-action place-profile-action--primary" data-place-detail-action="plan">
-        <InterfaceIcon name="info" size={18} /><span>Планирај посјету</span>
+        <InterfaceIcon name="info" size={18} /><span>{detailCopy.plan}</span>
       </button>
       <button type="button" class="place-profile-action" data-place-detail-action="route">
-        <InterfaceIcon name="route" size={18} /><span>Изгради руту</span>
+        <InterfaceIcon name="route" size={18} /><span>{detailCopy.route}</span>
       </button>
       <button type="button" class="place-profile-action" data-place-detail-action="save">
-        <InterfaceIcon name="heart" size={18} /><span>Сачувај</span>
+        <InterfaceIcon name="heart" size={18} /><span>{detailCopy.save}</span>
       </button>
     </div>
 
     <div class="place-profile-action-status" role="status" aria-live="polite" hidden>
       <span data-place-detail-action-message></span>
-      {hasCoordinates && <a href="/#mapa" data-place-detail-map-link hidden>Отвори главну карту</a>}
+      {hasCoordinates && <a href={`${routeFor(locale, "home")}#mapa`} data-place-detail-map-link hidden>{detailCopy.openMap}</a>}
     </div>
+    <script type="application/json" data-place-action-copy set:html={actionMessages} is:inline />
   </div>
 </header>
 
@@ -78,11 +85,8 @@ const hasCoordinates = place.latitude !== undefined && place.longitude !== undef
       const status = root.querySelector<HTMLElement>(".place-profile-action-status");
       const message = root.querySelector<HTMLElement>("[data-place-detail-action-message]");
       const mapLink = root.querySelector<HTMLElement>("[data-place-detail-map-link]");
-      const messages: Record<string, string> = {
-        plan: "Функција планирања посјете је у припреми.",
-        route: "Израда персонализоване руте је у припреми.",
-        save: "Чување омиљених светиња је у припреми.",
-      };
+      const copyElement = root.querySelector<HTMLScriptElement>("[data-place-action-copy]");
+      const messages = JSON.parse(copyElement?.textContent ?? "{}") as Record<string, string>;
 
       root.querySelectorAll<HTMLButtonElement>("[data-place-detail-action]").forEach((button) => {
         button.addEventListener("click", () => {

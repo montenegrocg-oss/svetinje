@@ -21,6 +21,11 @@
     "parent_place_id": { "$ref": "common.schema.json#/$defs/entityIdFact" },
     "ecclesiastical": { "$ref": "#/$defs/ecclesiastical" },
     "patronal_feast": { "$ref": "#/$defs/patronalFeast" },
+    "patronal_feasts": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/patronalFeast" }
+    },
     "video": { "$ref": "#/$defs/video" },
     "location": { "$ref": "#/$defs/location" },
     "relationships": { "$ref": "#/$defs/relationships" },
@@ -30,6 +35,9 @@
   },
   "allOf": [
     {
+      "not": { "required": ["patronal_feast", "patronal_feasts"] }
+    },
+    {
       "if": {
         "properties": { "editorial_status": { "enum": ["approved", "published"] } },
         "required": ["editorial_status"]
@@ -38,6 +46,23 @@
         "required": ["place_type"],
         "properties": {
           "approvals": { "type": "array", "minItems": 2 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "ecclesiastical": { "type": "object", "required": ["community_type"] }
+        },
+        "required": ["ecclesiastical"]
+      },
+      "then": {
+        "required": ["place_type"],
+        "properties": {
+          "place_type": {
+            "type": "object",
+            "properties": { "value": { "const": "monastery" } }
+          }
         }
       }
     }
@@ -66,6 +91,18 @@
         "verification": { "$ref": "common.schema.json#/$defs/verification" }
       }
     },
+    "monasticCommunity": {
+      "enum": ["male", "female"]
+    },
+    "monasticCommunityFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "verification"],
+      "properties": {
+        "value": { "$ref": "#/$defs/monasticCommunity" },
+        "verification": { "$ref": "common.schema.json#/$defs/verification" }
+      }
+    },
     "ecclesiastical": {
       "type": "object",
       "additionalProperties": false,
@@ -73,7 +110,7 @@
         "authority_id": { "$ref": "common.schema.json#/$defs/entityIdFact" },
         "jurisdiction": { "$ref": "common.schema.json#/$defs/stringFact" },
         "dedication_ids": { "$ref": "common.schema.json#/$defs/entityIdListFact" },
-        "community_type": { "$ref": "common.schema.json#/$defs/stringFact" },
+        "community_type": { "$ref": "#/$defs/monasticCommunityFact" },
         "associated_entity_ids": { "$ref": "common.schema.json#/$defs/entityIdListFact" }
       }
     },

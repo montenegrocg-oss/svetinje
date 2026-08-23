@@ -5,12 +5,12 @@ locale: sr
 editorial_status: research
 translation_status: source
 slug: crkva-svete-trojice-budva
-preferred_name: Црква свете Тројице
+preferred_name: Црква Свете Тројице
 approvals: []
 audit:
   created_at: 2026-08-18T10:29:30.896Z
   created_by: montenegro-cg
-  updated_at: 2026-08-18T10:31:22Z
+  updated_at: 2026-08-21T10:07:11Z
   updated_by: montenegro-cg
 summary: Црква Свете Тројице налази се у Старом граду Будви и један је од главних православних храмова града. Подигнута је почетком XIX вијека, 1804. године, а празник Силаска Светог Духа на апостоле — Тројичиндан — прославља се као храмовна и градска слава Будве.
 ---

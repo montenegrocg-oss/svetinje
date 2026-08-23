@@ -1,42 +1,80 @@
 ---
 import InterfaceIcon from "./InterfaceIcon.astro";
 import LanguageSwitcher from "./LanguageSwitcher.astro";
+import { localeConfig, routeFor, type Locale } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
 
 interface Props {
   currentPath: string;
+  locale?: Locale;
+  localeLinks?: Partial<Record<Locale, string>>;
 }
 
-const { currentPath } = Astro.props;
+const { currentPath, locale = "sr", localeLinks = { [locale]: currentPath } } = Astro.props;
+const copy = publicCopy[locale];
 const navigation = [
-  { href: "/manastiri/", label: "Манастири" },
-  { href: "/crkve/", label: "Цркве" },
-  { href: "/sveta-mjesta/", label: "Света мјеста" },
-  { href: "/mapa/", label: "Мапа" },
-  { href: "/rute/", label: "Руте" },
-  { href: "/o-projektu/", label: "О пројекту" },
+  { href: routeFor(locale, "monasteries"), label: copy.nav.monasteries },
+  { href: routeFor(locale, "churches"), label: copy.nav.churches },
+  { href: routeFor(locale, "map"), label: copy.nav.map },
+  { href: routeFor(locale, "routes"), label: copy.nav.routes },
+  { href: routeFor(locale, "calendar"), label: copy.nav.calendar },
+  { href: routeFor(locale, "news"), label: copy.nav.news },
+  { href: routeFor(locale, "about"), label: copy.nav.about },
+];
+const monasteryNavigation = [
+  { href: routeFor(locale, "maleMonasteries"), label: copy.nav.maleMonasteries },
+  { href: routeFor(locale, "femaleMonasteries"), label: copy.nav.femaleMonasteries },
+];
+const mobileMonasteryNavigation = [
+  { href: routeFor(locale, "monasteries"), label: copy.allMonasteries },
+  ...monasteryNavigation,
 ];
 
 const isActive = (href: string) => !href.includes("#") && currentPath.startsWith(href);
+const isExactPage = (href: string) => currentPath === href;
+const monasteryRoot = routeFor(locale, "monasteries");
+const isMonasteryActive = isActive(monasteryRoot);
 ---
 
 <header class="site-header">
   <div class="shell header-inner">
-    <a class="brand" href="/" aria-label="Светиње — почетна страница">
+    <a class="brand" href={routeFor(locale, "home")} aria-label={`${copy.siteName} — ${locale === "ru" ? "главная страница" : locale === "en" ? "home" : "почетна страница"}`}>
       <img
         class="brand-image"
         src="/images/brand/logo-svetinje.png"
         width="1000"
         height="321"
-        alt="Светиње"
+        alt={copy.siteName}
         loading="eager"
         decoding="async"
         fetchpriority="high"
       />
     </a>
 
-    <nav class="primary-navigation desktop-navigation" aria-label="Главна навигација">
+    <nav class="primary-navigation desktop-navigation" aria-label={locale === "ru" ? "Главная навигация" : locale === "en" ? "Primary navigation" : "Главна навигација"}>
       <ul>
-        {navigation.map((item) => (
+        {navigation.map((item) => item.href === monasteryRoot ? (
+          <li class="desktop-navigation__submenu-item">
+            <a
+              href={item.href}
+              aria-current={isExactPage(item.href) ? "page" : undefined}
+              data-section-active={isMonasteryActive ? "true" : undefined}
+            >
+              {item.label}
+            </a>
+            <div class="desktop-navigation__submenu">
+              <ul aria-label={copy.nav.monasteries}>
+                {monasteryNavigation.map((subcategory) => (
+                  <li>
+                    <a href={subcategory.href} aria-current={isExactPage(subcategory.href) ? "page" : undefined}>
+                      {subcategory.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </li>
+        ) : (
           <li>
             <a href={item.href} aria-current={isActive(item.href) ? "page" : undefined}>
               {item.label}
@@ -47,25 +85,40 @@ const isActive = (href: string) => !href.includes("#") && currentPath.startsWith
     </nav>
 
     <div class="header-tools desktop-tools">
-      <button class="favourites-control" type="button" disabled aria-label="Омиљене светиње — 0, функција је у припреми">
+      <button class="favourites-control" type="button" disabled aria-label={locale === "ru" ? "Избранные святыни — 0, функция готовится" : locale === "en" ? "Favourite holy places — 0, feature in preparation" : "Омиљене светиње — 0, функција је у припреми"}>
         <InterfaceIcon name="heart" size={21} />
         <span aria-hidden="true">0</span>
       </button>
       <details class="header-language">
-        <summary>Српски <InterfaceIcon name="chevron" size={15} /></summary>
-        <div class="header-language__panel"><LanguageSwitcher currentLocale="sr" /></div>
+        <summary>{localeConfig[locale].label} <InterfaceIcon name="chevron" size={15} /></summary>
+        <div class="header-language__panel"><LanguageSwitcher currentLocale={locale} destinations={localeLinks} /></div>
       </details>
     </div>
 
     <details class="mobile-navigation">
-      <summary aria-label="Отвори главни мени">
-        <span>Мени</span>
+      <summary aria-label={copy.openMenu}>
+        <span>{copy.menu}</span>
         <i aria-hidden="true"></i>
       </summary>
       <div class="mobile-navigation-panel">
-        <nav aria-label="Главна мобилна навигација">
+        <nav aria-label={locale === "ru" ? "Главная мобильная навигация" : locale === "en" ? "Primary mobile navigation" : "Главна мобилна навигација"}>
           <ul>
-            {navigation.map((item) => (
+            {navigation.map((item) => item.href === monasteryRoot ? (
+              <li>
+                <details class="mobile-navigation__submenu" open={isMonasteryActive}>
+                  <summary data-section-active={isMonasteryActive ? "true" : undefined}>{copy.nav.monasteries}</summary>
+                  <ul aria-label={copy.nav.monasteries}>
+                    {mobileMonasteryNavigation.map((subcategory) => (
+                      <li>
+                        <a href={subcategory.href} aria-current={isExactPage(subcategory.href) ? "page" : undefined}>
+                          {subcategory.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              </li>
+            ) : (
               <li>
                 <a href={item.href} aria-current={isActive(item.href) ? "page" : undefined}>
                   {item.label}
@@ -75,9 +128,9 @@ const isActive = (href: string) => !href.includes("#") && currentPath.startsWith
           </ul>
         </nav>
         <div class="mobile-tool-row mobile-tool-row--single">
-          <span><InterfaceIcon name="heart" size={19} /> Омиљено 0</span>
+          <span><InterfaceIcon name="heart" size={19} /> {locale === "ru" ? "Избранное" : locale === "en" ? "Favourites" : "Омиљено"} 0</span>
         </div>
-        <LanguageSwitcher currentLocale="sr" />
+        <LanguageSwitcher currentLocale={locale} destinations={localeLinks} />
       </div>
     </details>
   </div>

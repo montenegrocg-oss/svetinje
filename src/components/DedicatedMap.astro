@@ -2,17 +2,20 @@
 import type { VisiblePlace } from "../lib/content/publication";
 import MapCanvas from "./MapCanvas.astro";
 import MapControls from "./MapControls.astro";
+import { publicCopy } from "../i18n/public-copy";
 
 interface Props {
   places: VisiblePlace[];
+  locale?: import("../i18n/config").Locale;
 }
 
-const { places } = Astro.props;
+const { places, locale = "sr" } = Astro.props;
+const copy = publicCopy[locale].pages.map;
 ---
 
-<section class="dedicated-map-page" aria-label="Интерактивна карта православних светиња">
+<section class="dedicated-map-page" aria-label={copy.aria}>
   <div class="map-stage dedicated-map-page__stage">
-    <MapCanvas places={places} layout="full" />
-    <MapControls variant="map-page" />
+    <MapCanvas places={places} layout="full" locale={locale} />
+    <MapControls variant="map-page" locale={locale} />
   </div>
 </section>

@@ -529,9 +529,66 @@
   }
 
   .primary-navigation a:hover::after,
-  .primary-navigation a[aria-current="page"]::after {
+  .primary-navigation a[aria-current="page"]::after,
+  .primary-navigation a[data-section-active="true"]::after {
     transform: scaleX(1);
     transform-origin: left;
+  }
+
+  .desktop-navigation__submenu-item {
+    position: relative;
+  }
+
+  .desktop-navigation__submenu {
+    position: absolute;
+    z-index: 95;
+    top: calc(100% - 0.2rem);
+    left: -0.85rem;
+    min-width: 13.5rem;
+    padding-top: 0.35rem;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-0.25rem);
+    visibility: hidden;
+    transition:
+      opacity 140ms ease,
+      transform 140ms ease,
+      visibility 140ms ease;
+  }
+
+  .desktop-navigation__submenu-item:hover > .desktop-navigation__submenu,
+  .desktop-navigation__submenu-item:focus-within > .desktop-navigation__submenu {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+    visibility: visible;
+  }
+
+  .desktop-navigation__submenu ul {
+    display: grid;
+    gap: 0;
+    padding: 0.45rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--white);
+    box-shadow: var(--shadow-control);
+  }
+
+  .primary-navigation .desktop-navigation__submenu a {
+    min-height: 2.7rem;
+    padding-inline: 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.86rem;
+  }
+
+  .primary-navigation .desktop-navigation__submenu a:hover,
+  .primary-navigation .desktop-navigation__submenu a:focus-visible,
+  .primary-navigation .desktop-navigation__submenu a[aria-current="page"] {
+    background: var(--paper);
+  }
+
+  .primary-navigation .desktop-navigation__submenu a::after {
+    display: none;
   }
 
   .header-tools {
@@ -671,6 +728,45 @@
     color: var(--gold);
     content: "●";
     font-size: 0.42rem;
+  }
+
+  .mobile-navigation__submenu > summary {
+    display: flex;
+    min-height: 2.85rem;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--line);
+    color: var(--navy-950);
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: 1.12rem;
+    list-style: none;
+  }
+
+  .mobile-navigation__submenu > summary::after {
+    color: var(--gold);
+    content: "+";
+    font-family: var(--font-body);
+    font-size: 1.15rem;
+  }
+
+  .mobile-navigation__submenu[open] > summary::after {
+    content: "−";
+  }
+
+  .mobile-navigation__submenu > summary[data-section-active="true"] {
+    color: var(--gold);
+  }
+
+  .mobile-navigation__submenu ul {
+    padding-left: 0.85rem;
+  }
+
+  .mobile-navigation-panel nav .mobile-navigation__submenu a {
+    min-height: 2.75rem;
+    padding-left: 0.65rem;
+    font-family: var(--font-body);
+    font-size: 0.98rem;
   }
 
   .mobile-tool-row {
@@ -832,7 +928,7 @@
 @layer explorer {
   .map-explorer {
     --map-stage-height: 24rem;
-    --explorer-content-block-padding: 1rem;
+    --explorer-content-block-padding: 0.75rem;
 
     position: relative;
     background: var(--stone-100);
@@ -886,6 +982,10 @@
   }
 
   .map-explorer__secondary {
+    min-width: 0;
+  }
+
+  .map-explorer__secondary-content {
     display: grid;
     min-width: 0;
     align-content: start;
@@ -1243,8 +1343,7 @@
   .explorer-search {
     position: relative;
     display: grid;
-    grid-template-columns: 1fr 2.9rem;
-    gap: 0.55rem;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .explorer-search__icon {
@@ -1270,18 +1369,6 @@
 
   .explorer-search input::placeholder {
     color: #929ba4;
-  }
-
-  .icon-button {
-    display: grid;
-    min-width: 2.9rem;
-    min-height: 2.9rem;
-    place-items: center;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    color: var(--navy-900);
-    background: var(--white);
-    cursor: pointer;
   }
 
   .filter-chips {
@@ -1769,6 +1856,24 @@
     background: var(--paper);
   }
 
+  .homepage-pagination {
+    flex-wrap: nowrap;
+  }
+
+  .homepage-pagination--top {
+    margin-top: 0.65rem;
+    padding-block: 0.4rem;
+  }
+
+  .homepage-pagination__status {
+    min-width: 3.5rem;
+    color: var(--ink-soft);
+    font-size: 0.78rem;
+    font-weight: 750;
+    text-align: center;
+    white-space: nowrap;
+  }
+
   .explorer-pagination[hidden],
   .explorer-pagination button[hidden] {
     display: none;
@@ -2216,6 +2321,10 @@
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    background: transparent;
     text-decoration: none;
   }
 
@@ -2245,6 +2354,54 @@
   .catalogue-section-heading h2 {
     margin-top: 0.35rem;
     font-size: clamp(1.6rem, 3vw, 2.25rem);
+  }
+
+  .catalogue-main__status {
+    margin-top: 0.4rem;
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+  }
+
+  .category-catalogue__body--monasteries {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .category-catalogue__body--monasteries .catalogue-main {
+    margin-top: 0;
+  }
+
+  .catalogue-sidebar {
+    min-width: 0;
+  }
+
+  .catalogue-sidebar .catalogue-toolbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .catalogue-sidebar .catalogue-toolbar__search,
+  .catalogue-sidebar .catalogue-toolbar__area,
+  .catalogue-sidebar .catalogue-toolbar__actions {
+    width: 100%;
+  }
+
+  .catalogue-sidebar .catalogue-toolbar__actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .catalogue-sidebar .catalogue-toolbar__actions a,
+  .catalogue-sidebar .catalogue-toolbar__actions button {
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .category-catalogue__body--monasteries .catalogue-filter-empty {
+    margin-top: 0;
   }
 
   .catalogue-featured__grid {
@@ -3508,6 +3665,15 @@
     align-items: start;
   }
 
+  .place-profile-grid--has-schedule {
+    grid-template-areas:
+      "about"
+      "gallery"
+      "schedule"
+      "practical"
+      "related";
+  }
+
   .place-profile-about {
     grid-area: about;
     min-width: 0;
@@ -3539,6 +3705,29 @@
   .place-detail-gallery {
     grid-area: gallery;
     min-width: 0;
+  }
+
+  .place-service-schedule {
+    grid-area: schedule;
+    min-width: 0;
+    padding: clamp(1rem, 2vw, 1.35rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--white);
+    box-shadow: 0 10px 30px rgba(10, 41, 68, 0.08);
+  }
+
+  .place-service-schedule h2 {
+    margin: 0;
+    color: var(--navy-950);
+    font-size: clamp(1.35rem, 2vw, 1.75rem);
+  }
+
+  .place-service-schedule p {
+    margin: 0.8rem 0 0;
+    color: var(--ink-reading);
+    line-height: 1.65;
+    white-space: pre-line;
   }
 
   .place-detail-gallery__grid {
@@ -3680,6 +3869,14 @@
     color: var(--ink-soft);
     font-size: 0.7rem;
     font-weight: 750;
+  }
+
+  .place-practical-feasts {
+    display: grid;
+    gap: 0.28rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
   .place-practical-list dd {
@@ -4231,6 +4428,14 @@
         "related related";
       grid-template-columns: minmax(0, 1.18fr) minmax(19rem, 0.82fr);
     }
+
+    .place-profile-grid--has-schedule {
+      grid-template-areas:
+        "about practical"
+        "gallery practical"
+        "schedule practical"
+        "related related";
+    }
   }
 
   @media (min-width: 75rem) {
@@ -4239,6 +4444,13 @@
         "about gallery practical"
         "related related practical";
       grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.95fr) minmax(20rem, 0.9fr);
+    }
+
+    .place-profile-grid--has-schedule {
+      grid-template-areas:
+        "about gallery practical"
+        "about schedule practical"
+        "related related practical";
     }
 
     .place-practical-panel {
@@ -4260,6 +4472,30 @@
   @media (min-width: 68rem) {
     .category-page-hero {
       padding-block: 2.75rem;
+    }
+
+    .category-catalogue__body--monasteries {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) clamp(18rem, 25vw, 22rem);
+      grid-template-areas:
+        "main sidebar"
+        "empty sidebar";
+      align-items: start;
+      gap: 1.5rem;
+    }
+
+    .category-catalogue__body--monasteries .catalogue-main {
+      grid-area: main;
+    }
+
+    .category-catalogue__body--monasteries .catalogue-filter-empty {
+      grid-area: empty;
+    }
+
+    .catalogue-sidebar {
+      position: sticky;
+      top: 6.25rem;
+      grid-area: sidebar;
     }
 
     .editorial-place-card--featured {
@@ -4346,8 +4582,14 @@
 
     .map-explorer__secondary {
       grid-column: 4;
-      grid-row: 4;
-      padding-top: var(--explorer-content-block-padding);
+      grid-row: 1 / -1;
+      display: grid;
+      grid-template-rows: var(--map-stage-height) auto;
+      row-gap: 1.25rem;
+    }
+
+    .map-explorer__secondary-content {
+      grid-row: 2;
     }
 
     .explorer-results {

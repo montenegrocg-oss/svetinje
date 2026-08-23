@@ -1,24 +1,4 @@
 ---
-import MapExplorer from "../components/MapExplorer.astro";
-import PlaceAreas from "../components/PlaceAreas.astro";
-import BaseLayout from "../layouts/BaseLayout.astro";
-import { loadVisiblePlaces } from "../lib/content/publication";
-import { loadVisibleRoutes } from "../lib/content/routes";
-import { loadCalendarDays, loadScriptureCorpus } from "../lib/calendar/content";
-
-const [places, routes, calendarDays, scriptureCorpus] = await Promise.all([
-  loadVisiblePlaces(),
-  loadVisibleRoutes(),
-  loadCalendarDays(),
-  loadScriptureCorpus(),
-]);
+import HomePage from "../components/HomePage.astro";
 ---
-
-<BaseLayout
-  title="Светиње — Православна Црна Гора"
-  description="Дигитални водич кроз православне светиње, поклоничке руте и духовно насљеђе Црне Горе."
-  canonicalPath="/"
->
-  <MapExplorer places={places} routes={routes} calendarDays={calendarDays} scriptureCorpus={scriptureCorpus} />
-  <PlaceAreas places={places} />
-</BaseLayout>
+<HomePage locale="sr" />

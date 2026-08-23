@@ -7,6 +7,7 @@ import { loadVisiblePlaces } from "../src/lib/content/publication.ts";
 import { categoryForPlaceType } from "../src/lib/place-filters.ts";
 import { MARKER_ASSETS, resolveMarkerAsset } from "../src/lib/map-marker-assets.ts";
 import { clusterProjectedMarkers, getClusterExpansionZoom } from "../src/lib/map-marker-clustering.ts";
+import { selectPublicDiscoveryPlaces } from "../src/lib/public-place-discovery.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -52,7 +53,7 @@ test("the homepage renders a safe no-key fallback and a key-backed loading state
   assert.match(mapCanvas, /data-map-state=\{hasMapTilerKey \? "loading" : "fallback"\}/);
   assert.match(mapCanvas, /class="map-fallback"[\s\S]*?hidden=\{hasMapTilerKey\}[\s\S]*?aria-hidden=\{hasMapTilerKey \? "true" : "false"\}/);
   assert.match(mapCanvas, /class="map-renderer"[\s\S]*?hidden=\{!hasMapTilerKey\}[\s\S]*?aria-hidden=\{hasMapTilerKey \? "false" : "true"\}/);
-  assert.match(mapCanvas, /class="map-loading-surface"[\s\S]*?data-map-loading-status[\s\S]*?Учитавање карте/);
+  assert.match(mapCanvas, /class="map-loading-surface"[\s\S]*?data-map-loading-status[\s\S]*?mapCopy\.loading/);
   assert.match(mapCanvas, /data-map-fallback-notice[\s\S]*?hidden=\{hasMapTilerKey\}/);
   assert.match(mapCanvas, /if \(!MAPTILER_KEY \|\| !mapContainer \|\| !renderer\)/);
   assert.match(mapCanvas, /const showFallback = \(\) => \{/);
@@ -95,10 +96,20 @@ test("custom controls use the requested responsive Montenegro view without geolo
   assert.match(mapCanvas, /map\.zoomOut/);
   assert.match(mapCanvas, /resetButton\?\.addEventListener\("click", resetView\)/);
   assert.match(mapCanvas, /prefers-reduced-motion: reduce/);
-  assert.match(mapCanvas, /cooperativeGestures: true/);
   assert.match(mapCanvas, /dragRotate: false/);
   assert.match(mapCanvas, /pitchWithRotate: false/);
   assert.doesNotMatch(mapCanvas, /navigator\.geolocation|GeolocateControl|flyTo\s*\(/);
+});
+
+test("mobile coarse-pointer maps pan with one finger while desktop keeps cooperative gestures", async () => {
+  const mapCanvas = await source("src/components/MapCanvas.astro");
+
+  assert.match(mapCanvas, /const mobileTouch = window\.matchMedia\("\(max-width: 47\.999rem\) and \(pointer: coarse\)"\)\.matches/);
+  assert.match(mapCanvas, /cooperativeGestures: !mobileTouch/);
+  assert.match(mapCanvas, /dragPan: true/);
+  assert.match(mapCanvas, /touchZoomRotate: true/);
+  assert.match(mapCanvas, /map\.touchZoomRotate\.disableRotation\(\)/);
+  assert.doesNotMatch(mapCanvas, /addEventListener\("touch(?:start|move|end)"/);
 });
 
 test("the renderer becomes ready only after MapLibre loads and has a bounded fallback", async () => {
@@ -153,10 +164,41 @@ test("the map accepts only server-selected marker data and adds no route geometr
   assert.match(mapSource, /const marker = new maplibregl\.Marker\(\{ element: link, anchor: "bottom" \}\)/);
   assert.match(mapSource, /dataset\.mapMarker/);
   assert.match(mapSource, /const link = document\.createElement\("a"\)/);
-  assert.match(mapSource, /link\.href = `\/svetinje\/\$\{encodeURIComponent\(place\.slug\)\}\/`/);
-  assert.match(mapSource, /link\.setAttribute\("aria-label", `\$\{place\.name\} — отвори страницу`\)/);
+  assert.match(mapSource, /link\.href = `\$\{placeDetailRoot\}\$\{encodeURIComponent\(place\.slug\)\}\/`/);
+  assert.match(mapSource, /link\.setAttribute\("aria-label", `\$\{place\.name\} — \$\{openPageLabel\}`\)/);
   assert.doesNotMatch(mapSource, /addSource\s*\(|addLayer\s*\(|FeatureCollection|LineString|routeCoordinates/i);
   assert.doesNotMatch(mapSource, /42\.29799|18\.84452|Манастир Подмаине/iu);
+});
+
+test("public map marker and cluster inventory excludes coordinate-bearing holy places", () => {
+  const visiblePlaces = [
+    { id: "monastery", placeType: "monastery", longitude: 19.1, latitude: 42.1 },
+    { id: "church", placeType: "church", longitude: 19.1002, latitude: 42.1002 },
+    { id: "holy-spring", placeType: "holy-spring", longitude: 19.1001, latitude: 42.1001 },
+  ];
+  const mapPlaces = selectPublicDiscoveryPlaces(visiblePlaces);
+  const projectedMarkers = mapPlaces.map((place, index) => ({ item: place, x: 100 + index, y: 100 + index }));
+  const clusters = clusterProjectedMarkers(projectedMarkers, 52);
+
+  assert.deepEqual(mapPlaces.map(({ id }) => id), ["monastery", "church"]);
+  assert.equal(clusters.length, 1);
+  assert.equal(clusters[0]?.length, 2);
+  assert.deepEqual(clusters[0]?.map(({ item }) => item.id), ["monastery", "church"]);
+});
+
+test("homepage and dedicated map use the shared public-discovery inventory", async () => {
+  const [explorer, mapRoute, mapPage] = await Promise.all([
+    source("src/components/MapExplorer.astro"),
+    source("src/pages/mapa/index.astro"),
+    source("src/components/MapPage.astro"),
+  ]);
+
+  assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
+  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} locale=\{locale\} \/>/);
+  assert.doesNotMatch(explorer, /mapOnlyPlaceIds|data-map-only-place-ids/);
+  assert.match(mapRoute, /<MapPage places=\{places\} locale="sr" \/>/);
+  assert.match(mapPage, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
+  assert.match(mapPage, /<DedicatedMap places=\{discoveryPlaces\} locale=\{locale\} \/>/);
 });
 
 test("nearby visible places cluster with an accurate count and separate after zoom-in", () => {
@@ -179,6 +221,50 @@ test("nearby visible places cluster with an accurate count and separate after zo
   })), 52).map((group) => group.length), [1, 1, 1]);
 });
 
+test("marker clustering does not grow through an unlimited neighbor chain", () => {
+  const chainedPoints = [
+    { item: "a", x: 0, y: 0 },
+    { item: "b", x: 40, y: 0 },
+    { item: "c", x: 80, y: 0 },
+    { item: "d", x: 120, y: 0 },
+  ];
+
+  assert.deepEqual(clusterProjectedMarkers(chainedPoints, 52).map((group) => (
+    group.map(({ item }) => item)
+  )), [
+    ["a", "b"],
+    ["c", "d"],
+  ]);
+});
+
+test("marker clustering is spatially deterministic and conserves filtered places", () => {
+  const points = [
+    { item: { id: "budva", category: "churches" }, x: 100, y: 100 },
+    { item: { id: "podmaine", category: "monasteries" }, x: 126, y: 108 },
+    { item: { id: "kotor", category: "churches" }, x: 310, y: 92 },
+    { item: { id: "perast", category: "churches" }, x: 338, y: 105 },
+    { item: { id: "cetinje", category: "monasteries" }, x: 220, y: 260 },
+  ];
+  const canonicalGroups = (input) => clusterProjectedMarkers(input, 52)
+    .map((group) => group.map(({ item }) => item.id).sort())
+    .sort((left, right) => left.join(",").localeCompare(right.join(",")));
+
+  assert.deepEqual(canonicalGroups(points), [
+    ["budva", "podmaine"],
+    ["cetinje"],
+    ["kotor", "perast"],
+  ]);
+  assert.deepEqual(canonicalGroups([...points].reverse()), canonicalGroups(points));
+  assert.equal(canonicalGroups(points).flat().length, points.length);
+
+  const churches = points.filter(({ item }) => item.category === "churches");
+  assert.deepEqual(canonicalGroups(churches), [
+    ["budva"],
+    ["kotor", "perast"],
+  ]);
+  assert.deepEqual(canonicalGroups(churches).flat().sort(), churches.map(({ item }) => item.id).sort());
+});
+
 test("cluster expansion chooses the first zoom where nearby places divide", () => {
   const clustered = [
     { item: "budva", x: 100, y: 100 },
@@ -196,7 +282,7 @@ test("cluster activation zooms without selecting a place or opening its popup", 
   assert.match(mapCanvas, /const MARKER_CLUSTER_RADIUS = 52;/);
   assert.match(mapCanvas, /const MARKER_CLUSTER_MAX_ZOOM = 12;/);
   assert.match(mapCanvas, /button\.dataset\.clusterCount = String\(group\.length\)/);
-  assert.match(mapCanvas, /button\.setAttribute\("aria-label", `\$\{group\.length\} светиње — приближи карту`\)/);
+  assert.match(mapCanvas, /button\.setAttribute\("aria-label", `\$\{group\.length\} \$\{clusterLabel\}`\)/);
   assert.match(clusterClick, /closePreview\(\)/);
   assert.match(clusterClick, /map\.easeTo\(\{/);
   assert.match(clusterClick, /getClusterExpansionZoom/);
@@ -327,9 +413,9 @@ test("one accessible marker preview preserves desktop navigation and pins touch 
   assert.match(mapCanvas, /activePreview = \{ place, link, card, pinned \};[\s\S]*?root\.dataset\.popupOpen = "true"/);
   assert.match(mapCanvas, /activePreview = \{ place, link, card, pinned \}/);
   assert.match(mapCanvas, /if \(activePreview\?\.place\.id === id\) closePreview\(\)/);
-  assert.match(mapCanvas, /link\.href = `\/svetinje\/\$\{encodeURIComponent\(place\.slug\)\}\/`/);
-  assert.match(mapCanvas, /map-place-preview__link[\s\S]*?link\.href = `\/svetinje\/\$\{encodeURIComponent\(place\.slug\)\}\/`/);
-  assert.match(mapCanvas, /notice\.textContent = "Ауторска фотографија биће додата"/);
+  assert.match(mapCanvas, /link\.href = `\$\{placeDetailRoot\}\$\{encodeURIComponent\(place\.slug\)\}\/`/);
+  assert.match(mapCanvas, /map-place-preview__link[\s\S]*?link\.href = `\$\{placeDetailRoot\}\$\{encodeURIComponent\(place\.slug\)\}\/`/);
+  assert.match(mapCanvas, /notice\.textContent = photoPlaceholder/);
   assert.match(mapCanvas, /image\.alt = place\.previewImageAlt \?\? place\.name/);
 
   assert.match(publication, /previewImageSrc\?: string/);

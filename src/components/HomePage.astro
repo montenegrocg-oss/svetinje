@@ -1,0 +1,32 @@
+---
+import MapExplorer from "./MapExplorer.astro";
+import PlaceAreas from "./PlaceAreas.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { routeFor, type Locale } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
+import { loadCalendarDays, loadScriptureCorpus } from "../lib/calendar/content";
+import { loadLocalizedVisiblePlaces } from "../lib/content/localized-publication";
+import { loadVisiblePlaces } from "../lib/content/publication";
+import { loadVisibleRoutes } from "../lib/content/routes";
+
+interface Props { locale?: Locale }
+const { locale = "sr" } = Astro.props;
+const localized = locale !== "sr";
+const [places, routes, calendarDays, scriptureCorpus] = await Promise.all([
+  localized ? loadLocalizedVisiblePlaces(locale) : loadVisiblePlaces(),
+  localized ? Promise.resolve([]) : loadVisibleRoutes(),
+  localized ? Promise.resolve([]) : loadCalendarDays(),
+  localized ? Promise.resolve(undefined) : loadScriptureCorpus(),
+]);
+const copy = publicCopy[locale].homepage;
+---
+
+<BaseLayout
+  title={copy.metadata.title}
+  description={copy.metadata.description}
+  canonicalPath={routeFor(locale, "home")}
+  locale={locale}
+>
+  <MapExplorer places={places} routes={routes} calendarDays={calendarDays} scriptureCorpus={scriptureCorpus} locale={locale} />
+  <PlaceAreas places={places} locale={locale} />
+</BaseLayout>

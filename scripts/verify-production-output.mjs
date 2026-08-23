@@ -6,6 +6,7 @@ import { loadExcludedContentMarkers } from "../src/lib/content/publication.ts";
 import { loadExcludedNewsMarkers } from "../src/lib/content/news.ts";
 import {
   CATEGORY_HTML_ROUTES,
+  MONASTERY_SUBCATEGORY_HTML_ROUTES,
   createOutputExpectations,
 } from "./lib/output-expectations.mjs";
 import { PLACE_AREAS } from "../src/lib/place-areas.ts";
@@ -15,11 +16,14 @@ import { selectFeaturedCataloguePlaces } from "../src/lib/category-catalogue.ts"
 import { getPlaceAboutLabel } from "../src/lib/place-content.ts";
 import { MOST_VISITED_PLACE_IDS } from "../src/lib/homepage-selections.ts";
 import { containsUnsupportedReferenceScreenshotContent } from "./lib/reference-screenshot-guard.mjs";
+import { localeConfig, placeDetailRoot } from "../src/i18n/config.ts";
+import { loadLocalizedNarrative } from "../src/lib/content/localized-narrative.ts";
 
 const EMPTY_STATES = {
   monasteries: "Још нема манастира спремних за јавно објављивање.",
+  male: "Још нема мушких манастира спремних за приказ.",
+  female: "Још нема женских манастира спремних за приказ.",
   churches: "Још нема храмова спремних за јавно објављивање.",
-  "holy-places": "Још нема светих мјеста спремних за јавно објављивање.",
 };
 
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -99,9 +103,9 @@ function verifyCards(page, expectedPlaces, allPlaces, label, failures, expectedI
   }
 }
 
-function verifyCataloguePagination(page, expectedPlaces, label, failures) {
+function verifyCataloguePagination(page, expectedPlaces, label, failures, useFeaturedTier = true) {
   if (!page || expectedPlaces.length === 0) return;
-  const featuredPlaces = selectFeaturedCataloguePlaces(expectedPlaces);
+  const featuredPlaces = useFeaturedTier ? selectFeaturedCataloguePlaces(expectedPlaces) : [];
   const featuredIds = new Set(featuredPlaces.map((place) => place.id));
   const paginatedPlaces = expectedPlaces.filter((place) => !featuredIds.has(place.id));
   const featuredItemTags = [...page.html.matchAll(/<li\b(?=[^>]*\bdata-catalogue-featured-item\b)[^>]*>/g)].map((match) => match[0]);
@@ -308,8 +312,10 @@ function verifyDetail(detailCase, model, pagesByRoute, failures) {
     failures.push(`${place.id} detail page exposes retired practical-information labels`);
   }
   if (place.ecclesiasticalJurisdiction && !html.includes("Епархија")) failures.push(`${place.id} detail page is missing the Eparchy label`);
-  if (place.patronalFeast && !html.includes(`<dd>${place.patronalFeast}</dd>`)) failures.push(`${place.id} detail page is missing its patronal feast`);
-  if (!place.patronalFeast && /<dt[^>]*>[^<]*Слава/.test(html)) failures.push(`${place.id} detail page renders an empty patronal-feast row`);
+  for (const feast of place.patronalFeasts) {
+    if (!html.includes(`<li>${feast}</li>`)) failures.push(`${place.id} detail page is missing patronal feast ${feast}`);
+  }
+  if (place.patronalFeasts.length === 0 && /<dt[^>]*>[^<]*Слава/.test(html)) failures.push(`${place.id} detail page renders an empty patronal-feast row`);
   if (place.youtubeVideoId && !gallery.includes(`https://www.youtube-nocookie.com/embed/${place.youtubeVideoId}`)) {
     failures.push(`${place.id} detail page is missing its privacy-enhanced YouTube embed`);
   }
@@ -325,8 +331,8 @@ function verifyFixedHomepageContracts(homepageHtml, model, failures) {
   if (explorerCardIds.length !== uniqueExplorerCardIds.size) {
     failures.push("homepage inventory must contain each data-place-card ID exactly once");
   }
-  if (explorerCardIds.length !== model.places.length) {
-    failures.push(`homepage inventory must retain all ${model.places.length} filterable place card(s), found ${explorerCardIds.length}`);
+  if (explorerCardIds.length !== model.discoveryPlaces.length) {
+    failures.push(`homepage inventory must retain all ${model.discoveryPlaces.length} public-discovery place card(s), found ${explorerCardIds.length}`);
   }
   if (initialPrimaryCards !== model.homepagePreviewPlaces.length) {
     failures.push(`homepage preview must contain ${model.homepagePreviewPlaces.length} initial card(s), found ${initialPrimaryCards}`);
@@ -358,8 +364,8 @@ function verifyFixedHomepageContracts(homepageHtml, model, failures) {
       failures.push(`homepage pagination is missing ${marker}`);
     }
   }
-  const expectedHomepagePages = pageCountForHomepagePreview(model.places.length);
-  if (model.places.length > 0) {
+  const expectedHomepagePages = pageCountForHomepagePreview(model.discoveryPlaces.length);
+  if (model.discoveryPlaces.length > 0) {
     const expectedPaginationStatus = `1 / ${expectedHomepagePages}`;
     if (!htmlToPlainText(homepagePagination).includes(expectedPaginationStatus)) {
       failures.push(`homepage pagination must initially report ${expectedPaginationStatus}`);
@@ -367,15 +373,15 @@ function verifyFixedHomepageContracts(homepageHtml, model, failures) {
   } else if (homepagePagination && !/<nav\b[^>]*\bhidden\b/.test(homepagePagination)) {
     failures.push("homepage pagination must remain hidden for an empty inventory");
   }
-  const expectedInitialStatus = model.places.length > model.homepagePreviewPlaces.length
-    ? `Приказана су ${model.homepagePreviewPlaces.length} од ${model.places.length} резултата.`
+  const expectedInitialStatus = model.discoveryPlaces.length > model.homepagePreviewPlaces.length
+    ? `Приказана су ${model.homepagePreviewPlaces.length} од ${model.discoveryPlaces.length} резултата.`
     : null;
   if (expectedInitialStatus && !htmlToPlainText(homepageHtml).includes(expectedInitialStatus)) {
     failures.push("homepage accessible result status must distinguish shown cards from full matches");
   }
 
   const visibleRecommendations = MOST_VISITED_PLACE_IDS.flatMap((id) => {
-    const place = model.placesById.get(id);
+    const place = model.discoveryPlacesById.get(id);
     return place ? [place] : [];
   });
   const realCount = countMatches(homepageHtml, /data-recommended-place=/g);
@@ -432,17 +438,34 @@ for (const page of pages) {
   }
 }
 
+for (const locale of ["ru", "en"]) {
+  const prefix = `${locale}/`;
+  for (const page of pages.filter((candidate) => candidate.relative.startsWith(prefix))) {
+    if (!page.html.includes(`<html lang="${localeConfig[locale].htmlLang}">`)) failures.push(`${page.relative} has the wrong html lang`);
+    if (!page.html.includes(`rel="canonical"`)) failures.push(`${page.relative} is missing a canonical link`);
+  }
+  for (const place of model.localizedPlaces[locale]) {
+    const route = `${placeDetailRoot[locale].slice(1)}${place.slug}/index.html`;
+    const detail = pagesByRoute.get(route);
+    if (!detail?.html.includes(`data-place-id="${place.id}"`) || !detail.html.includes(place.name) || !detail.html.includes(place.summary)) {
+      failures.push(`${locale} detail ${place.id} is missing its localized identity or narrative summary`);
+    }
+  }
+}
+if (pagesByRoute.has("ru/svyatyni/index.html") || pagesByRoute.has("en/holy-places/index.html")) failures.push("localized holy-place discovery archive was generated");
+
 const homepage = pagesByRoute.get("index.html");
 const catalogue = pagesByRoute.get("svetinje/index.html");
 const newsArchive = pagesByRoute.get("novosti/index.html");
 const homepageHtml = homepage?.html ?? "";
+if (pagesByRoute.has("sveta-mjesta/index.html")) failures.push("removed public holy-places category route was generated");
 verifyFixedHomepageContracts(homepageHtml, model, failures);
 verifyNewsContracts(newsArchive, model, pagesByRoute, failures);
 verifyAreaNavigation(homepage, model, failures);
-verifyCards(homepage, model.places, model.places, "homepage explorer", failures);
-const generalCatalogueImageIds = new Set(selectFeaturedCataloguePlaces(model.places).map((place) => place.id));
-verifyCards(catalogue, model.places, model.places, "general catalogue", failures, generalCatalogueImageIds);
-verifyCataloguePagination(catalogue, model.places, "general catalogue", failures);
+verifyCards(homepage, model.discoveryPlaces, model.places, "homepage explorer", failures);
+const generalCatalogueImageIds = new Set(selectFeaturedCataloguePlaces(model.discoveryPlaces).map((place) => place.id));
+verifyCards(catalogue, model.discoveryPlaces, model.places, "general catalogue", failures, generalCatalogueImageIds);
+verifyCataloguePagination(catalogue, model.discoveryPlaces, "general catalogue", failures);
 
 const routeCatalogue = pagesByRoute.get("rute/index.html");
 for (const { route, path: routePath } of model.routeDetailRoutes) {
@@ -492,11 +515,23 @@ for (const { route, path: routePath } of model.routeDetailRoutes) {
 for (const [category, route] of Object.entries(CATEGORY_HTML_ROUTES)) {
   const page = pagesByRoute.get(route);
   const members = model.categoryMembership[category];
-  const featuredImageIds = new Set(selectFeaturedCataloguePlaces(members).map((place) => place.id));
+  const useFeaturedTier = category !== "monasteries";
+  const featuredImageIds = new Set(
+    useFeaturedTier ? selectFeaturedCataloguePlaces(members).map((place) => place.id) : [],
+  );
   verifyCards(page, members, model.places, `${category} catalogue`, failures, featuredImageIds);
-  verifyCataloguePagination(page, members, `${category} catalogue`, failures);
+  verifyCataloguePagination(page, members, `${category} catalogue`, failures, useFeaturedTier);
   if (members.length === 0 && !page?.html.includes(EMPTY_STATES[category])) failures.push(`${category} catalogue is missing its protected empty state`);
   if (members.length > 0 && page?.html.includes(EMPTY_STATES[category])) failures.push(`${category} catalogue incorrectly renders its empty state`);
+}
+
+for (const [community, route] of Object.entries(MONASTERY_SUBCATEGORY_HTML_ROUTES)) {
+  const page = pagesByRoute.get(route);
+  const members = model.monasteryCommunityMembership[community];
+  verifyCards(page, members, model.places, `${community} monastery catalogue`, failures, new Set());
+  verifyCataloguePagination(page, members, `${community} monastery catalogue`, failures, false);
+  if (members.length === 0 && !page?.html.includes(EMPTY_STATES[community])) failures.push(`${community} monastery catalogue is missing its protected empty state`);
+  if (members.length > 0 && page?.html.includes(EMPTY_STATES[community])) failures.push(`${community} monastery catalogue incorrectly renders its empty state`);
 }
 
 const markerPayload = parseMarkerPayload(homepageHtml, failures);
@@ -521,7 +556,7 @@ for (const detailCase of model.detailRoutes) {
 }
 
 for (const page of pages) {
-  if (/rating|>\s*Оцјена\s*</i.test(page.html) || /033\/459-084|manastirmaine@gmail\.com/i.test(page.html)) failures.push(`${page.relative} contains prohibited practical or commercial preview data`);
+  if (/\brating\b|>\s*Оцјена\s*</i.test(page.html) || /033\/459-084|manastirmaine@gmail\.com/i.test(page.html)) failures.push(`${page.relative} contains prohibited practical or commercial preview data`);
   if (containsUnsupportedReferenceScreenshotContent(page.html)) failures.push(`${page.relative} contains unsupported reference-screenshot content`);
 }
 
@@ -552,6 +587,19 @@ if (!editorialPreview) {
     if (Number.isFinite(marker.longitude)) excludedValues.push(String(marker.longitude));
     for (const value of excludedValues.filter((candidate) => typeof candidate === "string" && candidate.length >= 4)) {
       if (pages.some((page) => page.html.includes(value))) failures.push(`production contains excluded research value ${value}`);
+    }
+  }
+  const allPlaceIds = (await readdir(path.join(root, "content", "places"), { withFileTypes: true }))
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
+  for (const placeId of allPlaceIds) {
+    for (const locale of ["ru", "en"]) {
+      const narrative = await loadLocalizedNarrative(root, placeId, locale);
+      if (!narrative || narrative.translationStatus === "published") continue;
+      if (narrative.slug && pagesByRoute.has(`${placeDetailRoot[locale].slice(1)}${narrative.slug}/index.html`)) failures.push(`production generated excluded ${locale} translation route for ${placeId}`);
+      for (const value of [narrative.preferredName, narrative.summary].filter((item) => typeof item === "string" && item.length >= 8)) {
+        if (pages.filter((page) => page.relative.startsWith(`${locale}/`)).some((page) => page.html.includes(value))) failures.push(`production contains excluded ${locale} translation value for ${placeId}`);
+      }
     }
   }
   const excludedNews = await loadExcludedNewsMarkers(root);
