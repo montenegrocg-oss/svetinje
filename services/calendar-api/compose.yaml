@@ -26,7 +26,7 @@ services:
       PORT: 3001
       CALENDAR_BOOTSTRAP: "true"
     ports:
-      - "${CALENDAR_API_PORT:-3001}:3001"
+      - "127.0.0.1:${CALENDAR_API_PORT:-3001}:3001"
     depends_on:
       postgres:
         condition: service_healthy
