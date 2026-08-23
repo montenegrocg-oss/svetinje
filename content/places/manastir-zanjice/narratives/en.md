@@ -3,7 +3,7 @@ schema_version: 1
 place_id: manastir-zanjice
 locale: en
 editorial_status: research
-translation_status: published
+translation_status: outdated
 slug: zanjice-monastery
 preferred_name: Žanjice Monastery
 summary: Žanjice Monastery is located on a small island off the Luštica Peninsula, near Cape Arza and Mirišta Beach. At the heart of the fortified complex stands the Church of the Presentation of the Most Holy Theotokos, believed to date from the 15th century.
@@ -12,7 +12,7 @@ approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-23T14:29:07Z
+  updated_at: 2026-08-23T14:29:27Z
   updated_by: montenegro-cg
 ---
 

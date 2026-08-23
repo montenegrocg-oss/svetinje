@@ -3,7 +3,7 @@ schema_version: 1
 place_id: manastir-zanjice
 locale: ru
 editorial_status: research
-translation_status: published
+translation_status: outdated
 slug: monastyr-zhanitse
 preferred_name: Монастырь Жанице
 summary: Монастырь Жанице расположен на небольшом острове у полуострова Луштица, неподалёку от мыса Арза и пляжа Миришта. Центром укреплённого комплекса является церковь Введения во храм Пресвятой Богородицы, которая, предположительно, относится к XV веку.
@@ -12,7 +12,7 @@ approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-23T14:29:16Z
+  updated_at: 2026-08-23T14:29:27Z
   updated_by: montenegro-cg
 ---
 
