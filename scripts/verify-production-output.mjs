@@ -6,6 +6,7 @@ import { loadExcludedContentMarkers } from "../src/lib/content/publication.ts";
 import { loadExcludedNewsMarkers } from "../src/lib/content/news.ts";
 import {
   CATEGORY_HTML_ROUTES,
+  CALENDAR_HTML_ROUTES,
   MONASTERY_SUBCATEGORY_HTML_ROUTES,
   createOutputExpectations,
 } from "./lib/output-expectations.mjs";
@@ -413,11 +414,21 @@ const model = await createOutputExpectations(root, { editorialPreview });
 try {
   const calendarJson = await readFile(path.join(distRoot, "calendar", "2026.json"), "utf8");
   const calendarPayload = JSON.parse(calendarJson);
-  if (calendarPayload.year !== 2026 || calendarPayload.time_zone !== "Europe/Podgorica" || calendarPayload.days?.length !== 365) {
-    failures.push("calendar/2026.json must contain 365 compact Podgorica calendar days");
+  if (calendarPayload.year !== 2026 || calendarPayload.time_zone !== "Europe/Podgorica" || calendarPayload.days?.length !== CALENDAR_HTML_ROUTES.length) {
+    failures.push("calendar/2026.json must contain exactly the verified Podgorica calendar inventory");
+  }
+  const firstCalendarDay = calendarPayload.days?.[0];
+  const lastCalendarDay = calendarPayload.days?.at(-1);
+  const calendarByDate = new Map(calendarPayload.days?.map((day) => [day.date, day]) ?? []);
+  if (firstCalendarDay?.date !== "2026-08-01" || lastCalendarDay?.date !== "2026-12-31" || calendarByDate.has("2026-07-31")) {
+    failures.push("calendar/2026.json must fail closed outside the verified August-December range");
+  }
+  if (calendarByDate.get("2026-08-19")?.commemoration_sr !== "Преображење Господње"
+    || calendarByDate.get("2026-08-20")?.commemoration_sr !== "Свети преподобномученик Дометије; Преподобни Ор") {
+    failures.push("calendar/2026.json does not preserve exact verified control-day text");
   }
   const publicCalendarOutput = `${calendarJson}\n${pages.filter((page) => page.relative.startsWith("kalendar/")).map((page) => page.html).join("\n")}`;
-  for (const forbidden of ["APKPure", ".xapk", "com.tipik.app.apk", "data_data.zip", "Microsoft Word 15", "mso-", "svetosavlje.org", "ebible.org", "_provenance", "srp1865", "Типик"]) {
+  for (const forbidden of ["source_ref", "APKPure", ".xapk", "com.tipik.app.apk", "data_data.zip", "Microsoft Word 15", "mso-", "svetosavlje.org", "ebible.org", "_provenance", "srp1865", "Типик"]) {
     if (publicCalendarOutput.toLocaleLowerCase("sr").includes(forbidden.toLocaleLowerCase("sr"))) {
       failures.push(`public calendar output exposes forbidden source material: ${forbidden}`);
     }

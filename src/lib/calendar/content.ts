@@ -1,6 +1,12 @@
-import { readFile, readdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { parse } from "yaml";
+import {
+  loadVerifiedCalendarDataset,
+  publicCalendarDays,
+  type CalendarDay,
+} from "./verified-dataset.ts";
+
+export type { CalendarDay } from "./verified-dataset.ts";
 
 export type GospelBook = "mt" | "mk" | "lk" | "jn";
 export interface GospelRange { chapter: number; verses: string[] }
@@ -10,14 +16,6 @@ export interface CalendarReading {
   scope: "day" | "sunday" | "feast" | "saint" | "unknown";
   label: string;
   ranges: GospelRange[];
-}
-export interface CalendarDay {
-  schema_version: 1;
-  date: string;
-  julian_date: string;
-  title: string;
-  commemorations: string[];
-  gospel?: { primary_reading: number; readings: CalendarReading[] };
 }
 export interface ScriptureVerse { chapter: number; verse: number; text: string }
 
@@ -36,9 +34,7 @@ const GOSPEL_BOOK_ABBREVIATIONS: Record<GospelBook, string> = {
 };
 
 export async function loadCalendarDays(root = process.cwd()): Promise<CalendarDay[]> {
-  const directory = path.join(root, "content", "calendar", "2026");
-  const names = (await readdir(directory)).filter((name) => /^2026-\d{2}-\d{2}\.yaml$/.test(name)).sort();
-  return Promise.all(names.map(async (name) => parse(await readFile(path.join(directory, name), "utf8")) as CalendarDay));
+  return publicCalendarDays(await loadVerifiedCalendarDataset(root));
 }
 
 export async function loadScriptureCorpus(root = process.cwd()) {
@@ -69,10 +65,6 @@ export function readingReference(reading: CalendarReading): string {
 export function shortReadingReference(reading: CalendarReading): string {
   const ranges = reading.ranges.map((range) => `${range.chapter}, ${range.verses.join(", ").replaceAll("-", "–")}`);
   return `${GOSPEL_BOOK_ABBREVIATIONS[reading.book]} ${ranges.join("; ")}`;
-}
-
-export function primaryReading(day: CalendarDay): CalendarReading | undefined {
-  return day.gospel?.readings[day.gospel.primary_reading];
 }
 
 export function readingExcerpt(verses: ScriptureVerse[], maximumLength = 320): string {
