@@ -4,18 +4,6 @@ import path from "node:path";
 
 export const VERIFIED_CALENDAR_DATASET = "data/calendar/2026-08-01_2026-12-31.json";
 
-export const CREATE_CALENDAR_TABLE_SQL = `
-CREATE TABLE IF NOT EXISTS calendar_days (
-  date date PRIMARY KEY,
-  julian_date date NOT NULL,
-  weekday_sr text NOT NULL,
-  week_context_sr text NOT NULL,
-  commemoration_sr text NOT NULL,
-  source_emphasis text NOT NULL,
-  source_ref text NOT NULL,
-  verification_status text NOT NULL CHECK (verification_status = 'verified')
-)`;
-
 export const UPSERT_CALENDAR_DAY_SQL = `
 INSERT INTO calendar_days (
   date,
@@ -34,7 +22,8 @@ ON CONFLICT (date) DO UPDATE SET
   commemoration_sr = EXCLUDED.commemoration_sr,
   source_emphasis = EXCLUDED.source_emphasis,
   source_ref = EXCLUDED.source_ref,
-  verification_status = EXCLUDED.verification_status`;
+  verification_status = EXCLUDED.verification_status,
+  updated_at = CURRENT_TIMESTAMP`;
 
 function nextDate(date) {
   const value = new Date(`${date}T00:00:00Z`);
@@ -96,11 +85,13 @@ export async function loadVerifiedCalendarDataset(root = path.resolve(import.met
   return value;
 }
 
-export async function seedVerifiedCalendar(client, dataset) {
+export async function seedVerifiedCalendar(database, dataset) {
   const days = validateVerifiedCalendarDataset(dataset);
-  await client.query("BEGIN");
+  const client = typeof database.connect === "function" ? await database.connect() : database;
+  let transactionStarted = false;
   try {
-    await client.query(CREATE_CALENDAR_TABLE_SQL);
+    await client.query("BEGIN");
+    transactionStarted = true;
     for (const day of days) {
       await client.query(UPSERT_CALENDAR_DAY_SQL, [
         day.date,
@@ -113,10 +104,20 @@ export async function seedVerifiedCalendar(client, dataset) {
         day.verification_status,
       ]);
     }
+    const count = await client.query(
+      "SELECT COUNT(*)::integer AS count FROM calendar_days WHERE date >= $1 AND date <= $2",
+      [days[0].date, days.at(-1).date],
+    );
+    if (count.rows[0]?.count !== days.length) {
+      throw new Error(`Expected ${days.length} seeded rows, found ${count.rows[0]?.count ?? "unknown"}`);
+    }
     await client.query("COMMIT");
+    transactionStarted = false;
   } catch (error) {
-    await client.query("ROLLBACK");
+    if (transactionStarted) await client.query("ROLLBACK");
     throw error;
+  } finally {
+    client.release?.();
   }
-  return { processed: days.length };
+  return { processed: days.length, rows_in_range: days.length };
 }

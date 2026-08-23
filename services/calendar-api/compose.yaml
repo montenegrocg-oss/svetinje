@@ -1,0 +1,41 @@
+name: svetinje-calendar
+
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-svetinje_calendar}
+      POSTGRES_USER: ${POSTGRES_USER:-svetinje}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - calendar-db:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ../..
+      dockerfile: services/calendar-api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-svetinje}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-svetinje_calendar}
+      HOST: 0.0.0.0
+      PORT: 3001
+      CALENDAR_BOOTSTRAP: "true"
+    ports:
+      - "${CALENDAR_API_PORT:-3001}:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+
+volumes:
+  calendar-db:
