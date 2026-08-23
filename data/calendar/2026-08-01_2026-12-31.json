@@ -1,0 +1,1597 @@
+{
+  "schema_version": 1,
+  "source": {
+    "type": "user_verified_xlsx",
+    "file": "svetinje_calendar_aug-dec_2026_verified.xlsx",
+    "period": {
+      "start": "2026-08-01",
+      "end": "2026-12-31"
+    },
+    "record_count": 153,
+    "commemoration_sha256": "2d00a624d6a6f147a57a02247823c00e501052b7ea96d11b86149ecc433cee16",
+    "source_registry": [
+      {
+        "source_ref": "photo_1",
+        "file": "photo_1_2026-08-23_14-25-14.jpg",
+        "range": "01–15 августа 2026"
+      },
+      {
+        "source_ref": "photo_2",
+        "file": "photo_2_2026-08-23_14-25-14.jpg",
+        "range": "16–31 августа 2026"
+      },
+      {
+        "source_ref": "photo_3",
+        "file": "photo_3_2026-08-23_14-25-14.jpg",
+        "range": "01–19 сентября 2026"
+      },
+      {
+        "source_ref": "photo_4",
+        "file": "photo_4_2026-08-23_14-25-14.jpg",
+        "range": "20–30 сентября 2026"
+      },
+      {
+        "source_ref": "photo_5",
+        "file": "photo_5_2026-08-23_14-25-14.jpg",
+        "range": "01–17 октября 2026"
+      },
+      {
+        "source_ref": "photo_6",
+        "file": "photo_6_2026-08-23_14-25-14.jpg",
+        "range": "18–31 октября 2026"
+      },
+      {
+        "source_ref": "photo_7",
+        "file": "photo_7_2026-08-23_14-25-14.jpg",
+        "range": "01–14 ноября 2026"
+      },
+      {
+        "source_ref": "photo_8",
+        "file": "photo_8_2026-08-23_14-25-14.jpg",
+        "range": "15–30 ноября 2026"
+      },
+      {
+        "source_ref": "photo_9",
+        "file": "photo_9_2026-08-23_14-25-14.jpg",
+        "range": "01–19 декабря 2026"
+      },
+      {
+        "source_ref": "photo_10",
+        "file": "photo_10_2026-08-23_14-25-14.jpg",
+        "range": "20–31 декабря 2026"
+      }
+    ]
+  },
+  "days": [
+    {
+      "date": "2026-08-01",
+      "julian_date": "2026-07-19",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 8. по Духовима – Св. Отаца првих шест Вас. сабора. Глас 7.",
+      "commemoration_sr": "Преп. Макрина; Св. Стефан Деспот српски и преп. Евгенија",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_1",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-02",
+      "julian_date": "2026-07-20",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 9. по Духовима. Глас 8.",
+      "commemoration_sr": "Св. пророк Илија – Илиндан; Свети Илија Грузијски",
+      "source_emphasis": "смешанный",
+      "source_ref": "photo_1",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-03",
+      "julian_date": "2026-07-21",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 9. по Духовима. Глас 8.",
+      "commemoration_sr": "Свети пророк Језекиљ",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_1",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-04",
+      "julian_date": "2026-07-22",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 9. по Духовима. Глас 8.",
+      "commemoration_sr": "Света Марија Магдалина – Блага Марија",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_1",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-05",
+      "julian_date": "2026-07-23",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 9. по Духовима. Глас 8.",
+      "commemoration_sr": "Свети мученици Трофим, Теофил и други с њима",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_1",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-06",
+      "julian_date": "2026-07-24",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 9. по Духовима. Глас 8.",
+      "commemoration_sr": "Свети мученици Пребиловачки и Доњохерцеговачки",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_1",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-07",
+      "julian_date": "2026-07-25",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 9. по Духовима. Глас 8.",
+      "commemoration_sr": "Успеније свете Ане, мајке Пресвете Богородице",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_1",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-08",
+      "julian_date": "2026-07-26",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 9. по Духовима. Глас 8.",
+      "commemoration_sr": "Преп. муч. Параскева – Петка; Св. Сава Трећи, арх. српски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_1",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-09",
+      "julian_date": "2026-07-27",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 10. по Духовима. Глас 1.",
+      "commemoration_sr": "Св. великомуч. Пантелејмон; Св. Климент Охридски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_1",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-10",
+      "julian_date": "2026-07-28",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 10. по Духовима. Глас 1.",
+      "commemoration_sr": "Свети ап. и ђакони Прохор, Никанор, Тимон и Пармен",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_1",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-11",
+      "julian_date": "2026-07-29",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 10. по Духовима. Глас 1.",
+      "commemoration_sr": "Свети мученик Калиник; Света мученица Серафима",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_1",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-12",
+      "julian_date": "2026-07-30",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 10. по Духовима. Глас 1.",
+      "commemoration_sr": "Преподобна мати Ангелина Српска",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_1",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-13",
+      "julian_date": "2026-07-31",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 10. по Духовима. Глас 1.",
+      "commemoration_sr": "Св. муч. Евдоким; Св. муч. Јулита (Госпојинске покладе)",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_1",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-14",
+      "julian_date": "2026-08-01",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 10. по Духовима. Глас 1.",
+      "commemoration_sr": "АВГУСТ – Изношење Часног Крста (Почетак поста)",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_1",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-15",
+      "julian_date": "2026-08-02",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 10. по Духовима. Глас 1.",
+      "commemoration_sr": "Пренос моштију св. првомуч. и архиђакона Стефана",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_1",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-16",
+      "julian_date": "2026-08-03",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 11. по Духовима. Глас 2.",
+      "commemoration_sr": "Преподобни Исакије, Далмат и Фауст",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_2",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-17",
+      "julian_date": "2026-08-04",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 11. по Духовима. Глас 2.",
+      "commemoration_sr": "Св. седам муч. у Ефесу; Св. свештмуч. Козма Етолски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_2",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-18",
+      "julian_date": "2026-08-05",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 11. по Духовима. Глас 2.",
+      "commemoration_sr": "Свети свештеномученик Евсигније",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_2",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-19",
+      "julian_date": "2026-08-06",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 11. по Духовима. Глас 2.",
+      "commemoration_sr": "Преображење Господње",
+      "source_emphasis": "красный",
+      "source_ref": "photo_2",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-20",
+      "julian_date": "2026-08-07",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 11. по Духовима. Глас 2.",
+      "commemoration_sr": "Свети преподобномученик Дометије; Преподобни Ор",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_2",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-21",
+      "julian_date": "2026-08-08",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 11. по Духовима. Глас 2.",
+      "commemoration_sr": "Св. Емилијан Исповедник; Преп. Зосим и Јаков Тумански",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_2",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-22",
+      "julian_date": "2026-08-09",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 11. по Духовима. Глас 2.",
+      "commemoration_sr": "Свети апостол Матија; Свети мученик Антоније",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_2",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-23",
+      "julian_date": "2026-08-10",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 12. по Духовима. Глас 3.",
+      "commemoration_sr": "Свети мученик и архиђакон Лаврентије",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_2",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-24",
+      "julian_date": "2026-08-11",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 12. по Духовима. Глас 3.",
+      "commemoration_sr": "Свети мученик и архиђакон Евпло",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_2",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-25",
+      "julian_date": "2026-08-12",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 12. по Духовима. Глас 3.",
+      "commemoration_sr": "Свети мученици Фотије, Аникита и други с њима",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_2",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-26",
+      "julian_date": "2026-08-13",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 12. по Духовима. Глас 3.",
+      "commemoration_sr": "Пренос моштију преп. Максима Испов.; Св. муч. Иполит",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_2",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-27",
+      "julian_date": "2026-08-14",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 12. по Духовима. Глас 3.",
+      "commemoration_sr": "Свети пророк Михеј",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_2",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-28",
+      "julian_date": "2026-08-15",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 12. по Духовима. Глас 3.",
+      "commemoration_sr": "Успеније Пресвете Богородице – Велика Госпојина",
+      "source_emphasis": "красный",
+      "source_ref": "photo_2",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-29",
+      "julian_date": "2026-08-16",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 12. по Духовима. Глас 3.",
+      "commemoration_sr": "Нерукотворени Образ Господа Исуса Христа; Свети Јевстатије, други архиеп. српски; Преп. Роман; Преп. Рафаило Банатски; Преп. Јоаким Осоговски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_2",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-30",
+      "julian_date": "2026-08-17",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 13. по Духовима. Глас 4.",
+      "commemoration_sr": "Свети мученик Мирон; Свети мученик Патрокло",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_2",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-08-31",
+      "julian_date": "2026-08-18",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 13. по Духовима. Глас 4.",
+      "commemoration_sr": "Свети мученици Флор и Лавр; Преп. Јован Рилски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_2",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-01",
+      "julian_date": "2026-08-19",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 13. по Духовима. Глас 4.",
+      "commemoration_sr": "Свети мученик Андреј Стратилат и остали с њим",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-02",
+      "julian_date": "2026-08-20",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 13. по Духовима. Глас 4.",
+      "commemoration_sr": "Св. пророк Самуило; Св. свештмуч. Филип Ираклијски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-03",
+      "julian_date": "2026-08-21",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 13. по Духовима. Глас 4.",
+      "commemoration_sr": "Свети ап. Тадеј; Св. свештмуч. Рафаило Шишатовачки",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-04",
+      "julian_date": "2026-08-22",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 13. по Духовима. Глас 4.",
+      "commemoration_sr": "Св. муч. Агатоник; Св. свештмуч. Горазд Чешки",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-05",
+      "julian_date": "2026-08-23",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 13. по Духовима. Глас 4.",
+      "commemoration_sr": "Свети свештеномученик Иринеј Лионски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-06",
+      "julian_date": "2026-08-24",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 14. по Духовима. Глас 5.",
+      "commemoration_sr": "Св. свештеномученик Евтихије; Св. мученица Сира",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-07",
+      "julian_date": "2026-08-25",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 14. по Духовима. Глас 5.",
+      "commemoration_sr": "Пренос моштију св. апостола Вартоломеја; Св. ап. Тит",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-08",
+      "julian_date": "2026-08-26",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 14. по Духовима. Глас 5.",
+      "commemoration_sr": "Свети мученици Адријан и Наталија",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-09",
+      "julian_date": "2026-08-27",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 14. по Духовима. Глас 5.",
+      "commemoration_sr": "Преподобни Пимен Велики",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-10",
+      "julian_date": "2026-08-28",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 14. по Духовима. Глас 5.",
+      "commemoration_sr": "Преподобни Мојсеј Мурин; Преподобни Сава Псковски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-11",
+      "julian_date": "2026-08-29",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 14. по Духовима. Глас 5.",
+      "commemoration_sr": "Усековање главе Светог Јована Крститеља",
+      "source_emphasis": "красный",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-12",
+      "julian_date": "2026-08-30",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 14. по Духовима. Глас 5.",
+      "commemoration_sr": "Пренос моштију светог Александра Невског",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-13",
+      "julian_date": "2026-08-31",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 15. по Духовима. Глас 6. Сабор Српских Светитеља",
+      "commemoration_sr": "Полагање појаса Пресвете Богородице; Св. муч. Јасеновачки",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-14",
+      "julian_date": "2026-09-01",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 15. по Духовима. Глас 6. Сабор Српских Светитеља",
+      "commemoration_sr": "СЕПТЕМБАР – Преподобни Симеон Столпник; Црквена Нова година",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-15",
+      "julian_date": "2026-09-02",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 15. по Духовима. Глас 6. Сабор Српских Светитеља",
+      "commemoration_sr": "Свети мученик Мамант; Свети Јован Посник",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-16",
+      "julian_date": "2026-09-03",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 15. по Духовима. Глас 6. Сабор Српских Светитеља",
+      "commemoration_sr": "Св. свештмуч. Антим; Св. Јоаникије, први пат. српски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-17",
+      "julian_date": "2026-09-04",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 15. по Духовима. Глас 6. Сабор Српских Светитеља",
+      "commemoration_sr": "Свети Петар Дабробосански; Преп. Стефан Троношки",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-18",
+      "julian_date": "2026-09-05",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 15. по Духовима. Глас 6. Сабор Српских Светитеља",
+      "commemoration_sr": "Свети пророк Захарија и света праведна Јелисавета",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-19",
+      "julian_date": "2026-09-06",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 15. по Духовима. Глас 6. Сабор Српских Светитеља",
+      "commemoration_sr": "Чудо Светог архангела Михаила; Свети мученик Евдоксије",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_3",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-20",
+      "julian_date": "2026-09-07",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 16. по Духовима – пред Воздвижење. Глас 7.",
+      "commemoration_sr": "Свети мученик Созонт",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_4",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-21",
+      "julian_date": "2026-09-08",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 16. по Духовима – пред Воздвижење. Глас 7.",
+      "commemoration_sr": "Рођење Пресвете Богородице – Мала Госпојина",
+      "source_emphasis": "красный",
+      "source_ref": "photo_4",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-22",
+      "julian_date": "2026-09-09",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 16. по Духовима – пред Воздвижење. Глас 7.",
+      "commemoration_sr": "Свети праведни богородитељи Јоаким и Ана",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_4",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-23",
+      "julian_date": "2026-09-10",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 16. по Духовима – пред Воздвижење. Глас 7.",
+      "commemoration_sr": "Свете мученице Минодора, Митродора и Нимфодора",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_4",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-24",
+      "julian_date": "2026-09-11",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 16. по Духовима – пред Воздвижење. Глас 7.",
+      "commemoration_sr": "Преподобна Теодора; Преподобни Силуан Атонски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_4",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-25",
+      "julian_date": "2026-09-12",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 16. по Духовима – пред Воздвижење. Глас 7.",
+      "commemoration_sr": "Свети свештеномученик Автоном",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_4",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-26",
+      "julian_date": "2026-09-13",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 16. по Духовима – пред Воздвижење. Глас 7.",
+      "commemoration_sr": "Свети свештеномученик Корнилије",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_4",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-27",
+      "julian_date": "2026-09-14",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 17. по Духовима. Глас 8.",
+      "commemoration_sr": "Воздвижење Часног Крста – Крстовдан",
+      "source_emphasis": "красный",
+      "source_ref": "photo_4",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-28",
+      "julian_date": "2026-09-15",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 17. по Духовима. Глас 8.",
+      "commemoration_sr": "Свети великомуч. Никита; Свети Јосиф Темишварски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_4",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-29",
+      "julian_date": "2026-09-16",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 17. по Духовима. Глас 8.",
+      "commemoration_sr": "Преп. Доротеј; Св. Кипријан; Св. великомуч. Јефимија",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_4",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-09-30",
+      "julian_date": "2026-09-17",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 17. по Духовима. Глас 8.",
+      "commemoration_sr": "Свете муч. Вера, Нада и Љубав и мајка им Софија",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_4",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-01",
+      "julian_date": "2026-09-18",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 17. по Духовима. Глас 8.",
+      "commemoration_sr": "Свети Евменије Гортински; Света мученица Ариадна",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-02",
+      "julian_date": "2026-09-19",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 17. по Духовима. Глас 8.",
+      "commemoration_sr": "Свети мученици Трофим, Саватије и Доримедонт",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-03",
+      "julian_date": "2026-09-20",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 17. по Духовима. Глас 8.",
+      "commemoration_sr": "Свети великомученик Јевстатије",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-04",
+      "julian_date": "2026-09-21",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 18. по Духовима – по Воздвижењу. Глас 1.",
+      "commemoration_sr": "Свети апостол Кодрат",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-05",
+      "julian_date": "2026-09-22",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 18. по Духовима – по Воздвижењу. Глас 1.",
+      "commemoration_sr": "Св. свештеномуч. Фока; Св. пророк Јона",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-06",
+      "julian_date": "2026-09-23",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 18. по Духовима – по Воздвижењу. Глас 1.",
+      "commemoration_sr": "Зачеће Светог Јована Претече и Крститеља",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-07",
+      "julian_date": "2026-09-24",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 18. по Духовима – по Воздвижењу. Глас 1.",
+      "commemoration_sr": "Света првомученица Текла; Преподобни Симон; Свети краљ Владислав; Преподобни Давид Српски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-08",
+      "julian_date": "2026-09-25",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 18. по Духовима – по Воздвижењу. Глас 1.",
+      "commemoration_sr": "Преподобна Ефросинија; Преп. Сергије Радоњешки",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-09",
+      "julian_date": "2026-09-26",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 18. по Духовима – по Воздвижењу. Глас 1.",
+      "commemoration_sr": "Свети апостол и јеванђелист Јован Богослов",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-10",
+      "julian_date": "2026-09-27",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 18. по Духовима – по Воздвижењу. Глас 1.",
+      "commemoration_sr": "Свети мученик Калистрат и остали – Задушнице",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-11",
+      "julian_date": "2026-09-28",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 19. по Духовима. Глас 2.",
+      "commemoration_sr": "Преподобни Харитон Исповедник",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-12",
+      "julian_date": "2026-09-29",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 19. по Духовима. Глас 2.",
+      "commemoration_sr": "Преподобни Киријак Отшелник – Михољдан",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-13",
+      "julian_date": "2026-09-30",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 19. по Духовима. Глас 2.",
+      "commemoration_sr": "Св. свештеномуч. Григорије; Свети Михаил Кијевски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-14",
+      "julian_date": "2026-10-01",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 19. по Духовима. Глас 2.",
+      "commemoration_sr": "ОКТОБАР – Покров Пресвете Богородице",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-15",
+      "julian_date": "2026-10-02",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 19. по Духовима. Глас 2.",
+      "commemoration_sr": "Преподобномученик Кипријан; Света мученица Јустина; Преподобни Андреј",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-16",
+      "julian_date": "2026-10-03",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 19. по Духовима. Глас 2.",
+      "commemoration_sr": "Св. Дионисије Ареопагит; Св. Пајсије, пат. српски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-17",
+      "julian_date": "2026-10-04",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 19. по Духовима. Глас 2.",
+      "commemoration_sr": "Св. Јеротеј, еп. атински; Св. Стефан и преп. Јелисавета",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_5",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-18",
+      "julian_date": "2026-10-05",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 20. по Духовима. Глас 3.",
+      "commemoration_sr": "Св. мученица Харитина; Св. свештеномуч. Дионисије",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_6",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-19",
+      "julian_date": "2026-10-06",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 20. по Духовима. Глас 3.",
+      "commemoration_sr": "Свети апостол Тома – Томиндан",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_6",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-20",
+      "julian_date": "2026-10-07",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 20. по Духовима. Глас 3.",
+      "commemoration_sr": "Свети мученици Сергије и Вакхо – Срђевдан",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_6",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-21",
+      "julian_date": "2026-10-08",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 20. по Духовима. Глас 3.",
+      "commemoration_sr": "Преподобна Пелагија; Преподобна Таиса Тиваидска",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_6",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-22",
+      "julian_date": "2026-10-09",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 20. по Духовима. Глас 3.",
+      "commemoration_sr": "Свети апостол Јаков; Свети Стефан српски (Слепи)",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_6",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-23",
+      "julian_date": "2026-10-10",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 20. по Духовима. Глас 3.",
+      "commemoration_sr": "Свети мученици Евлампије и Евлампија",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_6",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-24",
+      "julian_date": "2026-10-11",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 20. по Духовима. Глас 3.",
+      "commemoration_sr": "Св. апостол Филип, ђакон; Свети Теофан Начертани",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_6",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-25",
+      "julian_date": "2026-10-12",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 21. по Духовима – Светих Отаца VII Вас. сабора. Глас 4.",
+      "commemoration_sr": "Свети мученици Тарах, Пров и Андроник",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_6",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-26",
+      "julian_date": "2026-10-13",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 21. по Духовима – Светих Отаца VII Вас. сабора. Глас 4.",
+      "commemoration_sr": "Св. муч. Карп; Св. муч. Злата Мегленска; Св. муч. Босиљка",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_6",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-27",
+      "julian_date": "2026-10-14",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 21. по Духовима – Светих Отаца VII Вас. сабора. Глас 4.",
+      "commemoration_sr": "Преподобна мати Параскева – Света Петка",
+      "source_emphasis": "красный",
+      "source_ref": "photo_6",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-28",
+      "julian_date": "2026-10-15",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 21. по Духовима – Светих Отаца VII Вас. сабора. Глас 4.",
+      "commemoration_sr": "Св. свештеномученик Лукијан; Преп. Јевтимије Нови",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_6",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-29",
+      "julian_date": "2026-10-16",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 21. по Духовима – Светих Отаца VII Вас. сабора. Глас 4.",
+      "commemoration_sr": "Свети мученик Лонгин Сотник",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_6",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-30",
+      "julian_date": "2026-10-17",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 21. по Духовима – Светих Отаца VII Вас. сабора. Глас 4.",
+      "commemoration_sr": "Св. пророк Осија; Преподобномученик Андреј Критски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_6",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-10-31",
+      "julian_date": "2026-10-18",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 21. по Духовима – Светих Отаца VII Вас. сабора. Глас 4.",
+      "commemoration_sr": "Свети ап. и јеванђелист Лука; Св. Петар Цетињски",
+      "source_emphasis": "смешанный",
+      "source_ref": "photo_6",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-01",
+      "julian_date": "2026-10-19",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 22. по Духовима. Гл. 5.",
+      "commemoration_sr": "Свети пророк Јоил; Преподобни Прохор Пчињски; Преподобни Јован Рилски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_7",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-02",
+      "julian_date": "2026-10-20",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 22. по Духовима. Гл. 5.",
+      "commemoration_sr": "Св. великомуч. Артемије; Преп. Герасим Кефалонијски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_7",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-03",
+      "julian_date": "2026-10-21",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 22. по Духовима. Гл. 5.",
+      "commemoration_sr": "Преп. Иларион; Св. Иларион Меглински; Св. Висарион Испов.",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_7",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-04",
+      "julian_date": "2026-10-22",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 22. по Духовима. Гл. 5.",
+      "commemoration_sr": "Св. равноап. Аверкије Јерапољски; Св. седам муч. Ефеских",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_7",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-05",
+      "julian_date": "2026-10-23",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 22. по Духовима. Гл. 5.",
+      "commemoration_sr": "Свети апостол Јаков, Први епископ јерусалимски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_7",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-06",
+      "julian_date": "2026-10-24",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 22. по Духовима. Гл. 5.",
+      "commemoration_sr": "Свети великомученик Арета и остали",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_7",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-07",
+      "julian_date": "2026-10-25",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 22. по Духовима. Гл. 5.",
+      "commemoration_sr": "Св. муч. Маркијан и Мартирије; Св. Тавита – Задушнице",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_7",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-08",
+      "julian_date": "2026-10-26",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 23. по Духовима. Глас 6.",
+      "commemoration_sr": "Свети великомученик Димитрије – Митровдан",
+      "source_emphasis": "красный",
+      "source_ref": "photo_7",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-09",
+      "julian_date": "2026-10-27",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 23. по Духовима. Глас 6.",
+      "commemoration_sr": "Свети мученик Нестор",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_7",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-10",
+      "julian_date": "2026-10-28",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 23. по Духовима. Глас 6.",
+      "commemoration_sr": "Св. муч. Терентије; Св. Арсеније Сремац, архиеп. српски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_7",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-11",
+      "julian_date": "2026-10-29",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 23. по Духовима. Глас 6.",
+      "commemoration_sr": "Св. Аврамије Затворник; Препмуч. Анастасија Римљанка",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_7",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-12",
+      "julian_date": "2026-10-30",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 23. по Духовима. Глас 6.",
+      "commemoration_sr": "Свети краљ Милутин; Преп. Теоктист (краљ Драгутин) и Јелена; Свети Варнава Хвостански Исповедник",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_7",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-13",
+      "julian_date": "2026-10-31",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 23. по Духовима. Глас 6.",
+      "commemoration_sr": "Свети апостоли Стахије, Амплије, Урван и други с њима",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_7",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-14",
+      "julian_date": "2026-11-01",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 23. по Духовима. Глас 6.",
+      "commemoration_sr": "НОВЕМБАР – Св. бесреб. Козма и Дамјан – Врачи",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_7",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-15",
+      "julian_date": "2026-11-02",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 24. по Духовима. Глас 7.",
+      "commemoration_sr": "Свети мученици Акиндин, Пигасије и други с њима",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_8",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-16",
+      "julian_date": "2026-11-03",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 24. по Духовима. Глас 7.",
+      "commemoration_sr": "Обновљење храма св. великомуч. Георгија – Ђурђиц",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_8",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-17",
+      "julian_date": "2026-11-04",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 24. по Духовима. Глас 7.",
+      "commemoration_sr": "Преп. Јоаникије Велики; Св. свештеномуч. Никандар",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_8",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-18",
+      "julian_date": "2026-11-05",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 24. по Духовима. Глас 7.",
+      "commemoration_sr": "Преподобномученици Галактион и Епистима",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_8",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-19",
+      "julian_date": "2026-11-06",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 24. по Духовима. Глас 7.",
+      "commemoration_sr": "Свети Павле Исповедник; Преп. Варлаам Хутински",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_8",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-20",
+      "julian_date": "2026-11-07",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 24. по Духовима. Глас 7.",
+      "commemoration_sr": "Св. 33 муч. у Мелитини; Преп. Лазар Нови Галисијски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_8",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-21",
+      "julian_date": "2026-11-08",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 24. по Духовима. Глас 7.",
+      "commemoration_sr": "Св. арх. Михаил и остале небеске силе – Аранђеловдан",
+      "source_emphasis": "красный",
+      "source_ref": "photo_8",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-22",
+      "julian_date": "2026-11-09",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 25. по Духовима. Глас 8.",
+      "commemoration_sr": "Св. муч. Онисифор и Порфирије; Свети Нектарије Егински",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_8",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-23",
+      "julian_date": "2026-11-10",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 25. по Духовима. Глас 8.",
+      "commemoration_sr": "Свети апостоли Олимп, Ераст, Родион и други с њима",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_8",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-24",
+      "julian_date": "2026-11-11",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 25. по Духовима. Глас 8.",
+      "commemoration_sr": "Свети великомуч. Мина; Св. краљ Стефан Дечански",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_8",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-25",
+      "julian_date": "2026-11-12",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 25. по Духовима. Глас 8.",
+      "commemoration_sr": "Свети Јован Милостиви; Преподобни Нил Синајски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_8",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-26",
+      "julian_date": "2026-11-13",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 25. по Духовима. Глас 8.",
+      "commemoration_sr": "Свети Јован Златоусти (Божићне покладе)",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_8",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-27",
+      "julian_date": "2026-11-14",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 25. по Духовима. Глас 8.",
+      "commemoration_sr": "Св. ап. Филип; Св. Григорије Палама",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_8",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-28",
+      "julian_date": "2026-11-15",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 25. по Духовима. Глас 8.",
+      "commemoration_sr": "Свети мученици Гурије, Самон и Авив (Почетак поста)",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_8",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-29",
+      "julian_date": "2026-11-16",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 26. по Духовима. Глас 1.",
+      "commemoration_sr": "Свети апостол и јеванђелист Матеј",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_8",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-11-30",
+      "julian_date": "2026-11-17",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 26. по Духовима. Глас 1.",
+      "commemoration_sr": "Св. Григорије Чудотворац; Преп. Севастијан Џексонски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_8",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-01",
+      "julian_date": "2026-11-18",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 26. по Духовима. Глас 1.",
+      "commemoration_sr": "Свети муч. Платон; Свети муч. Роман и Варул Отрок",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-02",
+      "julian_date": "2026-11-19",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 26. по Духовима. Глас 1.",
+      "commemoration_sr": "Свети пророк Авдија; Св. муч. Варлаам; Преп. Јоасаф",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-03",
+      "julian_date": "2026-11-20",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 26. по Духовима. Глас 1.",
+      "commemoration_sr": "Преподобни Григорије Декаполит; Свети Прокло",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-04",
+      "julian_date": "2026-11-21",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 26. по Духовима. Глас 1.",
+      "commemoration_sr": "Ваведење Пресвете Богородице",
+      "source_emphasis": "красный",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-05",
+      "julian_date": "2026-11-22",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 26. по Духовима. Глас 1.",
+      "commemoration_sr": "Свети Сава и Симеон, ктитори Хиландара; Свети апостол Филимон",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-06",
+      "julian_date": "2026-11-23",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 27. по Духовима. Глас 2.",
+      "commemoration_sr": "Св. Амфилохије; Св. Григорије; Св. Александар Невски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-07",
+      "julian_date": "2026-11-24",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 27. по Духовима. Глас 2.",
+      "commemoration_sr": "Света великомученица Екатерина",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-08",
+      "julian_date": "2026-11-25",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 27. по Духовима. Глас 2.",
+      "commemoration_sr": "Св. свештеномуч. Климент Римски; Св. Петар Александ.",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-09",
+      "julian_date": "2026-11-26",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 27. по Духовима. Глас 2.",
+      "commemoration_sr": "Преподобни Алимпије Столпник; Преп. Стилијан",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-10",
+      "julian_date": "2026-11-27",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 27. по Духовима. Глас 2.",
+      "commemoration_sr": "Свети муч. Јаков Персијанац; Свети Јаков Ростовски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-11",
+      "julian_date": "2026-11-28",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 27. по Духовима. Глас 2.",
+      "commemoration_sr": "Св. препмуч. Стефан Нови Исповедник; Св. муч. Христо",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-12",
+      "julian_date": "2026-11-29",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 27. по Духовима. Глас 2.",
+      "commemoration_sr": "Преп. Акакије; Св. Мардарије, еп. америчко-канадски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-13",
+      "julian_date": "2026-11-30",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 28. по Духовима. Глас 3.",
+      "commemoration_sr": "Свети апостол Андреј Првозвани",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-14",
+      "julian_date": "2026-12-01",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 28. по Духовима. Глас 3.",
+      "commemoration_sr": "ДЕЦЕМБАР – Св. пророк Наум; Св. Филарет Милостиви",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-15",
+      "julian_date": "2026-12-02",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 28. по Духовима. Глас 3.",
+      "commemoration_sr": "Св. прор. Авакум; Св. цар Урош; Преп. Јоаникије Девички",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-16",
+      "julian_date": "2026-12-03",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 28. по Духовима. Глас 3.",
+      "commemoration_sr": "Свети пророк Софоније; Преподобни Јован Ћутљиви",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-17",
+      "julian_date": "2026-12-04",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 28. по Духовима. Глас 3.",
+      "commemoration_sr": "Света великомуч. Варвара; Преп. Јован Дамаскин",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-18",
+      "julian_date": "2026-12-05",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 28. по Духовима. Глас 3.",
+      "commemoration_sr": "Преп. Сава Освећени; Преп. Нектарије Битољски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-19",
+      "julian_date": "2026-12-06",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 28. по Духовима. Глас 3.",
+      "commemoration_sr": "Св. Николај архиеп. мирликијски Чудотворац – Никољдан",
+      "source_emphasis": "красный",
+      "source_ref": "photo_9",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-20",
+      "julian_date": "2026-12-07",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 29. по Духовима. Глас 4.",
+      "commemoration_sr": "Св. Амвросије; Преп. Григорије Горњачки – Детињци",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_10",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-21",
+      "julian_date": "2026-12-08",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 29. по Духовима. Глас 4.",
+      "commemoration_sr": "Преп. Патапије; Св. ап. Состен, Аполос и други",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_10",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-22",
+      "julian_date": "2026-12-09",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 29. по Духовима. Глас 4.",
+      "commemoration_sr": "Зачеће Свете Ане; Света пророчица Ана",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_10",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-23",
+      "julian_date": "2026-12-10",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 29. по Духовима. Глас 4.",
+      "commemoration_sr": "Св. муч. Мина и други с њим; Св. Јован, деспот српски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_10",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-24",
+      "julian_date": "2026-12-11",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 29. по Духовима. Глас 4.",
+      "commemoration_sr": "Преподобни Данило Столпник",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_10",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-25",
+      "julian_date": "2026-12-12",
+      "weekday_sr": "петак",
+      "week_context_sr": "Недеља 29. по Духовима. Глас 4.",
+      "commemoration_sr": "Свети Спиридон Чудотворац, епископ тримитунтски",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_10",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-26",
+      "julian_date": "2026-12-13",
+      "weekday_sr": "субота",
+      "week_context_sr": "Недеља 29. по Духовима. Глас 4.",
+      "commemoration_sr": "Св. муч. петочислени Евстратије, Авксентије и други; Св. Гаврило, пат. српски; Преп. Никодим Тисмански",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_10",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-27",
+      "julian_date": "2026-12-14",
+      "weekday_sr": "недеља",
+      "week_context_sr": "Недеља 30. по Духовима – Праотаца. Глас 5.",
+      "commemoration_sr": "Св. муч. Тирс, Левкије, Филимон, Аполоније и др. – Материце",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_10",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-28",
+      "julian_date": "2026-12-15",
+      "weekday_sr": "понедељак",
+      "week_context_sr": "Недеља 30. по Духовима – Праотаца. Глас 5.",
+      "commemoration_sr": "Св. свештеномуч. Елевтерије; Преп. Павле",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_10",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-29",
+      "julian_date": "2026-12-16",
+      "weekday_sr": "уторак",
+      "week_context_sr": "Недеља 30. по Духовима – Праотаца. Глас 5.",
+      "commemoration_sr": "Свети пророк Агеј; Св. Теофанија царица",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_10",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-30",
+      "julian_date": "2026-12-17",
+      "weekday_sr": "среда",
+      "week_context_sr": "Недеља 30. по Духовима – Праотаца. Глас 5.",
+      "commemoration_sr": "Св. пророк Данило; Препмуч. ђакон Авакум и иг. Пајсије",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_10",
+      "verification_status": "verified"
+    },
+    {
+      "date": "2026-12-31",
+      "julian_date": "2026-12-18",
+      "weekday_sr": "четвртак",
+      "week_context_sr": "Недеља 30. по Духовима – Праотаца. Глас 5.",
+      "commemoration_sr": "Свети муч. Севастијан; Свети Модест и други с њим",
+      "source_emphasis": "обычное",
+      "source_ref": "photo_10",
+      "verification_status": "verified"
+    }
+  ]
+}
