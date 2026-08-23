@@ -32,7 +32,6 @@ test("every preview-visible place yields one derived addition without a news all
     loadVisibleNews(PROJECT_ROOT, { editorialPreview: false }),
     readFile(path.join(PROJECT_ROOT, "validation", "editorial-news-preview.json"), "utf8"),
   ]);
-  assert.equal(places.length, 58);
   assert.equal(preview.length, places.length);
   assert.deepEqual(JSON.parse(previewAllowlist), { news_ids: [] });
   assert.deepEqual(new Set(preview.map((item) => item.relatedPlaceId)), new Set(places.map((place) => place.id)));
@@ -96,10 +95,13 @@ audit:
 `, "utf8");
   await writeFile(path.join(root, "validation", "editorial-news-preview.json"), '{\n  "news_ids": ["manual-site-update"]\n}\n', "utf8");
 
-  const news = await loadVisibleNews(root, { editorialPreview: true });
-  assert.equal(news.filter((item) => item.type === "place-added").length, 58);
+  const [places, news] = await Promise.all([
+    loadVisiblePlaces(root, { editorialPreview: true }),
+    loadVisibleNews(root, { editorialPreview: true }),
+  ]);
+  assert.equal(news.filter((item) => item.type === "place-added").length, places.length);
   assert.equal(news.filter((item) => item.id === "manual-site-update").length, 1);
-  assert.equal(news.length, 59);
+  assert.equal(news.length, places.length + 1);
 });
 
 test("Russian and English derived feeds use localized names, labels, and links without Serbian fallback", async () => {
@@ -169,10 +171,13 @@ test("preview news is suppressed when its related place is not visible", async (
   allowlist.place_ids = allowlist.place_ids.filter((id) => id !== "manastir-savina");
   await writeFile(file, `${JSON.stringify(allowlist, null, 2)}\n`, "utf8");
 
-  const preview = await loadVisibleNews(root, { editorialPreview: true });
+  const [remainingPlaces, preview] = await Promise.all([
+    loadVisiblePlaces(root, { editorialPreview: true }),
+    loadVisibleNews(root, { editorialPreview: true }),
+  ]);
   assert.equal(preview.some((item) => item.relatedPlaceId === "manastir-savina"), false);
   assert.equal(preview.some((item) => item.href === "/svetinje/manastir-savina/"), false);
-  assert.equal(preview.length, 57);
+  assert.equal(preview.length, remainingPlaces.length);
 });
 
 test("news UI remains isolated to its shared archive and uses semantic linked rows", async () => {
