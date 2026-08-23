@@ -54,6 +54,7 @@ interface PlaceRecord {
     community_type?: StringFact;
   };
   patronal_feast?: { name?: string };
+  patronal_feasts?: Array<{ name?: string }>;
   video?: { youtube_url?: string };
   location?: {
     municipality?: StringFact;
@@ -82,6 +83,7 @@ interface NarrativeRecord {
   summary?: string;
   alternate_names?: Array<{ name?: string }>;
   source_ids?: string[];
+  service_schedule?: string;
   approvals: Approval[];
   body: string;
 }
@@ -130,7 +132,8 @@ export interface PublishablePlace {
   mediaIds?: string[];
   narrativeBody: string;
   monasticCommunity?: MonasticCommunity;
-  patronalFeast?: string;
+  patronalFeasts: string[];
+  serviceSchedule?: string;
   youtubeVideoId?: string;
 }
 
@@ -413,6 +416,7 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
 
     const browseAreaId = isPlaceAreaId(place.browse_area_id) ? place.browse_area_id : undefined;
     const monasticCommunity = monasticCommunityValue(place.ecclesiastical?.community_type?.value);
+    const serviceSchedule = optionalNonBlankText(narrative.service_schedule);
     const youtubeVideoId = parseYoutubeVideoId(place.video?.youtube_url);
     return [{
       id: place.id,
@@ -422,8 +426,9 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
       summary: narrative.summary,
       placeType: place.place_type.value,
       narrativeBody: narrative.body,
+      patronalFeasts: patronalFeastNames(place),
+      ...(serviceSchedule ? { serviceSchedule } : {}),
       ...(monasticCommunity ? { monasticCommunity } : {}),
-      ...(typeof place.patronal_feast?.name === "string" ? { patronalFeast: place.patronal_feast.name } : {}),
       ...(youtubeVideoId ? { youtubeVideoId } : {}),
       ...(Array.isArray((place.relationships as { media_ids?: unknown } | undefined)?.media_ids)
         ? { mediaIds: (place.relationships as { media_ids: unknown[] }).media_ids.filter((value): value is string => typeof value === "string") }
@@ -486,6 +491,21 @@ function placeTypeLabel(placeType: string): string {
 
 function monasticCommunityValue(value: unknown): MonasticCommunity | undefined {
   return value === "male" || value === "female" ? value : undefined;
+}
+
+function patronalFeastNames(place: PlaceRecord): string[] {
+  const records = Array.isArray(place.patronal_feasts)
+    ? place.patronal_feasts
+    : place.patronal_feast
+      ? [place.patronal_feast]
+      : [];
+  return records.flatMap((record) => typeof record?.name === "string" && record.name.trim()
+    ? [record.name.trim()]
+    : []);
+}
+
+function optionalNonBlankText(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
 function assertPreviewField(condition: unknown, message: string): asserts condition {
@@ -564,7 +584,8 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
     const coordinateAccuracy = coordinates?.accuracy;
     const ecclesiasticalJurisdiction = place.ecclesiastical?.jurisdiction?.value;
     const monasticCommunity = monasticCommunityValue(place.ecclesiastical?.community_type?.value);
-    const patronalFeast = place.patronal_feast?.name;
+    const patronalFeasts = patronalFeastNames(place);
+    const serviceSchedule = optionalNonBlankText(narrative.service_schedule);
     const youtubeVideoId = parseYoutubeVideoId(place.video?.youtube_url);
     const mediaOrder = Array.isArray((place.relationships as { media_ids?: unknown } | undefined)?.media_ids)
       ? (place.relationships as { media_ids: unknown[] }).media_ids.filter((value): value is string => typeof value === "string")
@@ -595,7 +616,8 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       ...(coordinateAccuracy !== undefined ? { coordinateAccuracy } : {}),
       ...(ecclesiasticalJurisdiction !== undefined ? { ecclesiasticalJurisdiction } : {}),
       ...(monasticCommunity !== undefined ? { monasticCommunity } : {}),
-      ...(patronalFeast !== undefined ? { patronalFeast } : {}),
+      patronalFeasts,
+      ...(serviceSchedule !== undefined ? { serviceSchedule } : {}),
       ...(youtubeVideoId !== undefined ? { youtubeVideoId } : {}),
       ...previewMedia,
       preview: true,

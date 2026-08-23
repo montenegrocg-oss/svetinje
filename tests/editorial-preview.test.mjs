@@ -144,9 +144,10 @@ test("editorial preview accepts canonical place and narrative records without so
   assert.ok(visible.some(({ id }) => id === "podmaine"));
 });
 
-test("editorial preview exposes optional canonical video and feast only when present", async (t) => {
+test("editorial preview normalizes legacy and plural feasts and exposes an optional service schedule", async (t) => {
   const root = await previewProject(t);
   const placeFile = path.join(root, "content", "places", "podmaine", "place.yaml");
+  const narrativeFile = path.join(root, "content", "places", "podmaine", "narratives", "sr.md");
   const place = parse(await readFile(placeFile, "utf8"));
   place.patronal_feast = { name: "Тестна слава" };
   place.video = { youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" };
@@ -154,15 +155,30 @@ test("editorial preview exposes optional canonical video and feast only when pre
 
   const visible = await loadEditorialPreviewPlaces(root);
   const podmaine = visible.find(({ id }) => id === "podmaine");
-  assert.equal(podmaine?.patronalFeast, "Тестна слава");
+  assert.deepEqual(podmaine?.patronalFeasts, ["Тестна слава"]);
   assert.equal(podmaine?.youtubeVideoId, "dQw4w9WgXcQ");
 
   delete place.patronal_feast;
+  place.patronal_feasts = [{ name: "Прва слава" }, { name: "Друга слава" }];
   delete place.video;
   await writeFile(placeFile, stringify(place), "utf8");
+  const markdown = (await readFile(narrativeFile, "utf8")).replaceAll("\r\n", "\n");
+  const closing = markdown.indexOf("\n---\n", 4);
+  const frontMatter = parse(markdown.slice(4, closing));
+  frontMatter.service_schedule = "Недјељом у 9:00.\nВечерње у 18:00.";
+  await writeFile(narrativeFile, `---\n${stringify(frontMatter)}---\n${markdown.slice(closing + 5)}`, "utf8");
+  const plural = (await loadEditorialPreviewPlaces(root)).find(({ id }) => id === "podmaine");
+  assert.equal(plural?.youtubeVideoId, undefined);
+  assert.deepEqual(plural?.patronalFeasts, ["Прва слава", "Друга слава"]);
+  assert.equal(plural?.serviceSchedule, "Недјељом у 9:00.\nВечерње у 18:00.");
+
+  delete place.patronal_feasts;
+  await writeFile(placeFile, stringify(place), "utf8");
+  delete frontMatter.service_schedule;
+  await writeFile(narrativeFile, `---\n${stringify(frontMatter)}---\n${markdown.slice(closing + 5)}`, "utf8");
   const withoutOptionalData = (await loadEditorialPreviewPlaces(root)).find(({ id }) => id === "podmaine");
-  assert.equal(withoutOptionalData?.youtubeVideoId, undefined);
-  assert.equal(withoutOptionalData?.patronalFeast, undefined);
+  assert.deepEqual(withoutOptionalData?.patronalFeasts, []);
+  assert.equal(withoutOptionalData?.serviceSchedule, undefined);
 });
 
 test("editorial preview loads a research place without summary, sections, or narrative sources", async (t) => {
@@ -509,7 +525,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.match(practicalPanel, /data-copy-coordinates/);
   assert.match(practicalPanel, /aria-live="polite"/);
   assert.match(practicalPanel, /label: copy\.jurisdiction/);
-  assert.match(practicalPanel, /label: copy\.feast/);
+  assert.match(practicalPanel, /copy\.feast : copy\.feasts/);
   assert.doesNotMatch(practicalPanel, /Црквена припадност|Тачност положаја|Статус записа|Напомена о подацима|practicalSections/);
   assert.match(miniMap, /import\.meta\.env\.PUBLIC_MAPTILER_KEY/);
   assert.match(miniMap, /019fc7d8-717c-701d-9ca5-a53d9438d3ce/);

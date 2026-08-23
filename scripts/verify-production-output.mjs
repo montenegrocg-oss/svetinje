@@ -312,8 +312,10 @@ function verifyDetail(detailCase, model, pagesByRoute, failures) {
     failures.push(`${place.id} detail page exposes retired practical-information labels`);
   }
   if (place.ecclesiasticalJurisdiction && !html.includes("Епархија")) failures.push(`${place.id} detail page is missing the Eparchy label`);
-  if (place.patronalFeast && !html.includes(`<dd>${place.patronalFeast}</dd>`)) failures.push(`${place.id} detail page is missing its patronal feast`);
-  if (!place.patronalFeast && /<dt[^>]*>[^<]*Слава/.test(html)) failures.push(`${place.id} detail page renders an empty patronal-feast row`);
+  for (const feast of place.patronalFeasts) {
+    if (!html.includes(`<li>${feast}</li>`)) failures.push(`${place.id} detail page is missing patronal feast ${feast}`);
+  }
+  if (place.patronalFeasts.length === 0 && /<dt[^>]*>[^<]*Слава/.test(html)) failures.push(`${place.id} detail page renders an empty patronal-feast row`);
   if (place.youtubeVideoId && !gallery.includes(`https://www.youtube-nocookie.com/embed/${place.youtubeVideoId}`)) {
     failures.push(`${place.id} detail page is missing its privacy-enhanced YouTube embed`);
   }

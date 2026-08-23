@@ -25,8 +25,9 @@ const practicalRows = [
   { label: copy.address, value: place.address, icon: "info" as const },
   { label: copy.type, value: place.typeLabel, icon: typeIcon },
   { label: copy.jurisdiction, value: place.ecclesiasticalJurisdiction, icon: "church" as const },
-  { label: copy.feast, value: place.patronalFeast, icon: "church" as const },
 ].filter((row) => Boolean(row.value));
+const patronalFeasts = place.patronalFeasts.filter((feast) => feast.trim());
+const feastLabel = patronalFeasts.length === 1 ? copy.feast : copy.feasts;
 const coordinateQualification = place.placeType === "cathedral"
   ? copy.cathedralNote
   : copy.placeNote;
@@ -41,6 +42,12 @@ const coordinateQualification = place.placeType === "cathedral"
         <dd>{row.value}</dd>
       </div>
     ))}
+    {patronalFeasts.length > 0 && (
+      <div>
+        <dt><InterfaceIcon name="church" size={17} />{feastLabel}</dt>
+        <dd><ul class="place-practical-feasts">{patronalFeasts.map((feast) => <li>{feast}</li>)}</ul></dd>
+      </div>
+    )}
     {coordinateText && (
       <div class="place-practical-list__coordinates">
         <dt><InterfaceIcon name="target" size={17} />{copy.coordinates}</dt>

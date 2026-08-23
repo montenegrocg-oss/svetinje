@@ -27,7 +27,8 @@ export interface UpdatePlaceBody {
   longitude?: unknown;
   alternateNames?: unknown;
   narrativeBody?: unknown;
-  patronalFeast?: unknown;
+  patronalFeasts?: unknown;
+  serviceSchedule?: unknown;
   youtubeUrl?: unknown;
 }
 
@@ -57,6 +58,36 @@ const requiredText = (value: unknown, field: string, errors: Record<string, stri
   if (!result) errors[field] = "Поље је обавезно.";
   return result;
 };
+
+function optionalTextList(value: unknown, field: string, errors: Record<string, string>): string[] {
+  if (!Array.isArray(value)) {
+    errors[field] = "Поље мора бити листа.";
+    return [];
+  }
+  return value.flatMap((entry, index) => {
+    if (typeof entry !== "string") {
+      errors[`${field}.${index}`] = "Вриједност мора бити текст.";
+      return [];
+    }
+    const normalized = entry.trim();
+    return normalized ? [normalized] : [];
+  });
+}
+
+function existingPatronalFeasts(place: Record<string, any>): string[] {
+  const values = Array.isArray(place.patronal_feasts)
+    ? place.patronal_feasts
+    : place.patronal_feast
+      ? [place.patronal_feast]
+      : [];
+  return values.flatMap((entry: any) => typeof entry?.name === "string" && entry.name.trim()
+    ? [entry.name.trim()]
+    : []);
+}
+
+const normalizedOptionalText = (value: unknown): string | undefined => typeof value === "string"
+  ? value.replaceAll("\r\n", "\n").replaceAll("\r", "\n").trim() || undefined
+  : undefined;
 
 function resetVerification() {
   return { status: "requires-verification" };
@@ -170,7 +201,10 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   const rawYoutubeUrl = text(body.youtubeUrl);
   const youtubeUrl = rawYoutubeUrl ? canonicalYoutubeUrl(rawYoutubeUrl) : undefined;
   if (rawYoutubeUrl && !youtubeUrl) errors.youtubeUrl = "Унесите важећи YouTube линк.";
-  const patronalFeast = text(body.patronalFeast);
+  const patronalFeasts = optionalTextList(body.patronalFeasts ?? record.place.patronalFeasts, "patronalFeasts", errors);
+  const serviceSchedule = body.serviceSchedule === undefined
+    ? normalizedOptionalText(record.rawNarrative.service_schedule)
+    : normalizedOptionalText(body.serviceSchedule);
   assertSafeMarkdown(narrativeBody ?? "", errors);
   if (Object.keys(errors).length > 0) throw new AdminError("invalid_form_data", 400, "Place update is invalid", errors);
 
@@ -182,7 +216,8 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   place.ecclesiastical ??= {};
   setFact(place.ecclesiastical, "jurisdiction", text(body.jurisdiction));
   setFact(place.ecclesiastical, "community_type", placeType === "monastery" ? monasticCommunity : undefined);
-  if (patronalFeast) place.patronal_feast = { name: patronalFeast }; else delete place.patronal_feast;
+  delete place.patronal_feast;
+  if (patronalFeasts.length > 0) place.patronal_feasts = patronalFeasts.map((name) => ({ name })); else delete place.patronal_feasts;
   if (youtubeUrl) place.video = { youtube_url: youtubeUrl }; else delete place.video;
   place.location ??= {};
   setFact(place.location, "municipality", text(body.municipality));
@@ -202,6 +237,7 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   const shortName = text(body.shortName);
   if (shortName) narrative.short_name = shortName; else delete narrative.short_name;
   if (alternateNames.length > 0) narrative.alternate_names = alternateNames; else delete narrative.alternate_names;
+  if (serviceSchedule) narrative.service_schedule = serviceSchedule; else delete narrative.service_schedule;
   const localizedContentChanged = !same(
     {
       preferred_name: narrative.preferred_name,
@@ -211,6 +247,8 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
       seo_title: narrative.seo_title,
       seo_description: narrative.seo_description,
       alternate_names: narrative.alternate_names,
+      patronal_feasts: patronalFeasts,
+      service_schedule: narrative.service_schedule,
       body: narrativeBody,
     },
     {
@@ -221,11 +259,17 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
       seo_title: record.rawNarrative.seo_title,
       seo_description: record.rawNarrative.seo_description,
       alternate_names: record.rawNarrative.alternate_names,
+      patronal_feasts: existingPatronalFeasts(record.rawPlace),
+      service_schedule: normalizedOptionalText(record.rawNarrative.service_schedule),
       body: normalizeUnifiedNarrativeBody(record.narrativeBody),
     },
   );
+  const comparableRawNarrative = structuredClone(record.rawNarrative);
+  if (typeof comparableRawNarrative.service_schedule === "string") {
+    comparableRawNarrative.service_schedule = normalizedOptionalText(comparableRawNarrative.service_schedule);
+  }
   const unchanged = same(place, record.rawPlace)
-    && same(narrative, record.rawNarrative)
+    && same(narrative, comparableRawNarrative)
     && narrativeBody === normalizeUnifiedNarrativeBody(record.narrativeBody);
   if (!unchanged) {
     const timestamp = now.toISOString().replace(/\.\d{3}Z$/, "Z");

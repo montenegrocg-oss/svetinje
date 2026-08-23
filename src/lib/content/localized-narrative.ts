@@ -19,6 +19,8 @@ export interface LocalizedNarrative {
   summary?: string;
   seoTitle?: string;
   seoDescription?: string;
+  patronalFeasts: string[];
+  serviceSchedule?: string;
   sourceRevision?: string;
   body: string;
   raw: Record<string, unknown>;
@@ -76,6 +78,10 @@ export function parseLocalizedNarrative(
   const summary = optionalString(value.summary);
   const seoTitle = optionalString(value.seo_title);
   const seoDescription = optionalString(value.seo_description);
+  const patronalFeasts = Array.isArray(value.patronal_feasts)
+    ? value.patronal_feasts.flatMap((item) => typeof item === "string" && item.trim() ? [item.trim()] : [])
+    : [];
+  const serviceSchedule = optionalString(value.service_schedule)?.trim();
   const sourceRevision = optionalString(value.source_revision);
 
   return {
@@ -90,6 +96,8 @@ export function parseLocalizedNarrative(
     ...(summary !== undefined ? { summary } : {}),
     ...(seoTitle !== undefined ? { seoTitle } : {}),
     ...(seoDescription !== undefined ? { seoDescription } : {}),
+    patronalFeasts,
+    ...(serviceSchedule ? { serviceSchedule } : {}),
     ...(sourceRevision !== undefined ? { sourceRevision } : {}),
     body: text.slice(closing + 5),
     raw: value,

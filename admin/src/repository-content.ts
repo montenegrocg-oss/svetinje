@@ -20,6 +20,8 @@ export interface AdminLocalizedNarrative {
   summary?: string;
   seoTitle?: string;
   seoDescription?: string;
+  patronalFeasts: string[];
+  serviceSchedule?: string;
   alternateNames: unknown[];
   narrativeBody: string;
 }
@@ -52,7 +54,8 @@ export interface EditablePlace extends AdminPlace {
   publicationSafety?: string;
   narrativeBody: string;
   narratives: Record<NarrativeLocale, AdminLocalizedNarrative>;
-  patronalFeast?: string;
+  patronalFeasts: string[];
+  serviceSchedule?: string;
   youtubeUrl?: string;
   media: AdminMedia[];
 }
@@ -116,6 +119,22 @@ export interface PlaceDeletionRecord {
 }
 
 const blob = (tree: TreeEntry[], path: string) => tree.find((entry) => entry.type === "blob" && entry.path === path);
+
+const patronalFeastNames = (place: Record<string, any>): string[] => {
+  const values = Array.isArray(place.patronal_feasts)
+    ? place.patronal_feasts
+    : place.patronal_feast
+      ? [place.patronal_feast]
+      : [];
+  return values.flatMap((entry: any) => typeof entry?.name === "string" && entry.name.trim()
+    ? [entry.name.trim()]
+    : []);
+};
+
+const localizedPatronalFeasts = (narrative: Record<string, any> | undefined): string[] =>
+  Array.isArray(narrative?.patronal_feasts)
+    ? narrative.patronal_feasts.flatMap((entry: unknown) => typeof entry === "string" && entry.trim() ? [entry.trim()] : [])
+    : [];
 
 export function parseNarrative(markdown: string): { frontMatter: Record<string, any>; body: string } {
   if (!markdown.startsWith("---\n")) throw new AdminError("internal_error", 500, "Narrative has no front matter");
@@ -358,6 +377,8 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
       ...(typeof raw?.summary === "string" ? { summary: raw.summary } : {}),
       ...(typeof raw?.seo_title === "string" ? { seoTitle: raw.seo_title } : {}),
       ...(typeof raw?.seo_description === "string" ? { seoDescription: raw.seo_description } : {}),
+      patronalFeasts: localizedPatronalFeasts(raw),
+      ...(typeof raw?.service_schedule === "string" && raw.service_schedule.trim() ? { serviceSchedule: raw.service_schedule.trim() } : {}),
       alternateNames: Array.isArray(raw?.alternate_names) ? structuredClone(raw.alternate_names) : [],
       narrativeBody: body.replaceAll("\r\n", "\n").replaceAll("\r", "\n").trimEnd(),
     };
@@ -386,7 +407,8 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
       ...(typeof coordinates?.accuracy === "string" ? { coordinateAccuracy: coordinates.accuracy } : {}),
       ...(typeof coordinates?.publication_safety === "string" ? { publicationSafety: coordinates.publication_safety } : {}),
       ...(typeof rawNarrative.summary === "string" ? { summary: rawNarrative.summary } : {}),
-      ...(typeof rawPlace.patronal_feast?.name === "string" ? { patronalFeast: rawPlace.patronal_feast.name } : {}),
+      patronalFeasts: patronalFeastNames(rawPlace),
+      ...(typeof rawNarrative.service_schedule === "string" && rawNarrative.service_schedule.trim() ? { serviceSchedule: rawNarrative.service_schedule.trim() } : {}),
       ...(typeof rawPlace.video?.youtube_url === "string" ? { youtubeUrl: rawPlace.video.youtube_url } : {}),
       alternateNames,
       narrativeBody: parsedNarrative.body.replaceAll("\r\n", "\n").replaceAll("\r", "\n").trimEnd(),

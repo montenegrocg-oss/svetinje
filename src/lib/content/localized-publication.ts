@@ -32,8 +32,11 @@ async function loadLocalizedVisiblePlacesUncached(locale: Locale, root: string, 
     const names = alternateNames(narrative.alternateNames);
     const browseAreaLabel = place.browseAreaId ? areaLabels[locale][place.browseAreaId] : undefined;
     const catalogueSearchText = buildCatalogueSearchText({ name: narrative.preferredName, alternateNames: names, municipality: place.municipality, settlement: place.settlement, browseAreaLabel, summary });
+    const { patronalFeasts: _serbianFeasts, serviceSchedule: _serbianSchedule, ...localeNeutralPlace } = place;
     return {
-      ...place, locale, slug: narrative.slug, name: narrative.preferredName, summary,
+      ...localeNeutralPlace, locale, slug: narrative.slug, name: narrative.preferredName, summary,
+      patronalFeasts: narrative.patronalFeasts,
+      ...(narrative.serviceSchedule ? { serviceSchedule: narrative.serviceSchedule } : {}),
       typeLabel: localizedPlaceType(locale, place.placeType), catalogueSearchText,
       searchText: [narrative.preferredName, ...names, summary, narrative.body, place.municipality, place.settlement, browseAreaLabel].filter(Boolean).join(" "),
       narrativeBody: narrative.body, narrativeSections: [], previewImageAlt: narrative.preferredName,
