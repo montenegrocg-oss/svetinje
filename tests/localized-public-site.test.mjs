@@ -8,6 +8,7 @@ import {
   staticEquivalentForPath,
   staticLocaleLinksForRoute,
 } from "../src/i18n/config.ts";
+import { loadLocalizedNarrative } from "../src/lib/content/localized-narrative.ts";
 import { loadLocalizedVisiblePlaces, localizedSlugsForPlace, translationIsVisible } from "../src/lib/content/localized-publication.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
@@ -28,21 +29,41 @@ test("localized place overlay preserves stable identity while replacing searchab
     loadLocalizedVisiblePlaces("ru", ROOT, { editorialPreview: false }),
     loadLocalizedVisiblePlaces("en", ROOT, { editorialPreview: false }),
   ]);
-  assert.equal(ru.length, sr.length);
-  assert.equal(en.length, sr.length);
   assert.equal(productionRu.length, 0, "draft Russian narratives must not leak through the production gate");
   assert.equal(productionEn.length, 0, "draft English narratives must not leak through the production gate");
+  const srById = new Map(sr.map((place) => [place.id, place]));
+  const localizedInventories = { ru, en };
+  for (const [locale, inventory] of Object.entries(localizedInventories)) {
+    assert.equal(new Set(inventory.map((place) => place.id)).size, inventory.length);
+    assert.equal(inventory.every((place) => srById.has(place.id)), true, `${locale} inventory must be a stable-ID subset of Serbian`);
+  }
   for (const localized of [...ru, ...en]) {
-    const sourcePlace = sr.find((place) => place.id === localized.id);
+    const sourcePlace = srById.get(localized.id);
     assert.ok(sourcePlace);
+    const narrative = await loadLocalizedNarrative(ROOT, localized.id, localized.locale);
+    assert.ok(narrative);
     assert.equal(localized.placeType, sourcePlace.placeType);
     assert.equal(localized.latitude, sourcePlace.latitude);
-    assert.notEqual(localized.slug, sourcePlace.slug);
+    assert.equal(localized.longitude, sourcePlace.longitude);
+    assert.equal(localized.createdAt, sourcePlace.createdAt);
+    assert.equal(localized.slug, narrative.slug);
+    assert.equal(localized.name, narrative.preferredName);
+    assert.equal(localized.summary, narrative.summary ?? "");
+    assert.equal(localized.narrativeBody, narrative.body);
     assert.ok(localized.catalogueSearchText.includes(localized.name));
-    assert.equal(localized.catalogueSearchText.includes(sourcePlace.name), false);
   }
-  const slugs = await localizedSlugsForPlace(sr[0].id, ROOT, { editorialPreview: true });
-  assert.deepEqual(Object.keys(slugs).sort(), ["en", "ru", "sr"]);
+  for (const sourcePlace of sr) {
+    const expectedSlugs = Object.fromEntries(
+      Object.entries({ sr, ru, en }).flatMap(([locale, inventory]) => {
+        const place = inventory.find((candidate) => candidate.id === sourcePlace.id);
+        return place ? [[locale, place.slug]] : [];
+      }),
+    );
+    assert.deepEqual(
+      await localizedSlugsForPlace(sourcePlace.id, ROOT, { editorialPreview: true }),
+      expectedSlugs,
+    );
+  }
 });
 
 test("localized route layer exposes exact archives without restoring holy-place discovery", async () => {
