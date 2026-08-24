@@ -3,13 +3,13 @@ schema_version: 1
 place_id: saborni-hram-svetog-vasilija
 locale: en
 editorial_status: research
-translation_status: published
-source_revision: 3cf5c2f544d0df58164bba8e24df4744ef2ab845
+translation_status: draft
+source_revision: 60ea86666d44d0860cade5cf8fa9966ad8ea4743
 approvals: []
 audit:
   created_at: 2026-08-24T14:44:12Z
   created_by: montenegro-cg
-  updated_at: 2026-08-24T14:44:12Z
+  updated_at: 2026-08-24T14:49:58Z
   updated_by: montenegro-cg
 preferred_name: The Cathedral Church of Saint Basil of Ostrog
 slug: the-cathedral-church-of-saint-basil
