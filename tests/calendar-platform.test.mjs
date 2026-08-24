@@ -59,11 +59,12 @@ test("TodayCalendarService uses Europe/Podgorica and fails closed outside the ve
   assert.deepEqual(Object.keys(model ?? {}), ["day"]);
 });
 
-test("runtime has no legacy YAML, Tipik provenance, XAPK importer, or Gospel fallback", async () => {
-  const [legacyFiles, contentLoader, datasetLoader, dayPage, todayCalendar, hydration] = await Promise.all([
+test("runtime has no legacy YAML, Tipik provenance, XAPK importer, or legacy Gospel fallback", async () => {
+  const [legacyFiles, contentLoader, datasetLoader, gospelLoader, dayPage, todayCalendar, hydration] = await Promise.all([
     readdir(path.join(ROOT, "content", "calendar", "2026")),
     readFile(path.join(ROOT, "src/lib/calendar/content.ts"), "utf8"),
     readFile(path.join(ROOT, "src/lib/calendar/verified-dataset.ts"), "utf8"),
+    readFile(path.join(ROOT, "src/lib/calendar/gospel-readings.ts"), "utf8"),
     readFile(path.join(ROOT, "src/pages/kalendar/[date].astro"), "utf8"),
     readFile(path.join(ROOT, "src/components/TodayCalendar.astro"), "utf8"),
     readFile(path.join(ROOT, "src/components/TodayCalendarHydration.astro"), "utf8"),
@@ -73,12 +74,13 @@ test("runtime has no legacy YAML, Tipik provenance, XAPK importer, or Gospel fal
   await assert.rejects(access(path.join(ROOT, "content/calendar/2026/_provenance.yaml")), { code: "ENOENT" });
   assert.match(contentLoader, /loadVerifiedCalendarDataset/);
   assert.match(datasetLoader, /data\/calendar\/2026-08-01_2026-12-31\.json/);
+  assert.match(gospelLoader, /data\/gospel-readings\/svetinje-gospel-by-date-2026\.json/);
   assert.doesNotMatch(contentLoader, /content["', ]+calendar|readdir|\.yaml|from "yaml"/);
   for (const source of [dayPage, todayCalendar, hydration]) {
     assert.doesNotMatch(source, /day\.gospel|primaryReading|loadScriptureCorpus|assembleReading/);
   }
-  assert.match(dayPage, /calendar-day__empty/);
-  assert.match(todayCalendar, /data-calendar-empty/);
+  assert.match(dayPage, /CalendarGospelReadings/);
+  assert.match(todayCalendar, /CalendarGospelReadings/);
 });
 
 test("raw application archives are never stored in content or public output", async () => {

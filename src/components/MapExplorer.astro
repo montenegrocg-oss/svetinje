@@ -18,11 +18,10 @@ interface Props {
   places: VisiblePlace[];
   routes: VisibleRoute[];
   calendarDays: CalendarDay[];
-  scriptureCorpus: any;
   locale?: Locale;
 }
 
-const { places, routes, calendarDays, scriptureCorpus, locale = "sr" } = Astro.props;
+const { places, routes, calendarDays, locale = "sr" } = Astro.props;
 const copy = publicCopy[locale].homepage;
 const discoveryPlaces = selectPublicDiscoveryPlaces(places);
 const initialPlaces = discoveryPlaces.slice(0, HOMEPAGE_PREVIEW_LIMIT);
@@ -52,7 +51,7 @@ const explorerRuntimeCopy = JSON.stringify({
     <div class="map-explorer__secondary">
       <div class="map-explorer__secondary-content">
         <RecommendedPlaces places={discoveryPlaces} locale={locale} />
-        <TodayCalendar days={calendarDays} corpus={scriptureCorpus} locale={locale} />
+        <TodayCalendar days={calendarDays} locale={locale} />
         <PopularRoutes routes={routes} locale={locale} />
       </div>
     </div>

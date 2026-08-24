@@ -1,14 +1,19 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { loadCalendarDays, localizedCalendarDate, type CalendarDay } from "../../lib/calendar/content";
+import { gospelReadingsForDate, loadGospelReadingsDataset, type GospelReading } from "../../lib/calendar/gospel-readings";
+import CalendarGospelReadings from "../../components/CalendarGospelReadings.astro";
 
 export async function getStaticPaths() {
-  const days = await loadCalendarDays();
-  return days.map((day) => ({ params: { date: day.date }, props: { day, days } }));
+  const [days, gospelDataset] = await Promise.all([loadCalendarDays(), loadGospelReadingsDataset()]);
+  return days.map((day) => ({
+    params: { date: day.date },
+    props: { day, days, gospelReadings: gospelReadingsForDate(gospelDataset, day.date) },
+  }));
 }
 
-interface Props { day: CalendarDay; days: CalendarDay[] }
-const { day, days } = Astro.props;
+interface Props { day: CalendarDay; days: CalendarDay[]; gospelReadings: readonly GospelReading[] }
+const { day, days, gospelReadings } = Astro.props;
 const index = days.findIndex((candidate) => candidate.date === day.date);
 const previous = days[index - 1];
 const next = days[index + 1];
@@ -37,7 +42,9 @@ const lastDate = days.at(-1)?.date;
     </header>
     <section class="calendar-day__readings" id="jevandjelje" aria-labelledby="gospel-title">
       <h2 id="gospel-title">Јеванђелска читања</h2>
-      <p class="calendar-day__empty">За овај дан литургијско јеванђелско читање није наведено.</p>
+      {gospelReadings.length > 0
+        ? <CalendarGospelReadings readings={gospelReadings} />
+        : <p class="calendar-day__empty">За овај дан литургијско јеванђелско читање није наведено.</p>}
     </section>
   </article>
 </BaseLayout>

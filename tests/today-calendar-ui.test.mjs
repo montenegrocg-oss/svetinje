@@ -26,13 +26,15 @@ test("Today places the dynamic date in its shared header and preserves canonical
   assert.doesNotMatch(styles.match(/\.today-calendar h2\s*\{[\s\S]*?\}/)?.[0] ?? "", /text-transform:/);
 });
 
-test("homepage calendar presentation applies no generic casing or Gospel fallback", async () => {
+test("homepage calendar presentation applies no generic casing or legacy Gospel fallback", async () => {
   const [component, hydration] = await Promise.all([
     readFile(path.join(ROOT, "src/components/TodayCalendar.astro"), "utf8"),
     readFile(path.join(ROOT, "src/components/TodayCalendarHydration.astro"), "utf8"),
   ]);
   const implementation = `${component}\n${hydration}`;
   assert.doesNotMatch(implementation, /toLowerCase|toUpperCase|toLocaleLowerCase|toLocaleUpperCase|capitalize|titleCase|sentenceCase/);
-  assert.doesNotMatch(implementation, /day\.gospel|primaryReading|data-calendar-excerpt/);
-  assert.match(implementation, /data-calendar-empty/);
+  assert.doesNotMatch(implementation, /day\.gospel|primaryReading|data-calendar-excerpt|loadScriptureCorpus|assembleReading/);
+  assert.match(component, /CalendarGospelReadings/);
+  assert.match(component, /gospelReadingsForDate/);
+  assert.match(hydration, /calendarGospelDate !== day\.date/);
 });
