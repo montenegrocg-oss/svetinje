@@ -1,10 +1,10 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { VERIFIED_CALENDAR_END, VERIFIED_CALENDAR_START } from "./coverage.ts";
 
 export const VERIFIED_CALENDAR_DATASET = "data/calendar/2026-08-01_2026-12-31.json";
-export const VERIFIED_CALENDAR_START = "2026-08-01";
-export const VERIFIED_CALENDAR_END = "2026-12-31";
+export { VERIFIED_CALENDAR_END, VERIFIED_CALENDAR_START } from "./coverage.ts";
 
 export interface CalendarDay {
   date: string;

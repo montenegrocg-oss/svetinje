@@ -33,6 +33,7 @@ const mobileMonasteryNavigation = [
 const isActive = (href: string) => !href.includes("#") && currentPath.startsWith(href);
 const isExactPage = (href: string) => currentPath === href;
 const monasteryRoot = routeFor(locale, "monasteries");
+const calendarRoot = routeFor(locale, "calendar");
 const isMonasteryActive = isActive(monasteryRoot);
 ---
 
@@ -76,7 +77,11 @@ const isMonasteryActive = isActive(monasteryRoot);
           </li>
         ) : (
           <li>
-            <a href={item.href} aria-current={isActive(item.href) ? "page" : undefined}>
+            <a
+              href={item.href}
+              aria-current={isActive(item.href) ? "page" : undefined}
+              data-calendar-today-link={locale === "sr" && item.href === calendarRoot ? "true" : undefined}
+            >
               {item.label}
             </a>
           </li>
@@ -120,7 +125,11 @@ const isMonasteryActive = isActive(monasteryRoot);
               </li>
             ) : (
               <li>
-                <a href={item.href} aria-current={isActive(item.href) ? "page" : undefined}>
+                <a
+                  href={item.href}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  data-calendar-today-link={locale === "sr" && item.href === calendarRoot ? "true" : undefined}
+                >
                   {item.label}
                 </a>
               </li>
@@ -135,3 +144,15 @@ const isMonasteryActive = isActive(monasteryRoot);
     </details>
   </div>
 </header>
+
+<script>
+  import { calendarNavigationHref } from "../lib/calendar/today-calendar";
+
+  document.querySelectorAll<HTMLAnchorElement>("[data-calendar-today-link]").forEach((link) => {
+    const updateDestination = () => {
+      link.href = calendarNavigationHref(new Date());
+    };
+    updateDestination();
+    link.addEventListener("click", updateDestination);
+  });
+</script>

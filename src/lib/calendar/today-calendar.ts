@@ -1,4 +1,5 @@
 import type { CalendarDay } from "./content.ts";
+import { isVerifiedCalendarDate } from "./coverage.ts";
 
 export const CALENDAR_TIME_ZONE = "Europe/Podgorica";
 
@@ -11,6 +12,11 @@ export function podgoricaDateKey(now: Date): string {
   }).formatToParts(now);
   const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
   return `${value.year}-${value.month}-${value.day}`;
+}
+
+export function calendarNavigationHref(now: Date): string {
+  const date = podgoricaDateKey(now);
+  return isVerifiedCalendarDate(date) ? `/kalendar/${date}/` : "/kalendar/";
 }
 
 export function todayCalendarDay(days: CalendarDay[], now: Date): CalendarDay | undefined {
