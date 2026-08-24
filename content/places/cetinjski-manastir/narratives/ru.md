@@ -3,16 +3,16 @@ schema_version: 1
 place_id: cetinjski-manastir
 locale: ru
 editorial_status: research
-translation_status: outdated
+translation_status: draft
 slug: tsetinskiy-monastyr
 preferred_name: Цетинский монастырь
 summary: Цетинский монастырь Рождества Пресвятой Богородицы находится в Цетине; источник датирует его строительство 1484 годом.
-source_revision: 56161a62ec7a87fe4e78293392ca0a4308db3dd1
+source_revision: 03cd0ab173113d367c418dbc5076103afc4dd916
 approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-23T11:48:22Z
+  updated_at: 2026-08-24T16:10:16Z
   updated_by: montenegro-cg
 ---
 
