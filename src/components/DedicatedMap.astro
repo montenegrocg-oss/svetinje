@@ -1,21 +1,43 @@
 ---
 import type { VisiblePlace } from "../lib/content/publication";
+import type { VisibleRoute } from "../lib/content/routes";
 import MapCanvas from "./MapCanvas.astro";
 import MapControls from "./MapControls.astro";
 import { publicCopy } from "../i18n/public-copy";
 
 interface Props {
   places: VisiblePlace[];
+  routes?: VisibleRoute[];
   locale?: import("../i18n/config").Locale;
 }
 
-const { places, locale = "sr" } = Astro.props;
+const { places, routes = [], locale = "sr" } = Astro.props;
 const copy = publicCopy[locale].pages.map;
 ---
 
-<section class="dedicated-map-page" aria-label={copy.aria}>
+<section class="dedicated-map-page" aria-label={copy.aria} data-dedicated-map>
   <div class="map-stage dedicated-map-page__stage">
-    <MapCanvas places={places} layout="full" locale={locale} />
+    <MapCanvas places={places} routes={routes} layout="full" locale={locale} />
     <MapControls variant="map-page" locale={locale} />
   </div>
 </section>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-dedicated-map]").forEach((root) => {
+    if (root.dataset.mapFiltersInitialised === "true") return;
+    root.dataset.mapFiltersInitialised = "true";
+    const filterButtons = [...root.querySelectorAll<HTMLButtonElement>("button[data-filter]")];
+    const filterIds = new Set(["all", "monasteries", "churches"]);
+
+    filterButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const filter = button.dataset.filter;
+        if (!filter || !filterIds.has(filter)) return;
+        filterButtons.forEach((candidate) => {
+          candidate.setAttribute("aria-pressed", String(candidate === button));
+        });
+        window.dispatchEvent(new CustomEvent("svetinje:filter-change", { detail: { filter } }));
+      });
+    });
+  });
+</script>

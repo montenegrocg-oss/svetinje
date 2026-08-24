@@ -191,19 +191,25 @@ test("public map marker and cluster inventory excludes coordinate-bearing holy p
   assert.deepEqual(clusters[0]?.map(({ item }) => item.id), ["monastery", "church"]);
 });
 
-test("homepage and dedicated map use the shared public-discovery inventory", async () => {
-  const [explorer, mapRoute, mapPage] = await Promise.all([
+test("homepage and dedicated map share place inventory while only the map page receives routes", async () => {
+  const [explorer, mapRoute, mapPage, dedicatedMap] = await Promise.all([
     source("src/components/MapExplorer.astro"),
     source("src/pages/mapa/index.astro"),
     source("src/components/MapPage.astro"),
+    source("src/components/DedicatedMap.astro"),
   ]);
 
   assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
-  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} routes=\{routes\} locale=\{locale\} \/>/);
+  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} locale=\{locale\} \/>/);
+  assert.doesNotMatch(explorer, /<MapCanvas[^>]*routes=/);
   assert.doesNotMatch(explorer, /mapOnlyPlaceIds|data-map-only-place-ids/);
-  assert.match(mapRoute, /<MapPage places=\{places\} locale="sr" \/>/);
+  assert.match(mapRoute, /loadVisibleRoutes/);
+  assert.match(mapRoute, /<MapPage places=\{places\} routes=\{routes\} locale="sr" \/>/);
   assert.match(mapPage, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
-  assert.match(mapPage, /<DedicatedMap places=\{discoveryPlaces\} locale=\{locale\} \/>/);
+  assert.match(mapPage, /<DedicatedMap places=\{discoveryPlaces\} routes=\{routes\} locale=\{locale\} \/>/);
+  assert.match(dedicatedMap, /const filterIds = new Set\(\["all", "monasteries", "churches"\]\)/);
+  assert.match(dedicatedMap, /new CustomEvent\("svetinje:filter-change", \{ detail: \{ filter \} \}\)/);
+  assert.doesNotMatch(dedicatedMap, /data-filter="routes"|clusterProjectedMarkers/);
 });
 
 test("nearby visible places cluster with an accurate count and separate after zoom-in", () => {

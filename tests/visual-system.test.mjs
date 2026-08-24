@@ -144,8 +144,9 @@ test("the homepage is composed from reusable map-explorer components", async () 
     source("src/i18n/public-copy.ts"),
     source("src/styles/global.css"),
   ]);
-  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} routes=\{routes\} locale=\{locale\} \/>/);
-  assert.match(explorer, /<MapControls locale=\{locale\} hasEditorialRoutes=\{routes\.length > 0\} \/>/);
+  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} locale=\{locale\} \/>/);
+  assert.doesNotMatch(explorer, /<MapCanvas[^>]*routes=/);
+  assert.match(explorer, /<MapControls locale=\{locale\} \/>/);
   assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
   assert.match(explorer, /const initialPlaces = discoveryPlaces\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);
   assert.match(explorer, /const inventoryPlaces = discoveryPlaces\.slice\(HOMEPAGE_PREVIEW_LIMIT\)/);
@@ -214,16 +215,17 @@ test("the dedicated map route reuses the shared map without homepage-only UI", a
   ]);
 
   assert.match(page, /loadVisiblePlaces/);
-  assert.match(page, /<MapPage places=\{places\} locale="sr" \/>/);
+  assert.match(page, /loadVisibleRoutes/);
+  assert.match(page, /<MapPage places=\{places\} routes=\{routes\} locale="sr" \/>/);
   assert.match(mapPage, /selectPublicDiscoveryPlaces\(places\)/);
-  assert.match(mapPage, /<DedicatedMap places=\{discoveryPlaces\} locale=\{locale\} \/>/);
+  assert.match(mapPage, /<DedicatedMap places=\{discoveryPlaces\} routes=\{routes\} locale=\{locale\} \/>/);
   assert.match(mapPage, /canonicalPath=\{routeFor\(locale, "map"\)\}/);
   assert.doesNotMatch(page, /MapExplorer|ExplorerSidebar|RecommendedPlaces|PopularRoutes|PlaceAreas/);
-  assert.match(dedicatedMap, /<MapCanvas places=\{places\} layout="full" locale=\{locale\} \/>/);
+  assert.match(dedicatedMap, /<MapCanvas places=\{places\} routes=\{routes\} layout="full" locale=\{locale\} \/>/);
   assert.match(dedicatedMap, /<MapControls variant="map-page" locale=\{locale\} \/>/);
   assert.match(canvas, /data-map-layout=\{layout\}/);
   assert.match(canvas, /if \(layout === "full"\)/);
-  assert.match(controls, /variant === "homepage"/);
+  assert.match(controls, /variant === "map-page"/);
   assert.match(controls, /map-tool-stack--page/);
   assert.match(header, /routeFor\(locale, "map"\), label: copy\.nav\.map/);
   assert.doesNotMatch(header, /\{ href: "\/#mapa", label: "Мапа" \}/);
@@ -391,9 +393,8 @@ test("map controls, search, and filters expose accessible states and honest feed
   assert.match(copy, /searchPlaceholder: "Претражите светиње…"/);
   assert.match(filters, /type="button"/);
   assert.match(filters, /aria-pressed=/);
-  assert.match(controls, /\{c\.builderNotice\}/);
-  assert.match(copy, /builderNotice: "Функција планирања руте је у припреми\."/);
-  assert.match(controls, /role="status"/);
+  assert.doesNotMatch(controls, /builderNotice|data-notice-trigger|route-notice|role="status"/);
+  assert.doesNotMatch(copy, /builderNotice:|builder: "Изгради руту"/);
   assert.match(controls, /data-map-zoom-in/);
   assert.match(controls, /data-map-zoom-out/);
   assert.match(controls, /data-map-reset/);
@@ -424,7 +425,6 @@ test("the required Serbian interface labels are present", async () => {
     "Манастири",
     "Цркве",
     "Пјешачке руте",
-    "Изгради руту",
     "Слојеви",
     "Како користити карту?",
     "Популарне руте",

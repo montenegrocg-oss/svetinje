@@ -189,7 +189,8 @@ test("the explorer keeps one shared filter and pagination state across cards, co
   assert.match(explorer, /new CustomEvent\("svetinje:filter-change"/);
   assert.match(explorer, /new CustomEvent\("svetinje:place-visibility-change"/);
   assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
-  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} routes=\{routes\} locale=\{locale\} \/>/);
+  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} locale=\{locale\} \/>/);
+  assert.doesNotMatch(explorer, /<MapCanvas[^>]*routes=/);
   assert.doesNotMatch(explorer, /discoveryPlaceIds|mapOnlyPlaceIds|data-map-only-place-ids/);
   assert.match(explorer, /const initialPlaces = discoveryPlaces\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);
   assert.match(explorer, /const inventoryPlaces = discoveryPlaces\.slice\(HOMEPAGE_PREVIEW_LIMIT\)/);
@@ -229,12 +230,11 @@ test("the explorer keeps one shared filter and pagination state across cards, co
   assert.match(controls, /data-filter="monasteries" aria-pressed="false"/);
   assert.match(controls, /data-filter="churches" aria-pressed="false"/);
   assert.doesNotMatch(controls, /data-filter="holy-places"|Света мјеста/);
-  assert.match(controls, /hasEditorialRoutes && <button[^>]*data-route-toggle aria-pressed="false"/);
+  assert.match(controls, /variant === "map-page" && <button[^>]*data-route-toggle aria-pressed="false"/);
   assert.doesNotMatch(controls, /data-filter="routes"/);
   assert.match(explorer, /const filterIds = new Set\(\["all", "monasteries", "churches"\]\)/);
-  const routeBuilder = controls.match(/<button[^>]*data-notice-trigger="route-notice"[^>]*>/)?.[0];
-  assert.ok(routeBuilder, "the route builder action must remain present");
-  assert.doesNotMatch(routeBuilder, /data-filter=/);
+  assert.doesNotMatch(controls, /data-notice-trigger|route-notice|builderNotice/);
+  assert.doesNotMatch(explorer, /data-notice-trigger|noticeTrigger/);
 });
 
 test("mobile map and panel filters expose distinct responsive sets with one shared state", async () => {
@@ -252,8 +252,8 @@ test("mobile map and panel filters expose distinct responsive sets with one shar
   assert.doesNotMatch(controls, /data-filter="holy-places"|Света мјеста/);
   assert.match(controls, /data-route-toggle/);
   assert.doesNotMatch(controls, /data-filter="routes"/);
-  assert.match(controls, /class="map-action map-route-toggle--mobile"/);
-  assert.match(controls, /map-action--primary map-action--mobile-hidden/);
+  assert.match(controls, /map-actions--map-page/);
+  assert.doesNotMatch(controls, /map-route-toggle--mobile|map-action--mobile-hidden/);
   assert.match(sidebar, /<FilterChips group="catalogue" includeRoutes=\{false\} locale=\{locale\} \/>/);
   assert.match(filters, /includeRoutes \|\| filter\.id !== "routes"/);
   assert.doesNotMatch(filters, /id: "holy-places"|Света мјеста/);
@@ -264,14 +264,15 @@ test("mobile map and panel filters expose distinct responsive sets with one shar
 
   const mobileRules = styles.match(/@media \(max-width: 47\.99rem\) \{([\s\S]*?)\r?\n  \}\r?\n\r?\n  @media \(min-width: 48rem\)/)?.[1] ?? "";
   assert.match(mobileRules, /\.map-actions\s*\{[\s\S]*?grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);[\s\S]*?overflow: visible/);
-  assert.match(mobileRules, /\.map-action--mobile-hidden\s*\{[\s\S]*?display: none/);
+  assert.match(mobileRules, /\.map-actions--map-page\s*\{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(mobileRules, /\.dedicated-map-page \.map-tool-stack\s*\{[\s\S]*?top: 7\.25rem/);
   assert.match(mobileRules, /\.explorer-sidebar \.filter-chips\s*\{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);[\s\S]*?overflow: visible/);
   assert.match(mobileRules, /\.map-action\s*\{[\s\S]*?min-height: 2\.75rem/);
   assert.match(mobileRules, /\.explorer-sidebar \.filter-chip\s*\{[\s\S]*?min-height: 2\.75rem/);
 
   assert.match(styles, /@media \(min-width: 48rem\) and \(max-width: 67\.99rem\)/);
   assert.match(styles, /@media \(min-width: 68rem\)/);
-  assert.equal([...styles.matchAll(/\.map-action--mobile-hidden\s*\{[\s\S]*?display: none;[\s\S]*?\}/g)].length, 1);
+  assert.doesNotMatch(styles, /map-route-toggle--mobile|map-action--mobile-hidden/);
 });
 
 test("filtering has accessible preview feedback and catalogue pagination remains reusable", async () => {

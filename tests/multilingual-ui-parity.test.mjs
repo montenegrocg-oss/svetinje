@@ -79,7 +79,7 @@ test("the public page-type parity matrix routes every locale through shared comp
   assert.match(male, /<CataloguePage locale="sr" page="maleMonasteries"/);
   assert.match(female, /<CataloguePage locale="sr" page="femaleMonasteries"/);
   assert.match(churches, /<CataloguePage locale="sr" page="churches"/);
-  assert.match(map, /<MapPage places=\{places\} locale="sr" \/>/);
+  assert.match(map, /<MapPage places=\{places\} routes=\{routes\} locale="sr" \/>/);
   assert.match(routes, /<RouteCataloguePage routes=\{routes\} locale="sr"/);
   assert.match(calendar, /<CalendarIndexPage days=\{days\} locale="sr"/);
   assert.match(news, /<NewsArchivePage items=\{news\} locale="sr"/);
