@@ -75,6 +75,22 @@ test("GPX parser fails closed on malformed coordinates and insufficient tracks",
   assert.throws(() => parseGpx(wrap("<trkpt lat=\"42\" lon=\"19\"><ele>x<\/ele><\/trkpt><trkpt lat=\"42.1\" lon=\"19.1\"/>")), /неважећу висину/);
 });
 
+test("public route cards label summary metrics without hiding compact labels", async () => {
+  const [card, css] = await Promise.all([
+    readFile(new URL("../src/components/routes/RouteCard.astro", import.meta.url), "utf8"),
+    readFile(new URL("../src/styles/global.css", import.meta.url), "utf8"),
+  ]);
+
+  for (const label of ["Растојање", "Вријеме", "Успон", "Захтјевност"]) {
+    assert.match(card, new RegExp(`<dt>${label}<\\/dt>`));
+  }
+  assert.match(card, /toLocaleString\("sr-ME", \{ maximumFractionDigits: 1 \}\)\} km/);
+  assert.match(card, /<dd>\{formatDuration\(duration\)\}<\/dd>/);
+  assert.match(card, /<dd>\+\{route\.metrics\.ascent_m\} m<\/dd>/);
+  assert.match(card, /<dd>\{difficulty\}<\/dd>/);
+  assert.doesNotMatch(css, /\.route-card--compact \.route-card__metrics dt\s*\{[^}]*display:\s*none/);
+});
+
 test("pilot route public composition remains loader-driven and key-safe", async () => {
   const [home, map, routePage, header, css] = await Promise.all([
     readFile(new URL("../src/components/HomePage.astro", import.meta.url), "utf8"),
