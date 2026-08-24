@@ -21,7 +21,7 @@
           if (titleNode) titleNode.textContent = day.commemoration_sr;
           if (weekContext) weekContext.textContent = day.week_context_sr;
           if (link) link.href = `/kalendar/${day.date}/`;
-          if (gospel) {
+          if (gospel && root.dataset.calendarGospelDate !== day.date) {
             const eyebrow = Object.assign(document.createElement("p"), { className: "map-eyebrow", textContent: "ИЗ ДАНАШЊЕГ ЈЕВАНЂЕЉА" });
             const empty = Object.assign(document.createElement("p"), { textContent: "За овај дан литургијско јеванђељско читање није наведено." });
             empty.dataset.calendarEmpty = "";

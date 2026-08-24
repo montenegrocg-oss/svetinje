@@ -3,17 +3,22 @@ import { localizedCalendarDate, type CalendarDay } from "../lib/calendar/content
 import { createTodayCalendarModel } from "../lib/calendar/today-calendar";
 import { localeConfig, routeFor, type Locale } from "../i18n/config";
 import { publicCopy } from "../i18n/public-copy";
+import { gospelReadingsForDate, loadGospelReadingsDataset } from "../lib/calendar/gospel-readings";
+import CalendarGospelReadings from "./CalendarGospelReadings.astro";
 import TodayCalendarHydration from "./TodayCalendarHydration.astro";
 
-interface Props { days: CalendarDay[]; corpus: any; locale?: Locale }
+interface Props { days: CalendarDay[]; locale?: Locale }
 const { days, locale = "sr" } = Astro.props;
 const copy = publicCopy[locale].homepage.today;
 const model = locale === "sr" ? createTodayCalendarModel(days, new Date()) : undefined;
 const fallback = model?.day;
+const gospelReadings = locale === "sr" && fallback
+  ? gospelReadingsForDate(await loadGospelReadingsDataset(), fallback.date)
+  : [];
 const currentDate = new Intl.DateTimeFormat(localeConfig[locale].htmlLang, { timeZone: "Europe/Podgorica", day: "numeric", month: "long", year: "numeric" }).format(new Date());
 ---
 
-<section class="today-calendar" aria-labelledby="today-calendar-title" data-today-calendar data-calendar-year="2026" data-calendar-locale={locale}>
+<section class="today-calendar" aria-labelledby="today-calendar-title" data-today-calendar data-calendar-year="2026" data-calendar-locale={locale} data-calendar-gospel-date={fallback?.date}>
   <header class="today-calendar__header">
     <p class="today-calendar__label">{copy.label}</p>
     <p class="today-calendar__day" data-calendar-date>{locale === "sr" ? (fallback ? localizedCalendarDate(fallback.date, { day: "numeric", month: "long", year: "numeric" }) : copy.calendarPreparing) : currentDate}</p>
@@ -34,7 +39,9 @@ const currentDate = new Intl.DateTimeFormat(localeConfig[locale].htmlLang, { tim
     {locale !== "sr" ? <>
       <h3 data-calendar-reading>{copy.translationTitle}</h3>
       <p class="today-calendar__excerpt" data-calendar-empty>{copy.translationBody}</p>
-    </> : <p data-calendar-empty>{copy.readingMissing}</p>}
+    </> : gospelReadings.length > 0
+      ? <CalendarGospelReadings readings={gospelReadings} compact />
+      : <p data-calendar-empty>{copy.readingMissing}</p>}
   </article>
 </section>
 {locale === "sr" && <TodayCalendarHydration />}

@@ -1,0 +1,108 @@
+---
+import { formatGospelReferenceSr, type GospelReading } from "../lib/calendar/gospel-readings";
+
+interface Props { readings: readonly GospelReading[]; compact?: boolean }
+const { readings, compact = false } = Astro.props;
+---
+
+<div class:list={["calendar-gospel", { "calendar-gospel--compact": compact }]} data-gospel-reading-count={readings.length}>
+  <ol class="calendar-gospel__references" aria-label="Јеванђелска читања за овај дан">
+    {readings.map((reading) => (
+      <li>
+        <span>{formatGospelReferenceSr(reading)}</span>
+        {reading.conditional && <span class="calendar-gospel__conditional">Условно читање</span>}
+      </li>
+    ))}
+  </ol>
+  <details class="calendar-gospel__details">
+    <summary>Прочитај Јеванђеље</summary>
+    <div class="calendar-gospel__texts">
+      {readings.map((reading) => (
+        <section class="calendar-gospel__reading" aria-labelledby={`gospel-${reading.entry_id}`}>
+          <h3 id={`gospel-${reading.entry_id}`}>{formatGospelReferenceSr(reading)}</h3>
+          {reading.conditional && <p class="calendar-gospel__conditional">Условно читање</p>}
+          <p class="calendar-gospel__text">{reading.text}</p>
+        </section>
+      ))}
+    </div>
+  </details>
+</div>
+
+<style>
+  .calendar-gospel {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .calendar-gospel__references {
+    display: grid;
+    gap: 0.45rem;
+    list-style: none;
+  }
+
+  .calendar-gospel__references li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.65rem;
+    align-items: baseline;
+    color: var(--navy-950);
+    font-weight: 700;
+  }
+
+  .calendar-gospel__conditional {
+    color: var(--ink-soft);
+    font-size: var(--text-xs);
+    font-weight: 650;
+  }
+
+  .calendar-gospel__details {
+    border-top: 1px solid var(--line);
+    padding-top: 0.75rem;
+  }
+
+  .calendar-gospel__details summary {
+    width: fit-content;
+    min-height: 2.75rem;
+    align-content: center;
+    color: var(--navy-900);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    font-weight: 750;
+  }
+
+  .calendar-gospel__texts {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .calendar-gospel__reading {
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .calendar-gospel__reading:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .calendar-gospel__reading h3 {
+    font-size: 1rem;
+  }
+
+  .calendar-gospel__text {
+    max-width: 48rem;
+    margin-top: 0.75rem;
+    color: var(--ink-reading);
+    font-family: var(--font-display);
+    font-size: clamp(1rem, 0.96rem + 0.15vw, 1.12rem);
+    line-height: 1.7;
+    white-space: pre-line;
+  }
+
+  .calendar-gospel--compact .calendar-gospel__texts {
+    max-height: 26rem;
+    overflow: auto;
+    padding-right: 0.35rem;
+  }
+</style>

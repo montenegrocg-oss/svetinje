@@ -126,7 +126,7 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(homepage, /import MapExplorer/);
   assert.match(homepage, /import PlaceAreas/);
   assert.match(homepage, /loadVisibleRoutes/);
-  assert.match(homepage, /<MapExplorer places=\{places\} routes=\{routes\} calendarDays=\{calendarDays\} scriptureCorpus=\{scriptureCorpus\} locale=\{locale\} \/>/);
+  assert.match(homepage, /<MapExplorer places=\{places\} routes=\{routes\} calendarDays=\{calendarDays\} locale=\{locale\} \/>/);
   assert.match(homepage, /<PlaceAreas places=\{places\} locale=\{locale\} \/>/);
   assert.match(srPage, /<HomePage locale="sr" \/>/);
   assert.match(ruPage, /<HomePage locale="ru" \/>/);
@@ -150,13 +150,13 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(explorer, /const inventoryPlaces = discoveryPlaces\.slice\(HOMEPAGE_PREVIEW_LIMIT\)/);
   assert.match(explorer, /<ExplorerSidebar places=\{initialPlaces\} totalPlaces=\{discoveryPlaces\.length\} locale=\{locale\} \/>/);
   assert.match(explorer, /<RecommendedPlaces places=\{discoveryPlaces\} locale=\{locale\} \/>/);
-  assert.match(explorer, /<TodayCalendar days=\{calendarDays\} corpus=\{scriptureCorpus\} locale=\{locale\} \/>/);
+  assert.match(explorer, /<TodayCalendar days=\{calendarDays\} locale=\{locale\} \/>/);
   assert.match(explorer, /import PopularRoutes from "\.\/PopularRoutes\.astro"/);
   assert.match(explorer, /<PopularRoutes routes=\{routes\} locale=\{locale\} \/>/);
   assert.ok(
     explorer.indexOf("<ExplorerSidebar places={initialPlaces} totalPlaces={discoveryPlaces.length} locale={locale} />") < explorer.indexOf("<RecommendedPlaces places={discoveryPlaces} locale={locale} />")
-      && explorer.indexOf("<RecommendedPlaces places={discoveryPlaces} locale={locale} />") < explorer.indexOf("<TodayCalendar days={calendarDays} corpus={scriptureCorpus} locale={locale} />")
-      && explorer.indexOf("<TodayCalendar days={calendarDays} corpus={scriptureCorpus} locale={locale} />") < explorer.indexOf("<PopularRoutes routes={routes} locale={locale} />"),
+      && explorer.indexOf("<RecommendedPlaces places={discoveryPlaces} locale={locale} />") < explorer.indexOf("<TodayCalendar days={calendarDays} locale={locale} />")
+      && explorer.indexOf("<TodayCalendar days={calendarDays} locale={locale} />") < explorer.indexOf("<PopularRoutes routes={routes} locale={locale} />"),
     "homepage preview, recommendations, Today, and routes must retain their editorial order",
   );
   assert.doesNotMatch(explorer, /ExplorerContinuation|ExplorerPagination|data-continuation|data-explorer-pagination/);
