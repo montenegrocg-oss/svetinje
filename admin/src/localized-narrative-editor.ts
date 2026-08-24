@@ -11,12 +11,9 @@ export interface UpdateLocalizedNarrativeBody {
   shortName?: unknown;
   slug?: unknown;
   summary?: unknown;
-  seoTitle?: unknown;
-  seoDescription?: unknown;
   patronalFeasts?: unknown;
   serviceSchedule?: unknown;
   narrativeBody?: unknown;
-  translationStatus?: unknown;
 }
 
 const editableLocales = new Set<NarrativeLocale>(["ru", "en"]);
@@ -72,10 +69,6 @@ export async function updateLocalizedNarrative(
 ): Promise<{ content: string; unchanged: boolean }> {
   const original = record.rawNarratives[locale];
   const errors: Record<string, string> = {};
-  const translationStatus = text(body.translationStatus) ?? "draft";
-  if (!record.options.translationStatuses.includes(translationStatus) || translationStatus === "source" || translationStatus === "missing") {
-    errors.translationStatus = "Статус превода није подржан.";
-  }
   const slug = text(body.slug);
   if (slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) errors.slug = "Slug мора бити lowercase ASCII kebab-case.";
   const narrativeBody = normalizedBody(body.narrativeBody);
@@ -103,11 +96,8 @@ export async function updateLocalizedNarrative(
   assign("short_name", text(body.shortName));
   assign("slug", slug);
   assign("summary", text(body.summary));
-  assign("seo_title", text(body.seoTitle));
-  assign("seo_description", text(body.seoDescription));
   if (patronalFeasts.length > 0) narrative.patronal_feasts = patronalFeasts; else delete narrative.patronal_feasts;
   assign("service_schedule", serviceSchedule);
-  narrative.translation_status = translationStatus;
 
   const originalBody = normalizedBody(record.narrativeBodies[locale] ?? "") ?? "";
   const comparableOriginal = original ? structuredClone(original) : undefined;
@@ -117,7 +107,10 @@ export async function updateLocalizedNarrative(
   const unchanged = Boolean(comparableOriginal) && same(narrative, comparableOriginal) && narrativeBody === originalBody;
   if (unchanged) return { content: serializeNarrative(narrative, narrativeBody ?? ""), unchanged: true };
 
-  narrative.source_revision = record.state.headSha;
+  if (original) {
+    if (!["draft", "outdated", "archived"].includes(original.translation_status)) narrative.translation_status = "draft";
+    if (original.translation_status !== "outdated" && original.translation_status !== "archived") narrative.source_revision = record.state.headSha;
+  }
   narrative.audit = { ...narrative.audit, updated_at: timestamp, updated_by: actor };
   const content = serializeNarrative(narrative, narrativeBody ?? "");
   if (!parseNarrative(content).frontMatter) throw new AdminError("invalid_form_data", 400, "Serialized translation is invalid");
