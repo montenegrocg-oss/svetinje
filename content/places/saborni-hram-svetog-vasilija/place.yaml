@@ -1,0 +1,14 @@
+schema_version: 1
+id: saborni-hram-svetog-vasilija
+editorial_status: research
+place_type:
+  value: cathedral
+  verification:
+    status: requires-verification
+relationships: {}
+approvals: []
+audit:
+  created_at: 2026-08-24T14:35:04.990Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-24T14:35:04.990Z
+  updated_by: montenegro-cg
