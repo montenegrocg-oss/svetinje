@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-saborni-hram-svetog-vasilija-f6a8ce4b60da
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/saborni-hram-svetog-vasilija/photo-saborni-hram-svetog-vasilija-f6a8ce4b60da.jpg
+checksum_sha256: 0ecb7df8c13fa03c394ba207923aad03d73b57b3da7d20a34612609842f61dd0
+mime_type: image/jpeg
+width: 1800
+height: 2400
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - saborni-hram-svetog-vasilija
+localized_text:
+  sr:
+    alt_text: Саборни храм Светог Василија Острошког
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-24T16:07:50Z
+    reviewed_revision: 566e4bc5e2063a65695f73985a4bae8fb73f270a
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-24T16:07:50Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-24T16:07:50Z
+  updated_by: montenegro-cg
