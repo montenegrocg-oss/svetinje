@@ -13,11 +13,11 @@ approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-24T14:32:32Z
+  updated_at: 2026-08-24T16:10:03Z
   updated_by: montenegro-cg
 service_schedule: |-
   Радним данима: 
-  6:00 - Јутрење у наставку Света Литургија
+  6:00 - Јутрење и у наставку Света Литургија
   18:00 Вечерње
 
   Недељом и празницима:
