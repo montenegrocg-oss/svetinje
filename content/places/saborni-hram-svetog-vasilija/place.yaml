@@ -10,5 +10,27 @@ approvals: []
 audit:
   created_at: 2026-08-24T14:35:04.990Z
   created_by: montenegro-cg
-  updated_at: 2026-08-24T14:35:04.990Z
+  updated_at: 2026-08-24T14:40:35Z
   updated_by: montenegro-cg
+browse_area_id: ostrog-sredisnja-crna-gora
+ecclesiastical:
+  jurisdiction:
+    value: Будимљанско-никшићка
+    verification:
+      status: requires-verification
+patronal_feasts:
+  - name: Свети Василије Острошки Чудотворац 12. мај
+  - name: Свети мученик цар Николај Руски 17. јул
+location:
+  municipality:
+    value: Никшић
+    verification:
+      status: requires-verification
+  coordinates:
+    latitude: 42.7700298
+    longitude: 18.9525372
+    accuracy: complex-centroid
+    publication_safety: public
+    crs: EPSG:4326
+    verification:
+      status: requires-verification
