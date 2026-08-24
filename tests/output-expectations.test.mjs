@@ -146,3 +146,9 @@ test("news routes extend the derived output model without fixed page counts", ()
 test("the dedicated map is a derived static route", () => {
   assert.ok(STATIC_HTML_ROUTES.includes("mapa/index.html"));
 });
+
+test("local Favorites routes are explicit static output in every locale", () => {
+  assert.ok(STATIC_HTML_ROUTES.includes("omiljeno/index.html"));
+  assert.ok(LOCALIZED_STATIC_HTML_ROUTES.includes("ru/izbrannoe/index.html"));
+  assert.ok(LOCALIZED_STATIC_HTML_ROUTES.includes("en/favorites/index.html"));
+});

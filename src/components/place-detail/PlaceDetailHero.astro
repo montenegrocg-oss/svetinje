@@ -64,8 +64,16 @@ const actionMessages = JSON.stringify(detailCopy.actionMessages).replaceAll("<",
       <button type="button" class="place-profile-action" data-place-detail-action="route">
         <InterfaceIcon name="route" size={18} /><span>{detailCopy.route}</span>
       </button>
-      <button type="button" class="place-profile-action" data-place-detail-action="save">
-        <InterfaceIcon name="heart" size={18} /><span>{detailCopy.save}</span>
+      <button
+        type="button"
+        class="place-profile-action"
+        data-place-detail-action="save"
+        data-favorite-toggle
+        data-favorite-id={place.id}
+        aria-label={detailCopy.addFavorite}
+        aria-pressed="false"
+      >
+        <InterfaceIcon name="heart" size={18} /><span data-favorite-label>{detailCopy.addFavorite}</span>
       </button>
     </div>
 
@@ -78,6 +86,10 @@ const actionMessages = JSON.stringify(detailCopy.actionMessages).replaceAll("<",
 </header>
 
 <script>
+  import { getFavoriteIds, subscribeFavorites, toggleFavorite } from "../../lib/favorites";
+
+  type FavoritesDetailWindow = Window & { __svetinjeFavoritesDetailCleanup?: () => void };
+
   const initialisePlaceActions = () => {
     document.querySelectorAll<HTMLElement>("[data-place-detail-actions]").forEach((root) => {
       if (root.dataset.actionsInitialised === "true") return;
@@ -91,6 +103,7 @@ const actionMessages = JSON.stringify(detailCopy.actionMessages).replaceAll("<",
       root.querySelectorAll<HTMLButtonElement>("[data-place-detail-action]").forEach((button) => {
         button.addEventListener("click", () => {
           const action = button.dataset.placeDetailAction ?? "";
+          if (action === "save") return;
           if (!status || !message || !messages[action]) return;
           message.textContent = messages[action];
           if (mapLink) mapLink.hidden = action !== "route";
@@ -100,6 +113,53 @@ const actionMessages = JSON.stringify(detailCopy.actionMessages).replaceAll("<",
     });
   };
 
+  const initialiseFavoriteToggle = () => {
+    const root = document.querySelector<HTMLElement>("[data-place-detail-actions]");
+    if (!root || root.dataset.favoriteInitialised === "true") return;
+    root.dataset.favoriteInitialised = "true";
+    const buttons = [...root.querySelectorAll<HTMLButtonElement>("[data-favorite-toggle]")];
+    const placeId = root.dataset.placeId ?? "";
+    const copyElement = root.querySelector<HTMLScriptElement>("[data-place-action-copy]");
+    const messages = JSON.parse(copyElement?.textContent ?? "{}") as Record<string, string>;
+    const addLabel = buttons[0]?.getAttribute("aria-label") ?? "";
+    const removeLabel = messages.removeFavorite ?? addLabel;
+
+    const render = (ids: string[]) => {
+      const active = ids.includes(placeId);
+      buttons.forEach((button) => {
+        button.setAttribute("aria-pressed", String(active));
+        button.setAttribute("aria-label", active ? removeLabel : addLabel);
+        const label = button.querySelector<HTMLElement>("[data-favorite-label]");
+        if (label) label.textContent = active ? removeLabel : addLabel;
+      });
+    };
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => render(toggleFavorite(button.dataset.favoriteId ?? placeId)));
+    });
+    render(getFavoriteIds());
+
+    const favoritesWindow = window as FavoritesDetailWindow;
+    favoritesWindow.__svetinjeFavoritesDetailCleanup?.();
+    favoritesWindow.__svetinjeFavoritesDetailCleanup = subscribeFavorites(render);
+  };
+
   initialisePlaceActions();
-  document.addEventListener("astro:page-load", initialisePlaceActions);
+  initialiseFavoriteToggle();
+  document.addEventListener("astro:page-load", () => {
+    initialisePlaceActions();
+    initialiseFavoriteToggle();
+  });
 </script>
+
+<style>
+  .place-profile-action[data-favorite-toggle][aria-pressed="true"] {
+    border-color: #e0bd75;
+    color: var(--navy-950);
+    background: #f4cf83;
+  }
+
+  .place-profile-action[data-favorite-toggle][aria-pressed="true"] :global(.interface-icon) {
+    fill: currentColor;
+  }
+</style>

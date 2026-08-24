@@ -34,6 +34,7 @@ export const routeConfig = {
   news: { sr: "/novosti/", ru: "/ru/novosti/", en: "/en/news/" },
   about: { sr: "/o-projektu/", ru: "/ru/o-proekte/", en: "/en/about/" },
   sources: { sr: "/izvori/", ru: "/ru/istochniki/", en: "/en/sources/" },
+  favorites: { sr: "/omiljeno/", ru: "/ru/izbrannoe/", en: "/en/favorites/" },
 } as const;
 
 export type RouteKey = keyof typeof routeConfig;
@@ -49,6 +50,7 @@ export const localizedStaticRouteKeys = [
   "calendar",
   "news",
   "about",
+  "favorites",
 ] as const satisfies readonly RouteKey[];
 
 export type LocalizedStaticRouteKey = (typeof localizedStaticRouteKeys)[number];

@@ -34,6 +34,7 @@ const isActive = (href: string) => !href.includes("#") && currentPath.startsWith
 const isExactPage = (href: string) => currentPath === href;
 const monasteryRoot = routeFor(locale, "monasteries");
 const calendarRoot = routeFor(locale, "calendar");
+const favoritesRoot = routeFor(locale, "favorites");
 const isMonasteryActive = isActive(monasteryRoot);
 ---
 
@@ -90,10 +91,10 @@ const isMonasteryActive = isActive(monasteryRoot);
     </nav>
 
     <div class="header-tools desktop-tools">
-      <button class="favourites-control" type="button" disabled aria-label={locale === "ru" ? "Избранные святыни — 0, функция готовится" : locale === "en" ? "Favourite holy places — 0, feature in preparation" : "Омиљене светиње — 0, функција је у припреми"}>
+      <a class="favourites-control" href={favoritesRoot} aria-label={`${copy.favorites.collectionLabel}: 0`} data-favorites-link data-favorites-label={copy.favorites.collectionLabel} aria-current={isActive(favoritesRoot) ? "page" : undefined}>
         <InterfaceIcon name="heart" size={21} />
-        <span aria-hidden="true">0</span>
-      </button>
+        <span data-favorites-count aria-hidden="true">0</span>
+      </a>
       <details class="header-language">
         <summary>{localeConfig[locale].label} <InterfaceIcon name="chevron" size={15} /></summary>
         <div class="header-language__panel"><LanguageSwitcher currentLocale={locale} destinations={localeLinks} /></div>
@@ -137,7 +138,9 @@ const isMonasteryActive = isActive(monasteryRoot);
           </ul>
         </nav>
         <div class="mobile-tool-row mobile-tool-row--single">
-          <span><InterfaceIcon name="heart" size={19} /> {locale === "ru" ? "Избранное" : locale === "en" ? "Favourites" : "Омиљено"} 0</span>
+          <a href={favoritesRoot} aria-label={`${copy.favorites.collectionLabel}: 0`} data-favorites-link data-favorites-label={copy.favorites.collectionLabel} aria-current={isActive(favoritesRoot) ? "page" : undefined}>
+            <InterfaceIcon name="heart" size={19} /> {copy.favorites.label} <span data-favorites-count>0</span>
+          </a>
         </div>
         <LanguageSwitcher currentLocale={locale} destinations={localeLinks} />
       </div>
@@ -147,6 +150,29 @@ const isMonasteryActive = isActive(monasteryRoot);
 
 <script>
   import { calendarNavigationHref } from "../lib/calendar/today-calendar";
+  import { getFavoriteIds, subscribeFavorites } from "../lib/favorites";
+
+  type FavoritesHeaderWindow = Window & { __svetinjeFavoritesHeaderCleanup?: () => void };
+
+  const initialiseFavoritesHeader = () => {
+    const header = document.querySelector<HTMLElement>(".site-header");
+    if (!header || header.dataset.favoritesInitialised === "true") return;
+    header.dataset.favoritesInitialised = "true";
+    const counts = [...header.querySelectorAll<HTMLElement>("[data-favorites-count]")];
+    const links = [...header.querySelectorAll<HTMLAnchorElement>("[data-favorites-link]")];
+    const render = (ids: string[]) => {
+      counts.forEach((count) => { count.textContent = String(ids.length); });
+      links.forEach((link) => { link.setAttribute("aria-label", `${link.dataset.favoritesLabel}: ${ids.length}`); });
+    };
+    render(getFavoriteIds());
+
+    const favoritesWindow = window as FavoritesHeaderWindow;
+    favoritesWindow.__svetinjeFavoritesHeaderCleanup?.();
+    favoritesWindow.__svetinjeFavoritesHeaderCleanup = subscribeFavorites(render);
+  };
+
+  initialiseFavoritesHeader();
+  document.addEventListener("astro:page-load", initialiseFavoritesHeader);
 
   document.querySelectorAll<HTMLAnchorElement>("[data-calendar-today-link]").forEach((link) => {
     const updateDestination = () => {
@@ -156,3 +182,21 @@ const isMonasteryActive = isActive(monasteryRoot);
     link.addEventListener("click", updateDestination);
   });
 </script>
+
+<style>
+  .favourites-control {
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .favourites-control:hover,
+  .favourites-control[aria-current="page"] {
+    color: var(--gold-deep);
+  }
+
+  .favourites-control:focus-visible,
+  .mobile-tool-row a[href][aria-label]:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 3px;
+  }
+</style>

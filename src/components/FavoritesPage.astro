@@ -1,0 +1,145 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { routeFor, type Locale } from "../i18n/config";
+import { publicCopy } from "../i18n/public-copy";
+import { loadLocalizedVisiblePlaces } from "../lib/content/localized-publication";
+import { loadVisiblePlaces } from "../lib/content/publication";
+import { resolveFavoritePlaces } from "../lib/favorite-place-resolution";
+import PlaceCard from "./PlaceCard.astro";
+
+interface Props { locale?: Locale }
+const { locale = "sr" } = Astro.props;
+const copy = publicCopy[locale].pages.favorites;
+const inventory = locale === "sr"
+  ? await loadVisiblePlaces()
+  : await loadLocalizedVisiblePlaces(locale);
+const places = resolveFavoritePlaces(inventory.map((place) => place.id), inventory);
+---
+
+<BaseLayout
+  title={copy.metadataTitle}
+  description={copy.metadataDescription}
+  canonicalPath={routeFor(locale, "favorites")}
+  locale={locale}
+>
+  <div data-favorites-page>
+    <header class="page-hero compact favorites-hero">
+      <div class="shell narrow">
+        <p class="eyebrow">{copy.eyebrow}</p>
+        <h1>{copy.title}</h1>
+        <p>{copy.description}</p>
+      </div>
+    </header>
+
+    <section class="section favorites-section" aria-labelledby="favorites-list-title">
+      <div class="shell">
+        <h2 id="favorites-list-title" class="sr-only">{copy.listLabel}</h2>
+        <div class="empty-state" data-favorites-empty role="status">
+          <span class="empty-ornament" aria-hidden="true"></span>
+          <p class="eyebrow">{copy.emptyEyebrow}</p>
+          <h2>{copy.emptyTitle}</h2>
+          <p>{copy.emptyBody}</p>
+          <a class="text-link" href={routeFor(locale, "monasteries")}>{copy.explore} <span aria-hidden="true">→</span></a>
+        </div>
+
+        <ul class="catalogue-grid editorial-catalogue favorites-grid" data-favorites-grid aria-label={copy.listLabel} hidden>
+          {places.map((place) => (
+            <li data-favorite-item={place.id} hidden>
+              <PlaceCard place={place} variant="featured" locale={locale} />
+              <button
+                class="favorite-remove"
+                type="button"
+                data-favorite-remove={place.id}
+                aria-label={`${copy.remove}: ${place.name}`}
+              >
+                <span aria-hidden="true">×</span>{copy.remove}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  import { getFavoriteIds, removeFavorite, subscribeFavorites } from "../lib/favorites";
+
+  type FavoritesWindow = Window & { __svetinjeFavoritesPageCleanup?: () => void };
+
+  const initialiseFavoritesPage = () => {
+    const root = document.querySelector<HTMLElement>("[data-favorites-page]");
+    if (!root || root.dataset.favoritesInitialised === "true") return;
+    root.dataset.favoritesInitialised = "true";
+    const grid = root.querySelector<HTMLElement>("[data-favorites-grid]");
+    const empty = root.querySelector<HTMLElement>("[data-favorites-empty]");
+    const items = new Map(
+      [...root.querySelectorAll<HTMLElement>("[data-favorite-item]")]
+        .map((item) => [item.dataset.favoriteItem ?? "", item] as const),
+    );
+
+    const render = (ids: string[]) => {
+      items.forEach((item) => { item.hidden = true; });
+      const visible = ids.flatMap((id) => {
+        const item = items.get(id);
+        return item ? [item] : [];
+      });
+      visible.forEach((item) => {
+        item.hidden = false;
+        grid?.append(item);
+      });
+      if (grid) grid.hidden = visible.length === 0;
+      if (empty) empty.hidden = visible.length !== 0;
+    };
+
+    root.querySelectorAll<HTMLButtonElement>("[data-favorite-remove]").forEach((button) => {
+      button.addEventListener("click", () => render(removeFavorite(button.dataset.favoriteRemove ?? "")));
+    });
+    render(getFavoriteIds());
+
+    const favoritesWindow = window as FavoritesWindow;
+    favoritesWindow.__svetinjeFavoritesPageCleanup?.();
+    favoritesWindow.__svetinjeFavoritesPageCleanup = subscribeFavorites(render);
+  };
+
+  initialiseFavoritesPage();
+  document.addEventListener("astro:page-load", initialiseFavoritesPage);
+</script>
+
+<style>
+  .favorites-section {
+    min-height: 22rem;
+  }
+
+  .favorites-grid > li {
+    position: relative;
+    min-width: 0;
+  }
+
+  .favorite-remove {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.65rem;
+    padding: 0.55rem 0.8rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    color: var(--navy-900);
+    background: var(--paper);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 750;
+  }
+
+  .favorite-remove:hover {
+    border-color: var(--gold);
+    color: var(--gold-deep);
+  }
+
+  .favorite-remove:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 3px;
+  }
+</style>
