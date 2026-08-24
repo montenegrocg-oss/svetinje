@@ -13,7 +13,7 @@ approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-23T11:48:22Z
+  updated_at: 2026-08-24T14:32:32Z
   updated_by: montenegro-cg
 service_schedule: |-
   Радним данима: 
