@@ -3,13 +3,13 @@ schema_version: 1
 place_id: saborni-hram-svetog-vasilija
 locale: ru
 editorial_status: research
-translation_status: published
-source_revision: a53e51d3c32700ff7aefd493e841131bdaf5fdc0
+translation_status: draft
+source_revision: b2adf2bbdc493c7a5a50beebdac7b42bdf0217b9
 approvals: []
 audit:
   created_at: 2026-08-24T14:42:30Z
   created_by: montenegro-cg
-  updated_at: 2026-08-24T14:42:30Z
+  updated_at: 2026-08-24T14:49:29Z
   updated_by: montenegro-cg
 preferred_name: Соборный храм Святого Василия Острожского
 slug: soborniy-hram-svyatogo-vasiliya
