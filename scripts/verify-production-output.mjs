@@ -526,7 +526,7 @@ for (const { route, path: routePath } of model.routeDetailRoutes) {
 for (const [category, route] of Object.entries(CATEGORY_HTML_ROUTES)) {
   const page = pagesByRoute.get(route);
   const members = model.categoryMembership[category];
-  const useFeaturedTier = category !== "monasteries";
+  const useFeaturedTier = category !== "monasteries" && category !== "churches";
   const featuredImageIds = new Set(
     useFeaturedTier ? selectFeaturedCataloguePlaces(members).map((place) => place.id) : [],
   );

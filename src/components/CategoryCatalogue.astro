@@ -37,8 +37,8 @@ const categoryPlaces = category
 const places = category === "monasteries"
   ? selectMonasticCommunityPlaces(categoryPlaces, monasticCommunity)
   : categoryPlaces;
-const isMonasteryCatalogue = category === "monasteries";
-const featuredPlaces = isMonasteryCatalogue ? [] : selectFeaturedCataloguePlaces(places);
+const usesSidebarCatalogue = category === "monasteries" || category === "churches";
+const featuredPlaces = usesSidebarCatalogue ? [] : selectFeaturedCataloguePlaces(places);
 const featuredPlaceIds = new Set(featuredPlaces.map((place) => place.id));
 const cataloguePlaces = places.filter((place) => !featuredPlaceIds.has(place.id));
 const relevantAreaIds = new Set(places.flatMap((place) => place.browseAreaId ? [place.browseAreaId] : []));
@@ -57,11 +57,11 @@ const copy = category === "monasteries"
     }
   : category === "churches"
     ? locale === "ru" ? {
-        searchPlaceholder: "Найти храм…", statusPrefix: "Найдено:", statusNoun: "храмов", featuredHeading: "Избранные храмы", allHeading: "Все храмы", countForms: ["православных храмов", "православных храмов", "православных храмов"],
+        searchPlaceholder: "Найти храм…", statusPrefix: "Найдено:", statusNoun: "храмов", featuredHeading: "Избранные храмы", allHeading: catalogueHeading ?? "Все храмы", countForms: ["православных храмов", "православных храмов", "православных храмов"],
       } : locale === "en" ? {
-        searchPlaceholder: "Search churches…", statusPrefix: "Found", statusNoun: "churches", featuredHeading: "Featured churches", allHeading: "All churches", countForms: ["Orthodox churches", "Orthodox churches", "Orthodox churches"],
+        searchPlaceholder: "Search churches…", statusPrefix: "Found", statusNoun: "churches", featuredHeading: "Featured churches", allHeading: catalogueHeading ?? "All churches", countForms: ["Orthodox churches", "Orthodox churches", "Orthodox churches"],
       } : {
-        searchPlaceholder: "Претражите храмове…", statusPrefix: "Пронађена", statusNoun: "храмова", featuredHeading: "Издвојени храмови", allHeading: "Сви храмови",
+        searchPlaceholder: "Претражите цркве…", statusPrefix: "Пронађено је", statusNoun: "цркава", featuredHeading: "Издвојени храмови", allHeading: catalogueHeading ?? "Све цркве",
         countForms: ["православни храм", "православна храма", "православних храмова"],
       }
     : locale === "ru" ? {
@@ -118,13 +118,13 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
           <a class="text-link" href={locale === "sr" ? routeFor(locale, "sources") : routeFor(locale, "about")}>{locale === "sr" ? ui.nav.sources : ui.nav.about} <span aria-hidden="true">→</span></a>
         </div>
       ) : (
-        <div class:list={["category-catalogue__body", isMonasteryCatalogue && "category-catalogue__body--monasteries"]}>
-          {isMonasteryCatalogue && (
-            <aside class="catalogue-sidebar" aria-label={locale === "ru" ? "Фильтры каталога монастырей" : locale === "en" ? "Monastery catalogue filters" : "Филтери каталога манастира"}>
+        <div class:list={["category-catalogue__body", usesSidebarCatalogue && "category-catalogue__body--sidebar"]}>
+          {usesSidebarCatalogue && (
+            <aside class="catalogue-sidebar" aria-label={category === "churches" ? (locale === "ru" ? "Фильтры каталога храмов" : locale === "en" ? "Church catalogue filters" : "Филтери каталога цркава") : (locale === "ru" ? "Фильтры каталога монастырей" : locale === "en" ? "Monastery catalogue filters" : "Филтери каталога манастира")}>
               <CatalogueToolbar searchPlaceholder={copy.searchPlaceholder} areas={relevantAreas} locale={locale} />
             </aside>
           )}
-          {!isMonasteryCatalogue && (
+          {!usesSidebarCatalogue && (
             <CatalogueToolbar
               searchPlaceholder={copy.searchPlaceholder}
               areas={relevantAreas}
@@ -133,7 +133,7 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
             />
           )}
 
-          {!isMonasteryCatalogue && featuredPlaces.length > 0 && (
+          {!usesSidebarCatalogue && featuredPlaces.length > 0 && (
             <section class="catalogue-featured" data-catalogue-featured aria-labelledby="catalogue-featured-title">
               <div class="catalogue-section-heading">
                 <p class="eyebrow">{locale === "ru" ? "Выбор редакции" : locale === "en" ? "Editor's selection" : "Избор уредништва"}</p>
@@ -155,9 +155,8 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
 
           <section class="catalogue-main" data-catalogue-main aria-labelledby="catalogue-main-title">
             <div class="catalogue-section-heading">
-              <p class="eyebrow">{ui.catalogue}</p>
               <h2 id="catalogue-main-title">{copy.allHeading}</h2>
-              {isMonasteryCatalogue && (
+              {usesSidebarCatalogue && (
                 <p class="catalogue-main__status" data-catalogue-result-status role="status" aria-live="polite">
                   {copy.statusPrefix} {places.length} {copy.statusNoun}
                 </p>

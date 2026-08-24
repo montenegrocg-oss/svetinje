@@ -2235,8 +2235,8 @@
     padding-block: clamp(3.25rem, 7vw, 5.5rem);
   }
 
-  .category-page-hero {
-    padding-block: clamp(1.5rem, 3vw, 2.5rem);
+  .page-hero.category-page-hero {
+    padding-block: clamp(1.25rem, 2.4vw, 1.5rem);
   }
 
   .category-page-hero__rule {
@@ -2362,12 +2362,12 @@
     font-size: 0.88rem;
   }
 
-  .category-catalogue__body--monasteries {
+  .category-catalogue__body--sidebar {
     display: grid;
     gap: 1rem;
   }
 
-  .category-catalogue__body--monasteries .catalogue-main {
+  .category-catalogue__body--sidebar .catalogue-main {
     margin-top: 0;
   }
 
@@ -2400,7 +2400,7 @@
     text-align: left;
   }
 
-  .category-catalogue__body--monasteries .catalogue-filter-empty {
+  .category-catalogue__body--sidebar .catalogue-filter-empty {
     margin-top: 0;
   }
 
@@ -2837,6 +2837,35 @@
   }
 
   @media (max-width: 47.99rem) {
+    .catalogue-pagination {
+      display: grid;
+      grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
+      gap: 0.5rem;
+      padding: 0.5rem;
+    }
+
+    .catalogue-pagination .explorer-pagination__pages {
+      display: none;
+    }
+
+    .catalogue-pagination [data-pagination-previous] {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .catalogue-pagination [data-pagination-status] {
+      grid-column: 2;
+      grid-row: 1;
+      align-self: center;
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    .catalogue-pagination [data-pagination-next] {
+      grid-column: 3;
+      grid-row: 1;
+    }
+
     .map-canvas[data-popup-open="true"] .map-renderer {
       z-index: auto;
     }
@@ -4471,10 +4500,10 @@
 
   @media (min-width: 68rem) {
     .category-page-hero {
-      padding-block: 2.75rem;
+      padding-block: 1.5rem;
     }
 
-    .category-catalogue__body--monasteries {
+    .category-catalogue__body--sidebar {
       display: grid;
       grid-template-columns: minmax(0, 1fr) clamp(18rem, 25vw, 22rem);
       grid-template-areas:
@@ -4484,11 +4513,11 @@
       gap: 1.5rem;
     }
 
-    .category-catalogue__body--monasteries .catalogue-main {
+    .category-catalogue__body--sidebar .catalogue-main {
       grid-area: main;
     }
 
-    .category-catalogue__body--monasteries .catalogue-filter-empty {
+    .category-catalogue__body--sidebar .catalogue-filter-empty {
       grid-area: empty;
     }
 
