@@ -307,9 +307,13 @@ test("filtering has accessible preview feedback and catalogue pagination remains
   assert.match(catalogue, /pagination\.hidden = totalPages <= 1/);
   assert.match(catalogue, /renderPage\(currentPage - 1\)/);
   assert.match(catalogue, /renderPage\(currentPage \+ 1\)/);
-  assert.match(pagination, /locale === "ru" \? "Предыдущая страница"/);
-  assert.match(pagination, /locale === "ru" \? "Следующая страница"/);
+  assert.match(pagination, /aria-label=\{copy\.homepage\.explorer\.pagination\.previous\}/);
+  assert.match(pagination, /aria-label=\{copy\.homepage\.explorer\.pagination\.next\}/);
   assert.match(pagination, /aria-current=\{page === 1 \? "page" : undefined\}/);
+  assert.match(pagination, /data-pagination-status[\s\S]*?\{copy\.page\} 1 \{copy\.of\} \{totalPages\}/);
   assert.match(styles, /\.explorer-pagination button\s*\{[\s\S]*?min-width: 2\.75rem;[\s\S]*?min-height: 2\.75rem;/);
+  assert.match(styles, /@media \(max-width: 47\.99rem\)[\s\S]*?\.catalogue-pagination\s*\{[\s\S]*?grid-template-columns: 2\.75rem minmax\(0, 1fr\) 2\.75rem;/);
+  assert.match(styles, /\.catalogue-pagination \.explorer-pagination__pages\s*\{[\s\S]*?display: none;/);
+  assert.match(styles, /\.catalogue-pagination \[data-pagination-previous\][\s\S]*?grid-column: 1;[\s\S]*?\.catalogue-pagination \[data-pagination-status\][\s\S]*?grid-column: 2;[\s\S]*?\.catalogue-pagination \[data-pagination-next\][\s\S]*?grid-column: 3;/);
   assert.doesNotMatch(styles, /explorer-continuation|--explorer-continuation-height/);
 });

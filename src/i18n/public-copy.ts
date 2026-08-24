@@ -33,10 +33,10 @@ export const publicCopy = {
     },
     pages: {
       catalogues: {
-        monasteries: { title: "Манастири", description: "Истражите православне манастире Црне Горе.", empty: "Још нема манастира спремних за јавно објављивање." },
-        maleMonasteries: { title: "Мушки манастири", description: "Истражите мушке православне манастире Црне Горе.", empty: "Још нема мушких манастира спремних за приказ." },
-        femaleMonasteries: { title: "Женски манастири", description: "Истражите женске православне манастире Црне Горе.", empty: "Још нема женских манастира спремних за приказ." },
-        churches: { title: "Цркве", description: "Истражите православне храмове, цркве, капеле и саборне храмове Црне Горе.", empty: "Још нема храмова спремних за јавно објављивање." },
+        monasteries: { title: "Манастири", listTitle: "Сви манастири", description: "Истражите православне манастире Црне Горе.", empty: "Још нема манастира спремних за јавно објављивање." },
+        maleMonasteries: { title: "Мушки манастири", listTitle: "Мушки манастири", description: "Истражите мушке православне манастире Црне Горе.", empty: "Још нема мушких манастира спремних за приказ." },
+        femaleMonasteries: { title: "Женски манастири", listTitle: "Женски манастири", description: "Истражите женске православне манастире Црне Горе.", empty: "Још нема женских манастира спремних за приказ." },
+        churches: { title: "Цркве", listTitle: "Све цркве", description: "Истражите православне храмове, цркве, капеле и саборне храмове Црне Горе.", empty: "Још нема храмова спремних за јавно објављивање." },
       },
       map: { title: "Мапа — Светиње", description: "Интерактивна карта православних манастира и храмова у Црној Гори.", aria: "Интерактивна карта православних светиња" },
       routes: { eyebrow: "Руте", title: "Пјешачке руте до светиња", description: "Трасе засноване на стварним GPS записима, са јасно означеним провјереним и непровјереним практичним подацима.", filtersAria: "Филтери тежине", filters: { all: "Све", easy: "Лаке", moderate: "Средње", demanding: "Захтјевне" }, list: "Доступне руте", empty: "Још нема рута спремних за јавно објављивање." },
@@ -88,10 +88,10 @@ export const publicCopy = {
     },
     pages: {
       catalogues: {
-        monasteries: { title: "Монастыри", description: "Откройте православные монастыри Черногории.", empty: "Пока нет монастырей, готовых к публикации." },
-        maleMonasteries: { title: "Мужские монастыри", description: "Откройте мужские православные монастыри Черногории.", empty: "Пока нет мужских монастырей, готовых к публикации." },
-        femaleMonasteries: { title: "Женские монастыри", description: "Откройте женские православные монастыри Черногории.", empty: "Пока нет женских монастырей, готовых к публикации." },
-        churches: { title: "Храмы", description: "Откройте православные храмы, церкви, часовни и соборы Черногории.", empty: "Пока нет храмов, готовых к публикации." },
+        monasteries: { title: "Монастыри", listTitle: "Все монастыри", description: "Откройте православные монастыри Черногории.", empty: "Пока нет монастырей, готовых к публикации." },
+        maleMonasteries: { title: "Мужские монастыри", listTitle: "Мужские монастыри", description: "Откройте мужские православные монастыри Черногории.", empty: "Пока нет мужских монастырей, готовых к публикации." },
+        femaleMonasteries: { title: "Женские монастыри", listTitle: "Женские монастыри", description: "Откройте женские православные монастыри Черногории.", empty: "Пока нет женских монастырей, готовых к публикации." },
+        churches: { title: "Храмы", listTitle: "Все храмы", description: "Откройте православные храмы, церкви, часовни и соборы Черногории.", empty: "Пока нет храмов, готовых к публикации." },
       },
       map: { title: "Карта святынь", description: "Интерактивная карта православных монастырей и храмов Черногории.", aria: "Интерактивная карта православных святынь" },
       routes: { eyebrow: "Маршруты", title: "Пешеходные маршруты к святыням", description: "Маршруты на основе реальных GPS-треков с ясным обозначением проверенных и непроверенных практических данных.", filtersAria: "Фильтры сложности", filters: { all: "Все", easy: "Лёгкие", moderate: "Средние", demanding: "Сложные" }, list: "Доступные маршруты", empty: "Переводы паломнических маршрутов готовятся." },
@@ -143,10 +143,10 @@ export const publicCopy = {
     },
     pages: {
       catalogues: {
-        monasteries: { title: "Monasteries", description: "Explore Montenegro's Orthodox monasteries.", empty: "No monasteries are ready for publication yet." },
-        maleMonasteries: { title: "Men's monasteries", description: "Explore Montenegro's men's Orthodox monasteries.", empty: "No men's monasteries are ready for publication yet." },
-        femaleMonasteries: { title: "Women's monasteries", description: "Explore Montenegro's women's Orthodox monasteries.", empty: "No women's monasteries are ready for publication yet." },
-        churches: { title: "Churches", description: "Explore Montenegro's Orthodox churches, chapels, and cathedrals.", empty: "No churches are ready for publication yet." },
+        monasteries: { title: "Monasteries", listTitle: "All monasteries", description: "Explore Montenegro's Orthodox monasteries.", empty: "No monasteries are ready for publication yet." },
+        maleMonasteries: { title: "Men's monasteries", listTitle: "Men's monasteries", description: "Explore Montenegro's men's Orthodox monasteries.", empty: "No men's monasteries are ready for publication yet." },
+        femaleMonasteries: { title: "Women's monasteries", listTitle: "Women's monasteries", description: "Explore Montenegro's women's Orthodox monasteries.", empty: "No women's monasteries are ready for publication yet." },
+        churches: { title: "Churches", listTitle: "All churches", description: "Explore Montenegro's Orthodox churches, chapels, and cathedrals.", empty: "No churches are ready for publication yet." },
       },
       map: { title: "Map of holy places", description: "An interactive map of Montenegro's Orthodox monasteries and churches.", aria: "Interactive map of Orthodox holy places" },
       routes: { eyebrow: "Routes", title: "Walking routes to holy places", description: "Routes based on real GPS tracks, with verified and unverified practical details clearly identified.", filtersAria: "Difficulty filters", filters: { all: "All", easy: "Easy", moderate: "Moderate", demanding: "Demanding" }, list: "Available routes", empty: "Translated pilgrimage routes are being prepared." },
