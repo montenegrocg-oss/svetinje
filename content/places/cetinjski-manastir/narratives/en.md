@@ -3,16 +3,16 @@ schema_version: 1
 place_id: cetinjski-manastir
 locale: en
 editorial_status: research
-translation_status: outdated
+translation_status: published
 slug: cetinje-monastery
 preferred_name: Cetinje Monastery
 summary: Cetinje Monastery is the Monastery of the Nativity of the Most Holy Theotokos in Cetinje; the source dates its construction to 1484.
-source_revision: 56161a62ec7a87fe4e78293392ca0a4308db3dd1
+source_revision: c231a517a3876ae5ed9ddd3f9a193c6fcacc3ff6
 approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-23T11:48:22Z
+  updated_at: 2026-08-24T14:32:10Z
   updated_by: montenegro-cg
 ---
 
