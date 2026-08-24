@@ -42,8 +42,8 @@ const explorerRuntimeCopy = JSON.stringify({
   </header>
 
   <div class="map-stage">
-    <MapCanvas places={discoveryPlaces} routes={routes} locale={locale} />
-    <MapControls locale={locale} hasEditorialRoutes={routes.length > 0} />
+    <MapCanvas places={discoveryPlaces} locale={locale} />
+    <MapControls locale={locale} />
   </div>
 
   <div class="map-explorer__content">
@@ -72,17 +72,6 @@ const explorerRuntimeCopy = JSON.stringify({
     paginateHomepagePreview,
   } from "../lib/explorer-preview";
   import { getPlaceArea } from "../lib/place-areas";
-
-  document.querySelectorAll<HTMLButtonElement>("[data-notice-trigger]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const targetId = button.dataset.noticeTrigger;
-      if (!targetId) return;
-      const notice = document.getElementById(targetId);
-      if (!notice) return;
-      notice.hidden = false;
-      notice.focus({ preventScroll: true });
-    });
-  });
 
   const searchForm = document.querySelector<HTMLFormElement>("[data-catalogue-search]");
   const searchInput = searchForm?.querySelector<HTMLInputElement>("input[type='search']");

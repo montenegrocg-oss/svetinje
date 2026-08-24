@@ -1173,16 +1173,6 @@
     background: var(--navy-900);
   }
 
-  .map-action--primary {
-    border-color: var(--navy-900);
-    color: var(--white);
-    background: var(--navy-900);
-  }
-
-  .map-route-toggle--mobile {
-    display: none;
-  }
-
   .map-tool-stack {
     position: absolute;
     z-index: 15;
@@ -1312,22 +1302,6 @@
     top: auto;
     bottom: calc(100% + 0.4rem);
     margin: 0;
-  }
-
-  .map-notice {
-    position: absolute;
-    z-index: 30;
-    right: 0.8rem;
-    bottom: 4.25rem;
-    width: min(20rem, calc(100% - 1.6rem));
-    padding: 0.75rem 0.9rem;
-    border-left: 3px solid var(--gold);
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-    color: var(--navy-950);
-    background: var(--white);
-    box-shadow: var(--shadow-control);
-    font-size: var(--text-sm);
-    font-weight: 650;
   }
 
   .explorer-sidebar {
@@ -2214,8 +2188,10 @@
     right: clamp(0.75rem, 2vw, 2rem);
   }
 
-  .dedicated-map-page .map-tool-stack {
-    top: clamp(0.75rem, 2vw, 1.5rem);
+  @media (min-width: 48rem) {
+    .dedicated-map-page .map-tool-stack {
+      top: clamp(0.75rem, 2vw, 1.5rem);
+    }
   }
 
   .dedicated-map-page .map-help {
@@ -4303,18 +4279,12 @@
       padding-inline: 0.45rem;
     }
 
-    .map-action--mobile-hidden {
-      display: none;
+    .map-actions--map-page {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .map-route-toggle--mobile {
-      position: absolute;
-      z-index: 15;
-      top: 4rem;
-      left: 0.75rem;
-      display: inline-flex;
-      max-width: calc(100% - 7rem);
-      min-height: 2.75rem;
+    .dedicated-map-page .map-tool-stack {
+      top: 7.25rem;
     }
 
     .editorial-route-popup {
@@ -4611,6 +4581,13 @@
     .map-actions {
       right: 6.25rem;
     }
+
+    .dedicated-map-page .map-actions--map-page {
+      right: 6.25rem;
+      left: clamp(0.75rem, 2vw, 2rem);
+      width: fit-content;
+      max-width: calc(100% - 8rem);
+    }
   }
 
   @media (min-width: 68rem) {
@@ -4829,6 +4806,15 @@
       max-width: calc(100% - 28rem);
     }
 
+    .dedicated-map-page .map-actions--map-page {
+      top: clamp(0.75rem, 2vw, 1.5rem);
+      right: auto;
+      left: clamp(0.75rem, 2vw, 2rem);
+      width: fit-content;
+      max-width: calc(100% - 8rem);
+      justify-content: flex-start;
+    }
+
     .map-action {
       min-height: 2.75rem;
       padding-inline: 0.9rem;
@@ -4998,8 +4984,10 @@
     right: clamp(0.75rem, 2vw, 2rem);
   }
 
-  .dedicated-map-page .map-tool-stack {
-    top: clamp(0.75rem, 2vw, 1.5rem);
+  @media (min-width: 48rem) {
+    .dedicated-map-page .map-tool-stack {
+      top: clamp(0.75rem, 2vw, 1.5rem);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

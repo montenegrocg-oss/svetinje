@@ -1,8 +1,9 @@
 ---
 import MapPage from "../../components/MapPage.astro";
 import { loadVisiblePlaces } from "../../lib/content/publication";
+import { loadVisibleRoutes } from "../../lib/content/routes";
 
-const places = await loadVisiblePlaces();
+const [places, routes] = await Promise.all([loadVisiblePlaces(), loadVisibleRoutes()]);
 ---
 
-<MapPage places={places} locale="sr" />
+<MapPage places={places} routes={routes} locale="sr" />
