@@ -83,7 +83,8 @@ test("desktop and mobile navigation expose the required Serbian guide sections",
   assert.equal((header.match(/navigation\.map/g) ?? []).length, 2);
   assert.match(header, /<details class="mobile-navigation">/);
   assert.match(header, /aria-label=\{copy\.openMenu\}/);
-  assert.match(header, /Омиљене светиње — 0/);
+  assert.match(header, /copy\.favorites\.collectionLabel/);
+  assert.match(header, /href=\{favoritesRoot\}/);
   assert.doesNotMatch(header, /header-search|aria-label="Претрага светиња"|> Претрага</);
   assert.match(header, /routeFor\(locale, "monasteries"\)/);
   assert.match(header, /routeFor\(locale, "churches"\)/);

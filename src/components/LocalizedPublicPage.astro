@@ -8,8 +8,9 @@ import CataloguePage from "./CataloguePage.astro";
 import MapPage from "./MapPage.astro";
 import NewsArchivePage from "./NewsArchivePage.astro";
 import RouteCataloguePage from "./RouteCataloguePage.astro";
+import FavoritesPage from "./FavoritesPage.astro";
 
-type PageKind = "monasteries" | "maleMonasteries" | "femaleMonasteries" | "churches" | "map" | "routes" | "calendar" | "news" | "about";
+type PageKind = "monasteries" | "maleMonasteries" | "femaleMonasteries" | "churches" | "map" | "routes" | "calendar" | "news" | "about" | "favorites";
 interface Props { locale: Exclude<Locale, "sr">; page: PageKind }
 const { locale, page } = Astro.props;
 const places = await loadLocalizedVisiblePlaces(locale);
@@ -24,3 +25,4 @@ const news = page === "news" ? await loadVisibleNews(process.cwd(), { locale, vi
 {page === "calendar" && <CalendarIndexPage locale={locale} days={[]} />}
 {page === "news" && <NewsArchivePage locale={locale} items={news} />}
 {page === "about" && <AboutPage locale={locale} />}
+{page === "favorites" && <FavoritesPage locale={locale} />}

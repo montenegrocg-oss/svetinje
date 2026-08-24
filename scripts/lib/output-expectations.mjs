@@ -10,8 +10,8 @@ import { loadLocalizedVisiblePlaces } from "../../src/lib/content/localized-publ
 import { VERIFIED_CALENDAR_END, VERIFIED_CALENDAR_START } from "../../src/lib/calendar/verified-dataset.ts";
 
 export const LOCALIZED_STATIC_HTML_ROUTES = Object.freeze([
-  "ru/index.html", "ru/monastyri/index.html", "ru/monastyri/muzhskie/index.html", "ru/monastyri/zhenskie/index.html", "ru/tserkvi/index.html", "ru/karta/index.html", "ru/marshruty/index.html", "ru/kalendar/index.html", "ru/novosti/index.html", "ru/o-proekte/index.html",
-  "en/index.html", "en/monasteries/index.html", "en/monasteries/men/index.html", "en/monasteries/women/index.html", "en/churches/index.html", "en/map/index.html", "en/routes/index.html", "en/calendar/index.html", "en/news/index.html", "en/about/index.html",
+  "ru/index.html", "ru/monastyri/index.html", "ru/monastyri/muzhskie/index.html", "ru/monastyri/zhenskie/index.html", "ru/tserkvi/index.html", "ru/karta/index.html", "ru/marshruty/index.html", "ru/kalendar/index.html", "ru/novosti/index.html", "ru/o-proekte/index.html", "ru/izbrannoe/index.html",
+  "en/index.html", "en/monasteries/index.html", "en/monasteries/men/index.html", "en/monasteries/women/index.html", "en/churches/index.html", "en/map/index.html", "en/routes/index.html", "en/calendar/index.html", "en/news/index.html", "en/about/index.html", "en/favorites/index.html",
 ]);
 
 export const STATIC_HTML_ROUTES = Object.freeze([
@@ -27,6 +27,7 @@ export const STATIC_HTML_ROUTES = Object.freeze([
   "novosti/index.html",
   "rute/index.html",
   "kalendar/index.html",
+  "omiljeno/index.html",
 ]);
 
 export const CALENDAR_HTML_ROUTES = Object.freeze(
