@@ -115,6 +115,8 @@ translation_status: draft
 slug: existing-place-ru
 preferred_name: Синтетический объект
 summary: Синтетическое описание
+seo_title: Сохранённый SEO заголовок
+seo_description: Сохранённое SEO описание
 patronal_feasts: [Успение, Святитель Николай]
 service_schedule: |
   По воскресеньям в 9:00.
@@ -336,13 +338,17 @@ test("localized saves are isolated, preserve deferred metadata, and no-op withou
     patronalFeasts: ["Успение", "", "Святитель Николай"],
     serviceSchedule: "По воскресеньям в 10:00.\r\nВечернее богослужение в 18:00.",
     narrativeBody: "Синтетический текст.",
-    translationStatus: "draft",
+    translationStatus: "published",
   }, new Date("2026-08-20T12:00:00Z"));
   assert.equal(ru.unchanged, false);
   assert.deepEqual(ruRepository.committed.files.map(({ path }) => path), ["content/places/existing-place/narratives/ru.md"]);
-  assert.equal(parseNarrative(ruRepository.committed.files[0].content).frontMatter.alternate_names[0].name, "Сохранённое имя");
-  assert.deepEqual(parseNarrative(ruRepository.committed.files[0].content).frontMatter.patronal_feasts, ["Успение", "Святитель Николай"]);
-  assert.equal(parseNarrative(ruRepository.committed.files[0].content).frontMatter.service_schedule, "По воскресеньям в 10:00.\nВечернее богослужение в 18:00.");
+  const savedRu = parseNarrative(ruRepository.committed.files[0].content).frontMatter;
+  assert.equal(savedRu.translation_status, "draft");
+  assert.equal(savedRu.alternate_names[0].name, "Сохранённое имя");
+  assert.deepEqual(savedRu.patronal_feasts, ["Успение", "Святитель Николай"]);
+  assert.equal(savedRu.service_schedule, "По воскресеньям в 10:00.\nВечернее богослужение в 18:00.");
+  assert.equal(savedRu.seo_title, "Сохранённый SEO заголовок");
+  assert.equal(savedRu.seo_description, "Сохранённое SEO описание");
 
   const enRepository = new LocalizedRepository();
   await updatePlaceNarrative(enRepository, env, session, "existing-place", "en", {
@@ -353,7 +359,6 @@ test("localized saves are isolated, preserve deferred metadata, and no-op withou
     patronalFeasts: ["Dormition", "Saint Nicholas"],
     serviceSchedule: "Sundays at 9:00.\nEvening service at 18:00.",
     narrativeBody: "Synthetic body.",
-    translationStatus: "draft",
   }, new Date("2026-08-20T12:00:00Z"));
   assert.deepEqual(enRepository.committed.files.map(({ path }) => path), ["content/places/existing-place/narratives/en.md"]);
 
@@ -366,7 +371,6 @@ test("localized saves are isolated, preserve deferred metadata, and no-op withou
     patronalFeasts: ["Dormition", "Saint Nicholas"],
     serviceSchedule: "Sundays at 9:00.\nEvening service at 18:00.",
     narrativeBody: "Synthetic body.",
-    translationStatus: "draft",
   });
   assert.equal(noOp.unchanged, true);
   assert.equal(noOpRepository.committed, undefined);
@@ -378,10 +382,8 @@ test("localized saves are isolated, preserve deferred metadata, and no-op withou
     shortName: "",
     slug: "",
     summary: "",
-    seoTitle: "",
-    seoDescription: "",
     narrativeBody: "",
-    translationStatus: "draft",
+    translationStatus: "published",
   }, new Date("2026-08-20T12:00:00Z"));
   assert.equal(created.unchanged, false);
   assert.deepEqual(missingRepository.committed.files.map(({ path }) => path), ["content/places/existing-place/narratives/ru.md"]);
@@ -390,6 +392,50 @@ test("localized saves are isolated, preserve deferred metadata, and no-op withou
   assert.equal(scaffold.frontMatter.translation_status, "draft");
   assert.equal(scaffold.frontMatter.preferred_name, undefined);
   assert.equal(scaffold.body.trim(), "");
+
+  const missingEnRepository = new LocalizedRepository({ ru: false, en: false });
+  await updatePlaceNarrative(missingEnRepository, env, session, "existing-place", "en", {
+    expectedHeadSha: HEAD,
+    narrativeBody: "",
+    translationStatus: "published",
+  }, new Date("2026-08-20T12:00:00Z"));
+  const enScaffold = parseNarrative(missingEnRepository.committed.files[0].content);
+  assert.equal(enScaffold.frontMatter.locale, "en");
+  assert.equal(enScaffold.frontMatter.translation_status, "draft");
+});
+
+test("localized updates reset reviewed content to draft and preserve outdated provenance", async () => {
+  const reviewedRepository = new LocalizedRepository();
+  reviewedRepository.blobs.enNarrative = EN_NARRATIVE.replace("translation_status: draft", "translation_status: in-review");
+  await updatePlaceNarrative(reviewedRepository, env, session, "existing-place", "en", {
+    expectedHeadSha: HEAD,
+    preferredName: "Changed after review",
+    slug: "existing-place-en",
+    summary: "Synthetic summary",
+    patronalFeasts: ["Dormition", "Saint Nicholas"],
+    serviceSchedule: "Sundays at 9:00.\nEvening service at 18:00.",
+    narrativeBody: "Synthetic body.",
+    translationStatus: "published",
+  });
+  assert.equal(parseNarrative(reviewedRepository.committed.files[0].content).frontMatter.translation_status, "draft");
+
+  const staleRevision = "c".repeat(40);
+  const outdatedRepository = new LocalizedRepository();
+  outdatedRepository.blobs.ruNarrative = RU_NARRATIVE
+    .replace("translation_status: draft", "translation_status: outdated")
+    .replace(`source_revision: ${HEAD}`, `source_revision: ${staleRevision}`);
+  await updatePlaceNarrative(outdatedRepository, env, session, "existing-place", "ru", {
+    expectedHeadSha: HEAD,
+    preferredName: "Уточнённый синтетический объект",
+    slug: "existing-place-ru",
+    summary: "Синтетическое описание",
+    patronalFeasts: ["Успение", "Святитель Николай"],
+    serviceSchedule: "По воскресеньям в 9:00.\nВечернее богослужение в 18:00.",
+    narrativeBody: "Синтетический текст.",
+  });
+  const savedOutdated = parseNarrative(outdatedRepository.committed.files[0].content).frontMatter;
+  assert.equal(savedOutdated.translation_status, "outdated");
+  assert.equal(savedOutdated.source_revision, staleRevision);
 });
 
 test("localized saves preserve HEAD conflicts and reject arbitrary locale paths", async () => {
@@ -411,6 +457,8 @@ test("Serbian prose, schedule, and feast changes stale translations while coordi
     ...body(proseRecord.place),
     summary: "Нови синтетички сажетак",
   }, new Date("2026-08-20T12:00:00Z"));
+  const serbianFile = proseRepository.committed.files.find(({ path }) => path.endsWith("/narratives/sr.md"));
+  assert.equal(parseNarrative(serbianFile.content).frontMatter.translation_status, "source");
   const translationFiles = proseRepository.committed.files.filter(({ path }) => /\/narratives\/(ru|en)\.md$/.test(path));
   assert.equal(translationFiles.length, 2);
   for (const file of translationFiles) {
@@ -873,6 +921,11 @@ test("place editor UI keeps one narrative field per locale and no legacy section
   assert.match(html, /data-add-feast>\+ Додај славу/);
   assert.match(html, /name="serviceSchedule"/);
   assert.equal((html.match(/name="serviceSchedule"/g) ?? []).length, 3);
+  assert.equal((html.match(/data-translation-editor/g) ?? []).length, 2);
+  assert.doesNotMatch(html, /name="translationStatus"|Статус превода/);
+  assert.doesNotMatch(html, /name="seoTitle"|SEO title/);
+  assert.doesNotMatch(html, /name="seoDescription"|SEO description/);
+  assert.match(html, /\.editor\[data-language-panel\]\[hidden\]\{display:none\}/);
   assert.match(html, /Тип манастира<select name="monasticCommunity">/);
   assert.match(html, /<option value="">— није одређено —<\/option>/);
   assert.match(html, /<option value="male" selected>Мушки<\/option>/);
