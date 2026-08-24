@@ -4953,7 +4953,7 @@
   .route-card--compact .route-card__body { padding: 0.8rem; }
   .route-card--compact h3 { font-size: 1rem; }
   .route-card--compact .route-card__metrics { grid-template-columns: repeat(4, minmax(0,1fr)); gap: 0.35rem; margin-top: 0.55rem; }
-  .route-card--compact .route-card__metrics dt { display: none; }
+  .route-card--compact .route-card__metrics dt { line-height: 1.25; }
   .route-card--compact .route-card__metrics dd { font-size: 0.7rem; }
   .route-card--compact .route-card__water { display: none; }
   .route-card--compact .route-card__action { min-height: 2rem; font-size: 0.72rem; }

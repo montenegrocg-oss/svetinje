@@ -16,10 +16,10 @@ const difficulty = { easy: "Лака", moderate: "Средње захтјевн�
     <h3><a href={`/rute/${route.slug}/`}>{route.shortName}</a></h3>
     {!compact && <p>{route.summary}</p>}
     <dl class="route-card__metrics">
-      <div><dt>Дужина</dt><dd>{(route.metrics.distance_m! / 1000).toLocaleString("sr-ME", { maximumFractionDigits: 1 })} km</dd></div>
+      <div><dt>Растојање</dt><dd>{(route.metrics.distance_m! / 1000).toLocaleString("sr-ME", { maximumFractionDigits: 1 })} km</dd></div>
       {duration !== undefined && <div><dt>Вријеме</dt><dd>{formatDuration(duration)}</dd></div>}
       {route.metrics.ascent_m !== undefined && <div><dt>Успон</dt><dd>+{route.metrics.ascent_m} m</dd></div>}
-      <div><dt>Тежина</dt><dd>{difficulty}</dd></div>
+      <div><dt>Захтјевност</dt><dd>{difficulty}</dd></div>
     </dl>
     <p class="route-card__water">Вода: {route.water.status === "unknown" ? "Није провјерено" : route.water.status === "none" ? "Нема потврђених извора" : "Провјерите податке о води"}</p>
     <a class="route-card__action" href={`/rute/${route.slug}/`}>Погледај руту <span aria-hidden="true">→</span></a>
