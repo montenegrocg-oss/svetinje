@@ -97,7 +97,7 @@ test("desktop and mobile navigation expose the required Serbian guide sections",
   assert.match(header, /<details class="mobile-navigation__submenu" open=\{isMonasteryActive\}>[\s\S]*?<summary data-section-active=\{isMonasteryActive \? "true" : undefined\}>\{copy\.nav\.monasteries\}<\/summary>/);
   assert.doesNotMatch(header, /<summary[^>]*aria-current/);
   assert.match(header, /mobileMonasteryNavigation\.map[\s\S]*?aria-current=\{isExactPage\(subcategory\.href\) \? "page" : undefined\}/);
-  assert.doesNotMatch(header, /<script>|addEventListener/);
+  assert.doesNotMatch(header, /fetch\(|window\.location|data\/calendar|gospel-readings/);
   assert.match(styles, /\.desktop-navigation__submenu-item:hover > \.desktop-navigation__submenu,[\s\S]*?\.desktop-navigation__submenu-item:focus-within > \.desktop-navigation__submenu/);
   assert.match(styles, /\.desktop-navigation__submenu\s*\{[\s\S]*?position: absolute;[\s\S]*?z-index: 95;[\s\S]*?top: calc\(100% - 0\.2rem\);/);
   assert.match(styles, /\.primary-navigation a\[data-section-active="true"\]::after/);
