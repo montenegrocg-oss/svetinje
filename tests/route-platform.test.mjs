@@ -75,7 +75,7 @@ test("GPX parser fails closed on malformed coordinates and insufficient tracks",
   assert.throws(() => parseGpx(wrap("<trkpt lat=\"42\" lon=\"19\"><ele>x<\/ele><\/trkpt><trkpt lat=\"42.1\" lon=\"19.1\"/>")), /неважећу висину/);
 });
 
-test("public route cards label summary metrics without hiding compact labels", async () => {
+test("public route cards align readable summary labels and values", async () => {
   const [card, css] = await Promise.all([
     readFile(new URL("../src/components/routes/RouteCard.astro", import.meta.url), "utf8"),
     readFile(new URL("../src/styles/global.css", import.meta.url), "utf8"),
@@ -88,7 +88,13 @@ test("public route cards label summary metrics without hiding compact labels", a
   assert.match(card, /<dd>\{formatDuration\(duration\)\}<\/dd>/);
   assert.match(card, /<dd>\+\{route\.metrics\.ascent_m\} m<\/dd>/);
   assert.match(card, /<dd>\{difficulty\}<\/dd>/);
+  assert.match(css, /\.route-card__metrics dt\s*\{[^}]*font-size:\s*0\.75rem;[^}]*line-height:\s*1\.35;/);
+  assert.match(css, /\.route-card__metrics dd\s*\{[^}]*margin:\s*0\.15rem 0 0;/);
   assert.doesNotMatch(css, /\.route-card--compact \.route-card__metrics dt\s*\{[^}]*display:\s*none/);
+  assert.match(css, /@media \(min-width: 68rem\)[\s\S]*?\.map-explorer__secondary-content\s*\{[^}]*grid-template-rows:\s*auto auto minmax\(0, 1fr\);/);
+  assert.match(css, /@media \(min-width: 68rem\)[\s\S]*?\.popular-routes__inner\s*\{[^}]*display:\s*flex;[^}]*height:\s*100%;[^}]*flex-direction:\s*column;/);
+  assert.match(css, /@media \(min-width: 68rem\)[\s\S]*?\.popular-routes__cards \.route-card--compact\s*\{[^}]*height:\s*100%;/);
+  assert.match(css, /@media \(min-width: 68rem\)\s*\{\s*\.map-explorer__routes \.route-card--compact \.route-card__metrics\s*\{[^}]*margin-top:\s*auto;/);
 });
 
 test("pilot route public composition remains loader-driven and key-safe", async () => {
