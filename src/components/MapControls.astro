@@ -5,9 +5,10 @@ import { publicCopy } from "../i18n/public-copy";
 interface Props {
   variant?: "homepage" | "map-page";
   locale?: import("../i18n/config").Locale;
+  hasEditorialRoutes?: boolean;
 }
 
-const { variant = "homepage", locale = "sr" } = Astro.props;
+const { variant = "homepage", locale = "sr", hasEditorialRoutes = false } = Astro.props;
 const copy = publicCopy[locale].homepage;
 const c = copy.mapControls;
 ---
@@ -17,9 +18,13 @@ const c = copy.mapControls;
     <button type="button" class="map-action" data-filter="all" aria-pressed="true"><InterfaceIcon name="grid" size={18} /><span>{copy.filters.all}</span></button>
     <button type="button" class="map-action" data-filter="monasteries" aria-pressed="false"><InterfaceIcon name="monastery" size={18} /><span>{copy.filters.monasteries}</span></button>
     <button type="button" class="map-action" data-filter="churches" aria-pressed="false"><InterfaceIcon name="church" size={18} /><span>{copy.filters.churches}</span></button>
-    <button type="button" class="map-action map-action--wide map-action--mobile-hidden" data-filter="routes" aria-pressed="false"><InterfaceIcon name="route" size={18} /><span>{copy.filters.routes}</span></button>
+    {hasEditorialRoutes && <button type="button" class="map-action map-action--wide map-action--mobile-hidden" data-route-toggle aria-pressed="false" disabled><InterfaceIcon name="route" size={18} /><span>{copy.filters.routes}</span></button>}
     <button type="button" class="map-action map-action--primary map-action--mobile-hidden" data-notice-trigger="route-notice" aria-controls="route-notice"><InterfaceIcon name="route" size={18} /><span>{c.builder}</span></button>
   </div>
+)}
+
+{variant === "homepage" && hasEditorialRoutes && (
+  <button type="button" class="map-action map-route-toggle--mobile" data-route-toggle aria-pressed="false" disabled><InterfaceIcon name="route" size={18} /><span>{copy.filters.routes}</span></button>
 )}
 
 <div class:list={["map-tool-stack", { "map-tool-stack--page": variant === "map-page" }]} aria-label={c.controls}>

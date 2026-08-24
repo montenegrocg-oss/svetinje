@@ -42,8 +42,8 @@ const explorerRuntimeCopy = JSON.stringify({
   </header>
 
   <div class="map-stage">
-    <MapCanvas places={discoveryPlaces} locale={locale} />
-    <MapControls locale={locale} />
+    <MapCanvas places={discoveryPlaces} routes={routes} locale={locale} />
+    <MapControls locale={locale} hasEditorialRoutes={routes.length > 0} />
   </div>
 
   <div class="map-explorer__content">
@@ -105,7 +105,7 @@ const explorerRuntimeCopy = JSON.stringify({
   const areaFilterLabel = areaFilter?.querySelector<HTMLElement>("[data-explorer-area-label]");
   const clearAreaFilterButton = areaFilter?.querySelector<HTMLButtonElement>("[data-clear-area-filter]");
   const paginations = [...(explorerRoot?.querySelectorAll<HTMLElement>("[data-homepage-pagination]") ?? [])];
-  const filterIds = new Set(["all", "monasteries", "churches", "routes"]);
+  const filterIds = new Set(["all", "monasteries", "churches"]);
   let activeFilter = "all";
   let activeAreaId = getPlaceArea(new URL(window.location.href).searchParams.get("area"))?.id ?? null;
   let matchedCards = [...placeCards];
