@@ -1,16 +1,19 @@
 ---
 import type { VisiblePlace } from "../lib/content/publication";
+import type { VisibleRoute } from "../lib/content/routes";
+import { mapEditorialRoutes } from "../lib/map-editorial-routes";
 import { categoryForPlaceType } from "../lib/place-filters";
 import { placeDetailRoot, type Locale } from "../i18n/config";
 import { publicCopy } from "../i18n/public-copy";
 
 interface Props {
   places?: VisiblePlace[];
+  routes?: VisibleRoute[];
   layout?: "homepage" | "full";
   locale?: Locale;
 }
 
-const { places = [], layout = "homepage", locale = "sr" } = Astro.props;
+const { places = [], routes = [], layout = "homepage", locale = "sr" } = Astro.props;
 const mapCopy = locale === "ru" ? { fallback: "Стилизованная карта Черногории без меток святынь.", region: "Интерактивная карта Черногории", loading: "Загрузка карты…", unavailable: "Интерактивная карта сейчас недоступна.", attribution: "Источники картографических данных", photo: "Авторская фотография будет добавлена", cluster: "святынь — приблизить карту", country: ["ЧЕРНО", "ГОРИЯ"], sea: "АДРИАТИЧЕСКОЕ МОРЕ", neighbours: ["СЕРБИЯ", "АЛБАНИЯ", "БОСНИЯ И ГЕРЦЕГОВИНА", "ХОРВАТИЯ"] } : locale === "en" ? { fallback: "A stylised map of Montenegro without holy-place markers.", region: "Interactive map of Montenegro", loading: "Loading map…", unavailable: "The interactive map is currently unavailable.", attribution: "Map data sources", photo: "An original photograph will be added", cluster: "holy places — zoom in", country: ["MONTE", "NEGRO"], sea: "ADRIATIC SEA", neighbours: ["SERBIA", "ALBANIA", "BOSNIA AND HERZEGOVINA", "CROATIA"] } : { fallback: "Стилизована картографска површина Црне Горе без ознака светиња.", region: "Интерактивна карта Црне Горе", loading: "Учитавање карте…", unavailable: "Интерактивна карта тренутно није доступна.", attribution: "Извори картографских података", photo: "Ауторска фотографија биће додата", cluster: "светиње — приближи карту", country: ["ЦРНА", "ГОРА"], sea: "ЈАДРАНСКО МОРЕ", neighbours: ["СРБИЈА", "АЛБАНИЈА", "БОСНА И ХЕРЦЕГОВИНА", "ХРВАТСКА"] };
 const hasMapTilerKey = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
 const markerPlaces = places.flatMap((place) =>
@@ -32,6 +35,8 @@ const markerPlaces = places.flatMap((place) =>
     : [],
 );
 const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
+const routePayload = JSON.stringify(mapEditorialRoutes(routes)).replaceAll("<", "\\u003c");
+const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.routeSummary).replaceAll("<", "\\u003c");
 ---
 <div
   class="map-canvas"
@@ -43,6 +48,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
   data-open-page-label={publicCopy[locale].openPage}
   data-photo-placeholder={mapCopy.photo}
   data-cluster-label={mapCopy.cluster}
+  data-map-locale={locale}
 >
   <div
     class="map-fallback"
@@ -152,6 +158,8 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
   </div>
 
   <script type="application/json" data-map-place-data set:html={markerPayload} is:inline />
+  {routes.length > 0 && <script type="application/json" data-map-route-data set:html={routePayload} is:inline />}
+  {routes.length > 0 && <script type="application/json" data-map-route-copy set:html={routeCopyPayload} is:inline />}
 </div>
 
 <script>
@@ -179,6 +187,34 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     previewImageSrc?: string;
     previewImageAlt?: string;
   }
+
+  interface EditorialRoute {
+    id: string;
+    title: string;
+    routeType: "hiking";
+    trackUrl: string;
+    detailUrl: string;
+    metrics: { distanceM: number; ascentM?: number; durationMinutes?: number };
+    difficulty: "easy" | "moderate" | "demanding";
+  }
+
+  interface EditorialRouteCopy {
+    distance: string;
+    duration: string;
+    ascent: string;
+    difficulty: string;
+    view: string;
+    hours: string;
+    minutes: string;
+    difficulties: Record<EditorialRoute["difficulty"], string>;
+  }
+
+  const EDITORIAL_ROUTE_SOURCE_ID = "editorial-walking-routes";
+  const EDITORIAL_ROUTE_LAYER_IDS = [
+    "editorial-walking-routes-casing",
+    "editorial-walking-routes-line",
+    "editorial-walking-routes-hit",
+  ] as const;
 
   const MONTENEGRO_BOUNDS: LngLatBoundsLike = [
     [18.42, 41.8],
@@ -212,18 +248,26 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     const zoomInButton = stage?.querySelector<HTMLButtonElement>("[data-map-zoom-in]");
     const zoomOutButton = stage?.querySelector<HTMLButtonElement>("[data-map-zoom-out]");
     const resetButton = stage?.querySelector<HTMLButtonElement>("[data-map-reset]");
+    const routeToggleButtons = [...(stage?.querySelectorAll<HTMLButtonElement>("[data-route-toggle]") ?? [])];
     const mapContainer = root.querySelector<HTMLElement>("#montenegro-map");
     const markerDataElement = root.querySelector<HTMLScriptElement>("[data-map-place-data]");
+    const routeDataElement = root.querySelector<HTMLScriptElement>("[data-map-route-data]");
+    const routeCopyElement = root.querySelector<HTMLScriptElement>("[data-map-route-copy]");
     const placeDetailRoot = root.dataset.placeDetailRoot ?? "/svetinje/";
     const openPageLabel = root.dataset.openPageLabel ?? "Open page";
     const photoPlaceholder = root.dataset.photoPlaceholder ?? "";
     const clusterLabel = root.dataset.clusterLabel ?? "places — zoom in";
+    const mapLocale = root.dataset.mapLocale === "ru" ? "ru" : root.dataset.mapLocale === "en" ? "en" : "sr";
     const markerPlaces: MarkerPlace[] = markerDataElement?.textContent
       ? JSON.parse(markerDataElement.textContent) as MarkerPlace[]
       : [];
+    const editorialRoutes: EditorialRoute[] = routeDataElement?.textContent
+      ? JSON.parse(routeDataElement.textContent) as EditorialRoute[]
+      : [];
+    const routeCopy = JSON.parse(routeCopyElement?.textContent ?? "{}") as EditorialRouteCopy;
 
     const setControlsEnabled = (enabled: boolean) => {
-      [zoomInButton, zoomOutButton, resetButton].forEach((button) => {
+      [zoomInButton, zoomOutButton, resetButton, ...routeToggleButtons].forEach((button) => {
         if (button) button.disabled = !enabled;
       });
     };
@@ -301,6 +345,14 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       maxWidth: "240px",
       offset: 45,
       className: "holy-place-popup",
+    });
+    const routePopup = new maplibregl.Popup({
+      closeButton: true,
+      closeOnClick: true,
+      focusAfterOpen: true,
+      maxWidth: "280px",
+      offset: 8,
+      className: "editorial-route-popup",
     });
     let previewCloseTimer: number | undefined;
     let activePreview: {
@@ -407,6 +459,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
 
     const openPreview = (place: MarkerPlace, link: HTMLAnchorElement, pinned = false) => {
       clearPreviewCloseTimer();
+      routePopup.remove();
       if (activePreview?.place.id === place.id) {
         root.dataset.popupOpen = "true";
         if (pinned) activePreview.pinned = true;
@@ -487,6 +540,137 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     });
 
     const animationDuration = () => (reducedMotion.matches ? 0 : 420);
+    let routesVisible = false;
+    let routeLayerPromise: Promise<void> | undefined;
+    const routeBounds = new maplibregl.LngLatBounds();
+
+    const appendRouteMetric = (list: HTMLDListElement, labelText: string, valueText: string) => {
+      const row = document.createElement("div");
+      const label = document.createElement("dt");
+      const value = document.createElement("dd");
+      label.textContent = labelText;
+      value.textContent = valueText;
+      row.append(label, value);
+      list.append(row);
+    };
+
+    const formatRouteDuration = (minutes: number) => {
+      const parts: string[] = [];
+      const hours = Math.floor(minutes / 60);
+      if (hours > 0) parts.push(`${hours} ${routeCopy.hours}`);
+      if (minutes % 60 > 0 || parts.length === 0) parts.push(`${minutes % 60} ${routeCopy.minutes}`);
+      return parts.join(" ");
+    };
+
+    const createRouteSummary = (route: EditorialRoute) => {
+      const card = document.createElement("article");
+      card.className = "map-route-summary";
+      const title = document.createElement("h3");
+      title.textContent = route.title;
+      const metrics = document.createElement("dl");
+      metrics.className = "map-route-summary__metrics";
+      const numberLocale = mapLocale === "sr" ? "sr-ME" : mapLocale;
+      appendRouteMetric(metrics, routeCopy.distance, `${(route.metrics.distanceM / 1000).toLocaleString(numberLocale, { maximumFractionDigits: 1 })} km`);
+      if (route.metrics.durationMinutes !== undefined) appendRouteMetric(metrics, routeCopy.duration, formatRouteDuration(route.metrics.durationMinutes));
+      if (route.metrics.ascentM !== undefined) appendRouteMetric(metrics, routeCopy.ascent, `+${route.metrics.ascentM.toLocaleString(numberLocale)} m`);
+      appendRouteMetric(metrics, routeCopy.difficulty, routeCopy.difficulties[route.difficulty]);
+      const link = document.createElement("a");
+      link.className = "map-route-summary__link";
+      link.href = route.detailUrl;
+      link.textContent = routeCopy.view;
+      const arrow = document.createElement("span");
+      arrow.setAttribute("aria-hidden", "true");
+      arrow.textContent = "→";
+      link.append(arrow);
+      card.append(title, metrics, link);
+      return card;
+    };
+
+    const ensureRouteLayers = () => {
+      routeLayerPromise ??= (async () => {
+        const features: GeoJSON.Feature<GeoJSON.LineString, { id: string }>[] = [];
+        for (const route of editorialRoutes) {
+          const response = await fetch(route.trackUrl, { credentials: "same-origin" });
+          if (!response.ok) throw new Error("Editorial route track unavailable");
+          const track = await response.json() as GeoJSON.Feature<GeoJSON.LineString>;
+          if (track.type !== "Feature" || track.geometry?.type !== "LineString" || track.geometry.coordinates.length < 2) {
+            throw new Error("Editorial route track is invalid");
+          }
+          track.geometry.coordinates.forEach((coordinate) => routeBounds.extend([coordinate[0]!, coordinate[1]!]));
+          features.push({ ...track, properties: { id: route.id } });
+        }
+        map.addSource(EDITORIAL_ROUTE_SOURCE_ID, {
+          type: "geojson",
+          data: { type: "FeatureCollection", features },
+        });
+        map.addLayer({
+          id: EDITORIAL_ROUTE_LAYER_IDS[0], type: "line", source: EDITORIAL_ROUTE_SOURCE_ID,
+          layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
+          paint: { "line-color": "#0a2944", "line-width": ["interpolate", ["linear"], ["zoom"], 7, 4.5, 13, 7], "line-opacity": 0.72 },
+        });
+        map.addLayer({
+          id: EDITORIAL_ROUTE_LAYER_IDS[1], type: "line", source: EDITORIAL_ROUTE_SOURCE_ID,
+          layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
+          paint: { "line-color": "#d0ab61", "line-width": ["interpolate", ["linear"], ["zoom"], 7, 2.4, 13, 4], "line-opacity": 0.96 },
+        });
+        map.addLayer({
+          id: EDITORIAL_ROUTE_LAYER_IDS[2], type: "line", source: EDITORIAL_ROUTE_SOURCE_ID,
+          layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
+          paint: { "line-color": "#d0ab61", "line-width": 18, "line-opacity": 0.01 },
+        });
+        map.on("mouseenter", EDITORIAL_ROUTE_LAYER_IDS[2], () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", EDITORIAL_ROUTE_LAYER_IDS[2], () => { map.getCanvas().style.cursor = ""; });
+        map.on("click", (event) => {
+          if (!routesVisible || !map.getLayer(EDITORIAL_ROUTE_LAYER_IDS[2])) return;
+          const hitPadding = 10;
+          const feature = map.queryRenderedFeatures([
+            [event.point.x - hitPadding, event.point.y - hitPadding],
+            [event.point.x + hitPadding, event.point.y + hitPadding],
+          ], { layers: EDITORIAL_ROUTE_LAYER_IDS.slice(0, 2) })[0];
+          const routeId = feature?.properties?.id;
+          const route = editorialRoutes.find((candidate) => candidate.id === routeId);
+          if (!route) return;
+          closePreview();
+          const popupLngLat = root.clientWidth < 768
+            ? map.unproject([map.getCanvas().clientWidth / 2, 112])
+            : event.lngLat;
+          routePopup.setLngLat(popupLngLat).setDOMContent(createRouteSummary(route)).addTo(map);
+        });
+      })();
+      return routeLayerPromise;
+    };
+
+    const syncRouteToggles = () => routeToggleButtons.forEach((button) => {
+      button.setAttribute("aria-pressed", String(routesVisible));
+      button.setAttribute("aria-busy", "false");
+    });
+
+    const handleRouteToggle = async () => {
+      const showRoutes = !routesVisible;
+      routeToggleButtons.forEach((button) => {
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+      });
+      try {
+        if (showRoutes) await ensureRouteLayers();
+        if (removed) return;
+        EDITORIAL_ROUTE_LAYER_IDS.forEach((layerId) => {
+          if (map.getLayer(layerId)) map.setLayoutProperty(layerId, "visibility", showRoutes ? "visible" : "none");
+        });
+        routesVisible = showRoutes;
+        if (!showRoutes) routePopup.remove();
+        if (showRoutes && !routeBounds.isEmpty()) {
+          visitorMovedMap = true;
+          map.fitBounds(routeBounds, { padding: getInitialPadding(root.clientWidth, mapLayout), maxZoom: 13, duration: animationDuration() });
+        }
+      } catch {
+        routesVisible = false;
+        routePopup.remove();
+      } finally {
+        if (!removed) routeToggleButtons.forEach((button) => { button.disabled = false; });
+        syncRouteToggles();
+      }
+    };
     const removeClusterMarkers = () => {
       clusterMarkers.forEach((marker) => marker.remove());
       clusterMarkers = [];
@@ -598,6 +782,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       if (event.key !== "Escape" || !activePreview) return;
       const marker = activePreview.link;
       closePreview();
+      routePopup.remove();
       if (document.activeElement && !root.contains(document.activeElement)) marker.focus();
     };
 
@@ -635,6 +820,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
       zoomInButton?.removeEventListener("click", zoomIn);
       zoomOutButton?.removeEventListener("click", zoomOut);
       resetButton?.removeEventListener("click", resetView);
+      routeToggleButtons.forEach((button) => button.removeEventListener("click", handleRouteToggle));
       window.removeEventListener("svetinje:filter-change", handleFilterChange);
       window.removeEventListener("svetinje:place-visibility-change", handlePlaceVisibilityChange);
       map.off("moveend", updateMarkerClusters);
@@ -646,6 +832,7 @@ const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
     zoomInButton?.addEventListener("click", zoomIn);
     zoomOutButton?.addEventListener("click", zoomOut);
     resetButton?.addEventListener("click", resetView);
+    routeToggleButtons.forEach((button) => button.addEventListener("click", handleRouteToggle));
     root.addEventListener("pointerdown", markVisitorMovement, { passive: true });
     root.addEventListener("wheel", markVisitorMovement, { passive: true });
     window.addEventListener("resize", resizeMap, { passive: true });

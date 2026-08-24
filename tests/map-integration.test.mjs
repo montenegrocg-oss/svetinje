@@ -148,7 +148,7 @@ test("CSS keeps the renderer visible and gives loading, ready, and fallback expl
   assert.doesNotMatch(rendererRule, /opacity:\s*0|pointer-events:\s*none/);
 });
 
-test("the map accepts only server-selected marker data and adds no route geometry", async () => {
+test("the map keeps server-selected marker and editorial-route inventories separate", async () => {
   const files = await Promise.all([
     source("src/components/MapCanvas.astro"),
     source("src/components/MapControls.astro"),
@@ -157,6 +157,8 @@ test("the map accepts only server-selected marker data and adds no route geometr
   const mapSource = files.join("\n");
 
   assert.match(mapSource, /data-map-place-data/);
+  assert.match(mapSource, /data-map-route-data/);
+  assert.match(mapSource, /mapEditorialRoutes\(routes\)/);
   assert.match(mapSource, /placeType: place\.placeType/);
   assert.match(mapSource, /category: categoryForPlaceType\(place\.placeType\)/);
   assert.match(mapSource, /link\.dataset\.placeCategory = place\.category \?\? ""/);
@@ -166,7 +168,10 @@ test("the map accepts only server-selected marker data and adds no route geometr
   assert.match(mapSource, /const link = document\.createElement\("a"\)/);
   assert.match(mapSource, /link\.href = `\$\{placeDetailRoot\}\$\{encodeURIComponent\(place\.slug\)\}\/`/);
   assert.match(mapSource, /link\.setAttribute\("aria-label", `\$\{place\.name\} — \$\{openPageLabel\}`\)/);
-  assert.doesNotMatch(mapSource, /addSource\s*\(|addLayer\s*\(|FeatureCollection|LineString|routeCoordinates/i);
+  assert.match(mapSource, /addSource\(EDITORIAL_ROUTE_SOURCE_ID/);
+  assert.match(mapSource, /data: \{ type: "FeatureCollection", features \}/);
+  assert.match(mapSource, /clusterProjectedMarkers\(projectedRecords, MARKER_CLUSTER_RADIUS\)/);
+  assert.doesNotMatch(mapSource, /clusterProjectedMarkers\([^)]*editorialRoutes/);
   assert.doesNotMatch(mapSource, /42\.29799|18\.84452|Манастир Подмаине/iu);
 });
 
@@ -194,7 +199,7 @@ test("homepage and dedicated map use the shared public-discovery inventory", asy
   ]);
 
   assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
-  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} locale=\{locale\} \/>/);
+  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} routes=\{routes\} locale=\{locale\} \/>/);
   assert.doesNotMatch(explorer, /mapOnlyPlaceIds|data-map-only-place-ids/);
   assert.match(mapRoute, /<MapPage places=\{places\} locale="sr" \/>/);
   assert.match(mapPage, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
@@ -387,7 +392,7 @@ test("one accessible marker preview preserves desktop navigation and pins touch 
     source("src/styles/global.css"),
   ]);
 
-  assert.equal((mapCanvas.match(/new maplibregl\.Popup/g) ?? []).length, 1);
+  assert.equal((mapCanvas.match(/new maplibregl\.Popup/g) ?? []).length, 2);
   assert.match(mapCanvas, /closeButton: false,[\s\S]*?closeOnClick: false,[\s\S]*?maxWidth: "240px"/);
   assert.match(mapCanvas, /\.setDOMContent\(card\)/);
   assert.doesNotMatch(mapCanvas, /(?:previewPopup|map-place-preview)[\s\S]{0,160}innerHTML/);

@@ -12,7 +12,7 @@ export const publicCopy = {
     homepage: {
       metadata: { title: "Светиње — Православна Црна Гора", description: "Дигитални водич кроз православне светиње, поклоничке руте и духовно насљеђе Црне Горе." },
       hero: { eyebrow: "Дигитални водич", title: "Православна Црна Гора", description: "Откријте манастире и храмове широм Црне Горе." },
-      filters: { aria: "Филтери каталога", all: "Све", monasteries: "Манастири", churches: "Цркве", routes: "Поклоничке руте" },
+      filters: { aria: "Филтери каталога", all: "Све", monasteries: "Манастири", churches: "Цркве", routes: "Пјешачке руте" },
       explorer: {
         aria: "Претрага и филтри каталога", searchLabel: "Претражите светиње", searchPlaceholder: "Претражите светиње…",
         areaPrefix: "Област", clearArea: "Уклони филтер области", noResultsEyebrow: "Претрага каталога",
@@ -30,7 +30,7 @@ export const publicCopy = {
       today: { label: "ДАНАС", calendar: "ПРАВОСЛАВНИ КАЛЕНДАР", calendarPreparing: "Календар је у припреми", openCalendar: "Отвори календар", gospel: "ИЗ ДАНАШЊЕГ ЈЕВАНЂЕЉА", readingMissing: "За овај дан литургијско јеванђељско читање није наведено.", read: "Прочитај читање", translationTitle: "Превод читања је у припреми", translationBody: "Календарска читања биће доступна након језичке и уредничке провјере." },
       routes: { title: "Популарне руте", showAll: "Прикажи све", preparingLabel: "У припреми", preparingTitle: "Поклоничке руте су у припреми.", preparingBody: "Путање ће бити приказане тек након провјере свих укључених мјеста и практичних података." },
       areas: { eyebrow: "ИСТРАЖИТЕ", title: "По областима", description: "Откријте манастире и храмове у различитим крајевима Црне Горе." },
-      mapControls: { quickAria: "Брзи избор на карти", builder: "Изгради руту", builderNotice: "Функција планирања руте је у припреми.", controls: "Контроле карте", layers: "Слојеви", layersTitle: "Слојеви карте", layersBody: "Основни Outdoor приказ је активан. Избор додатних картографских слојева биће доступан у каснијој фази.", zoom: "Зумирање карте", zoomIn: "Увећај карту", zoomOut: "Умањи карту", reset: "Прикажи поново Црну Гору", help: "Како користити карту?", helpTitle: "Интерактивна основна карта", helpBody: "Карту можете помјерати и зумирати. Ознаке светиња и руте неће бити приказане док подаци не прођу уредничко одобрење." },
+      mapControls: { quickAria: "Брзи избор на карти", builder: "Изгради руту", builderNotice: "Функција планирања руте је у припреми.", controls: "Контроле карте", layers: "Слојеви", layersTitle: "Слојеви карте", layersBody: "Основни Outdoor приказ је активан. Избор додатних картографских слојева биће доступан у каснијој фази.", zoom: "Зумирање карте", zoomIn: "Увећај карту", zoomOut: "Умањи карту", reset: "Прикажи поново Црну Гору", help: "Како користити карту?", helpTitle: "Интерактивна основна карта", helpBody: "Карту можете помјерати и зумирати. Ознаке светиња и руте неће бити приказане док подаци не прођу уредничко одобрење.", routeSummary: { distance: "Растојање", duration: "Вријеме", ascent: "Успон", difficulty: "Захтјевност", view: "Погледај руту", hours: "ч", minutes: "мин", difficulties: { easy: "Лака", moderate: "Средње захтјевна", demanding: "Захтјевна" } } },
     },
     pages: {
       catalogues: {
@@ -69,7 +69,7 @@ export const publicCopy = {
     homepage: {
       metadata: { title: "Святыни — Православная Черногория", description: "Цифровой путеводитель по православным святыням, паломническим маршрутам и духовному наследию Черногории." },
       hero: { eyebrow: "Цифровой путеводитель", title: "Православная Черногория", description: "Откройте монастыри и храмы Черногории." },
-      filters: { aria: "Фильтры каталога", all: "Все", monasteries: "Монастыри", churches: "Храмы", routes: "Маршруты" },
+      filters: { aria: "Фильтры каталога", all: "Все", monasteries: "Монастыри", churches: "Храмы", routes: "Пешеходные маршруты" },
       explorer: {
         aria: "Поиск и фильтры каталога", searchLabel: "Искать святыни", searchPlaceholder: "Поиск по святыням…",
         areaPrefix: "Регион", clearArea: "Убрать фильтр региона", noResultsEyebrow: "Поиск по каталогу",
@@ -87,7 +87,7 @@ export const publicCopy = {
       today: { label: "СЕГОДНЯ", calendar: "ПРАВОСЛАВНЫЙ КАЛЕНДАРЬ", calendarPreparing: "Календарь готовится", openCalendar: "Открыть календарь", gospel: "ЧТЕНИЯ НА СЕГОДНЯ", readingMissing: "Чтение на этот день пока не опубликовано.", read: "Прочитать", translationTitle: "Перевод чтений готовится", translationBody: "Переведённые календарные чтения появятся после языковой и редакционной проверки." },
       routes: { title: "Популярные маршруты", showAll: "Показать все", preparingLabel: "Готовится", preparingTitle: "Паломнические маршруты готовятся.", preparingBody: "Переводы маршрутов появятся после языковой и редакционной проверки." },
       areas: { eyebrow: "ИССЛЕДУЙТЕ", title: "По регионам", description: "Откройте монастыри и храмы в разных регионах Черногории." },
-      mapControls: { quickAria: "Быстрый выбор на карте", builder: "Построить маршрут", builderNotice: "Планировщик маршрутов готовится.", controls: "Управление картой", layers: "Слои", layersTitle: "Слои карты", layersBody: "Активен базовый слой Outdoor. Дополнительные слои появятся позже.", zoom: "Масштаб карты", zoomIn: "Увеличить", zoomOut: "Уменьшить", reset: "Показать Черногорию", help: "Как пользоваться картой?", helpTitle: "Интерактивная карта", helpBody: "Карту можно перемещать и масштабировать. Откройте метку, чтобы перейти к святыне." },
+      mapControls: { quickAria: "Быстрый выбор на карте", builder: "Построить маршрут", builderNotice: "Планировщик маршрутов готовится.", controls: "Управление картой", layers: "Слои", layersTitle: "Слои карты", layersBody: "Активен базовый слой Outdoor. Дополнительные слои появятся позже.", zoom: "Масштаб карты", zoomIn: "Увеличить", zoomOut: "Уменьшить", reset: "Показать Черногорию", help: "Как пользоваться картой?", helpTitle: "Интерактивная карта", helpBody: "Карту можно перемещать и масштабировать. Откройте метку, чтобы перейти к святыне.", routeSummary: { distance: "Расстояние", duration: "Время", ascent: "Подъём", difficulty: "Сложность", view: "Посмотреть маршрут", hours: "ч", minutes: "мин", difficulties: { easy: "Лёгкий", moderate: "Средней сложности", demanding: "Сложный" } } },
     },
     pages: {
       catalogues: {
@@ -126,7 +126,7 @@ export const publicCopy = {
     homepage: {
       metadata: { title: "Holy Places — Orthodox Montenegro", description: "A digital guide to Montenegro's Orthodox holy places, pilgrimage routes, and spiritual heritage." },
       hero: { eyebrow: "Digital guide", title: "Orthodox Montenegro", description: "Discover Montenegro's monasteries and churches." },
-      filters: { aria: "Catalogue filters", all: "All", monasteries: "Monasteries", churches: "Churches", routes: "Routes" },
+      filters: { aria: "Catalogue filters", all: "All", monasteries: "Monasteries", churches: "Churches", routes: "Walking routes" },
       explorer: {
         aria: "Catalogue search and filters", searchLabel: "Search holy places", searchPlaceholder: "Search holy places…",
         areaPrefix: "Region", clearArea: "Remove region filter", noResultsEyebrow: "Catalogue search",
@@ -144,7 +144,7 @@ export const publicCopy = {
       today: { label: "TODAY", calendar: "ORTHODOX CALENDAR", calendarPreparing: "The calendar is being prepared", openCalendar: "Open calendar", gospel: "TODAY'S READINGS", readingMissing: "A reading has not yet been published for this day.", read: "Read the passage", translationTitle: "Translated readings are being prepared", translationBody: "Translated calendar readings will appear after language and editorial review." },
       routes: { title: "Popular routes", showAll: "View all", preparingLabel: "In preparation", preparingTitle: "Pilgrimage routes are being prepared.", preparingBody: "Translated routes will appear after language and editorial review." },
       areas: { eyebrow: "EXPLORE", title: "Browse by region", description: "Discover monasteries and churches across Montenegro's regions." },
-      mapControls: { quickAria: "Quick map filters", builder: "Build a route", builderNotice: "Route planning is being prepared.", controls: "Map controls", layers: "Layers", layersTitle: "Map layers", layersBody: "The Outdoor base layer is active. Additional layers will be available later.", zoom: "Map zoom", zoomIn: "Zoom in", zoomOut: "Zoom out", reset: "Show Montenegro", help: "How to use the map", helpTitle: "Interactive map", helpBody: "Pan and zoom the map. Open a marker to visit the holy-place page." },
+      mapControls: { quickAria: "Quick map filters", builder: "Build a route", builderNotice: "Route planning is being prepared.", controls: "Map controls", layers: "Layers", layersTitle: "Map layers", layersBody: "The Outdoor base layer is active. Additional layers will be available later.", zoom: "Map zoom", zoomIn: "Zoom in", zoomOut: "Zoom out", reset: "Show Montenegro", help: "How to use the map", helpTitle: "Interactive map", helpBody: "Pan and zoom the map. Open a marker to visit the holy-place page.", routeSummary: { distance: "Distance", duration: "Time", ascent: "Ascent", difficulty: "Difficulty", view: "View route", hours: "hr", minutes: "min", difficulties: { easy: "Easy", moderate: "Moderate", demanding: "Demanding" } } },
     },
     pages: {
       catalogues: {

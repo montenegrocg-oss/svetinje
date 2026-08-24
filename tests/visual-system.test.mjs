@@ -144,8 +144,8 @@ test("the homepage is composed from reusable map-explorer components", async () 
     source("src/i18n/public-copy.ts"),
     source("src/styles/global.css"),
   ]);
-  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} locale=\{locale\} \/>/);
-  assert.match(explorer, /<MapControls locale=\{locale\} \/>/);
+  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} routes=\{routes\} locale=\{locale\} \/>/);
+  assert.match(explorer, /<MapControls locale=\{locale\} hasEditorialRoutes=\{routes\.length > 0\} \/>/);
   assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
   assert.match(explorer, /const initialPlaces = discoveryPlaces\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);
   assert.match(explorer, /const inventoryPlaces = discoveryPlaces\.slice\(HOMEPAGE_PREVIEW_LIMIT\)/);
@@ -423,7 +423,7 @@ test("the required Serbian interface labels are present", async () => {
     "Православна Црна Гора",
     "Манастири",
     "Цркве",
-    "Поклоничке руте",
+    "Пјешачке руте",
     "Изгради руту",
     "Слојеви",
     "Како користити карту?",

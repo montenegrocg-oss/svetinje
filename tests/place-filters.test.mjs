@@ -189,7 +189,7 @@ test("the explorer keeps one shared filter and pagination state across cards, co
   assert.match(explorer, /new CustomEvent\("svetinje:filter-change"/);
   assert.match(explorer, /new CustomEvent\("svetinje:place-visibility-change"/);
   assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
-  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} locale=\{locale\} \/>/);
+  assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} routes=\{routes\} locale=\{locale\} \/>/);
   assert.doesNotMatch(explorer, /discoveryPlaceIds|mapOnlyPlaceIds|data-map-only-place-ids/);
   assert.match(explorer, /const initialPlaces = discoveryPlaces\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);
   assert.match(explorer, /const inventoryPlaces = discoveryPlaces\.slice\(HOMEPAGE_PREVIEW_LIMIT\)/);
@@ -229,7 +229,9 @@ test("the explorer keeps one shared filter and pagination state across cards, co
   assert.match(controls, /data-filter="monasteries" aria-pressed="false"/);
   assert.match(controls, /data-filter="churches" aria-pressed="false"/);
   assert.doesNotMatch(controls, /data-filter="holy-places"|Света мјеста/);
-  assert.match(controls, /data-filter="routes" aria-pressed="false"/);
+  assert.match(controls, /hasEditorialRoutes && <button[^>]*data-route-toggle aria-pressed="false"/);
+  assert.doesNotMatch(controls, /data-filter="routes"/);
+  assert.match(explorer, /const filterIds = new Set\(\["all", "monasteries", "churches"\]\)/);
   const routeBuilder = controls.match(/<button[^>]*data-notice-trigger="route-notice"[^>]*>/)?.[0];
   assert.ok(routeBuilder, "the route builder action must remain present");
   assert.doesNotMatch(routeBuilder, /data-filter=/);
@@ -248,7 +250,9 @@ test("mobile map and panel filters expose distinct responsive sets with one shar
     assert.match(controls, new RegExp(`class="map-action" data-filter="${filter}"`));
   }
   assert.doesNotMatch(controls, /data-filter="holy-places"|Света мјеста/);
-  assert.match(controls, /data-filter="routes"/);
+  assert.match(controls, /data-route-toggle/);
+  assert.doesNotMatch(controls, /data-filter="routes"/);
+  assert.match(controls, /class="map-action map-route-toggle--mobile"/);
   assert.match(controls, /map-action--primary map-action--mobile-hidden/);
   assert.match(sidebar, /<FilterChips group="catalogue" includeRoutes=\{false\} locale=\{locale\} \/>/);
   assert.match(filters, /includeRoutes \|\| filter\.id !== "routes"/);
