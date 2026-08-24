@@ -4619,6 +4619,7 @@
 
     .map-explorer__secondary-content {
       grid-row: 2;
+      grid-template-rows: auto auto minmax(0, 1fr);
     }
 
     .explorer-results {
@@ -4730,7 +4731,19 @@
     }
 
     .popular-routes__inner {
+      display: flex;
+      height: 100%;
+      flex-direction: column;
       padding-block: 1.15rem 1.35rem;
+    }
+
+    .popular-routes__cards {
+      min-height: 0;
+      flex: 1;
+    }
+
+    .popular-routes__cards .route-card--compact {
+      height: 100%;
     }
 
   }
@@ -4942,8 +4955,8 @@
   .route-card__body > p:not(.route-card__type):not(.route-card__water) { margin-top: 0.65rem; color: var(--ink-soft); line-height: 1.55; }
   .route-card__metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; margin-top: 1rem; }
   .route-card__metrics div { padding-top: 0.5rem; border-top: 1px solid var(--line); }
-  .route-card__metrics dt { color: var(--ink-soft); font-size: 0.68rem; }
-  .route-card__metrics dd { margin-top: 0.15rem; color: var(--navy-900); font-weight: 750; }
+  .route-card__metrics dt { color: var(--ink-soft); font-size: 0.75rem; line-height: 1.35; }
+  .route-card__metrics dd { margin: 0.15rem 0 0; color: var(--navy-900); font-weight: 750; }
   .route-card__water { margin-top: 0.75rem; color: var(--ink-soft); font-size: 0.75rem; }
   .route-card__action { display: inline-flex; align-items: center; gap: 0.45rem; align-self: flex-start; min-height: 2.75rem; margin-top: auto; color: var(--navy-900); font-weight: 800; text-decoration: none; }
 
@@ -4953,10 +4966,13 @@
   .route-card--compact .route-card__body { padding: 0.8rem; }
   .route-card--compact h3 { font-size: 1rem; }
   .route-card--compact .route-card__metrics { grid-template-columns: repeat(4, minmax(0,1fr)); gap: 0.35rem; margin-top: 0.55rem; }
-  .route-card--compact .route-card__metrics dt { line-height: 1.25; }
   .route-card--compact .route-card__metrics dd { font-size: 0.7rem; }
   .route-card--compact .route-card__water { display: none; }
   .route-card--compact .route-card__action { min-height: 2rem; font-size: 0.72rem; }
+
+  @media (min-width: 68rem) {
+    .map-explorer__routes .route-card--compact .route-card__metrics { margin-top: auto; }
+  }
 
   .route-detail { display: grid; grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.36fr); gap: 1.5rem; padding-block: clamp(2rem, 5vw, 4rem); }
   .route-map-section, .route-profile, .route-practical, .route-narrative, .route-places, .place-route-links { overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--white); box-shadow: var(--shadow-soft); }
