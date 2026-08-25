@@ -11,7 +11,7 @@ alternate_names:
     context: Пуни савремени назив према празнику који манастир прославља.
     source_ids:
       - mitropolija-zenski-manastiri
-    verification_status: requires-verification
+    verification_status: verified
   - name: Ћелија добрска
     context: Народни облик назива.
     source_ids:
@@ -24,7 +24,7 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-22T18:07:38Z
+  updated_at: 2026-08-25T14:56:58Z
   updated_by: montenegro-cg
 ---
 

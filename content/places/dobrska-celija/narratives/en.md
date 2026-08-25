@@ -3,7 +3,7 @@ schema_version: 1
 place_id: dobrska-celija
 locale: en
 editorial_status: research
-translation_status: draft
+translation_status: outdated
 slug: dobrska-cell-monastery
 preferred_name: Dobrska Cell Monastery
 summary: An old monastery at Dobrsko Selo near Cetinje, a dependency of Cetinje Monastery and once the site of a village school.
@@ -12,8 +12,8 @@ approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-22T19:23:49Z
-  updated_by: codex
+  updated_at: 2026-08-25T14:56:58Z
+  updated_by: montenegro-cg
 ---
 
 Dobrska Cell Monastery stands at Dobrsko Selo near Cetinje. Its earlier dedication was to the Dormition of the Most Holy Theotokos, while the monastery now celebrates the Entry of the Theotokos into the Temple. Its name recalls its beginnings as a hermit’s cell.

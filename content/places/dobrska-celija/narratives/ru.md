@@ -3,7 +3,7 @@ schema_version: 1
 place_id: dobrska-celija
 locale: ru
 editorial_status: research
-translation_status: draft
+translation_status: outdated
 slug: dobrskaya-keliya
 preferred_name: Добрская келия
 summary: Старинный монастырь в Добрском Селе близ Цетине, подворье Цетинского монастыря и бывшее место народной школы.
@@ -12,8 +12,8 @@ approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-22T19:23:49Z
-  updated_by: codex
+  updated_at: 2026-08-25T14:56:58Z
+  updated_by: montenegro-cg
 ---
 
 Добрская келия находится в Добрском Селе, неподалёку от Цетине. Прежнее посвящение храма связано с Успением Пресвятой Богородицы, а сегодня монастырь отмечает праздник Введения во храм Пресвятой Богородицы. Название напоминает о его возникновении как отшельнической келии.
