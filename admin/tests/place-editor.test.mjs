@@ -5,7 +5,8 @@ import { parse } from "yaml";
 import { updateCanonicalPlace } from "../src/place-editor.ts";
 import { loadEditablePlace, parseNarrative } from "../src/repository-content.ts";
 import { createPlace, updatePlace, updatePlaceNarrative, updatePlacePreview } from "../src/service.ts";
-import { editPlacePage } from "../src/ui.ts";
+import { editPlacePage, newPlacePage } from "../src/ui.ts";
+import { validatePlace } from "../src/generated/canonical-validators.js";
 
 const HEAD = "a".repeat(40);
 const TREE = "b".repeat(40);
@@ -41,7 +42,7 @@ location:
     value: ME
     verification: { status: verified, source_ids: [source-one], reviewed_by: [maxim], reviewed_at: 2026-08-01 }
   municipality:
-    value: Budva
+    value: Будва
     verification: { status: verified, source_ids: [source-one], reviewed_by: [maxim], reviewed_at: 2026-08-01 }
   settlement:
     value: Existing settlement
@@ -245,7 +246,7 @@ const session = { subject: "user", email: "editor@example.com", actor: "editor-u
 const newPlaceBody = { preferredName: "Нови објекат", id: "novi-objekat", slug: "novi-objekat", placeType: "monastery", expectedHeadSha: HEAD };
 const body = (place) => ({
   expectedHeadSha: HEAD, preferredName: place.preferredName, shortName: place.shortName ?? "", slug: place.slug, placeType: place.placeType, browseAreaId: place.browseAreaId, summary: place.summary,
-  monasticCommunity: place.monasticCommunity ?? "", jurisdiction: place.jurisdiction ?? "", municipality: place.municipality ?? "", settlement: place.settlement ?? "",
+  monasticCommunity: place.monasticCommunity ?? "", eparchyId: place.eparchyId ?? "", jurisdiction: place.jurisdiction ?? "", municipalityId: place.municipalityId ?? "", settlement: place.settlement ?? "",
   latitude: place.latitude, longitude: place.longitude, alternateNames: place.alternateNames,
   narrativeBody: place.narrativeBody, patronalFeasts: place.patronalFeasts, serviceSchedule: place.serviceSchedule ?? "", youtubeUrl: place.youtubeUrl ?? "",
 });
@@ -272,6 +273,40 @@ test("new place defaults to draft and immediate publication is safe", async () =
   assert.deepEqual(JSON.parse(incompleteRepository.files.get("validation/editorial-preview.json")).place_ids, ["existing-place"]);
 });
 
+test("new place supports all optional taxonomy combinations and reloads selected IDs", async () => {
+  const combinations = [
+    {},
+    { eparchyId: "mitropolija-crnogorsko-primorska" },
+    { municipalityId: "kotor" },
+    { eparchyId: "eparhija-budimljansko-niksicka", municipalityId: "niksic" },
+  ];
+  for (const selection of combinations) {
+    const repository = new CreateLifecycleRepository();
+    const created = await createPlace(repository, env, session, { ...newPlaceBody, ...selection }, new Date("2026-08-15T12:00:00Z"));
+    const place = parse(repository.files.get("content/places/novi-objekat/place.yaml"));
+    assert.equal(place.ecclesiastical?.authority_id?.value, selection.eparchyId);
+    assert.equal(place.location?.municipality_id?.value, selection.municipalityId);
+    assert.equal(place.location?.municipality, undefined);
+    const reloaded = await loadEditablePlace(repository, "editorial/work", created.place.id);
+    assert.equal(reloaded.place.eparchyId, selection.eparchyId);
+    assert.equal(reloaded.place.municipalityId, selection.municipalityId);
+  }
+});
+
+test("create and edit reject injected taxonomy IDs", async () => {
+  for (const [field, value] of [["eparchyId", "unknown-eparchy"], ["municipalityId", "unknown-municipality"], ["eparchyId", 42], ["municipalityId", 42]]) {
+    await assert.rejects(
+      () => createPlace(new CreateLifecycleRepository(), env, session, { ...newPlaceBody, [field]: value }),
+      (error) => error.code === "invalid_form_data" && Boolean(error.fields?.[field]),
+    );
+  }
+  const loaded = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
+  await assert.rejects(
+    () => updateCanonicalPlace(loaded, { ...body(loaded.place), municipalityId: "unknown-municipality" }, "editor-user", new Date("2026-08-15T12:00:00Z")),
+    (error) => error.code === "invalid_form_data" && Boolean(error.fields?.municipalityId),
+  );
+});
+
 test("GET editable model exposes one unified narrative body", async () => {
   const model = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
   assert.equal(model.place.preferredName, "Постојећи објекат");
@@ -279,10 +314,35 @@ test("GET editable model exposes one unified narrative body", async () => {
   assert.deepEqual(model.options.placeTypes.slice(0, 2), ["monastery", "church"]);
   assert.equal(model.options.placeTypes.includes("cathedral"), true);
   assert.deepEqual(model.options.monasticCommunities, ["male", "female"]);
+  assert.equal(model.options.eparchies.length, 4);
+  assert.equal(model.options.municipalities.length, 25);
+  assert.deepEqual(model.options.eparchies.map(({ id }) => id), [
+    "mitropolija-crnogorsko-primorska",
+    "eparhija-budimljansko-niksicka",
+    "eparhija-milesevska",
+    "eparhija-zahumsko-hercegovacka-i-primorska",
+  ]);
+  assert.equal(model.options.municipalities[0].labelSr, "Андријевица");
+  assert.equal(model.options.municipalities.at(-1).labelSr, "Шавник");
+  assert.equal(model.place.eparchyId, "mitropolija-crnogorsko-primorska");
+  assert.equal(model.place.municipalityId, undefined);
   assert.equal(model.place.monasticCommunity, "male");
   assert.equal(model.place.inPreview, true);
   assert.equal("placeSourceIds" in model.place, false);
   assert.equal("sourceIds" in model.place.alternateNames[0], false);
+});
+
+test("canonical taxonomy schema rejects empty and unknown IDs", () => {
+  for (const value of ["", "unknown-eparchy"]) {
+    const place = parse(PLACE);
+    place.ecclesiastical.authority_id.value = value;
+    assert.equal(validatePlace(place), false);
+  }
+  for (const value of ["", "unknown-municipality"]) {
+    const place = parse(PLACE);
+    place.location.municipality_id = { value, verification: { status: "requires-verification" } };
+    assert.equal(validatePlace(place), false);
+  }
 });
 
 test("legacy singular feast renders as one row and normalizes to plural on save", async () => {
@@ -593,7 +653,7 @@ test("PATCH round trip updates basic, location, coordinates and narrative in one
   const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
   const update = body(loaded.place);
   update.preferredName = "Измијењени објекат";
-  update.municipality = "Котор";
+  update.municipalityId = "kotor";
   update.latitude = 42.2;
   update.longitude = 18.8;
   update.narrativeBody = loaded.place.narrativeBody.replace("Стара историја", "Нови текст");
@@ -617,8 +677,10 @@ test("PATCH round trip updates basic, location, coordinates and narrative in one
   assert.equal(nextPlace.audit.created_by, "maxim");
   assert.equal(nextPlace.audit.updated_by, "editor-user");
   assert.equal(nextNarrative.frontMatter.audit.updated_at, "2026-08-13T12:00:00Z");
-  assert.equal(nextPlace.location.municipality.verification.status, "requires-verification");
-  assert.equal(nextPlace.location.municipality.verification.source_ids, undefined);
+  assert.equal(nextPlace.location.municipality_id.value, "kotor");
+  assert.equal(nextPlace.location.municipality_id.verification.status, "requires-verification");
+  assert.equal(nextPlace.location.municipality.verification.status, "verified");
+  assert.equal(nextPlace.location.municipality.value, "Будва");
   assert.equal(nextPlace.location.country_code.verification.status, "verified");
   assert.deepEqual(nextPlace.location.country_code.verification.source_ids, ["source-one"]);
   assert.equal(nextPlace.location.coordinates.verification.status, "requires-verification");
@@ -691,11 +753,65 @@ test("unchanged facts retain verification exactly and coordinates can be cleared
   assert.deepEqual(unchanged.place.place_type.verification, parse(PLACE).place_type.verification);
   assert.deepEqual(unchanged.place.location.coordinates.verification, parse(PLACE).location.coordinates.verification);
   assert.deepEqual(unchanged.place.ecclesiastical.community_type.verification, parse(PLACE).ecclesiastical.community_type.verification);
+  assert.deepEqual(unchanged.place.ecclesiastical.authority_id, parse(PLACE).ecclesiastical.authority_id);
+  assert.deepEqual(unchanged.place.location.municipality, parse(PLACE).location.municipality);
   assert.deepEqual(unchanged.place.audit, parse(PLACE).audit);
   assert.deepEqual(unchanged.narrative.audit, parseNarrative(NARRATIVE).frontMatter.audit);
   const cleared = await updateCanonicalPlace(loaded, { ...update, latitude: "", longitude: "" }, "editor-user", new Date("2026-08-13T12:00:00Z"));
   assert.equal(cleared.unchanged, false);
   assert.equal(cleared.place.location.coordinates, undefined);
+});
+
+test("taxonomy selectors save and clear IDs without changing legacy descriptive facts", async () => {
+  const loaded = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
+  const selected = await updateCanonicalPlace(
+    loaded,
+    { ...body(loaded.place), eparchyId: "eparhija-milesevska", municipalityId: "pljevlja" },
+    "editor-user",
+    new Date("2026-08-15T12:30:00Z"),
+  );
+  assert.equal(selected.place.ecclesiastical.authority_id.value, "eparhija-milesevska");
+  assert.equal(selected.place.location.municipality_id.value, "pljevlja");
+  assert.deepEqual(selected.place.ecclesiastical.jurisdiction, loaded.rawPlace.ecclesiastical.jurisdiction);
+  assert.deepEqual(selected.place.location.municipality, loaded.rawPlace.location.municipality);
+
+  const cleared = await updateCanonicalPlace(
+    loaded,
+    { ...body(loaded.place), eparchyId: "", municipalityId: "" },
+    "editor-user",
+    new Date("2026-08-15T12:31:00Z"),
+  );
+  assert.equal(cleared.place.ecclesiastical.authority_id, undefined);
+  assert.equal(cleared.place.location.municipality_id, undefined);
+  assert.deepEqual(cleared.place.ecclesiastical.jurisdiction, loaded.rawPlace.ecclesiastical.jurisdiction);
+  assert.deepEqual(cleared.place.location.municipality, loaded.rawPlace.location.municipality);
+});
+
+test("unrelated legacy save neither guesses municipality ID nor loses existing taxonomy", async () => {
+  const legacy = await loadEditablePlace(new Repository(), "editorial/work", "existing-place");
+  const savedLegacy = await updateCanonicalPlace(
+    legacy,
+    { ...body(legacy.place), summary: "Измијењен само опис" },
+    "editor-user",
+    new Date("2026-08-15T12:32:00Z"),
+  );
+  assert.equal(savedLegacy.place.location.municipality.value, "Будва");
+  assert.equal(savedLegacy.place.location.municipality_id, undefined);
+
+  const repository = new Repository();
+  repository.blobs.place = PLACE.replace(
+    "  municipality:\n",
+    "  municipality_id:\n    value: budva\n    verification: { status: requires-verification }\n  municipality:\n",
+  );
+  const classified = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  const savedClassified = await updateCanonicalPlace(
+    classified,
+    { ...body(classified.place), summary: "Други опис" },
+    "editor-user",
+    new Date("2026-08-15T12:33:00Z"),
+  );
+  assert.equal(savedClassified.place.ecclesiastical.authority_id.value, "mitropolija-crnogorsko-primorska");
+  assert.equal(savedClassified.place.location.municipality_id.value, "budva");
 });
 
 test("no-op PATCH succeeds without changing audit timestamps or creating a Git commit", async () => {
@@ -930,7 +1046,17 @@ test("place editor UI keeps one narrative field per locale and no legacy section
   assert.match(html, /<option value="">— није одређено —<\/option>/);
   assert.match(html, /<option value="male" selected>Мушки<\/option>/);
   assert.match(html, /<option value="female">Женски<\/option>/);
+  const eparchySelect = html.match(/<select name="eparchyId">([\s\S]*?)<\/select>/)?.[1] ?? "";
+  const municipalitySelect = html.match(/<select name="municipalityId">([\s\S]*?)<\/select>/)?.[1] ?? "";
+  assert.equal((eparchySelect.match(/<option /g) ?? []).length, 5);
+  assert.equal((municipalitySelect.match(/<option /g) ?? []).length, 26);
+  assert.match(eparchySelect, /value="mitropolija-crnogorsko-primorska" selected/);
+  assert.doesNotMatch(html, /name="municipality"/);
   assert.doesNotMatch(html, /data-add-section|data-section-title|data-remove-paragraph|Додај канонски одјељак/);
+
+  const newHtml = await newPlacePage(session, record.options, HEAD).text();
+  assert.equal((newHtml.match(/<select name="eparchyId">[\s\S]*?<\/select>/g) ?? []).length, 1);
+  assert.equal((newHtml.match(/<select name="municipalityId">[\s\S]*?<\/select>/g) ?? []).length, 1);
 
   record.place.placeType = "church";
   delete record.place.monasticCommunity;

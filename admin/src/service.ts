@@ -29,6 +29,8 @@ interface CreatePlaceBody {
   id?: unknown;
   slug?: unknown;
   placeType?: unknown;
+  eparchyId?: unknown;
+  municipalityId?: unknown;
   expectedHeadSha?: unknown;
   published?: unknown;
 }
@@ -87,6 +89,8 @@ export async function createPlace(
   const preferredName = asString(body.preferredName);
   const slug = asString(body.slug);
   const placeType = asString(body.placeType);
+  const eparchyId = asString(body.eparchyId);
+  const municipalityId = asString(body.municipalityId);
   const expectedHeadSha = asString(body.expectedHeadSha);
   const publishImmediately = body.published === true;
   if (!id || !preferredName || !slug || !placeType || !expectedHeadSha) {
@@ -101,6 +105,22 @@ export async function createPlace(
   if (snapshot.places.some((place) => place.id === id)) {
     throw new AdminError("duplicate_id", 409, "Place ID already exists");
   }
+  const taxonomyErrors: Record<string, string> = {};
+  if (
+    body.eparchyId !== undefined
+    && body.eparchyId !== null
+    && body.eparchyId !== ""
+    && (!eparchyId || !snapshot.options.eparchies.some(({ id: optionId }) => optionId === eparchyId))
+  ) taxonomyErrors.eparchyId = "Епархија није дио важећег каталога.";
+  if (
+    body.municipalityId !== undefined
+    && body.municipalityId !== null
+    && body.municipalityId !== ""
+    && (!municipalityId || !snapshot.options.municipalities.some(({ id: optionId }) => optionId === municipalityId))
+  ) taxonomyErrors.municipalityId = "Општина није дио важећег каталога.";
+  if (Object.keys(taxonomyErrors).length > 0) {
+    throw new AdminError("invalid_form_data", 400, "Place taxonomy selection is invalid", taxonomyErrors);
+  }
 
   let scaffold;
   try {
@@ -110,6 +130,8 @@ export async function createPlace(
       name: preferredName,
       slug,
       supportedPlaceTypes: snapshot.supportedPlaceTypes,
+      eparchyId,
+      municipalityId,
       actor: session.actor,
       now,
       requireName: true,
@@ -137,6 +159,8 @@ export async function createPlace(
       preferredName: scaffold.preferredName,
       slug: scaffold.slug,
       placeType: scaffold.placeType,
+      ...(eparchyId ? { eparchyId } : {}),
+      ...(municipalityId ? { municipalityId } : {}),
       editorialStatus: "research",
       inPreview: false,
     },

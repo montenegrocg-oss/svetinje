@@ -500,13 +500,13 @@ Allowed keys:
 
 | Key | Type | Meaning |
 | --- | --- | --- |
-| authority_id | fact block of EntityId | Verified ecclesiastical authority relationship |
+| authority_id | fact block of EparchyId | Verified ecclesiastical authority relationship |
 | jurisdiction | fact block of text or EntityId | Verified jurisdiction when appropriate |
 | dedication_ids | fact block of EntityId list | Verified dedications or patrons |
 | community_type | fact block of MonasticCommunity | Verified monastic community classification; monasteries only |
 | associated_entity_ids | fact block of EntityId list | Saints, relics, feasts, or related entities |
 
-MonasticCommunity is optional and has two controlled values: male and female. It is valid only when place_type.value is monastery. Other optional ecclesiastical fields remain absent rather than free-form guessed values until their controlled registries are approved. Publication requires ecclesiastical review for every populated ecclesiastical field.
+EparchyId is controlled by `schemas/place.schema.json#/$defs/eparchyId`. It contains the four Serbian Orthodox eparchies whose territory includes Montenegro; Admin labels are Serbian Cyrillic titles from that same canonical registry. MonasticCommunity is optional and has two controlled values: male and female. It is valid only when place_type.value is monastery. Other optional ecclesiastical fields remain absent rather than free-form guessed values until their controlled registries are approved. Publication requires ecclesiastical review for every populated ecclesiastical field.
 
 The Phase 1 project scope must not be copied automatically into authority_id or jurisdiction.
 
@@ -521,11 +521,14 @@ Allowed keys:
 | Key | Type | Meaning |
 | --- | --- | --- |
 | country_code | fact block of two-letter code | Country |
-| municipality | fact block of text or future reference | Municipality |
+| municipality_id | fact block of MunicipalityId | Controlled Montenegro municipality reference |
+| municipality | fact block of text | Legacy municipality text, preserved during natural migration |
 | settlement | fact block of text or future reference | Settlement |
 | postal_address | fact block of structured address | Public verified address |
 | coordinates | coordinate block | Geographic position |
 | elevation_m | fact block of number | Verified elevation when useful |
+
+MunicipalityId is controlled by `schemas/place.schema.json#/$defs/municipalityId`, which is the single registry for the 25 current municipalities of Montenegro and their Serbian Cyrillic Admin labels. New Admin writes use `municipality_id`. Existing `municipality` facts are not inferred, backfilled, synchronized, or removed automatically; an editor must make a verified selection before an ID is added.
 
 Coordinate block:
 
