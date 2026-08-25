@@ -3,16 +3,16 @@ schema_version: 1
 place_id: manastir-bijela
 locale: ru
 editorial_status: research
-translation_status: outdated
+translation_status: draft
 slug: manastir-bijela
 preferred_name: Монастырь Биела
 summary: Монастырь Святого Георгия в Биеле, письменно засвидетельствованный с 1656 года и неоднократно восстанавливавшийся.
-source_revision: c1cbd01fd5fdf11314cb7f805673830e3d57ab32
+source_revision: 14922334e4a5f4cf5282be3e4abeb42aa9ad33f0
 approvals: []
 audit:
   created_at: 2026-08-25T09:18:26.087Z
   created_by: codex
-  updated_at: 2026-08-25T09:49:53Z
+  updated_at: 2026-08-25T09:54:56Z
   updated_by: montenegro-cg
 ---
 
