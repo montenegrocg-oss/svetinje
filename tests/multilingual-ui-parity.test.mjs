@@ -27,11 +27,12 @@ test("Serbian, Russian, and English place routes use one complete PlaceDetailPag
 });
 
 test("shared place detail preserves hero, gallery, practical, related, route, and mini-map contracts", async () => {
-  const [hero, narrative, gallery, practical, related, backlinks, miniMap, relatedModel, localizedPaths, styles] = await Promise.all([
+  const [hero, narrative, gallery, practical, practicalTaxonomy, related, backlinks, miniMap, relatedModel, localizedPaths, styles] = await Promise.all([
     source("src/components/place-detail/PlaceDetailHero.astro"),
     source("src/components/place-detail/PlaceNarrativeArticle.astro"),
     source("src/components/place-detail/PlaceDetailGallery.astro"),
     source("src/components/place-detail/PlacePracticalPanel.astro"),
+    source("src/lib/place-practical-taxonomy.ts"),
     source("src/components/place-detail/PlaceRelatedShelf.astro"),
     source("src/components/routes/PlaceRouteBacklinks.astro"),
     source("src/components/place-detail/PlaceMiniMap.astro"),
@@ -53,7 +54,8 @@ test("shared place detail preserves hero, gallery, practical, related, route, an
   assert.match(gallery, /place\.youtubeVideoId &&/);
   assert.match(styles, /\.place-detail-gallery__main img,[\s\S]*?\.place-detail-gallery__image img[\s\S]*?object-fit: cover;/);
   assert.match(styles, /\.place-detail-gallery__main\s*\{[\s\S]*?aspect-ratio: 16 \/ 10;/);
-  for (const field of ["place.settlement", "place.address", "place.typeLabel", "place.ecclesiasticalJurisdiction", "place.patronalFeasts", "coordinateText"]) assert.match(practical, new RegExp(field.replaceAll(".", "\\.")));
+  for (const field of ["place.address", "place.typeLabel", "place.patronalFeasts", "coordinateText"]) assert.match(practical, new RegExp(field.replaceAll(".", "\\.")));
+  for (const field of ["place.settlement", "place.municipality", "place.ecclesiasticalJurisdiction"]) assert.match(practicalTaxonomy, new RegExp(field.replaceAll(".", "\\.")));
   assert.match(practical, /<PlaceMiniMap[\s\S]*?locale=\{locale\}/);
   assert.match(miniMap, /publicCopy\[locale\]\.pages\.placeDetail\.miniMap/);
   assert.match(related, /placeDetailRoot\[locale\]/);

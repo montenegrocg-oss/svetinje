@@ -4028,6 +4028,18 @@
     overflow-wrap: anywhere;
   }
 
+  .place-practical-list__taxonomy-link {
+    color: inherit;
+    text-decoration-color: rgba(189, 141, 53, 0.55);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  .place-practical-list__taxonomy-link:hover {
+    color: var(--gold-deep);
+    text-decoration-color: currentColor;
+  }
+
   .place-practical-list__coordinates dd {
     display: flex;
     align-items: center;
@@ -4294,6 +4306,7 @@
   }
 
   .place-profile-action:focus-visible,
+  .place-practical-list__taxonomy-link:focus-visible,
   .place-practical-list__coordinates button:focus-visible,
   .place-mini-map__link:focus-visible,
   .place-related-card:focus-visible {
