@@ -6,6 +6,7 @@ import { resolveMediaUrl } from "../media-url.ts";
 import { parseYoutubeVideoId } from "../place-content.ts";
 import type { PlaceAreaId } from "../place-areas.ts";
 import { getPlaceArea, isPlaceAreaId } from "../place-areas.ts";
+import { isPlaceEparchyId, isPlaceMunicipalityId } from "../place-taxonomy.ts";
 import {
   editorialPreviewEligibilityErrors,
   parseEditorialPreviewRegistry,
@@ -50,6 +51,7 @@ interface PlaceRecord {
     verification?: Verification;
   };
   ecclesiastical?: {
+    authority_id?: StringFact;
     jurisdiction?: StringFact;
     community_type?: StringFact;
   };
@@ -57,6 +59,7 @@ interface PlaceRecord {
   patronal_feasts?: Array<{ name?: string }>;
   video?: { youtube_url?: string };
   location?: {
+    municipality_id?: StringFact;
     municipality?: StringFact;
     settlement?: StringFact;
     postal_address?: StringFact;
@@ -128,6 +131,8 @@ export interface PublishablePlace {
   summary: string;
   placeType: string;
   browseAreaId?: PlaceAreaId;
+  eparchyId?: string;
+  municipalityId?: string;
   catalogueSearchText: string;
   mediaIds?: string[];
   narrativeBody: string;
@@ -415,6 +420,8 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
     }
 
     const browseAreaId = isPlaceAreaId(place.browse_area_id) ? place.browse_area_id : undefined;
+    const eparchyId = isPlaceEparchyId(place.ecclesiastical?.authority_id?.value) ? place.ecclesiastical.authority_id.value : undefined;
+    const municipalityId = isPlaceMunicipalityId(place.location?.municipality_id?.value) ? place.location.municipality_id.value : undefined;
     const monasticCommunity = monasticCommunityValue(place.ecclesiastical?.community_type?.value);
     const serviceSchedule = optionalNonBlankText(narrative.service_schedule);
     const youtubeVideoId = parseYoutubeVideoId(place.video?.youtube_url);
@@ -434,6 +441,8 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
         ? { mediaIds: (place.relationships as { media_ids: unknown[] }).media_ids.filter((value): value is string => typeof value === "string") }
         : {}),
       ...(browseAreaId ? { browseAreaId } : {}),
+      ...(eparchyId ? { eparchyId } : {}),
+      ...(municipalityId ? { municipalityId } : {}),
       catalogueSearchText: buildCatalogueSearchText({
         name: narrative.preferred_name,
         alternateNames: (narrative.alternate_names ?? []).flatMap((alternate) => alternate.name ?? []),
@@ -577,6 +586,8 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
     const narrativeSections = parseNarrativeSections(narrative.body);
 
     const municipality = place.location?.municipality?.value;
+    const eparchyId = isPlaceEparchyId(place.ecclesiastical?.authority_id?.value) ? place.ecclesiastical.authority_id.value : undefined;
+    const municipalityId = isPlaceMunicipalityId(place.location?.municipality_id?.value) ? place.location.municipality_id.value : undefined;
     const settlement = place.location?.settlement?.value;
     const browseAreaId = isPlaceAreaId(place.browse_area_id) ? place.browse_area_id : undefined;
     const latitude = coordinates?.latitude;
@@ -599,6 +610,8 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       summary,
       placeType,
       ...(browseAreaId ? { browseAreaId } : {}),
+      ...(eparchyId ? { eparchyId } : {}),
+      ...(municipalityId ? { municipalityId } : {}),
       catalogueSearchText: buildCatalogueSearchText({
         name: preferredName,
         alternateNames: (narrative.alternate_names ?? []).flatMap((alternate) => alternate.name ?? []),

@@ -65,7 +65,14 @@ test("a reviewed published place can be selected without a source registry", asy
       id: "neutral-place",
       editorial_status: "published",
       place_type: { value: "monastery", verification: { status: "verified" } },
-      ecclesiastical: { community_type: { value: "male", verification: { status: "verified" } } },
+      ecclesiastical: {
+        authority_id: { value: "mitropolija-crnogorsko-primorska", verification: { status: "verified" } },
+        community_type: { value: "male", verification: { status: "verified" } },
+      },
+      location: {
+        municipality_id: { value: "budva", verification: { status: "verified" } },
+        municipality: { value: "Будва", verification: { status: "verified" } },
+      },
       relationships: {},
       audit: { created_at: "2026-08-04T00:00:00Z", updated_at: "2026-08-22T00:00:00Z" },
       approvals: [approval("factual"), approval("ecclesiastical"), approval("publishing")],
@@ -83,6 +90,8 @@ test("a reviewed published place can be selected without a source registry", asy
     const places = await loadPublishablePlaces(root);
     assert.deepEqual(places.map(({ id }) => id), ["neutral-place"]);
     assert.equal(places[0].monasticCommunity, "male");
+    assert.equal(places[0].eparchyId, "mitropolija-crnogorsko-primorska");
+    assert.equal(places[0].municipalityId, "budva");
   } finally {
     await rm(root, { recursive: true, force: true });
   }

@@ -3,6 +3,7 @@ import type { VisiblePlace } from "../lib/content/publication";
 import { categoryForPlaceType } from "../lib/place-filters";
 import { placeDetailRoot, type Locale } from "../i18n/config";
 import { publicCopy } from "../i18n/public-copy";
+import { placeTaxonomyCatalogueHref, placeTaxonomyLabel } from "../i18n/place-taxonomy";
 
 interface Props {
   place: VisiblePlace;
@@ -13,11 +14,20 @@ interface Props {
 
 const { place, variant = "catalogue", initialExplorerPlacement, locale = "sr" } = Astro.props;
 const category = categoryForPlaceType(place.placeType);
-const location = [place.municipality, place.settlement].filter(Boolean).join(" · ");
+const location = [place.municipalityId ? undefined : place.municipality, place.settlement].filter(Boolean).join(" · ");
+const taxonomyItems = [
+  place.eparchyId ? { kind: "eparchy" as const, id: place.eparchyId } : undefined,
+  place.municipalityId ? { kind: "municipality" as const, id: place.municipalityId } : undefined,
+].flatMap((item) => {
+  if (!item) return [];
+  const label = placeTaxonomyLabel(locale, item.kind, item.id);
+  if (!label) return [];
+  return [{ ...item, label, href: placeTaxonomyCatalogueHref(locale, category, item.kind, item.id) }];
+});
 ---
 
 <article
-  class:list={["editorial-place-card", `editorial-place-card--${variant}`]}
+  class:list={["editorial-place-card", `editorial-place-card--${variant}`, taxonomyItems.length > 0 && "editorial-place-card--has-taxonomy"]}
   data-place-card={place.id}
   data-place-area={place.browseAreaId ?? ""}
   data-place-category={category ?? ""}
@@ -47,6 +57,15 @@ const location = [place.municipality, place.settlement].filter(Boolean).join(" �
   </div>
   <h2>{place.name}</h2>
   {location && <p class="editorial-place-card__location">{location}</p>}
+  {taxonomyItems.length > 0 && (
+    <ul class="editorial-place-card__taxonomy">
+      {taxonomyItems.map((item) => (
+        <li>
+          {item.href ? <a href={item.href} title={item.label}>{item.label}</a> : <span>{item.label}</span>}
+        </li>
+      ))}
+    </ul>
+  )}
   {place.summary && <p class="editorial-place-card__summary">{place.summary}</p>}
   <a class="editorial-place-card__link" href={`${placeDetailRoot[locale]}${place.slug}/`}>
     {publicCopy[locale].openPage} <span aria-hidden="true">→</span>

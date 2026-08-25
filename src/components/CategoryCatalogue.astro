@@ -16,6 +16,7 @@ import PlaceCard from "./PlaceCard.astro";
 import type { VisiblePlace } from "../lib/content/publication";
 import { areaLabels, publicCopy } from "../i18n/public-copy";
 import { routeFor, type Locale } from "../i18n/config";
+import { eparchyOptionsFor, municipalityOptionsFor } from "../i18n/place-taxonomy";
 
 interface Props {
   heading: string;
@@ -43,6 +44,8 @@ const featuredPlaceIds = new Set(featuredPlaces.map((place) => place.id));
 const cataloguePlaces = places.filter((place) => !featuredPlaceIds.has(place.id));
 const relevantAreaIds = new Set(places.flatMap((place) => place.browseAreaId ? [place.browseAreaId] : []));
 const relevantAreas = PLACE_AREAS.filter((area) => relevantAreaIds.has(area.id)).map((area) => ({ ...area, label: areaLabels[locale][area.id] ?? area.label }));
+const eparchies = eparchyOptionsFor(locale);
+const municipalities = municipalityOptionsFor(locale);
 const catalogueLabel = heading;
 const copy = category === "monasteries"
   ? locale === "ru" ? {
@@ -121,7 +124,7 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
         <div class:list={["category-catalogue__body", usesSidebarCatalogue && "category-catalogue__body--sidebar"]}>
           {usesSidebarCatalogue && (
             <aside class="catalogue-sidebar" aria-label={category === "churches" ? (locale === "ru" ? "Фильтры каталога храмов" : locale === "en" ? "Church catalogue filters" : "Филтери каталога цркава") : (locale === "ru" ? "Фильтры каталога монастырей" : locale === "en" ? "Monastery catalogue filters" : "Филтери каталога манастира")}>
-              <CatalogueToolbar searchPlaceholder={copy.searchPlaceholder} areas={relevantAreas} locale={locale} />
+              <CatalogueToolbar searchPlaceholder={copy.searchPlaceholder} areas={relevantAreas} eparchies={eparchies} municipalities={municipalities} locale={locale} />
             </aside>
           )}
           {!usesSidebarCatalogue && (
@@ -145,6 +148,8 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
                     data-catalogue-featured-item
                     data-place-area={place.browseAreaId ?? ""}
                     data-place-search={place.catalogueSearchText}
+                    data-place-eparchy={place.eparchyId ?? ""}
+                    data-place-municipality={place.municipalityId ?? ""}
                   >
                     <PlaceCard place={place} variant="featured" locale={locale} />
                   </li>
@@ -168,6 +173,8 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
                   data-catalogue-item
                   data-place-area={place.browseAreaId ?? ""}
                   data-place-search={place.catalogueSearchText}
+                  data-place-eparchy={place.eparchyId ?? ""}
+                  data-place-municipality={place.municipalityId ?? ""}
                   hidden={index >= PLACES_PER_PAGE}
                 >
                   <PlaceCard place={place} variant="catalogue" locale={locale} />
@@ -198,6 +205,8 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
     const mainSection = catalogue.querySelector<HTMLElement>("[data-catalogue-main]");
     const searchInput = catalogue.querySelector<HTMLInputElement>("[data-catalogue-search]");
     const areaSelect = catalogue.querySelector<HTMLSelectElement>("[data-catalogue-area]");
+    const eparchySelect = catalogue.querySelector<HTMLSelectElement>("[data-catalogue-eparchy]");
+    const municipalitySelect = catalogue.querySelector<HTMLSelectElement>("[data-catalogue-municipality]");
     const resultStatus = catalogue.querySelector<HTMLElement>("[data-catalogue-result-status]");
     const emptyState = catalogue.querySelector<HTMLElement>("[data-catalogue-filter-empty]");
     const resetButtons = [...catalogue.querySelectorAll<HTMLButtonElement>("[data-catalogue-reset]")];
@@ -238,21 +247,57 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
       catalogue.dataset.cataloguePage = String(currentPage);
     };
 
-    const matchesFilters = (item: HTMLElement, query: string, areaId: string) =>
+    const matchesFilters = (item: HTMLElement, query: string, areaId: string, eparchyId: string, municipalityId: string) =>
       matchesCatalogueSearch(item.dataset.placeSearch ?? "", query)
-      && (!areaId || item.dataset.placeArea === areaId);
+      && (!areaId || item.dataset.placeArea === areaId)
+      && (!eparchyId || item.dataset.placeEparchy === eparchyId)
+      && (!municipalityId || item.dataset.placeMunicipality === municipalityId);
+
+    const validOptionIds = (select: HTMLSelectElement | null) => new Set(
+      [...(select?.options ?? [])].map((option) => option.value).filter(Boolean),
+    );
+    const validEparchyIds = validOptionIds(eparchySelect);
+    const validMunicipalityIds = validOptionIds(municipalitySelect);
+
+    const syncTaxonomyFromUrl = () => {
+      const url = new URL(window.location.href);
+      let changed = false;
+      const syncSelect = (select: HTMLSelectElement | null, key: "eparchy" | "municipality", validIds: Set<string>) => {
+        const value = url.searchParams.get(key) ?? "";
+        if (value && !validIds.has(value)) {
+          url.searchParams.delete(key);
+          changed = true;
+          if (select) select.value = "";
+          return;
+        }
+        if (select) select.value = value;
+      };
+      syncSelect(eparchySelect, "eparchy", validEparchyIds);
+      syncSelect(municipalitySelect, "municipality", validMunicipalityIds);
+      if (changed) history.replaceState(history.state, "", `${url.pathname}${url.search}${url.hash}`);
+    };
+
+    const updateTaxonomyUrl = (replace = false) => {
+      const url = new URL(window.location.href);
+      const updateParam = (key: "eparchy" | "municipality", value: string) => value ? url.searchParams.set(key, value) : url.searchParams.delete(key);
+      updateParam("eparchy", eparchySelect?.value ?? "");
+      updateParam("municipality", municipalitySelect?.value ?? "");
+      history[replace ? "replaceState" : "pushState"](history.state, "", `${url.pathname}${url.search}${url.hash}`);
+    };
 
     const applyFilters = () => {
       const query = searchInput?.value ?? "";
       const areaId = areaSelect?.value ?? "";
-      const matchedFeaturedItems = featuredItems.filter((item) => matchesFilters(item, query, areaId));
-      matchedItems = items.filter((item) => matchesFilters(item, query, areaId));
+      const eparchyId = eparchySelect?.value ?? "";
+      const municipalityId = municipalitySelect?.value ?? "";
+      const matchedFeaturedItems = featuredItems.filter((item) => matchesFilters(item, query, areaId, eparchyId, municipalityId));
+      matchedItems = items.filter((item) => matchesFilters(item, query, areaId, eparchyId, municipalityId));
       featuredItems.forEach((item) => { item.hidden = !matchedFeaturedItems.includes(item); });
       if (featuredSection) featuredSection.hidden = matchedFeaturedItems.length === 0;
       if (mainSection) mainSection.hidden = matchedItems.length === 0;
       const matchedTotal = matchedFeaturedItems.length + matchedItems.length;
       if (emptyState) emptyState.hidden = matchedTotal !== 0;
-      const hasFilters = Boolean(query.trim() || areaId);
+      const hasFilters = Boolean(query.trim() || areaId || eparchyId || municipalityId);
       if (resultStatus) {
         resultStatus.textContent = `${statusPrefix} ${matchedTotal} ${statusNoun}`;
       }
@@ -271,14 +316,21 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
     });
     searchInput?.addEventListener("input", applyFilters);
     areaSelect?.addEventListener("change", applyFilters);
+    eparchySelect?.addEventListener("change", () => { updateTaxonomyUrl(); applyFilters(); });
+    municipalitySelect?.addEventListener("change", () => { updateTaxonomyUrl(); applyFilters(); });
+    window.addEventListener("popstate", () => { syncTaxonomyFromUrl(); applyFilters(); });
     resetButtons.forEach((button) => {
       button.addEventListener("click", () => {
         if (searchInput) searchInput.value = "";
         if (areaSelect) areaSelect.value = "";
+        if (eparchySelect) eparchySelect.value = "";
+        if (municipalitySelect) municipalitySelect.value = "";
+        updateTaxonomyUrl();
         applyFilters();
         searchInput?.focus();
       });
     });
+    syncTaxonomyFromUrl();
     applyFilters();
   });
 </script>
