@@ -2,13 +2,15 @@
 interface Props {
   searchPlaceholder: string;
   areas: ReadonlyArray<{ id: string; label: string }>;
+  eparchies?: ReadonlyArray<{ id: string; label: string }>;
+  municipalities?: ReadonlyArray<{ id: string; label: string }>;
   statusText?: string;
   locale?: import("../i18n/config").Locale;
 }
 
 import { routeFor, type Locale } from "../i18n/config";
 import { publicCopy } from "../i18n/public-copy";
-const { searchPlaceholder, areas, statusText, locale = "sr" } = Astro.props;
+const { searchPlaceholder, areas, eparchies = [], municipalities = [], statusText, locale = "sr" } = Astro.props;
 const copy = publicCopy[locale as Locale];
 ---
 
@@ -24,6 +26,24 @@ const copy = publicCopy[locale as Locale];
       {areas.map((area) => <option value={area.id}>{area.label}</option>)}
     </select>
   </label>
+  {eparchies.length > 0 && (
+    <label class="catalogue-toolbar__eparchy">
+      <span class="catalogue-toolbar__label">{copy.catalogueTaxonomy.eparchy}</span>
+      <select data-catalogue-eparchy>
+        <option value="">{copy.catalogueTaxonomy.allEparchies}</option>
+        {eparchies.map((eparchy) => <option value={eparchy.id}>{eparchy.label}</option>)}
+      </select>
+    </label>
+  )}
+  {municipalities.length > 0 && (
+    <label class="catalogue-toolbar__municipality">
+      <span class="catalogue-toolbar__label">{copy.catalogueTaxonomy.municipality}</span>
+      <select data-catalogue-municipality>
+        <option value="">{copy.catalogueTaxonomy.allMunicipalities}</option>
+        {municipalities.map((municipality) => <option value={municipality.id}>{municipality.label}</option>)}
+      </select>
+    </label>
+  )}
   {statusText && (
     <p class="catalogue-toolbar__status" data-catalogue-result-status role="status" aria-live="polite">
       {statusText}

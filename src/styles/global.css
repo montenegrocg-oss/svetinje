@@ -2273,6 +2273,14 @@
     font: inherit;
   }
 
+  .catalogue-toolbar__label {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: var(--ink-soft);
+    font-size: 0.72rem;
+    font-weight: 750;
+  }
+
   .catalogue-toolbar__status {
     align-self: center;
     color: var(--ink-soft);
@@ -2363,6 +2371,8 @@
 
   .catalogue-sidebar .catalogue-toolbar__search,
   .catalogue-sidebar .catalogue-toolbar__area,
+  .catalogue-sidebar .catalogue-toolbar__eparchy,
+  .catalogue-sidebar .catalogue-toolbar__municipality,
   .catalogue-sidebar .catalogue-toolbar__actions {
     width: 100%;
   }
@@ -3491,6 +3501,35 @@
     color: var(--ink-soft);
     font-size: 0.78rem;
     line-height: 1.5;
+  }
+
+  .editorial-place-card__taxonomy {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.6rem;
+    margin-top: 0.45rem;
+    font-size: 0.7rem;
+    line-height: 1.35;
+  }
+
+  .editorial-place-card__taxonomy li {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .editorial-place-card__taxonomy a,
+  .editorial-place-card__taxonomy span {
+    display: block;
+    overflow: hidden;
+    color: var(--navy-900);
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .editorial-place-card__taxonomy a:hover {
+    color: var(--gold-deep);
   }
 
   .editorial-place-card--sidebar .editorial-place-card__summary {
