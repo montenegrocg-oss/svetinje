@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-manastir-djurdjevi-stupovi-fabd9d5e15d5
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/manastir-djurdjevi-stupovi/photo-manastir-djurdjevi-stupovi-fabd9d5e15d5.jpg
+checksum_sha256: 1ef4cc0f08dfa70184d8d64a49bac58b07382748024fca0825284ba9e04c1409
+mime_type: image/jpeg
+width: 1350
+height: 2400
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - manastir-djurdjevi-stupovi
+localized_text:
+  sr:
+    alt_text: Манастир Ђурђеви Ступови
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-25T10:06:59Z
+    reviewed_revision: 7574585b61652f2d43b1d6fc4cd4f0ff20731a63
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-25T10:06:59Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-25T10:06:59Z
+  updated_by: montenegro-cg
