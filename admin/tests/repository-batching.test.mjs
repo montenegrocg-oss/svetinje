@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { loadAdminRepository } from "../src/repository-content.ts";
 
 const REPRESENTATIVE_PLACE_COUNT = 60;
+const PLACE_SCHEMA = await readFile(new URL("../../schemas/place.schema.json", import.meta.url), "utf8");
 
 class BatchRepository {
   constructor() {
@@ -14,13 +16,7 @@ class BatchRepository {
     this.largestBatch = 0;
     this.nextSha = 1;
 
-    this.add("schemas/place.schema.json", JSON.stringify({
-      $defs: {
-        placeType: { enum: ["monastery", "church"] },
-        monasticCommunity: { enum: ["male", "female"] },
-        coordinateAccuracy: { enum: ["complex-centroid"] },
-      },
-    }));
+    this.add("schemas/place.schema.json", PLACE_SCHEMA);
     this.add("schemas/narrative.schema.json", JSON.stringify({
       $defs: { sectionKey: { enum: ["introduction", "history"] } },
     }));

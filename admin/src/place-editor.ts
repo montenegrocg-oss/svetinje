@@ -20,8 +20,9 @@ export interface UpdatePlaceBody {
   monasticCommunity?: unknown;
   browseAreaId?: unknown;
   summary?: unknown;
+  eparchyId?: unknown;
   jurisdiction?: unknown;
-  municipality?: unknown;
+  municipalityId?: unknown;
   settlement?: unknown;
   latitude?: unknown;
   longitude?: unknown;
@@ -169,6 +170,8 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   const placeType = requiredText(body.placeType, "placeType", errors);
   const monasticCommunity = text(body.monasticCommunity);
   const browseAreaId = text(body.browseAreaId);
+  const eparchyId = text(body.eparchyId);
+  const municipalityId = text(body.municipalityId);
   const summary = text(body.summary);
   if (slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) errors.slug = "Slug мора бити lowercase ASCII kebab-case.";
   if (placeType && !record.options.placeTypes.includes(placeType)) errors.placeType = "Врста објекта није подржана.";
@@ -181,6 +184,18 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
     errors.monasticCommunity = "Тип манастира није подржан.";
   }
   if (browseAreaId && !isPlaceAreaId(browseAreaId)) errors.browseAreaId = "Област није дио важећег каталога.";
+  if (
+    body.eparchyId !== undefined
+    && body.eparchyId !== null
+    && body.eparchyId !== ""
+    && (!eparchyId || !record.options.eparchies.some(({ id }) => id === eparchyId))
+  ) errors.eparchyId = "Епархија није дио важећег каталога.";
+  if (
+    body.municipalityId !== undefined
+    && body.municipalityId !== null
+    && body.municipalityId !== ""
+    && (!municipalityId || !record.options.municipalities.some(({ id }) => id === municipalityId))
+  ) errors.municipalityId = "Општина није дио важећег каталога.";
   const latitude = parseOptionalNumber(body.latitude, "latitude", -90, 90, errors);
   const longitude = parseOptionalNumber(body.longitude, "longitude", -180, 180, errors);
   if ((latitude === undefined) !== (longitude === undefined)) errors.coordinates = "Унесите и географску ширину и географску дужину.";
@@ -214,13 +229,14 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   place.place_type ??= {};
   if (place.place_type.value !== placeType) place.place_type = { value: placeType, verification: resetVerification() };
   place.ecclesiastical ??= {};
+  setFact(place.ecclesiastical, "authority_id", eparchyId);
   setFact(place.ecclesiastical, "jurisdiction", text(body.jurisdiction));
   setFact(place.ecclesiastical, "community_type", placeType === "monastery" ? monasticCommunity : undefined);
   delete place.patronal_feast;
   if (patronalFeasts.length > 0) place.patronal_feasts = patronalFeasts.map((name) => ({ name })); else delete place.patronal_feasts;
   if (youtubeUrl) place.video = { youtube_url: youtubeUrl }; else delete place.video;
   place.location ??= {};
-  setFact(place.location, "municipality", text(body.municipality));
+  setFact(place.location, "municipality_id", municipalityId);
   setFact(place.location, "settlement", text(body.settlement));
   if (latitude === undefined || longitude === undefined) {
     delete place.location.coordinates;

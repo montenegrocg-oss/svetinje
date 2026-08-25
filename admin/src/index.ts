@@ -158,7 +158,7 @@ export async function handleRequest(request: Request, env: AdminEnv): Promise<Re
     }
     if (request.method === "GET" && url.pathname === "/places/new") {
       const snapshot = await listPlaces(repository, env);
-      return newPlacePage(session, snapshot.supportedPlaceTypes, snapshot.state.headSha);
+      return newPlacePage(session, snapshot.options, snapshot.state.headSha);
     }
     if (request.method === "GET" && url.pathname === "/routes") { return routesPage(session, await listRoutes(repository, env)); }
     if (request.method === "GET" && url.pathname === "/routes/new") { return newRoutePage(session, await listRoutes(repository, env)); }

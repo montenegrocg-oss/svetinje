@@ -103,11 +103,66 @@
         "verification": { "$ref": "common.schema.json#/$defs/verification" }
       }
     },
+    "eparchyId": {
+      "oneOf": [
+        { "const": "mitropolija-crnogorsko-primorska", "title": "Митрополија црногорско-приморска" },
+        { "const": "eparhija-budimljansko-niksicka", "title": "Епархија будимљанско-никшићка" },
+        { "const": "eparhija-milesevska", "title": "Епархија милешевска" },
+        { "const": "eparhija-zahumsko-hercegovacka-i-primorska", "title": "Епархија захумско-херцеговачка и приморска" }
+      ]
+    },
+    "eparchyFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "verification"],
+      "properties": {
+        "value": { "$ref": "#/$defs/eparchyId" },
+        "verification": { "$ref": "common.schema.json#/$defs/verification" }
+      }
+    },
+    "municipalityId": {
+      "oneOf": [
+        { "const": "andrijevica", "title": "Андријевица" },
+        { "const": "bar", "title": "Бар" },
+        { "const": "berane", "title": "Беране" },
+        { "const": "bijelo-polje", "title": "Бијело Поље" },
+        { "const": "budva", "title": "Будва" },
+        { "const": "gusinje", "title": "Гусиње" },
+        { "const": "danilovgrad", "title": "Даниловград" },
+        { "const": "zabljak", "title": "Жабљак" },
+        { "const": "zeta", "title": "Зета" },
+        { "const": "kolasin", "title": "Колашин" },
+        { "const": "kotor", "title": "Котор" },
+        { "const": "mojkovac", "title": "Мојковац" },
+        { "const": "niksic", "title": "Никшић" },
+        { "const": "petnjica", "title": "Петњица" },
+        { "const": "plav", "title": "Плав" },
+        { "const": "pluzine", "title": "Плужине" },
+        { "const": "pljevlja", "title": "Пљевља" },
+        { "const": "podgorica", "title": "Подгорица" },
+        { "const": "rozaje", "title": "Рожаје" },
+        { "const": "tivat", "title": "Тиват" },
+        { "const": "tuzi", "title": "Тузи" },
+        { "const": "ulcinj", "title": "Улцињ" },
+        { "const": "herceg-novi", "title": "Херцег Нови" },
+        { "const": "cetinje", "title": "Цетиње" },
+        { "const": "savnik", "title": "Шавник" }
+      ]
+    },
+    "municipalityFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "verification"],
+      "properties": {
+        "value": { "$ref": "#/$defs/municipalityId" },
+        "verification": { "$ref": "common.schema.json#/$defs/verification" }
+      }
+    },
     "ecclesiastical": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "authority_id": { "$ref": "common.schema.json#/$defs/entityIdFact" },
+        "authority_id": { "$ref": "#/$defs/eparchyFact" },
         "jurisdiction": { "$ref": "common.schema.json#/$defs/stringFact" },
         "dedication_ids": { "$ref": "common.schema.json#/$defs/entityIdListFact" },
         "community_type": { "$ref": "#/$defs/monasticCommunityFact" },
@@ -163,6 +218,7 @@
           }
         },
         "municipality": { "$ref": "common.schema.json#/$defs/stringFact" },
+        "municipality_id": { "$ref": "#/$defs/municipalityFact" },
         "settlement": { "$ref": "common.schema.json#/$defs/stringFact" },
         "postal_address": { "$ref": "common.schema.json#/$defs/stringFact" },
         "coordinates": { "$ref": "#/$defs/coordinates" },

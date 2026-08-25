@@ -8,6 +8,11 @@ import type { BranchState, GitRepository, TreeEntry } from "./types.ts";
 export type MonasticCommunity = "male" | "female";
 export type NarrativeLocale = "sr" | "ru" | "en";
 
+export interface TaxonomyOption {
+  id: string;
+  labelSr: string;
+}
+
 export interface AdminLocalizedNarrative {
   locale: NarrativeLocale;
   exists: boolean;
@@ -34,6 +39,8 @@ export interface AdminPlace {
   monasticCommunity?: MonasticCommunity;
   editorialStatus: string;
   browseAreaId?: string;
+  eparchyId?: string;
+  municipalityId?: string;
   municipality?: string;
   settlement?: string;
   latitude?: number;
@@ -74,6 +81,8 @@ export interface AdminMedia {
 export interface CanonicalOptions {
   placeTypes: string[];
   monasticCommunities: MonasticCommunity[];
+  eparchies: TaxonomyOption[];
+  municipalities: TaxonomyOption[];
   browseAreas: typeof PLACE_AREAS;
   coordinateAccuracy: string[];
   publicationSafety: string[];
@@ -190,9 +199,24 @@ function schemaEnums(placeSchema: any, _narrativeSchema: any, commonSchema: any)
     if (!Array.isArray(value) || value.some((entry) => typeof entry !== "string")) throw new Error(`Cannot read ${label} from canonical schema`);
     return value as string[];
   };
+  const taxonomyOptions = (value: unknown, label: string): TaxonomyOption[] => {
+    if (!Array.isArray(value)) throw new Error(`Cannot read ${label} from canonical schema`);
+    const options = value.map((entry) => {
+      if (!entry || typeof entry !== "object" || typeof (entry as any).const !== "string" || typeof (entry as any).title !== "string") {
+        throw new Error(`Cannot read ${label} from canonical schema`);
+      }
+      return { id: (entry as any).const, labelSr: (entry as any).title };
+    });
+    if (new Set(options.map(({ id }) => id)).size !== options.length || new Set(options.map(({ labelSr }) => labelSr)).size !== options.length) {
+      throw new Error(`Canonical ${label} contain duplicates`);
+    }
+    return options;
+  };
   return {
     placeTypes: stringArray(placeSchema.$defs?.placeType?.enum, "place types"),
     monasticCommunities: stringArray(placeSchema.$defs?.monasticCommunity?.enum, "monastic communities") as MonasticCommunity[],
+    eparchies: taxonomyOptions(placeSchema.$defs?.eparchyId?.oneOf, "eparchies"),
+    municipalities: taxonomyOptions(placeSchema.$defs?.municipalityId?.oneOf, "municipalities"),
     browseAreas: PLACE_AREAS,
     coordinateAccuracy: stringArray(placeSchema.$defs?.coordinateAccuracy?.enum, "coordinate accuracy"),
     publicationSafety: stringArray(commonSchema.$defs?.publicationSafety?.enum, "publication safety"),
@@ -260,6 +284,8 @@ export async function loadAdminRepository(repository: GitRepository, branch: str
     const sourceIds = new Set([...(Array.isArray(record.source_ids) ? record.source_ids : []), ...(Array.isArray(narrative.source_ids) ? narrative.source_ids : [])].filter((value): value is string => typeof value === "string"));
     const coordinates = record.location?.coordinates;
     const monasticCommunity = monasticCommunityValue(record.ecclesiastical?.community_type);
+    const eparchyId = factValue(record.ecclesiastical?.authority_id);
+    const municipalityId = factValue(record.location?.municipality_id);
     const municipality = factValue(record.location?.municipality);
     const settlement = factValue(record.location?.settlement);
     return {
@@ -270,6 +296,8 @@ export async function loadAdminRepository(repository: GitRepository, branch: str
       ...(monasticCommunity ? { monasticCommunity } : {}),
       editorialStatus: typeof record.editorial_status === "string" ? record.editorial_status : "unknown",
       ...(typeof record.browse_area_id === "string" ? { browseAreaId: record.browse_area_id } : {}),
+      ...(eparchyId ? { eparchyId } : {}),
+      ...(municipalityId ? { municipalityId } : {}),
       ...(municipality ? { municipality } : {}),
       ...(settlement ? { settlement } : {}),
       ...(typeof coordinates?.latitude === "number" ? { latitude: coordinates.latitude } : {}),
@@ -357,9 +385,11 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
     }];
   });
   const jurisdiction = factValue(rawPlace.ecclesiastical?.jurisdiction);
+  const eparchyId = factValue(rawPlace.ecclesiastical?.authority_id);
   const monasticCommunity = monasticCommunityValue(rawPlace.ecclesiastical?.community_type);
   const countryCode = factValue(rawPlace.location?.country_code);
   const municipality = factValue(rawPlace.location?.municipality);
+  const municipalityId = factValue(rawPlace.location?.municipality_id);
   const settlement = factValue(rawPlace.location?.settlement);
   const postalAddress = factValue(rawPlace.location?.postal_address);
   const localizedView = (locale: NarrativeLocale): AdminLocalizedNarrative => {
@@ -397,9 +427,11 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
       editorialStatus: String(rawPlace.editorial_status ?? "unknown"),
       ...(typeof rawPlace.browse_area_id === "string" ? { browseAreaId: rawPlace.browse_area_id } : {}),
       ...(jurisdiction ? { jurisdiction } : {}),
+      ...(eparchyId ? { eparchyId } : {}),
       ...(monasticCommunity ? { monasticCommunity } : {}),
       ...(countryCode ? { countryCode } : {}),
       ...(municipality ? { municipality } : {}),
+      ...(municipalityId ? { municipalityId } : {}),
       ...(settlement ? { settlement } : {}),
       ...(postalAddress ? { postalAddress } : {}),
       ...(typeof coordinates?.latitude === "number" ? { latitude: coordinates.latitude } : {}),

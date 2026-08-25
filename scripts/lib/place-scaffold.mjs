@@ -33,11 +33,15 @@ export function serializeResearchPlaceScaffold({
   name,
   slug = id,
   supportedPlaceTypes,
+  eparchyId,
+  municipalityId,
   actor = "maxim",
   now = new Date(),
   requireName = false,
 }) {
   const input = validatePlaceScaffoldInput({ id, placeType, name, slug, supportedPlaceTypes, requireName });
+  if (eparchyId !== undefined) assertSafeEntitySegment(eparchyId, "Eparchy ID", 100);
+  if (municipalityId !== undefined) assertSafeEntitySegment(municipalityId, "Municipality ID", 100);
   assertSafeEntitySegment(actor, "Audit actor", 100);
   if (!(now instanceof Date) || Number.isNaN(now.valueOf())) throw new Error("Audit timestamp must be a valid date");
 
@@ -56,6 +60,22 @@ export function serializeResearchPlaceScaffold({
       value: input.placeType,
       verification: { status: "requires-verification" },
     },
+    ...(eparchyId === undefined ? {} : {
+      ecclesiastical: {
+        authority_id: {
+          value: eparchyId,
+          verification: { status: "requires-verification" },
+        },
+      },
+    }),
+    ...(municipalityId === undefined ? {} : {
+      location: {
+        municipality_id: {
+          value: municipalityId,
+          verification: { status: "requires-verification" },
+        },
+      },
+    }),
     relationships: {},
     approvals: [],
     audit,
