@@ -41,6 +41,7 @@ test("MapTiler configuration uses only the approved public environment variable"
   assert.doesNotMatch(mapCanvas, /import \* as maplibregl from "maplibre-gl"/);
   assert.match(mapCanvas, /import\.meta\.env\.PUBLIC_MAPTILER_KEY/);
   assert.match(mapCanvas, /maps\/019fc7d8-717c-701d-9ca5-a53d9438d3ce\/style\.json\?key=\$\{encodeURIComponent\(MAPTILER_KEY\)\}/);
+  assert.match(mapCanvas, /style: MAP_STYLE_URL/);
   assert.doesNotMatch(mapCanvas, /maps\/streets-v4\/style\.json/);
   assert.doesNotMatch(mapCanvas, /maps\/outdoor-v4\/style\.json/);
   assert.doesNotMatch(mapCanvas, /style\.json\?key=[A-Za-z0-9_-]{8,}/);
@@ -59,6 +60,13 @@ test("the homepage renders a safe no-key fallback and a key-backed loading state
   assert.match(mapCanvas, /const showFallback = \(\) => \{/);
   assert.match(mapCanvas, /root\.dataset\.mapState = "fallback"/);
   assert.match(mapCanvas, /if \(fallbackNotice\) fallbackNotice\.hidden = false/);
+});
+
+test("MapLibre constructor failures still enter the fatal fallback immediately", async () => {
+  const mapCanvas = await source("src/components/MapCanvas.astro");
+
+  assert.match(mapCanvas, /map = createInitialMap\(\{\s*available: true,\s*onFatal: showFallback,\s*create: \(\) => new maplibregl\.Map\(\{/);
+  assert.match(mapCanvas, /if \(!map\) return;/);
 });
 
 test("the map structure contains an interactive container and explicit attribution", async () => {
@@ -112,26 +120,41 @@ test("mobile coarse-pointer maps pan with one finger while desktop keeps coopera
   assert.doesNotMatch(mapCanvas, /addEventListener\("touch(?:start|move|end)"/);
 });
 
-test("the renderer becomes ready only after MapLibre loads and has a bounded fallback", async () => {
+test("the renderer has a recoverable soft timeout and becomes ready after MapLibre loads", async () => {
   const mapCanvas = await source("src/components/MapCanvas.astro");
-  const constructionIndex = mapCanvas.indexOf("map = new maplibregl.Map");
-  const loadIndex = mapCanvas.indexOf('map.once("load"');
+  const constructionIndex = mapCanvas.indexOf("map = createInitialMap");
+  const loadIndex = mapCanvas.indexOf("watchInitialMapLoad(map");
 
   assert.notEqual(constructionIndex, -1);
   assert.ok(loadIndex > constructionIndex);
-  assert.match(mapCanvas, /const MAP_LOAD_TIMEOUT_MS = 10_000;/);
-  assert.match(mapCanvas, /const showReadyMap = \(\) => \{[\s\S]*?root\.dataset\.mapState = "ready";[\s\S]*?renderer\.hidden = false;[\s\S]*?fallback\.hidden = true;[\s\S]*?loadingSurface\.hidden = true;[\s\S]*?attribution\.hidden = false;[\s\S]*?setControlsEnabled\(true\);[\s\S]*?map\.resize\(\);[\s\S]*?fitMontenegro\(false\);/);
-  assert.match(mapCanvas, /map\.once\("load", \(\) => \{[\s\S]*?showReadyMap\(\);[\s\S]*?\}\);[\s\S]*?mapLoadTimer = window\.setTimeout\(showFallback, MAP_LOAD_TIMEOUT_MS\);/);
-  assert.match(mapCanvas, /const clearMapLoadTimer = \(\) => \{[\s\S]*?window\.clearTimeout\(mapLoadTimer\);/);
-  assert.match(mapCanvas, /removeActiveMap = \(\) => \{[\s\S]*?clearMapLoadTimer\(\);/);
+  assert.match(mapCanvas, /const showReadyMap = \(\) => \{[\s\S]*?root\.dataset\.mapState = "ready";[\s\S]*?delete root\.dataset\.mapLoadStatus;[\s\S]*?renderer\.hidden = false;[\s\S]*?fallback\.hidden = true;[\s\S]*?loadingSurface\.hidden = true;[\s\S]*?attribution\.hidden = false;[\s\S]*?setControlsEnabled\(true\);[\s\S]*?map\.resize\(\);[\s\S]*?fitMontenegro\(false\);/);
+  assert.match(mapCanvas, /const showSlowLoading = \(\) => \{[\s\S]*?root\.dataset\.mapLoadStatus = "slow";[\s\S]*?loadingStatus\.textContent = loadingStatus\.dataset\.mapSlowMessage;[\s\S]*?\};/);
+  assert.match(mapCanvas, /stopWatchingInitialLoad = watchInitialMapLoad\(map, \{\s*onSlow: showSlowLoading,\s*onReady: showReadyMap,\s*onFatal: showFallback,\s*isFatalError: \(event\) => isFatalInitialStyleError\(event, MAP_STYLE_URL\),\s*\}\);/);
+  assert.match(mapCanvas, /removeActiveMap = \(\) => \{[\s\S]*?stopWatchingInitialLoad\(\);/);
+  const slowHandler = mapCanvas.match(/const showSlowLoading = \(\) => \{([\s\S]*?)\n    \};/)?.[1] ?? "";
+  assert.doesNotMatch(slowHandler, /showFallback|removeActiveMap|map\.remove/);
   assert.doesNotMatch(mapCanvas, /showInteractiveMap\(\);|map\.on\("render"|map\.once\("idle"|triggerRepaint|requestAnimationFrame/);
 });
 
-test("MapLibre errors remain available through the library's built-in reporting", async () => {
+test("slow-loading copy is localized in Serbian, Russian, and English", async () => {
   const mapCanvas = await source("src/components/MapCanvas.astro");
+
+  assert.match(mapCanvas, /slowLoading: "Карта се још учитава…"/);
+  assert.match(mapCanvas, /slowLoading: "Карта всё ещё загружается…"/);
+  assert.match(mapCanvas, /slowLoading: "The map is still loading…"/);
+});
+
+test("only reliable initial-style authorization errors enter fatal fallback", async () => {
+  const [mapCanvas, lifecycle] = await Promise.all([
+    source("src/components/MapCanvas.astro"),
+    source("src/lib/map-load-lifecycle.ts"),
+  ]);
 
   assert.doesNotMatch(mapCanvas, /handleMapError|dataset\.mapError/);
   assert.doesNotMatch(mapCanvas, /map\.(?:on|once|off)\("error"/);
+  assert.match(mapCanvas, /isFatalInitialStyleError\(event, MAP_STYLE_URL\)/);
+  assert.match(lifecycle, /return \(status === 401 \|\| status === 403 \|\| status === 404\) && url === styleUrl;/);
+  assert.doesNotMatch(lifecycle, /tile|glyph|sprite|terrain/);
   assert.doesNotMatch(mapCanvas, /__SVETINJE_MAP_DEBUG__|sourcedata|styledata|getContext\s*\(/);
 });
 
