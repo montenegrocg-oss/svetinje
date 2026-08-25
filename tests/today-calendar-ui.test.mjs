@@ -36,5 +36,6 @@ test("homepage calendar presentation applies no generic casing or legacy Gospel 
   assert.doesNotMatch(implementation, /day\.gospel|primaryReading|data-calendar-excerpt|loadScriptureCorpus|assembleReading/);
   assert.match(component, /CalendarGospelReadings/);
   assert.match(component, /gospelReadingsForDate/);
-  assert.match(hydration, /calendarGospelDate !== day\.date/);
+  assert.match(hydration, /fetch\(`\/gospel\/\$\{date\}\.json`\)/);
+  assert.match(hydration, /renderGospelReadings\(payload\.readings\)/);
 });

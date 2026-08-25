@@ -65,8 +65,9 @@ test("homepage and selected calendar day share the server-rendered Gospel UI wit
   assert.match(today, /<CalendarGospelReadings readings=\{gospelReadings\} compact \/>/);
   assert.match(dayPage, /gospelReadingsForDate\(gospelDataset, day\.date\)/);
   assert.match(dayPage, /<CalendarGospelReadings readings=\{gospelReadings\} \/>/);
-  assert.match(hydration, /root\.dataset\.calendarGospelDate !== day\.date/);
-  assert.doesNotMatch(hydration, /gospel-readings|loadGospelReadingsDataset|reading\.text/);
+  assert.match(hydration, /fetch\(`\/gospel\/\$\{date\}\.json`\)/);
+  assert.match(hydration, /reading\.text/);
+  assert.doesNotMatch(hydration, /loadGospelReadingsDataset|data\/gospel-readings/);
   assert.doesNotMatch(calendarJson, /gospel|reading|Gospel/);
   assert.doesNotMatch(`${homepage}\n${explorer}`, /loadScriptureCorpus|scriptureCorpus|corpus=/);
 });

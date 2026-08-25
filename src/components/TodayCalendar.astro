@@ -36,12 +36,14 @@ const currentDate = new Intl.DateTimeFormat(localeConfig[locale].htmlLang, { tim
   </div>
   <article class="today-calendar__gospel" data-calendar-gospel>
     <p class="map-eyebrow">{copy.gospel}</p>
-    {locale !== "sr" ? <>
-      <h3 data-calendar-reading>{copy.translationTitle}</h3>
-      <p class="today-calendar__excerpt" data-calendar-empty>{copy.translationBody}</p>
-    </> : gospelReadings.length > 0
-      ? <CalendarGospelReadings readings={gospelReadings} compact />
-      : <p data-calendar-empty>{copy.readingMissing}</p>}
+    <div data-calendar-gospel-content>
+      {locale !== "sr" ? <>
+        <h3 data-calendar-reading>{copy.translationTitle}</h3>
+        <p class="today-calendar__excerpt" data-calendar-empty>{copy.translationBody}</p>
+      </> : gospelReadings.length > 0
+        ? <CalendarGospelReadings readings={gospelReadings} compact />
+        : <p data-calendar-empty>{copy.readingMissing}</p>}
+    </div>
   </article>
 </section>
 {locale === "sr" && <TodayCalendarHydration />}

@@ -437,6 +437,41 @@ try {
   failures.push("calendar/2026.json is missing or invalid");
 }
 
+try {
+  const gospelDirectory = path.join(distRoot, "gospel");
+  const gospelFiles = (await readdir(gospelDirectory)).filter((file) => /^2026-\d{2}-\d{2}\.json$/.test(file)).sort();
+  const expectedGospelFiles = CALENDAR_HTML_ROUTES.map((route) => `${route.split("/")[1]}.json`).sort();
+  if (JSON.stringify(gospelFiles) !== JSON.stringify(expectedGospelFiles)) {
+    failures.push(`gospel/ must contain exactly ${expectedGospelFiles.length} verified daily JSON files`);
+  }
+
+  const gospelByDate = new Map();
+  for (const file of gospelFiles) {
+    const payload = JSON.parse(await readFile(path.join(gospelDirectory, file), "utf8"));
+    if (!Array.isArray(payload.readings)) {
+      failures.push(`gospel/${file} must contain a readings array`);
+      continue;
+    }
+    const serialized = JSON.stringify(payload);
+    for (const forbidden of ["entry_id", "reading_type", "feast_or_reason", "needs_review", "source_ref"]) {
+      if (serialized.includes(forbidden)) failures.push(`gospel/${file} exposes internal field ${forbidden}`);
+    }
+    for (const reading of payload.readings) {
+      const allowedFields = new Set(["reading_id", "book", "zachalo", "passage", "conditional", "verses", "text"]);
+      if (Object.keys(reading).some((field) => !allowedFields.has(field)) || !reading.reading_id || !reading.passage || !reading.text || !Array.isArray(reading.verses)) {
+        failures.push(`gospel/${file} contains an invalid public reading`);
+      }
+    }
+    gospelByDate.set(file.slice(0, -5), payload.readings);
+  }
+
+  if (gospelByDate.get("2026-08-19")?.length !== 2 || gospelByDate.get("2026-08-25")?.length !== 2) {
+    failures.push("daily Gospel output does not preserve multiple-readings control dates");
+  }
+} catch {
+  failures.push("daily Gospel JSON output is missing or invalid");
+}
+
 if (files.length !== model.expectedPageCount) failures.push(`${editorialPreview ? "editorial preview" : "production"} must generate ${model.expectedPageCount} data-derived HTML page(s), found ${files.length}`);
 for (const route of model.allExpectedRoutes) {
   if (!pagesByRoute.has(route)) failures.push(`expected output route is missing: ${route}`);

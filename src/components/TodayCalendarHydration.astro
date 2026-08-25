@@ -1,8 +1,80 @@
 <script>
+  import { formatGospelReferenceSr, type DailyGospelReading } from "../lib/calendar/gospel-presentation";
   import { podgoricaDateKey } from "../lib/calendar/today-calendar";
+
+  const EMPTY_READING = "За овај дан литургијско јеванђељско читање није наведено.";
+  const UNAVAILABLE_READING = "Јеванђелско читање тренутно није доступно.";
 
   const root = document.querySelector<HTMLElement>("[data-today-calendar]");
   if (root) {
+    const gospelContent = root.querySelector<HTMLElement>("[data-calendar-gospel-content]");
+
+    const replaceGospelMessage = (message: string, state: "empty" | "unavailable") => {
+      if (!gospelContent) return;
+      const paragraph = Object.assign(document.createElement("p"), { textContent: message });
+      paragraph.dataset[state === "empty" ? "calendarEmpty" : "calendarUnavailable"] = "";
+      gospelContent.replaceChildren(paragraph);
+    };
+
+    const renderGospelReadings = (readings: DailyGospelReading[]) => {
+      if (!gospelContent) return;
+      if (readings.length === 0) {
+        replaceGospelMessage(EMPTY_READING, "empty");
+        return;
+      }
+
+      const container = document.createElement("div");
+      container.className = "calendar-gospel calendar-gospel--compact";
+      container.dataset.gospelReadingCount = String(readings.length);
+      const references = document.createElement("ol");
+      references.className = "calendar-gospel__references";
+      references.setAttribute("aria-label", "Јеванђелска читања за овај дан");
+      const details = document.createElement("details");
+      details.className = "calendar-gospel__details";
+      details.append(Object.assign(document.createElement("summary"), { textContent: "Прочитај Јеванђеље" }));
+      const texts = document.createElement("div");
+      texts.className = "calendar-gospel__texts";
+
+      readings.forEach((reading, index) => {
+        const reference = formatGospelReferenceSr(reading);
+        const referenceItem = document.createElement("li");
+        referenceItem.append(Object.assign(document.createElement("span"), { textContent: reference }));
+        if (reading.conditional) {
+          referenceItem.append(Object.assign(document.createElement("span"), { className: "calendar-gospel__conditional", textContent: "Условно читање" }));
+        }
+        references.append(referenceItem);
+
+        const readingSection = document.createElement("section");
+        readingSection.className = "calendar-gospel__reading";
+        const headingId = `gospel-${reading.reading_id}-${index + 1}`;
+        readingSection.setAttribute("aria-labelledby", headingId);
+        const heading = Object.assign(document.createElement("h3"), { id: headingId, textContent: reference });
+        readingSection.append(heading);
+        if (reading.conditional) {
+          readingSection.append(Object.assign(document.createElement("p"), { className: "calendar-gospel__conditional", textContent: "Условно читање" }));
+        }
+        readingSection.append(Object.assign(document.createElement("p"), { className: "calendar-gospel__text", textContent: reading.text }));
+        texts.append(readingSection);
+      });
+
+      details.append(texts);
+      container.append(references, details);
+      gospelContent.replaceChildren(container);
+    };
+
+    const updateGospel = async (date: string) => {
+      try {
+        const response = await fetch(`/gospel/${date}.json`);
+        if (!response.ok) throw new Error("daily Gospel unavailable");
+        const payload = await response.json();
+        if (!Array.isArray(payload.readings)) throw new Error("invalid daily Gospel payload");
+        renderGospelReadings(payload.readings);
+        root.dataset.calendarGospelDate = date;
+      } catch {
+        if (root.dataset.calendarGospelDate !== date) replaceGospelMessage(UNAVAILABLE_READING, "unavailable");
+      }
+    };
+
     const year = root.dataset.calendarYear;
     const dateKey = podgoricaDateKey(new Date());
     if (year === dateKey.slice(0, 4)) {
@@ -10,30 +82,30 @@
         .then((response) => response.ok ? response.json() : Promise.reject(new Error("calendar unavailable")))
         .then((payload) => {
           const day = payload.days.find((candidate: any) => candidate.date === dateKey);
-          if (!day) return;
+          if (!day) {
+            const title = root.querySelector<HTMLElement>("[data-calendar-title]");
+            const link = root.querySelector<HTMLAnchorElement>("[data-calendar-day-link]");
+            if (title) title.textContent = "Календар за ову годину је у припреми";
+            if (link) link.href = "/kalendar/";
+            replaceGospelMessage("Подаци за изабрани датум још нису припремљени.", "unavailable");
+            return;
+          }
           const date = new Intl.DateTimeFormat("sr-Cyrl-ME", { timeZone: "Europe/Podgorica", day: "numeric", month: "long", year: "numeric" }).format(new Date(`${day.date}T12:00:00Z`));
           const dateNode = root.querySelector<HTMLElement>("[data-calendar-date]");
           const titleNode = root.querySelector<HTMLElement>("[data-calendar-title]");
           const weekContext = root.querySelector<HTMLElement>("[data-calendar-week-context]");
           const link = root.querySelector<HTMLAnchorElement>("[data-calendar-day-link]");
-          const gospel = root.querySelector<HTMLElement>("[data-calendar-gospel]");
           if (dateNode) dateNode.textContent = date;
           if (titleNode) titleNode.textContent = day.commemoration_sr;
           if (weekContext) weekContext.textContent = day.week_context_sr;
           if (link) link.href = `/kalendar/${day.date}/`;
-          if (gospel && root.dataset.calendarGospelDate !== day.date) {
-            const eyebrow = Object.assign(document.createElement("p"), { className: "map-eyebrow", textContent: "ИЗ ДАНАШЊЕГ ЈЕВАНЂЕЉА" });
-            const empty = Object.assign(document.createElement("p"), { textContent: "За овај дан литургијско јеванђељско читање није наведено." });
-            empty.dataset.calendarEmpty = "";
-            gospel.replaceChildren(eyebrow, empty);
-          }
+          void updateGospel(dateKey);
         })
         .catch(() => undefined);
     } else {
       const title = root.querySelector<HTMLElement>("[data-calendar-title]");
-      const gospel = root.querySelector<HTMLElement>("[data-calendar-gospel]");
       if (title) title.textContent = "Календар за ову годину је у припреми";
-      if (gospel) gospel.innerHTML = "<p>Подаци за изабрани датум још нису припремљени.</p>";
+      replaceGospelMessage("Подаци за изабрани датум још нису припремљени.", "unavailable");
     }
   }
 </script>

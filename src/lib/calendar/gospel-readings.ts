@@ -1,26 +1,22 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import type { DailyGospelReading } from "./gospel-presentation.ts";
+
+export {
+  formatGospelPassageSr,
+  formatGospelReferenceSr,
+  type DailyGospelReading,
+  type GospelVerse,
+} from "./gospel-presentation.ts";
 
 export const GOSPEL_BY_DATE_DATASET = "data/gospel-readings/svetinje-gospel-by-date-2026.json";
 
-export interface GospelVerse {
-  chapter: number;
-  verse: number;
-  text: string;
-}
-
-export interface GospelReading {
+export interface GospelReading extends Omit<DailyGospelReading, "conditional"> {
   entry_id: string;
-  reading_id: string;
-  book: "Мф" | "Мк" | "Лк" | "Ин";
-  zachalo: string;
-  passage: string;
   reading_type: "saint" | "sunday_matins" | "sunday" | "daily" | "theotokos" | "transferred" | "feast";
   feast_or_reason: string;
   conditional: boolean;
   needs_review: boolean;
-  verses: GospelVerse[];
-  text: string;
 }
 
 export interface GospelReadingsDataset {
@@ -41,13 +37,14 @@ export function gospelReadingsForDate(dataset: GospelReadingsDataset, date: stri
   return dataset.dates[date]?.readings ?? [];
 }
 
-export function formatGospelPassageSr(passage: string): string {
-  return passage
-    .replace(/^Мф\./u, "Мт.")
-    .replace(/^Ин\./u, "Јн.")
-    .replace(/:(\d+)/gu, ", $1");
-}
-
-export function formatGospelReferenceSr(reading: Pick<GospelReading, "passage" | "zachalo">): string {
-  return `${formatGospelPassageSr(reading.passage)} · зач. ${reading.zachalo}`;
+export function dailyGospelReadingsForDate(dataset: GospelReadingsDataset, date: string): DailyGospelReading[] {
+  return gospelReadingsForDate(dataset, date).map(({ reading_id, book, zachalo, passage, conditional, verses, text }) => ({
+    reading_id,
+    book,
+    zachalo,
+    passage,
+    ...(conditional ? { conditional: true as const } : {}),
+    verses: verses.map(({ chapter, verse, text }) => ({ chapter, verse, text })),
+    text,
+  }));
 }
