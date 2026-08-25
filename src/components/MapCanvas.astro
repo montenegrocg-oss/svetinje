@@ -14,7 +14,7 @@ interface Props {
 }
 
 const { places = [], routes = [], layout = "homepage", locale = "sr" } = Astro.props;
-const mapCopy = locale === "ru" ? { fallback: "Стилизованная карта Черногории без меток святынь.", region: "Интерактивная карта Черногории", loading: "Загрузка карты…", unavailable: "Интерактивная карта сейчас недоступна.", attribution: "Источники картографических данных", photo: "Авторская фотография будет добавлена", cluster: "святынь — приблизить карту", country: ["ЧЕРНО", "ГОРИЯ"], sea: "АДРИАТИЧЕСКОЕ МОРЕ", neighbours: ["СЕРБИЯ", "АЛБАНИЯ", "БОСНИЯ И ГЕРЦЕГОВИНА", "ХОРВАТИЯ"] } : locale === "en" ? { fallback: "A stylised map of Montenegro without holy-place markers.", region: "Interactive map of Montenegro", loading: "Loading map…", unavailable: "The interactive map is currently unavailable.", attribution: "Map data sources", photo: "An original photograph will be added", cluster: "holy places — zoom in", country: ["MONTE", "NEGRO"], sea: "ADRIATIC SEA", neighbours: ["SERBIA", "ALBANIA", "BOSNIA AND HERZEGOVINA", "CROATIA"] } : { fallback: "Стилизована картографска површина Црне Горе без ознака светиња.", region: "Интерактивна карта Црне Горе", loading: "Учитавање карте…", unavailable: "Интерактивна карта тренутно није доступна.", attribution: "Извори картографских података", photo: "Ауторска фотографија биће додата", cluster: "светиње — приближи карту", country: ["ЦРНА", "ГОРА"], sea: "ЈАДРАНСКО МОРЕ", neighbours: ["СРБИЈА", "АЛБАНИЈА", "БОСНА И ХЕРЦЕГОВИНА", "ХРВАТСКА"] };
+const mapCopy = locale === "ru" ? { fallback: "Стилизованная карта Черногории без меток святынь.", region: "Интерактивная карта Черногории", loading: "Загрузка карты…", slowLoading: "Карта всё ещё загружается…", unavailable: "Интерактивная карта сейчас недоступна.", attribution: "Источники картографических данных", photo: "Авторская фотография будет добавлена", cluster: "святынь — приблизить карту", country: ["ЧЕРНО", "ГОРИЯ"], sea: "АДРИАТИЧЕСКОЕ МОРЕ", neighbours: ["СЕРБИЯ", "АЛБАНИЯ", "БОСНИЯ И ГЕРЦЕГОВИНА", "ХОРВАТИЯ"] } : locale === "en" ? { fallback: "A stylised map of Montenegro without holy-place markers.", region: "Interactive map of Montenegro", loading: "Loading map…", slowLoading: "The map is still loading…", unavailable: "The interactive map is currently unavailable.", attribution: "Map data sources", photo: "An original photograph will be added", cluster: "holy places — zoom in", country: ["MONTE", "NEGRO"], sea: "ADRIATIC SEA", neighbours: ["SERBIA", "ALBANIA", "BOSNIA AND HERZEGOVINA", "CROATIA"] } : { fallback: "Стилизована картографска површина Црне Горе без ознака светиња.", region: "Интерактивна карта Црне Горе", loading: "Учитавање карте…", slowLoading: "Карта се још учитава…", unavailable: "Интерактивна карта тренутно није доступна.", attribution: "Извори картографских података", photo: "Ауторска фотографија биће додата", cluster: "светиње — приближи карту", country: ["ЦРНА", "ГОРА"], sea: "ЈАДРАНСКО МОРЕ", neighbours: ["СРБИЈА", "АЛБАНИЈА", "БОСНА И ХЕРЦЕГОВИНА", "ХРВАТСКА"] };
 const hasMapTilerKey = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
 const markerPlaces = places.flatMap((place) =>
   Number.isFinite(place.latitude) && Number.isFinite(place.longitude)
@@ -44,6 +44,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
   data-map-layout={layout}
   data-testid="map-canvas"
   data-map-state={hasMapTilerKey ? "loading" : "fallback"}
+  data-map-load-status={hasMapTilerKey ? "pending" : undefined}
   data-place-detail-root={placeDetailRoot[locale]}
   data-open-page-label={publicCopy[locale].openPage}
   data-photo-placeholder={mapCopy.photo}
@@ -140,7 +141,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
     hidden={!hasMapTilerKey}
     aria-hidden={hasMapTilerKey ? "false" : "true"}
   >
-    <p class="map-loading-status" data-map-loading-status role="status" aria-live="polite">{mapCopy.loading}</p>
+    <p class="map-loading-status" data-map-loading-status data-map-slow-message={mapCopy.slowLoading} role="status" aria-live="polite">{mapCopy.loading}</p>
   </div>
 
   <p
@@ -167,10 +168,13 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
   import "maplibre-gl/dist/maplibre-gl.css";
   import type { LngLatBoundsLike, Map as MapLibreMap, Marker as MapLibreMarker, PaddingOptions } from "maplibre-gl";
   import { clusterProjectedMarkers, getClusterExpansionZoom, type ProjectedMarker } from "../lib/map-marker-clustering";
+  import { createInitialMap, isFatalInitialStyleError, watchInitialMapLoad } from "../lib/map-load-lifecycle";
   import { resolveMarkerAsset } from "../lib/map-marker-assets";
 
   const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY?.trim();
-  const MAP_LOAD_TIMEOUT_MS = 10_000;
+  const MAP_STYLE_URL = MAPTILER_KEY
+    ? `https://api.maptiler.com/maps/019fc7d8-717c-701d-9ca5-a53d9438d3ce/style.json?key=${encodeURIComponent(MAPTILER_KEY)}`
+    : "";
   const MARKER_CLUSTER_RADIUS = 52;
   const MARKER_CLUSTER_MAX_ZOOM = 12;
   interface MarkerPlace {
@@ -274,17 +278,14 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
 
     let map: MapLibreMap | undefined;
     let removed = false;
-    let mapLoadTimer: number | undefined;
+    let stopWatchingInitialLoad = () => {};
     let removeActiveMap = () => {};
-    const clearMapLoadTimer = () => {
-      window.clearTimeout(mapLoadTimer);
-      mapLoadTimer = undefined;
-    };
 
     const showFallback = () => {
-      clearMapLoadTimer();
+      stopWatchingInitialLoad();
       if (map && !removed) removeActiveMap();
       root.dataset.mapState = "fallback";
+      delete root.dataset.mapLoadStatus;
       if (renderer) renderer.hidden = true;
       if (fallback) fallback.hidden = false;
       if (loadingSurface) loadingSurface.hidden = true;
@@ -304,10 +305,12 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const mobileTouch = window.matchMedia("(max-width: 47.999rem) and (pointer: coarse)").matches;
-    try {
-      map = new maplibregl.Map({
+    map = createInitialMap({
+      available: true,
+      onFatal: showFallback,
+      create: () => new maplibregl.Map({
         container: mapContainer,
-        style: `https://api.maptiler.com/maps/019fc7d8-717c-701d-9ca5-a53d9438d3ce/style.json?key=${encodeURIComponent(MAPTILER_KEY)}`,
+        style: MAP_STYLE_URL,
         center: [19.25, 42.7],
         zoom: 6,
         attributionControl: false,
@@ -319,16 +322,10 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
         fadeDuration: reducedMotion.matches ? 0 : 300,
         minZoom: 4,
         maxZoom: 20,
-      });
-    } catch {
-      showFallback();
-      return;
-    }
+      }),
+    });
 
-    if (!map) {
-      showFallback();
-      return;
-    }
+    if (!map) return;
 
     map.touchZoomRotate.disableRotation();
     let visitorMovedMap = false;
@@ -748,8 +745,8 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
 
     const showReadyMap = () => {
       if (removed) return;
-      clearMapLoadTimer();
       root.dataset.mapState = "ready";
+      delete root.dataset.mapLoadStatus;
       renderer.hidden = false;
       if (fallback) fallback.hidden = true;
       if (loadingSurface) loadingSurface.hidden = true;
@@ -763,6 +760,14 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
       map.resize();
       fitMontenegro(false);
       updateMarkerClusters();
+    };
+
+    const showSlowLoading = () => {
+      if (removed || root.dataset.mapState !== "loading") return;
+      root.dataset.mapLoadStatus = "slow";
+      if (loadingStatus?.dataset.mapSlowMessage) {
+        loadingStatus.textContent = loadingStatus.dataset.mapSlowMessage;
+      }
     };
 
     const setMarkerVisibility = (visibleIds: Set<string>) => {
@@ -809,7 +814,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
     removeActiveMap = () => {
       if (removed) return;
       removed = true;
-      clearMapLoadTimer();
+      stopWatchingInitialLoad();
       window.clearTimeout(resizeTimer);
       closePreview();
       window.removeEventListener("resize", resizeMap);
@@ -843,11 +848,13 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
     map.on("moveend", updateMarkerClusters);
     document.addEventListener("astro:before-swap", removeActiveMap, { once: true });
 
-    // Individual tile, glyph, sprite, or terrain errors can be transient; only a missing initial load reaches fallback.
-    map.once("load", () => {
-      showReadyMap();
+    // Individual tile, glyph, sprite, or terrain errors can be transient and must not destroy a recoverable map.
+    stopWatchingInitialLoad = watchInitialMapLoad(map, {
+      onSlow: showSlowLoading,
+      onReady: showReadyMap,
+      onFatal: showFallback,
+      isFatalError: (event) => isFatalInitialStyleError(event, MAP_STYLE_URL),
     });
-    mapLoadTimer = window.setTimeout(showFallback, MAP_LOAD_TIMEOUT_MS);
   };
 
   initialiseHomepageMap();
