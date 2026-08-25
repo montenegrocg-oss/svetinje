@@ -1,0 +1,17 @@
+schema_version: 1
+id: eparhija-manastir-svetog-save-golija
+editorial_status: research
+source_type: diocesan
+title: Манастир Светог Саве
+publisher: Епархија будимљанско-никшићка
+url: https://www.eparhija.me/index.php/manastir/manastir-svetog-save
+accessed_at: 2026-08-25
+original_language: sr-Cyrl
+locator: Exact monastery page from the official diocesan monastery section; research package entry 21 of 22. Dynamic clergy, contact, schedule, announcement, and media data were excluded.
+status: active
+approvals: []
+audit:
+  created_at: 2026-08-25T09:18:26.087Z
+  created_by: codex
+  updated_at: 2026-08-25T09:18:26.087Z
+  updated_by: codex
