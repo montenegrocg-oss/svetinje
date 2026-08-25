@@ -3,16 +3,16 @@ schema_version: 1
 place_id: manastir-djurdjevi-stupovi
 locale: en
 editorial_status: research
-translation_status: outdated
+translation_status: draft
 slug: manastir-djurdjevi-stupovi
 preferred_name: Đurđevi Stupovi Monastery
 summary: A 1213 endowment of Župan Stefan Prvoslav and the historic seat of the Budimlja bishopric.
-source_revision: c1cbd01fd5fdf11314cb7f805673830e3d57ab32
+source_revision: 0b9fede52865d8754be3441dc85c653e23058b63
 approvals: []
 audit:
   created_at: 2026-08-25T09:18:26.087Z
   created_by: codex
-  updated_at: 2026-08-25T10:02:08Z
+  updated_at: 2026-08-25T10:07:33Z
   updated_by: montenegro-cg
 ---
 
