@@ -4,6 +4,7 @@ import type { VisiblePlace } from "../../lib/content/publication";
 import PlaceMiniMap from "./PlaceMiniMap.astro";
 import type { Locale } from "../../i18n/config";
 import { publicCopy } from "../../i18n/public-copy";
+import { placePracticalTaxonomy } from "../../lib/place-practical-taxonomy";
 
 interface Props {
   place: VisiblePlace;
@@ -12,7 +13,7 @@ interface Props {
 
 const { place, locale = "sr" } = Astro.props;
 const copy = publicCopy[locale].pages.placeDetail.practical;
-const location = [place.settlement, place.municipality].filter(Boolean).join(" · ");
+const taxonomy = placePracticalTaxonomy(place, locale);
 const hasCoordinates = place.latitude !== undefined && place.longitude !== undefined;
 const coordinateText = hasCoordinates ? `${place.latitude}, ${place.longitude}` : undefined;
 const typeIcon = place.placeType === "monastery"
@@ -21,10 +22,11 @@ const typeIcon = place.placeType === "monastery"
     ? "church" as const
     : "place" as const;
 const practicalRows = [
-  { label: copy.location, value: location, icon: "place" as const },
+  { label: copy.location, value: taxonomy.location, icon: "place" as const },
+  { label: copy.municipality, value: taxonomy.municipality?.value, href: taxonomy.municipality?.href, icon: "place" as const },
   { label: copy.address, value: place.address, icon: "info" as const },
   { label: copy.type, value: place.typeLabel, icon: typeIcon },
-  { label: copy.jurisdiction, value: place.ecclesiasticalJurisdiction, icon: "church" as const },
+  { label: taxonomy.eparchy ? copy.eparchy : copy.jurisdiction, value: taxonomy.eparchy?.value ?? taxonomy.legacyJurisdiction, href: taxonomy.eparchy?.href, icon: "church" as const },
 ].filter((row) => Boolean(row.value));
 const patronalFeasts = place.patronalFeasts.filter((feast) => feast.trim());
 const feastLabel = patronalFeasts.length === 1 ? copy.feast : copy.feasts;
@@ -39,7 +41,7 @@ const coordinateQualification = place.placeType === "cathedral"
     {practicalRows.map((row) => (
       <div>
         <dt><InterfaceIcon name={row.icon} size={17} />{row.label}</dt>
-        <dd>{row.value}</dd>
+        <dd>{row.href ? <a class="place-practical-list__taxonomy-link" href={row.href}>{row.value}</a> : row.value}</dd>
       </div>
     ))}
     {patronalFeasts.length > 0 && (

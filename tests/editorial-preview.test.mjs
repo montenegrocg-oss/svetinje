@@ -524,7 +524,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.doesNotMatch(narrativeArticle, /sourceIds|<sup\b|#source-/);
   assert.match(practicalPanel, /data-copy-coordinates/);
   assert.match(practicalPanel, /aria-live="polite"/);
-  assert.match(practicalPanel, /label: copy\.jurisdiction/);
+  assert.match(practicalPanel, /taxonomy\.eparchy \? copy\.eparchy : copy\.jurisdiction/);
   assert.match(practicalPanel, /copy\.feast : copy\.feasts/);
   assert.doesNotMatch(practicalPanel, /Црквена припадност|Тачност положаја|Статус записа|Напомена о подацима|practicalSections/);
   assert.match(miniMap, /import\.meta\.env\.PUBLIC_MAPTILER_KEY/);
