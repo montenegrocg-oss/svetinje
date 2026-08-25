@@ -3,16 +3,16 @@ schema_version: 1
 place_id: manastir-djurdjevi-stupovi
 locale: ru
 editorial_status: research
-translation_status: outdated
+translation_status: draft
 slug: manastir-djurdjevi-stupovi
 preferred_name: Монастырь Джурджеви-Ступови
 summary: Задужбина жупана Стефана Првослава 1213 года и исторический центр Будимлянской епископии.
-source_revision: c1cbd01fd5fdf11314cb7f805673830e3d57ab32
+source_revision: c67bee4be544bf2716ea75a9715ae1c56ca613ea
 approvals: []
 audit:
   created_at: 2026-08-25T09:18:26.087Z
   created_by: codex
-  updated_at: 2026-08-25T10:02:08Z
+  updated_at: 2026-08-25T10:07:22Z
   updated_by: montenegro-cg
 ---
 
