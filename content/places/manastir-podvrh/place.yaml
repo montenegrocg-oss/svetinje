@@ -1,0 +1,29 @@
+schema_version: 1
+id: manastir-podvrh
+editorial_status: research
+place_type:
+  value: monastery
+  verification:
+    status: requires-verification
+    source_ids:
+      - eparhija-manastir-podvrh
+location:
+  coordinates:
+    latitude: 43.071534
+    longitude: 19.899079
+    accuracy: complex-centroid
+    publication_safety: public
+    crs: EPSG:4326
+    verification:
+      status: requires-verification
+      source_ids:
+        - eparhija-manastir-podvrh
+relationships: {}
+source_ids:
+  - eparhija-manastir-podvrh
+approvals: []
+audit:
+  created_at: 2026-08-25T09:18:26.087Z
+  created_by: codex
+  updated_at: 2026-08-25T09:18:26.087Z
+  updated_by: codex

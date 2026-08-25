@@ -1,0 +1,35 @@
+schema_version: 1
+id: manastir-sudikovo
+editorial_status: research
+place_type:
+  value: monastery
+  verification:
+    status: requires-verification
+    source_ids:
+      - eparhija-manastir-sudikovo
+location:
+  settlement:
+    value: Шудиково
+    verification:
+      status: requires-verification
+      source_ids:
+        - eparhija-manastir-sudikovo
+  coordinates:
+    latitude: 42.87141
+    longitude: 19.866894
+    accuracy: complex-centroid
+    publication_safety: public
+    crs: EPSG:4326
+    verification:
+      status: requires-verification
+      source_ids:
+        - eparhija-manastir-sudikovo
+relationships: {}
+source_ids:
+  - eparhija-manastir-sudikovo
+approvals: []
+audit:
+  created_at: 2026-08-25T09:18:26.087Z
+  created_by: codex
+  updated_at: 2026-08-25T09:18:26.087Z
+  updated_by: codex
