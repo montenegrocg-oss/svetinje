@@ -3,16 +3,16 @@ schema_version: 1
 place_id: manastir-bijela
 locale: en
 editorial_status: research
-translation_status: outdated
+translation_status: draft
 slug: manastir-bijela
 preferred_name: Bijela Monastery
 summary: A monastery of Saint George at Bijela, documented from 1656 and restored several times.
-source_revision: c1cbd01fd5fdf11314cb7f805673830e3d57ab32
+source_revision: 49acde7c91961a332188eede3f0eb088da4bb20b
 approvals: []
 audit:
   created_at: 2026-08-25T09:18:26.087Z
   created_by: codex
-  updated_at: 2026-08-25T09:49:53Z
+  updated_at: 2026-08-25T09:55:14Z
   updated_by: montenegro-cg
 ---
 
