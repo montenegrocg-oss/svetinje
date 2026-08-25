@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-manastir-bijela-dff3202a0b55
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/manastir-bijela/photo-manastir-bijela-dff3202a0b55.jpg
+checksum_sha256: a4bdf234a7b9383ed8dd005ec8cebd76dfe0fca40fd6cc01b899cb5d637f6cd7
+mime_type: image/jpeg
+width: 2400
+height: 1350
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - manastir-bijela
+localized_text:
+  sr:
+    alt_text: Манастир Бијела
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-25T09:50:06Z
+    reviewed_revision: cc612ec7b8355f7fba500a6669fdb7e15e6b9e27
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-25T09:50:06Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-25T09:50:06Z
+  updated_by: montenegro-cg
