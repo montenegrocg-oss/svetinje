@@ -10,16 +10,14 @@ approvals: []
 audit:
   created_at: 2026-08-18T10:42:41.093Z
   created_by: montenegro-cg
-  updated_at: 2026-08-21T10:06:43Z
+  updated_at: 2026-08-26T21:22:25Z
   updated_by: montenegro-cg
 browse_area_id: budva-pastrovici
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-patronal_feast:
-  name: Света Петка 27. октобар
 location:
   municipality:
     value: Будва
@@ -33,3 +31,9 @@ location:
     crs: EPSG:4326
     verification:
       status: requires-verification
+  municipality_id:
+    value: budva
+    verification:
+      status: requires-verification
+patronal_feasts:
+  - name: Света Петка 27. октобар
