@@ -29,6 +29,10 @@ location:
     value: ME
     verification:
       status: requires-verification
+  municipality_id:
+    value: bar
+    verification:
+      status: requires-verification
 relationships:
   media_ids:
     - photo-manastir-vranjina-d262b7601720
@@ -40,16 +44,16 @@ approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-22T18:14:01Z
+  updated_at: 2026-08-26T19:50:32Z
   updated_by: montenegro-cg
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
-    verification:
-      status: requires-verification
   community_type:
     value: male
     verification:
       status: requires-verification
-patronal_feast:
-  name: Пренос моштију св. оца Николаја 22. мај
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
+    verification:
+      status: requires-verification
+patronal_feasts:
+  - name: Пренос моштију св. оца Николаја 22. мај
