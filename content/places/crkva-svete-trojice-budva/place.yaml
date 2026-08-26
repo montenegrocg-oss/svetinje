@@ -14,16 +14,14 @@ approvals: []
 audit:
   created_at: 2026-08-18T10:29:30.896Z
   created_by: montenegro-cg
-  updated_at: 2026-08-21T10:07:11Z
+  updated_at: 2026-08-26T21:22:57Z
   updated_by: montenegro-cg
 browse_area_id: budva-pastrovici
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-patronal_feast:
-  name: Тројичиндан
 location:
   municipality:
     value: Будва
@@ -37,3 +35,9 @@ location:
     crs: EPSG:4326
     verification:
       status: requires-verification
+  municipality_id:
+    value: budva
+    verification:
+      status: requires-verification
+patronal_feasts:
+  - name: Тројичиндан
