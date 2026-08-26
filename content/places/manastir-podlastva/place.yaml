@@ -13,16 +13,18 @@ approvals: []
 audit:
   created_at: 2026-08-18T10:45:23.542Z
   created_by: montenegro-cg
-  updated_at: 2026-08-18T10:52:06Z
+  updated_at: 2026-08-26T20:27:45Z
   updated_by: montenegro-cg
 browse_area_id: budva-pastrovici
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-patronal_feast:
-  name: Рођење Пресвете Богородице 21. септембер
+  community_type:
+    value: male
+    verification:
+      status: requires-verification
 location:
   municipality:
     value: Будва
@@ -36,3 +38,5 @@ location:
     crs: EPSG:4326
     verification:
       status: requires-verification
+patronal_feasts:
+  - name: Рођење Пресвете Богородице 21. септембер
