@@ -12,16 +12,14 @@ approvals: []
 audit:
   created_at: 2026-08-21T13:31:33.584Z
   created_by: montenegro-cg
-  updated_at: 2026-08-21T13:38:31Z
+  updated_at: 2026-08-26T21:21:53Z
   updated_by: montenegro-cg
 browse_area_id: boka-kotorska
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-patronal_feast:
-  name: Света великомученица Недјеља 10. август
 location:
   municipality:
     value: Котор
@@ -39,3 +37,9 @@ location:
     crs: EPSG:4326
     verification:
       status: requires-verification
+  municipality_id:
+    value: kotor
+    verification:
+      status: requires-verification
+patronal_feasts:
+  - name: Света великомученица Недјеља 10. август
