@@ -445,6 +445,7 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
       ...(municipalityId ? { municipalityId } : {}),
       catalogueSearchText: buildCatalogueSearchText({
         name: narrative.preferred_name,
+        slug: narrative.slug,
         alternateNames: (narrative.alternate_names ?? []).flatMap((alternate) => alternate.name ?? []),
         municipality: place.location?.municipality?.value,
         settlement: place.location?.settlement?.value,
@@ -614,6 +615,7 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       ...(municipalityId ? { municipalityId } : {}),
       catalogueSearchText: buildCatalogueSearchText({
         name: preferredName,
+        slug,
         alternateNames: (narrative.alternate_names ?? []).flatMap((alternate) => alternate.name ?? []),
         municipality,
         settlement,
