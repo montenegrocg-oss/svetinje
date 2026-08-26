@@ -10,7 +10,7 @@ approvals: []
 audit:
   created_at: 2026-08-17T14:45:14.813Z
   created_by: montenegro-cg
-  updated_at: 2026-08-17T14:56:49Z
+  updated_at: 2026-08-26T21:21:20Z
   updated_by: montenegro-cg
 summary: Црква Рођења Пресвете Богородице на Ћипуру, позната и као Дворска црква, налази се у историјском језгру Цетиња, непосредно уз Двор краља Николе.
 alternate_names:

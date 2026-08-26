@@ -13,16 +13,14 @@ approvals: []
 audit:
   created_at: 2026-08-17T14:45:14.813Z
   created_by: montenegro-cg
-  updated_at: 2026-08-17T15:59:48Z
+  updated_at: 2026-08-26T21:21:20Z
   updated_by: montenegro-cg
 browse_area_id: cetinje-okolina
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-patronal_feast:
-  name: Рођење Пресвете Богородице 21. септембер
 location:
   municipality:
     value: Цетиње
@@ -36,3 +34,9 @@ location:
     crs: EPSG:4326
     verification:
       status: requires-verification
+  municipality_id:
+    value: cetinje
+    verification:
+      status: requires-verification
+patronal_feasts:
+  - name: Рођење Пресвете Богородице 21. септембер
