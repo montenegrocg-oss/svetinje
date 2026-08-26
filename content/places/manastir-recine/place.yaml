@@ -36,6 +36,10 @@ location:
     crs: EPSG:4326
     verification:
       status: requires-verification
+  municipality_id:
+    value: kolasin
+    verification:
+      status: requires-verification
 relationships: {}
 source_ids:
   - mitropolija-muski-manastiri
@@ -43,12 +47,16 @@ approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-17T10:32:13Z
+  updated_at: 2026-08-26T21:01:58Z
   updated_by: montenegro-cg
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-patronal_feast:
-  name: Икона Пресвете Богородице Јерусалимска 25. октобар
+  community_type:
+    value: male
+    verification:
+      status: requires-verification
+patronal_feasts:
+  - name: Икона Пресвете Богородице Јерусалимска 25. октобар
