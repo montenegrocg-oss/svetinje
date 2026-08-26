@@ -51,6 +51,7 @@ test("localized place overlay preserves stable identity while replacing searchab
     assert.equal(localized.summary, narrative.summary ?? "");
     assert.equal(localized.narrativeBody, narrative.body);
     assert.ok(localized.catalogueSearchText.includes(localized.name));
+    assert.ok(localized.catalogueSearchText.includes(localized.slug));
   }
   for (const sourcePlace of sr) {
     const expectedSlugs = Object.fromEntries(
