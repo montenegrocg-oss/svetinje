@@ -11,13 +11,6 @@ place_type:
       - manastirsavina-pocetna
     qualification: Званични регистар Митрополије и званични сајт манастира наводе Савину као манастир; податак остаје у research статусу до стручне и црквене провјере.
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
-    verification:
-      status: requires-verification
-      source_ids:
-        - mitropolija-muski-manastiri
-      qualification: Припадност је наведена у званичном регистру мушких манастира Митрополије и чека црквену провјеру за јавно објављивање.
   community_type:
     value: male
     verification:
@@ -25,6 +18,10 @@ ecclesiastical:
       source_ids:
         - mitropolija-muski-manastiri
       qualification: Савина је наведена у званичном регистру мушких манастира; податак остаје у research статусу.
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
+    verification:
+      status: requires-verification
 location:
   country_code:
     value: ME
@@ -66,6 +63,10 @@ location:
       source_ids:
         - openstreetmap-manastir-savina-way-147257044
       qualification: Координате представљају радни центроид манастирског комплекса према OpenStreetMap way 147257044 и не означавају тачан пјешачки или колски улаз.
+  municipality_id:
+    value: herceg-novi
+    verification:
+      status: requires-verification
 relationships:
   media_ids:
     - photo-manastir-savina-75341a1e1264
@@ -85,7 +86,7 @@ approvals: []
 audit:
   created_at: 2026-08-04T21:15:45Z
   created_by: maxim
-  updated_at: 2026-08-22T16:50:00Z
-  updated_by: codex
-patronal_feast:
-  name: Успеније Пресвете Богородице - Велика Госпојина 28. августа
+  updated_at: 2026-08-26T21:05:58Z
+  updated_by: montenegro-cg
+patronal_feasts:
+  - name: Успеније Пресвете Богородице - Велика Госпојина 28. августа
