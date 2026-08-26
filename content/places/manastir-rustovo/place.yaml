@@ -9,12 +9,14 @@ place_type:
     source_ids:
       - mitropolija-zenski-manastiri
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-      source_ids:
-        - mitropolija-zenski-manastiri
+  community_type:
+    value: female
+    verification:
+      status: requires-verification
 location:
   settlement:
     value: Рустово
@@ -40,6 +42,10 @@ location:
     crs: EPSG:4326
     verification:
       status: requires-verification
+  municipality_id:
+    value: budva
+    verification:
+      status: requires-verification
 relationships:
   media_ids:
     - photo-manastir-rustovo-f639c5084c73
@@ -50,7 +56,7 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-17T10:51:27Z
+  updated_at: 2026-08-26T21:05:16Z
   updated_by: montenegro-cg
-patronal_feast:
-  name: Успеније Пресвете Богородице - Велика Госпојина 28. августа
+patronal_feasts:
+  - name: Успеније Пресвете Богородице - Велика Госпојина 28. августа
