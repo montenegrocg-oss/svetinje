@@ -25,6 +25,10 @@ location:
     value: Будва
     verification:
       status: requires-verification
+  municipality_id:
+    value: budva
+    verification:
+      status: requires-verification
 relationships:
   media_ids:
     - photo-manastir-stanjevici-1e56b397e89c
@@ -35,12 +39,16 @@ approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-17T13:04:21Z
+  updated_at: 2026-08-26T21:10:05Z
   updated_by: montenegro-cg
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-patronal_feast:
-  name: Тројичиндан
+  community_type:
+    value: male
+    verification:
+      status: requires-verification
+patronal_feasts:
+  - name: Тројичиндан
