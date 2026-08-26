@@ -3,7 +3,7 @@ schema_version: 1
 place_id: crkva-svete-trojice-na-rumiji
 locale: ru
 editorial_status: research
-translation_status: draft
+translation_status: outdated
 slug: tserkov-svyatoy-troitsy-na-rumii
 preferred_name: Церковь Святой Троицы
 summary: Церковь Святой Троицы на Румии находится на самой вершине горы Румия над Баром.
@@ -12,8 +12,8 @@ approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-22T19:23:49Z
-  updated_by: codex
+  updated_at: 2026-08-26T21:23:50Z
+  updated_by: montenegro-cg
 ---
 
 ## О церкви {#introduction}

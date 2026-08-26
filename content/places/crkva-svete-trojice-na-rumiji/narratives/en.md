@@ -3,7 +3,7 @@ schema_version: 1
 place_id: crkva-svete-trojice-na-rumiji
 locale: en
 editorial_status: research
-translation_status: draft
+translation_status: outdated
 slug: holy-trinity-church-rumija
 preferred_name: Holy Trinity Church
 summary: Holy Trinity Church on Rumija stands at the summit of Mount Rumija above Bar.
@@ -12,8 +12,8 @@ approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-22T19:23:49Z
-  updated_by: codex
+  updated_at: 2026-08-26T21:23:50Z
+  updated_by: montenegro-cg
 ---
 
 ## About the church {#introduction}

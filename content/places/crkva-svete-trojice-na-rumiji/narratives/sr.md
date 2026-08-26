@@ -10,7 +10,7 @@ approvals: []
 audit:
   created_at: 2026-08-15T10:54:56.943Z
   created_by: montenegro-cg
-  updated_at: 2026-08-21T10:07:44Z
+  updated_at: 2026-08-26T21:23:50Z
   updated_by: montenegro-cg
 summary: Црква Свете Тројице на Румији налази се на самом врху планине Румије изнад Бара.
 ---
