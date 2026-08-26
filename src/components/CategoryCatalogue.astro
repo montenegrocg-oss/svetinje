@@ -27,9 +27,20 @@ interface Props {
   monasticCommunity?: MonasticCommunityFilter | undefined;
   locale?: Locale;
   places?: VisiblePlace[] | undefined;
+  showHero?: boolean;
 }
 
-const { heading, description, category, emptyHeading, catalogueHeading, monasticCommunity, locale = "sr", places: suppliedPlaces } = Astro.props;
+const {
+  heading,
+  description,
+  category,
+  emptyHeading,
+  catalogueHeading,
+  monasticCommunity,
+  locale = "sr",
+  places: suppliedPlaces,
+  showHero = true,
+} = Astro.props;
 const ui = publicCopy[locale];
 const visiblePlaces = selectPublicDiscoveryPlaces(suppliedPlaces ?? await loadVisiblePlaces());
 const categoryPlaces = category
@@ -99,16 +110,18 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
   data-page-label={ui.page}
   data-page-of={ui.of}
 >
-  <header class="page-hero compact category-page-hero">
-    <div class="shell narrow">
-      <div class="category-page-hero__copy">
-        <p class="eyebrow">{ui.catalogue}</p>
-        <h1>{heading}</h1>
-        <span class="category-page-hero__rule" aria-hidden="true"></span>
-        <p>{places.length > 0 ? countAwareDescription : description}</p>
+  {showHero && (
+    <header class="page-hero compact category-page-hero">
+      <div class="shell narrow">
+        <div class="category-page-hero__copy">
+          <p class="eyebrow">{ui.catalogue}</p>
+          <h1>{heading}</h1>
+          <span class="category-page-hero__rule" aria-hidden="true"></span>
+          <p>{places.length > 0 ? countAwareDescription : description}</p>
+        </div>
       </div>
-    </div>
-  </header>
+    </header>
+  )}
 
   <section class="section catalogue-section category-catalogue">
     <div class="shell">

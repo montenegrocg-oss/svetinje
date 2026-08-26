@@ -19,6 +19,7 @@ interface Props {
 }
 const { locale = "sr", page, category, monasticCommunity, places, metadataTitle, metadataDescription } = Astro.props;
 const copy = publicCopy[locale].pages.catalogues[page];
+const showHero = page !== "monasteries" && page !== "churches";
 ---
 
 <BaseLayout title={metadataTitle ?? copy.title} description={metadataDescription ?? copy.description} canonicalPath={routeFor(locale, page)} locale={locale}>
@@ -31,5 +32,6 @@ const copy = publicCopy[locale].pages.catalogues[page];
     emptyHeading={copy.empty}
     locale={locale}
     places={places}
+    showHero={showHero}
   />
 </BaseLayout>
