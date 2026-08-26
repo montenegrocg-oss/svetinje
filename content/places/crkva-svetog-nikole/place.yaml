@@ -17,16 +17,14 @@ approvals: []
 audit:
   created_at: 2026-08-18T11:34:30.249Z
   created_by: montenegro-cg
-  updated_at: 2026-08-21T09:14:39Z
+  updated_at: 2026-08-26T21:25:36Z
   updated_by: montenegro-cg
 browse_area_id: boka-kotorska
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-patronal_feast:
-  name: Никољдан 19. децембар
 location:
   municipality:
     value: Котор
@@ -40,3 +38,9 @@ location:
     crs: EPSG:4326
     verification:
       status: requires-verification
+  municipality_id:
+    value: kotor
+    verification:
+      status: requires-verification
+patronal_feasts:
+  - name: Никољдан 19. децембар
