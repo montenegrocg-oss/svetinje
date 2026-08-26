@@ -2339,6 +2339,7 @@
     margin-bottom: 1rem;
   }
 
+  .catalogue-section-heading h1,
   .catalogue-section-heading h2 {
     margin-top: 0.35rem;
     font-size: clamp(1.6rem, 3vw, 2.25rem);
@@ -5260,7 +5261,6 @@
 }
 
 @layer route-platform {
-  .route-catalogue-hero,
   .route-detail-hero {
     padding-block: clamp(3.5rem, 7vw, 6rem);
     border-bottom: 1px solid var(--line);
@@ -5268,7 +5268,6 @@
     color: var(--white);
   }
 
-  .route-catalogue-hero h1,
   .route-detail-hero h1 {
     max-width: 21ch;
     margin-top: 0.45rem;
@@ -5277,7 +5276,6 @@
     line-height: 0.98;
   }
 
-  .route-catalogue-hero > .shell > p:last-child,
   .route-detail-hero > .shell > p:last-of-type {
     max-width: 64ch;
     margin-top: 1rem;
@@ -5294,11 +5292,11 @@
   .route-direction strong { flex: none; padding: 0.45rem 0.75rem; border: 1px solid rgba(255,255,255,0.3); border-radius: 999px; color: var(--white); font-size: 0.78rem; }
   .route-direction p { margin: 0; color: rgba(255,255,255,0.72); font-size: 0.84rem; line-height: 1.5; }
 
-  .route-catalogue { padding-block: clamp(2rem, 5vw, 4rem); }
-  .route-filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
-  .route-filters button { min-height: 2.75rem; padding: 0.55rem 1rem; border: 1px solid var(--line); border-radius: 999px; background: var(--white); color: var(--navy-900); font-weight: 700; }
-  .route-filters button[aria-pressed="true"] { border-color: var(--navy-900); background: var(--navy-900); color: var(--white); }
-  .route-catalogue__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
+  .route-catalogue__main { min-width: 0; }
+  .route-catalogue__grid { display: grid; gap: 1.25rem; margin: 0; padding: 0; list-style: none; }
+  .route-catalogue__grid > li { min-width: 0; }
+  .route-catalogue__difficulty { width: 100%; }
+  .route-catalogue__main .catalogue-filter-empty { margin-top: 0; }
   .route-empty { padding: 2rem; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--white); }
 
   .route-card { display: grid; grid-template-columns: minmax(10rem, 34%) 1fr; min-height: 20rem; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--white); box-shadow: var(--shadow-soft); }
@@ -5370,12 +5368,12 @@
   .place-route-links a { display: flex; min-height: 2.75rem; align-items: center; justify-content: space-between; padding: 0.7rem; border-top: 1px solid var(--line); color: var(--navy-900); font-weight: 750; text-decoration: none; }
 
   @media (max-width: 67.99rem) {
-    .route-catalogue__grid, .route-detail { grid-template-columns: 1fr; }
+    .route-detail { grid-template-columns: 1fr; }
     .route-practical, .route-map-section, .route-profile, .route-narrative, .route-places { grid-column: 1; grid-row: auto; }
   }
 
   @media (max-width: 47.99rem) {
-    .route-catalogue-hero, .route-detail-hero { padding-block: 2.5rem; }
+    .route-detail-hero { padding-block: 2.5rem; }
     .route-card { grid-template-columns: 1fr; }
     .route-card__visual { min-height: 8rem; }
     .route-card--compact { grid-template-columns: 4.5rem 1fr; }
