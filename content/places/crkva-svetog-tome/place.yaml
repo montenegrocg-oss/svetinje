@@ -10,16 +10,14 @@ approvals: []
 audit:
   created_at: 2026-08-18T10:58:28.728Z
   created_by: montenegro-cg
-  updated_at: 2026-08-18T11:07:29Z
+  updated_at: 2026-08-26T21:24:32Z
   updated_by: montenegro-cg
 browse_area_id: budva-pastrovici
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-patronal_feast:
-  name: Томиндан 19. октобар
 location:
   municipality:
     value: Будва
@@ -37,3 +35,9 @@ location:
     crs: EPSG:4326
     verification:
       status: requires-verification
+  municipality_id:
+    value: budva
+    verification:
+      status: requires-verification
+patronal_feasts:
+  - name: Томиндан 19. октобар
