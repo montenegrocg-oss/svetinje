@@ -3,7 +3,7 @@ schema_version: 1
 place_id: saborni-hram-bar
 locale: ru
 editorial_status: research
-translation_status: draft
+translation_status: outdated
 slug: sobor-svyatogo-ioanna-vladimira-bar
 preferred_name: Собор Святого Иоанна Владимира
 summary: Собор в центре Бара, посвящённый святому Иоанну Владимиру — небесному покровителю города под Румией.
@@ -14,8 +14,8 @@ approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-22T19:23:49Z
-  updated_by: codex
+  updated_at: 2026-08-26T21:17:49Z
+  updated_by: montenegro-cg
 ---
 
 Собор Святого Иоанна Владимира находится в центре Бара и посвящён святому Иоанну Владимиру, средневековому правителю Дукли и одному из наиболее почитаемых святых этой местности. Он возведён как главный православный храм города и одно из самых монументальных современных церковных зданий Черногории.

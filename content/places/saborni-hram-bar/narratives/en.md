@@ -3,7 +3,7 @@ schema_version: 1
 place_id: saborni-hram-bar
 locale: en
 editorial_status: research
-translation_status: draft
+translation_status: outdated
 slug: cathedral-of-saint-john-vladimir-bar
 preferred_name: Cathedral of Saint John Vladimir
 summary: The cathedral in central Bar, dedicated to Saint John Vladimir—the heavenly patron of the city beneath Rumija.
@@ -14,8 +14,8 @@ approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-22T19:23:49Z
-  updated_by: codex
+  updated_at: 2026-08-26T21:17:49Z
+  updated_by: montenegro-cg
 ---
 
 The Cathedral of Saint John Vladimir stands in central Bar and is dedicated to Saint John Vladimir, the medieval ruler of Duklja and one of the region’s most venerated saints. Built as the city’s principal Orthodox church, it is one of Montenegro’s most monumental modern ecclesiastical buildings.
