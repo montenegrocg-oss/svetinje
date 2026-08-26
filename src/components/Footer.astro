@@ -18,7 +18,6 @@ const legal = legalCopy[locale];
     </div>
     <nav aria-label={copy.footerNav}>
       <a href={routeFor(locale, "about")}>{copy.nav.about}</a>
-      {locale === "sr" && <a href={routeFor(locale, "sources")}>{copy.nav.sources}</a>}
       <a href={routeFor(locale, "privacy")}>{legal.footer.privacy}</a>
       <a href={routeFor(locale, "cookies")}>{legal.footer.storage}</a>
     </nav>
