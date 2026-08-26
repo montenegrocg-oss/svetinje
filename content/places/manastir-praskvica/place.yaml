@@ -25,6 +25,10 @@ location:
     value: Будва
     verification:
       status: requires-verification
+  municipality_id:
+    value: budva
+    verification:
+      status: requires-verification
 relationships:
   media_ids:
     - photo-manastir-praskvica-e150dcb4c5cb
@@ -34,12 +38,16 @@ approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-17T10:11:45Z
+  updated_at: 2026-08-26T20:29:03Z
   updated_by: montenegro-cg
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-patronal_feast:
-  name: Никољдан 19. децембар
+  community_type:
+    value: male
+    verification:
+      status: requires-verification
+patronal_feasts:
+  - name: Никољдан 19. децембар
