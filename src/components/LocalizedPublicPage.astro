@@ -9,8 +9,9 @@ import MapPage from "./MapPage.astro";
 import NewsArchivePage from "./NewsArchivePage.astro";
 import RouteCataloguePage from "./RouteCataloguePage.astro";
 import FavoritesPage from "./FavoritesPage.astro";
+import LegalPage from "./LegalPage.astro";
 
-type PageKind = "monasteries" | "maleMonasteries" | "femaleMonasteries" | "churches" | "map" | "routes" | "calendar" | "news" | "about" | "favorites";
+type PageKind = "monasteries" | "maleMonasteries" | "femaleMonasteries" | "churches" | "map" | "routes" | "calendar" | "news" | "about" | "privacy" | "cookies" | "favorites";
 interface Props { locale: Exclude<Locale, "sr">; page: PageKind }
 const { locale, page } = Astro.props;
 const places = await loadLocalizedVisiblePlaces(locale);
@@ -25,4 +26,6 @@ const news = page === "news" ? await loadVisibleNews(process.cwd(), { locale, vi
 {page === "calendar" && <CalendarIndexPage locale={locale} days={[]} />}
 {page === "news" && <NewsArchivePage locale={locale} items={news} />}
 {page === "about" && <AboutPage locale={locale} />}
+{page === "privacy" && <LegalPage locale={locale} kind="privacy" />}
+{page === "cookies" && <LegalPage locale={locale} kind="storage" />}
 {page === "favorites" && <FavoritesPage locale={locale} />}

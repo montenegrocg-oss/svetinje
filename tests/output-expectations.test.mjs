@@ -152,3 +152,12 @@ test("local Favorites routes are explicit static output in every locale", () => 
   assert.ok(LOCALIZED_STATIC_HTML_ROUTES.includes("ru/izbrannoe/index.html"));
   assert.ok(LOCALIZED_STATIC_HTML_ROUTES.includes("en/favorites/index.html"));
 });
+
+test("privacy and storage disclosure routes are explicit static output in every locale", () => {
+  assert.ok(STATIC_HTML_ROUTES.includes("politika-privatnosti/index.html"));
+  assert.ok(STATIC_HTML_ROUTES.includes("kolacici-i-lokalno-skladistenje/index.html"));
+  assert.ok(LOCALIZED_STATIC_HTML_ROUTES.includes("ru/privacy/index.html"));
+  assert.ok(LOCALIZED_STATIC_HTML_ROUTES.includes("ru/cookies/index.html"));
+  assert.ok(LOCALIZED_STATIC_HTML_ROUTES.includes("en/privacy/index.html"));
+  assert.ok(LOCALIZED_STATIC_HTML_ROUTES.includes("en/cookies/index.html"));
+});

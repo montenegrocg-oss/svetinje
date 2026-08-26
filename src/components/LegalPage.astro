@@ -1,0 +1,105 @@
+---
+import { routeFor, type Locale } from "../i18n/config";
+import { legalCopy, type LegalSection } from "../i18n/legal-copy";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+interface Props {
+  locale?: Locale;
+  kind: "privacy" | "storage";
+}
+
+const { locale = "sr", kind } = Astro.props;
+const localeCopy = legalCopy[locale];
+const pageCopy = kind === "privacy" ? localeCopy.privacy : localeCopy.storage;
+const route = kind === "privacy" ? "privacy" : "cookies";
+const storageCopy = localeCopy.storage;
+const privacySections: readonly LegalSection[] = localeCopy.privacy.sections;
+const storageSectionList: readonly LegalSection[] = storageCopy.sections;
+const [storageDefinition, ...storageSections] = storageSectionList;
+---
+
+<BaseLayout
+  title={pageCopy.title}
+  description={pageCopy.description}
+  canonicalPath={routeFor(locale, route)}
+  locale={locale}
+>
+  <article class="legal-page" data-legal-page={kind} data-legal-locale={locale}>
+    <header class="page-hero compact legal-page__hero">
+      <div class="shell narrow">
+        <p class="eyebrow">{pageCopy.eyebrow}</p>
+        <h1>{pageCopy.title}</h1>
+        <p>{pageCopy.intro}</p>
+        <p class="legal-page__updated"><strong>{pageCopy.updatedLabel}:</strong> <time datetime="2026-08-26">{pageCopy.updatedDate}</time></p>
+      </div>
+    </header>
+
+    <div class="shell legal-page__content">
+      {kind === "privacy" ? (
+        privacySections.map((section) => (
+          <section class="legal-page__section">
+            <h2>{section.heading}</h2>
+            {section.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+            {section.bullets && <ul>{section.bullets.map((item) => <li>{item}</li>)}</ul>}
+            {section.links && (
+              <ul class="legal-page__links">
+                {section.links.map((link) => <li><a href={link.href} rel={link.href.startsWith("http") ? "external" : undefined}>{link.label}</a></li>)}
+              </ul>
+            )}
+          </section>
+        ))
+      ) : (
+        <>
+          {storageDefinition && (
+            <section class="legal-page__section">
+              <h2>{storageDefinition.heading}</h2>
+              {storageDefinition.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+            </section>
+          )}
+
+          <section class="legal-page__section legal-page__section--inventory" aria-labelledby="storage-inventory-heading">
+            <h2 id="storage-inventory-heading">{storageCopy.inventoryHeading}</h2>
+            <p>{storageCopy.inventoryIntro}</p>
+            <div class="legal-storage-table-wrap" tabindex="0">
+              <table class="legal-storage-table">
+                <caption>{storageCopy.tableCaption}</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">{storageCopy.headers.item}</th>
+                    <th scope="col">{storageCopy.headers.type}</th>
+                    <th scope="col">{storageCopy.headers.purpose}</th>
+                    <th scope="col">{storageCopy.headers.transfer}</th>
+                    <th scope="col">{storageCopy.headers.duration}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {storageCopy.rows.map((row) => (
+                    <tr>
+                      <th scope="row" data-label={storageCopy.headers.item}>{row.item}</th>
+                      <td data-label={storageCopy.headers.type}>{row.type}</td>
+                      <td data-label={storageCopy.headers.purpose}>{row.purpose}</td>
+                      <td data-label={storageCopy.headers.transfer}>{row.transfer}</td>
+                      <td data-label={storageCopy.headers.duration}>{row.duration}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {storageSections.map((section) => (
+            <section class="legal-page__section">
+              <h2>{section.heading}</h2>
+              {section.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+              {section.links && (
+                <ul class="legal-page__links">
+                  {section.links.map((link) => <li><a href={link.href} rel="external">{link.label}</a></li>)}
+                </ul>
+              )}
+            </section>
+          ))}
+        </>
+      )}
+    </div>
+  </article>
+</BaseLayout>
