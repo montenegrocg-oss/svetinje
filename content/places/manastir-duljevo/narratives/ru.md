@@ -3,7 +3,7 @@ schema_version: 1
 place_id: manastir-duljevo
 locale: ru
 editorial_status: research
-translation_status: draft
+translation_status: outdated
 slug: monastyr-dulevo
 preferred_name: Монастырь Дулево
 summary: Средневековый паштровский монастырь под Голим-Врхом, посвящённый святому архидиакону Стефану и исторически связанный с Дечанами.
@@ -12,8 +12,8 @@ approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-22T19:23:49Z
-  updated_by: codex
+  updated_at: 2026-08-26T20:03:46Z
+  updated_by: montenegro-cg
 ---
 
 Монастырь Дулево находится в Паштровичах, под Голим-Врхом, на высоте около 470 метров над уровнем моря. Согласно паштровскому преданию, его построил святой Стефан Дечанский и посвятил святому архидиакону Стефану. Монастырь считался подворьем Высоких Дечан и служил приморским пристанищем для монахов, направлявшихся на Святую Гору и в Иерусалим.

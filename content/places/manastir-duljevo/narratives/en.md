@@ -3,7 +3,7 @@ schema_version: 1
 place_id: manastir-duljevo
 locale: en
 editorial_status: research
-translation_status: draft
+translation_status: outdated
 slug: duljevo-monastery
 preferred_name: Duljevo Monastery
 summary: A medieval Paštrovići monastery beneath Goli Vrh, dedicated to Saint Stephen the Archdeacon and historically connected with Dečani.
@@ -12,8 +12,8 @@ approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-22T19:23:49Z
-  updated_by: codex
+  updated_at: 2026-08-26T20:03:46Z
+  updated_by: montenegro-cg
 ---
 
 Duljevo Monastery stands in Paštrovići beneath Goli Vrh, about 470 metres above sea level. According to Paštrovići tradition, Saint Stefan of Dečani built it and dedicated it to Saint Stephen the Archdeacon. The monastery was considered a dependency of Visoki Dečani and served as a coastal refuge for monks travelling towards Mount Athos and Jerusalem.
