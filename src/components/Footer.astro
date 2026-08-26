@@ -1,10 +1,12 @@
 ---
 import { routeFor, type Locale } from "../i18n/config";
+import { legalCopy } from "../i18n/legal-copy";
 import { publicCopy } from "../i18n/public-copy";
 interface Props { locale?: Locale }
 const { locale = "sr" } = Astro.props;
 const year = new Date().getUTCFullYear();
 const copy = publicCopy[locale];
+const legal = legalCopy[locale];
 ---
 
 <footer class="site-footer">
@@ -17,6 +19,8 @@ const copy = publicCopy[locale];
     <nav aria-label={copy.footerNav}>
       <a href={routeFor(locale, "about")}>{copy.nav.about}</a>
       {locale === "sr" && <a href={routeFor(locale, "sources")}>{copy.nav.sources}</a>}
+      <a href={routeFor(locale, "privacy")}>{legal.footer.privacy}</a>
+      <a href={routeFor(locale, "cookies")}>{legal.footer.storage}</a>
     </nav>
     <p class="footer-meta">© {year} {copy.siteName}</p>
   </div>

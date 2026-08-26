@@ -87,7 +87,7 @@ test("localized route layer exposes exact archives without restoring holy-place 
 test("available static routes expose symmetric Serbian, Russian, and English equivalents", async () => {
   assert.deepEqual(localizedStaticRouteKeys, [
     "home", "monasteries", "maleMonasteries", "femaleMonasteries", "churches",
-    "map", "routes", "calendar", "news", "about", "favorites",
+    "map", "routes", "calendar", "news", "about", "privacy", "cookies", "favorites",
   ]);
 
   for (const route of ["maleMonasteries", "churches", "map"]) {

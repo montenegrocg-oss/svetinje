@@ -33,6 +33,8 @@ export const routeConfig = {
   calendar: { sr: "/kalendar/", ru: "/ru/kalendar/", en: "/en/calendar/" },
   news: { sr: "/novosti/", ru: "/ru/novosti/", en: "/en/news/" },
   about: { sr: "/o-projektu/", ru: "/ru/o-proekte/", en: "/en/about/" },
+  privacy: { sr: "/politika-privatnosti/", ru: "/ru/privacy/", en: "/en/privacy/" },
+  cookies: { sr: "/kolacici-i-lokalno-skladistenje/", ru: "/ru/cookies/", en: "/en/cookies/" },
   sources: { sr: "/izvori/", ru: "/ru/istochniki/", en: "/en/sources/" },
   favorites: { sr: "/omiljeno/", ru: "/ru/izbrannoe/", en: "/en/favorites/" },
 } as const;
@@ -50,6 +52,8 @@ export const localizedStaticRouteKeys = [
   "calendar",
   "news",
   "about",
+  "privacy",
+  "cookies",
   "favorites",
 ] as const satisfies readonly RouteKey[];
 
