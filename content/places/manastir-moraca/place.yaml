@@ -29,6 +29,10 @@ location:
     value: Колашин
     verification:
       status: requires-verification
+  municipality_id:
+    value: kolasin
+    verification:
+      status: requires-verification
 relationships:
   media_ids:
     - photo-manastir-moraca-83eacfc16332
@@ -41,14 +45,18 @@ approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-17T12:55:04Z
+  updated_at: 2026-08-26T20:18:20Z
   updated_by: montenegro-cg
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-patronal_feast:
-  name: Успеније Пресвете Богородице - Велика Госпојина 28. августа
+  community_type:
+    value: male
+    verification:
+      status: requires-verification
 video:
   youtube_url: https://www.youtube.com/watch?v=Wbmu3PUcva0
+patronal_feasts:
+  - name: Успеније Пресвете Богородице - Велика Госпојина 28. августа
