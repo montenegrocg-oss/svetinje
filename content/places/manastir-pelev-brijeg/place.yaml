@@ -9,12 +9,14 @@ place_type:
     source_ids:
       - mitropolija-zenski-manastiri
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-      source_ids:
-        - mitropolija-zenski-manastiri
+  community_type:
+    value: female
+    verification:
+      status: requires-verification
 location:
   settlement:
     value: Пелев Бријег
@@ -36,6 +38,10 @@ location:
     crs: EPSG:4326
     verification:
       status: requires-verification
+  municipality_id:
+    value: podgorica
+    verification:
+      status: requires-verification
 relationships: {}
 source_ids:
   - mitropolija-zenski-manastiri
@@ -43,7 +49,7 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-17T09:50:02Z
+  updated_at: 2026-08-26T20:27:04Z
   updated_by: montenegro-cg
-patronal_feast:
-  name: Пренос моштију св. оца Николаја 22. мај
+patronal_feasts:
+  - name: Пренос моштију св. оца Николаја 22. мај
