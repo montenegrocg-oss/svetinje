@@ -10,7 +10,7 @@ approvals: []
 audit:
   created_at: 2026-08-20T15:27:22.478Z
   created_by: montenegro-cg
-  updated_at: 2026-08-21T10:08:10Z
+  updated_at: 2026-08-26T21:25:04Z
   updated_by: montenegro-cg
 summary: Црква Светог Ђорђа налази се у Доњој Горици, у Подгорици. Посвећена је Светом великомученику Георгију, а њена слава прославља се на Ђурђиц.
 ---
