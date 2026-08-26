@@ -10,13 +10,10 @@ place_type:
       - editorial-dossier-saborni-hram-podgorica-2026
     qualification: Подаци су преузети из приложеног уредничког документа и захтијевају стручну провјеру.
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-      source_ids:
-        - editorial-dossier-saborni-hram-podgorica-2026
-      qualification: Црквена припадност је наведена у приложеном уредничком документу и захтијева стручну провјеру.
 location:
   municipality:
     value: Подгорица
@@ -48,6 +45,10 @@ location:
     verification:
       status: requires-verification
       qualification: Координате је ручно поставио власник пројекта у центар храмовног комплекса. Тачан положај главног улаза није провјерен.
+  municipality_id:
+    value: podgorica
+    verification:
+      status: requires-verification
 relationships:
   media_ids:
     - photo-saborni-hram-podgorica-bf72f69113b3
@@ -58,7 +59,7 @@ approvals: []
 audit:
   created_at: 2026-08-04T00:00:00Z
   created_by: maxim
-  updated_at: 2026-08-18T11:52:44Z
+  updated_at: 2026-08-26T21:19:12Z
   updated_by: montenegro-cg
-patronal_feast:
-  name: Васкрсење Христово
+patronal_feasts:
+  - name: Васкрсење Христово

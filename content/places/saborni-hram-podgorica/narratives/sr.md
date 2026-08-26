@@ -24,7 +24,7 @@ approvals: []
 audit:
   created_at: 2026-08-04T00:00:00Z
   created_by: maxim
-  updated_at: 2026-08-17T13:37:30Z
+  updated_at: 2026-08-26T21:19:12Z
   updated_by: montenegro-cg
 ---
 
