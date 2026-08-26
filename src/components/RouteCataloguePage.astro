@@ -2,6 +2,7 @@
 import { routeFor, type Locale } from "../i18n/config";
 import { publicCopy } from "../i18n/public-copy";
 import type { VisibleRoute } from "../lib/content/routes";
+import { buildRouteCatalogueSearchText, formatRouteResultCount } from "../lib/route-catalogue";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import RouteCard from "./routes/RouteCard.astro";
 
@@ -14,27 +15,161 @@ const filters = [
   ["moderate", copy.filters.moderate],
   ["demanding", copy.filters.demanding],
 ] as const;
+const routeItems = routes.map((route) => ({
+  route,
+  searchText: buildRouteCatalogueSearchText({
+    title: route.shortName,
+    summary: route.summary,
+    endpointLabels: [route.name, route.startPlace.name, route.endPlace.name],
+  }),
+}));
 ---
 
 <BaseLayout title={copy.title} description={metadataDescription ?? copy.description} canonicalPath={routeFor(locale, "routes")} locale={locale}>
-  <div data-testid="route-catalogue-page" data-route-catalogue-locale={locale}>
-    <header class="route-catalogue-hero"><div class="shell"><p class="section-eyebrow">{copy.eyebrow}</p><h1>{copy.title}</h1><p>{copy.description}</p></div></header>
-    <section class="shell route-catalogue" aria-labelledby="route-list-title">
-      <div class="route-filters" aria-label={copy.filtersAria}>
-        {filters.map(([id, label]) => <button type="button" data-route-filter={id} aria-pressed={id === "all"}>{label}</button>)}
+  <div data-testid="route-catalogue-page" data-route-catalogue data-route-catalogue-locale={locale}>
+    <section class="section category-catalogue route-catalogue" aria-labelledby="route-list-title">
+      <div class="shell">
+        <div class="category-catalogue__body category-catalogue__body--sidebar route-catalogue__body">
+          <aside class="catalogue-sidebar route-catalogue__sidebar" aria-label={copy.sidebarAria}>
+            <div class="catalogue-toolbar route-catalogue__toolbar" aria-label={copy.filtersAria}>
+              <label class="catalogue-toolbar__search">
+                <span class="sr-only">{copy.searchLabel}</span>
+                <input type="search" placeholder={copy.searchPlaceholder} autocomplete="off" data-route-search />
+              </label>
+              <label class="route-catalogue__difficulty">
+                <span class="catalogue-toolbar__label">{copy.difficultyLabel}</span>
+                <select data-route-difficulty-filter>
+                  {filters.map(([id, label]) => <option value={id}>{label}</option>)}
+                </select>
+              </label>
+              <div class="catalogue-toolbar__actions">
+                <button type="button" data-route-reset hidden disabled>{publicCopy[locale].clear}</button>
+              </div>
+            </div>
+          </aside>
+
+          <section class="catalogue-main route-catalogue__main" aria-labelledby="route-list-title">
+            <div class="catalogue-section-heading">
+              <h1 id="route-list-title">{copy.list}</h1>
+              <p class="catalogue-main__status" data-route-result-status role="status" aria-live="polite">
+                {formatRouteResultCount(routes.length, locale)}
+              </p>
+            </div>
+            <ul class="route-catalogue__grid" data-route-grid hidden={routes.length === 0}>
+              {routeItems.map(({ route, searchText }) => (
+                <li data-route-item data-route-search-text={searchText} data-route-difficulty={route.difficulty}>
+                  <RouteCard route={route} />
+                </li>
+              ))}
+            </ul>
+            <p class="route-empty route-catalogue__initial-empty" data-route-initial-empty hidden={routes.length > 0} role="status">
+              {copy.empty}
+            </p>
+            <section class="catalogue-filter-empty" data-route-filter-empty hidden role="status" aria-live="polite">
+              <h2>{copy.filteredEmpty}</h2>
+              <button type="button" data-route-reset>{publicCopy[locale].clear}</button>
+            </section>
+          </section>
+        </div>
       </div>
-      <h2 id="route-list-title" class="visually-hidden">{copy.list}</h2>
-      {routes.length ? <div class="route-catalogue__grid">{routes.map((route) => <div data-route-difficulty={route.difficulty}><RouteCard route={route} /></div>)}</div> : <p class="route-empty">{copy.empty}</p>}
     </section>
   </div>
 </BaseLayout>
 
 <script>
-  const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-route-filter]")];
-  const cards = [...document.querySelectorAll<HTMLElement>("[data-route-difficulty]")];
-  buttons.forEach((button) => button.addEventListener("click", () => {
-    const filter = button.dataset.routeFilter ?? "all";
-    buttons.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
-    cards.forEach((card) => { card.hidden = filter !== "all" && card.dataset.routeDifficulty !== filter; });
-  }));
+  import {
+    formatRouteResultCount,
+    isRouteDifficultyFilter,
+    matchesRouteCatalogueFilters,
+    type RouteDifficulty,
+  } from "../lib/route-catalogue";
+  import type { Locale } from "../i18n/config";
+
+  document.querySelectorAll<HTMLElement>("[data-route-catalogue]").forEach((catalogue) => {
+    const locale = (catalogue.dataset.routeCatalogueLocale ?? "sr") as Locale;
+    const items = [...catalogue.querySelectorAll<HTMLElement>("[data-route-item]")];
+    const searchInput = catalogue.querySelector<HTMLInputElement>("[data-route-search]");
+    const difficultySelect = catalogue.querySelector<HTMLSelectElement>("[data-route-difficulty-filter]");
+    const grid = catalogue.querySelector<HTMLElement>("[data-route-grid]");
+    const resultStatus = catalogue.querySelector<HTMLElement>("[data-route-result-status]");
+    const initialEmpty = catalogue.querySelector<HTMLElement>("[data-route-initial-empty]");
+    const filterEmpty = catalogue.querySelector<HTMLElement>("[data-route-filter-empty]");
+    const resetButtons = [...catalogue.querySelectorAll<HTMLButtonElement>("[data-route-reset]")];
+
+    const currentDifficulty = () => isRouteDifficultyFilter(difficultySelect?.value)
+      ? difficultySelect.value
+      : "all";
+
+    const syncStateFromUrl = () => {
+      const url = new URL(window.location.href);
+      const rawDifficulty = url.searchParams.get("difficulty");
+      const query = url.searchParams.get("q") ?? "";
+      let changed = false;
+
+      if (difficultySelect) {
+        if (rawDifficulty && !isRouteDifficultyFilter(rawDifficulty)) {
+          difficultySelect.value = "all";
+          url.searchParams.delete("difficulty");
+          changed = true;
+        } else {
+          difficultySelect.value = rawDifficulty ?? "all";
+        }
+      }
+      if (searchInput) searchInput.value = query;
+      if (!query.trim() && url.searchParams.has("q")) {
+        url.searchParams.delete("q");
+        changed = true;
+      }
+      if (changed) history.replaceState(history.state, "", `${url.pathname}${url.search}${url.hash}`);
+    };
+
+    const updateUrl = (replace: boolean) => {
+      const url = new URL(window.location.href);
+      const difficulty = currentDifficulty();
+      const query = searchInput?.value.trim() ?? "";
+      if (difficulty === "all") url.searchParams.delete("difficulty");
+      else url.searchParams.set("difficulty", difficulty);
+      if (query) url.searchParams.set("q", query);
+      else url.searchParams.delete("q");
+      const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+      const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      if (nextUrl !== currentUrl) history[replace ? "replaceState" : "pushState"](history.state, "", nextUrl);
+    };
+
+    const applyFilters = () => {
+      const query = searchInput?.value ?? "";
+      const difficulty = currentDifficulty();
+      const matchingItems = items.filter((item) => matchesRouteCatalogueFilters({
+        searchText: item.dataset.routeSearchText ?? "",
+        difficulty: (item.dataset.routeDifficulty ?? "easy") as RouteDifficulty,
+      }, query, difficulty));
+      items.forEach((item) => { item.hidden = !matchingItems.includes(item); });
+
+      const hasFilters = Boolean(query.trim() || difficulty !== "all");
+      if (grid) grid.hidden = matchingItems.length === 0;
+      if (initialEmpty) initialEmpty.hidden = items.length > 0 || hasFilters;
+      if (filterEmpty) filterEmpty.hidden = matchingItems.length > 0 || !hasFilters;
+      if (resultStatus) resultStatus.textContent = formatRouteResultCount(matchingItems.length, locale);
+      resetButtons.forEach((button) => {
+        button.hidden = !hasFilters;
+        button.disabled = !hasFilters;
+      });
+    };
+
+    searchInput?.addEventListener("input", () => { updateUrl(true); applyFilters(); });
+    difficultySelect?.addEventListener("change", () => { updateUrl(false); applyFilters(); });
+    resetButtons.forEach((button) => button.addEventListener("click", () => {
+      if (searchInput) searchInput.value = "";
+      if (difficultySelect) difficultySelect.value = "all";
+      updateUrl(false);
+      applyFilters();
+      searchInput?.focus();
+    }));
+    const handlePopState = () => { syncStateFromUrl(); applyFilters(); };
+    window.addEventListener("popstate", handlePopState);
+    document.addEventListener("astro:before-swap", () => window.removeEventListener("popstate", handlePopState), { once: true });
+
+    syncStateFromUrl();
+    applyFilters();
+  });
 </script>
