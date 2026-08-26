@@ -29,6 +29,10 @@ location:
     value: Никшић
     verification:
       status: requires-verification
+  municipality_id:
+    value: niksic
+    verification:
+      status: requires-verification
 relationships:
   media_ids:
     - photo-manastir-ostrog-a4c3f03b8640
@@ -38,12 +42,16 @@ approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-16T22:48:56Z
+  updated_at: 2026-08-26T20:24:35Z
   updated_by: montenegro-cg
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-patronal_feast:
-  name: Св. Василије Острошки Чудотворац 12. мај
+  community_type:
+    value: male
+    verification:
+      status: requires-verification
+patronal_feasts:
+  - name: Св. Василије Острошки Чудотворац 12. мај
