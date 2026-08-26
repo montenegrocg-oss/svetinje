@@ -9,14 +9,12 @@ place_type:
     source_ids:
       - mitropolija-zenski-manastiri
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
-    verification:
-      status: requires-verification
-      source_ids:
-        - mitropolija-zenski-manastiri
   community_type:
     value: female
+    verification:
+      status: requires-verification
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
 location:
@@ -44,6 +42,10 @@ location:
     value: Будва
     verification:
       status: requires-verification
+  municipality_id:
+    value: budva
+    verification:
+      status: requires-verification
 relationships:
   media_ids:
     - photo-manastir-vojnic-efcd5901a6d8
@@ -53,7 +55,7 @@ approvals: []
 audit:
   created_at: 2026-08-16T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-22T18:13:36Z
+  updated_at: 2026-08-26T19:49:54Z
   updated_by: montenegro-cg
-patronal_feast:
-  name: Пренос моштију св. оца Николаја 22. мај
+patronal_feasts:
+  - name: Пренос моштију св. оца Николаја 22. мај
