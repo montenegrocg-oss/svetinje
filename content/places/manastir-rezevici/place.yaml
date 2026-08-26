@@ -32,6 +32,10 @@ location:
     value: Будва
     verification:
       status: requires-verification
+  municipality_id:
+    value: budva
+    verification:
+      status: requires-verification
 relationships: {}
 source_ids:
   - mitropolija-muski-manastiri
@@ -39,12 +43,16 @@ approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-08-17T10:40:38Z
+  updated_at: 2026-08-26T21:04:03Z
   updated_by: montenegro-cg
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-patronal_feast:
-  name: Силазак Светог Духа на апостоле - Педесетница
+  community_type:
+    value: male
+    verification:
+      status: requires-verification
+patronal_feasts:
+  - name: Силазак Светог Духа на апостоле - Педесетница
