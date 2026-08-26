@@ -17,11 +17,15 @@ approvals: []
 audit:
   created_at: 2026-08-15T09:33:37.683Z
   created_by: montenegro-cg
-  updated_at: 2026-08-21T10:06:06Z
+  updated_at: 2026-08-26T21:08:46Z
   updated_by: montenegro-cg
 ecclesiastical:
-  jurisdiction:
-    value: Митрополија црногорско-приморска
+  authority_id:
+    value: mitropolija-crnogorsko-primorska
+    verification:
+      status: requires-verification
+  community_type:
+    value: female
     verification:
       status: requires-verification
 location:
@@ -45,6 +49,10 @@ location:
     value: Микулићи
     verification:
       status: requires-verification
+  municipality_id:
+    value: bar
+    verification:
+      status: requires-verification
 browse_area_id: bar-crmnica-skadarsko-jezero
-patronal_feast:
-  name: Преподобни Сергије Радоњешки 8. октобар
+patronal_feasts:
+  - name: Преподобни Сергије Радоњешки 8. октобар
