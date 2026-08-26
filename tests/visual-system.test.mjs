@@ -307,7 +307,7 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.match(catalogue, /!usesSidebarCatalogue && featuredPlaces\.length > 0/);
   assert.doesNotMatch(catalogue, /\{usesSidebarCatalogue && featuredPlaces\.length > 0/);
   assert.doesNotMatch(catalogue, /catalogue-main__featured|category-page-hero--catalogue|category-page-hero__layout/);
-  assert.match(catalogue, /<header class="page-hero compact category-page-hero">[\s\S]*?<div class="shell narrow">/);
+  assert.match(catalogue, /\{showHero && \([\s\S]*?<header class="page-hero compact category-page-hero">[\s\S]*?<div class="shell narrow">/);
   assert.match(styles, /\.page-hero\.category-page-hero\s*\{[\s\S]*?padding-block: clamp\(1\.25rem, 2\.4vw, 1\.5rem\);/);
   assert.equal([...catalogue.matchAll(/<h1>/g)].length, 1);
   assert.match(catalogue, /<h1>\{heading\}<\/h1>/);
@@ -358,6 +358,8 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.match(cataloguePage, /publicCopy\[locale\]\.pages\.catalogues\[page\]/);
   assert.match(cataloguePage, /canonicalPath=\{routeFor\(locale, page\)\}/);
   assert.match(cataloguePage, /<CategoryCatalogue[\s\S]*?heading=\{copy\.title\}[\s\S]*?category=\{category\}[\s\S]*?catalogueHeading=\{copy\.listTitle\}[\s\S]*?monasticCommunity=\{monasticCommunity\}/);
+  assert.match(cataloguePage, /const showHero = page !== "monasteries" && page !== "churches";/);
+  assert.match(cataloguePage, /<CategoryCatalogue[\s\S]*?showHero=\{showHero\}/);
   assert.match(copy, /monasteries: \{ title: "Манастири", listTitle: "Сви манастири"/);
   assert.match(copy, /churches: \{ title: "Цркве", listTitle: "Све цркве"/);
   assert.match(copy, /maleMonasteries: \{ title: "Мушки манастири", listTitle: "Мушки манастири"[\s\S]*?empty: "Још нема мушких манастира спремних за приказ\."/);
