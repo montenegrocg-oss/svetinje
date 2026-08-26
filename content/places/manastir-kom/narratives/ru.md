@@ -3,7 +3,7 @@ schema_version: 1
 place_id: manastir-kom
 locale: ru
 editorial_status: research
-translation_status: draft
+translation_status: outdated
 slug: monastyr-kom
 preferred_name: Монастырь Ком
 summary: Монастырь Ком построен в первой половине XV века на Андрийской горе близ Жабляка-Црноевича.
@@ -12,8 +12,8 @@ approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-22T19:23:49Z
-  updated_by: codex
+  updated_at: 2026-08-26T20:13:40Z
+  updated_by: montenegro-cg
 ---
 
 ## Основные сведения {#introduction}
