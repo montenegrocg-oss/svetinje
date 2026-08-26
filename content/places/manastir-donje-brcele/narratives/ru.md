@@ -3,7 +3,7 @@ schema_version: 1
 place_id: manastir-donje-brcele
 locale: ru
 editorial_status: research
-translation_status: draft
+translation_status: outdated
 slug: monastyr-done-brchele
 preferred_name: Монастырь Доне-Брчеле
 summary: Монастырь Доне-Брчеле с храмом Святого Николая был значительным духовным, политическим и просветительским центром Црмницы.
@@ -12,8 +12,8 @@ approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-22T19:23:49Z
-  updated_by: codex
+  updated_at: 2026-08-26T20:01:08Z
+  updated_by: montenegro-cg
 ---
 
 ## Основные сведения {#introduction}
