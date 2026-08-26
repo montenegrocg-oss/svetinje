@@ -22,6 +22,10 @@ location:
     crs: EPSG:4326
     verification:
       status: requires-verification
+  municipality_id:
+    value: berane
+    verification:
+      status: requires-verification
 relationships:
   media_ids:
     - photo-manastir-djurdjevi-stupovi-0ae6c5cf161e
@@ -32,16 +36,16 @@ approvals: []
 audit:
   created_at: 2026-08-25T09:18:26.087Z
   created_by: codex
-  updated_at: 2026-08-25T10:06:59Z
+  updated_at: 2026-08-26T20:04:37Z
   updated_by: montenegro-cg
 browse_area_id: sjever-crne-gore
 ecclesiastical:
-  jurisdiction:
-    value: Епархија Будимљанско-никшићка
-    verification:
-      status: requires-verification
   community_type:
     value: male
+    verification:
+      status: requires-verification
+  authority_id:
+    value: eparhija-budimljansko-niksicka
     verification:
       status: requires-verification
 patronal_feasts:
