@@ -69,12 +69,13 @@ test("legal pages use shared metadata, canonical routes, and language parity", a
   }
 });
 
-test("footer exposes both legal pages in all locales without removing existing links", async () => {
+test("footer exposes About and both legal pages without the Serbian Sources link", async () => {
   const footer = await source("src/components/Footer.astro");
   assert.match(footer, /routeFor\(locale, "about"\)/);
-  assert.match(footer, /routeFor\(locale, "sources"\)/);
+  assert.doesNotMatch(footer, /routeFor\(locale, "sources"\)/);
   assert.match(footer, /routeFor\(locale, "privacy"\)/);
   assert.match(footer, /routeFor\(locale, "cookies"\)/);
+  assert.equal(routeConfig.sources.sr, "/izvori/");
   assert.equal(legalCopy.sr.footer.privacy, "Политика приватности");
   assert.equal(legalCopy.sr.footer.storage, "Колачићи и локално складиштење");
   assert.equal(legalCopy.ru.footer.privacy, "Политика конфиденциальности");
