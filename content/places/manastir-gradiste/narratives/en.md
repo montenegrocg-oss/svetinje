@@ -3,7 +3,7 @@ schema_version: 1
 place_id: manastir-gradiste
 locale: en
 editorial_status: research
-translation_status: draft
+translation_status: outdated
 slug: gradiste-monastery
 preferred_name: Gradište Monastery
 summary: Gradište Monastery stands on a rise above Buljarica, near Petrovac.
@@ -12,8 +12,8 @@ approvals: []
 audit:
   created_at: 2026-08-22T19:23:49Z
   created_by: codex
-  updated_at: 2026-08-22T19:23:49Z
-  updated_by: codex
+  updated_at: 2026-08-26T19:56:15Z
+  updated_by: montenegro-cg
 ---
 
 ## Overview {#introduction}
