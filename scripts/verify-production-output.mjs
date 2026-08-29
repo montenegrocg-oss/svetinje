@@ -19,6 +19,11 @@ import { MOST_VISITED_PLACE_IDS } from "../src/lib/homepage-selections.ts";
 import { containsUnsupportedReferenceScreenshotContent } from "./lib/reference-screenshot-guard.mjs";
 import { localeConfig, placeDetailRoot } from "../src/i18n/config.ts";
 import { loadLocalizedNarrative } from "../src/lib/content/localized-narrative.ts";
+import { loadFeastRegistry } from "../src/lib/content/feast-registry.ts";
+import {
+  patronalFeastDay,
+  patronalFeastProjectionDates,
+} from "../src/lib/public-feast-catalogues.ts";
 
 const EMPTY_STATES = {
   monasteries: "Још нема манастира спремних за јавно објављивање.",
@@ -418,6 +423,14 @@ const pagesByRoute = new Map(pages.map((page) => [page.relative, page]));
 const failures = [];
 const model = await createOutputExpectations(root, { editorialPreview });
 
+const homepageOutput = pagesByRoute.get("index.html")?.html ?? "";
+if (!editorialPreview && homepageOutput.includes('data-preview-today-override="true"')) {
+  failures.push("production enables the editorial-preview Calendar date override");
+}
+if (editorialPreview && !homepageOutput.includes('data-preview-today-override="true"')) {
+  failures.push("editorial preview is missing its deterministic Calendar date QA control");
+}
+
 try {
   const calendarJson = await readFile(path.join(distRoot, "calendar", "2026.json"), "utf8");
   const calendarPayload = JSON.parse(calendarJson);
@@ -477,6 +490,47 @@ try {
   }
 } catch {
   failures.push("daily Gospel JSON output is missing or invalid");
+}
+
+try {
+  const feastDirectory = path.join(distRoot, "feast-days");
+  const feastFiles = (await readdir(feastDirectory)).filter((file) => /^2026-\d{2}-\d{2}\.json$/.test(file)).sort();
+  const expectedFeastFiles = patronalFeastProjectionDates().map((date) => `${date}.json`);
+  if (JSON.stringify(feastFiles) !== JSON.stringify(expectedFeastFiles)) {
+    failures.push(`feast-days/ must contain exactly ${expectedFeastFiles.length} daily public projections`);
+  }
+
+  const registry = await loadFeastRegistry(root);
+  for (const file of feastFiles) {
+    const date = file.slice(0, -5);
+    const payload = JSON.parse(await readFile(path.join(feastDirectory, file), "utf8"));
+    const expected = patronalFeastDay(registry, model.feastCatalogues, date);
+    if (JSON.stringify(payload) !== JSON.stringify(expected)) {
+      failures.push(`feast-days/${file} differs from the public-discovery feast projection`);
+      continue;
+    }
+    const serialized = JSON.stringify(payload);
+    for (const forbidden of ["summary", "narrativeBody", "sourceIds", "sources", "previewStatus", "latitude", "longitude"]) {
+      if (serialized.includes(`"${forbidden}"`)) failures.push(`feast-days/${file} exposes internal place field ${forbidden}`);
+    }
+    const groups = [...(payload.feasts ?? []), ...(payload.upcoming?.feasts ?? [])];
+    for (const feast of groups) {
+      if (Object.keys(feast).some((field) => !["id", "name", "href", "places"].includes(field))) {
+        failures.push(`feast-days/${file} contains an invalid public feast field`);
+      }
+      for (const place of feast.places ?? []) {
+        const visible = model.discoveryPlacesById.get(place.id);
+        if (!visible || place.href !== `/svetinje/${visible.slug}/` || place.name !== visible.name) {
+          failures.push(`feast-days/${file} exposes a place outside public discovery: ${place.id}`);
+        }
+        if (Object.keys(place).some((field) => !["id", "name", "href", "meta"].includes(field))) {
+          failures.push(`feast-days/${file} contains an invalid public place field`);
+        }
+      }
+    }
+  }
+} catch {
+  failures.push("daily patronal feast JSON output is missing or invalid");
 }
 
 if (files.length !== model.expectedPageCount) failures.push(`${editorialPreview ? "editorial preview" : "production"} must generate ${model.expectedPageCount} data-derived HTML page(s), found ${files.length}`);

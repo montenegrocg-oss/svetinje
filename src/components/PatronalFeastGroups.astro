@@ -1,0 +1,51 @@
+---
+import type { PublicPatronalFeastGroup } from "../lib/public-feast-catalogues";
+
+interface Props {
+  title: string;
+  feasts: readonly PublicPatronalFeastGroup[];
+  variant: "today" | "selected" | "upcoming";
+  date?: string | undefined;
+  dateLabel?: string | undefined;
+  calendarHref?: string | undefined;
+  target?: string | undefined;
+}
+
+const { title, feasts, variant, date, dateLabel, calendarHref, target } = Astro.props;
+const titleId = `patronal-feasts-${variant}-${date ?? "current"}`;
+const TitleTag = variant === "today" ? "h3" : "h2";
+const FeastTag = variant === "today" ? "h4" : "h3";
+---
+
+{feasts.length > 0 && (
+  <section
+    class:list={["patronal-feasts", `patronal-feasts--${variant}`]}
+    aria-labelledby={titleId}
+    data-patronal-feasts={variant}
+    data-patronal-feasts-target={target}
+  >
+    <TitleTag id={titleId} class="patronal-feasts__title">{title}</TitleTag>
+    {dateLabel && (
+      <p class="patronal-feasts__date">
+        {calendarHref
+          ? <a href={calendarHref}><time datetime={date}>{dateLabel}</time><span aria-hidden="true"> →</span></a>
+          : <time datetime={date}>{dateLabel}</time>}
+      </p>
+    )}
+    <div class="patronal-feasts__groups">
+      {feasts.map((feast) => (
+        <article class="patronal-feasts__group" data-patronal-feast-id={feast.id}>
+          <FeastTag><a href={feast.href}>{feast.name}<span aria-hidden="true"> →</span></a></FeastTag>
+          <ul>
+            {feast.places.map((place) => (
+              <li data-patronal-feast-place={place.id}>
+                <a href={place.href}>{place.name}</a>
+                {place.meta && <span>{place.meta}</span>}
+              </li>
+            ))}
+          </ul>
+        </article>
+      ))}
+    </div>
+  </section>
+)}

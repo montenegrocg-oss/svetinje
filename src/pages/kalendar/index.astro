@@ -1,7 +1,12 @@
 ---
 import CalendarIndexPage from "../../components/CalendarIndexPage.astro";
 import { loadCalendarDays } from "../../lib/calendar/content";
+import { podgoricaDateKey } from "../../lib/calendar/today-calendar";
+import { loadFeastRegistry } from "../../lib/content/feast-registry";
+import { loadVisiblePlaces } from "../../lib/content/publication";
+import { patronalFeastDay, selectVisibleFeastCatalogues } from "../../lib/public-feast-catalogues";
 
-const days = await loadCalendarDays();
+const [days, registry, places] = await Promise.all([loadCalendarDays(), loadFeastRegistry(), loadVisiblePlaces()]);
+const patronalFeasts = patronalFeastDay(registry, selectVisibleFeastCatalogues(places), podgoricaDateKey(new Date()));
 ---
-<CalendarIndexPage days={days} locale="sr" metadataTitle="Православни календар 2026 — Светиње" metadataDescription="Провјерени православни календар за период од августа до децембра 2026. године." />
+<CalendarIndexPage days={days} locale="sr" patronalFeasts={patronalFeasts} metadataTitle="Православни календар 2026 — Светиње" metadataDescription="Провјерени православни календар за период од августа до децембра 2026. године." />

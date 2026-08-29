@@ -2,18 +2,33 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { loadCalendarDays, localizedCalendarDate, type CalendarDay } from "../../lib/calendar/content";
 import { gospelReadingsForDate, loadGospelReadingsDataset, type GospelReading } from "../../lib/calendar/gospel-readings";
+import { loadFeastRegistry } from "../../lib/content/feast-registry";
+import { loadVisiblePlaces } from "../../lib/content/publication";
+import { patronalFeastDay, selectVisibleFeastCatalogues, type PublicPatronalFeastDay } from "../../lib/public-feast-catalogues";
 import CalendarGospelReadings from "../../components/CalendarGospelReadings.astro";
+import PatronalFeastGroups from "../../components/PatronalFeastGroups.astro";
 
 export async function getStaticPaths() {
-  const [days, gospelDataset] = await Promise.all([loadCalendarDays(), loadGospelReadingsDataset()]);
+  const [days, gospelDataset, registry, places] = await Promise.all([
+    loadCalendarDays(),
+    loadGospelReadingsDataset(),
+    loadFeastRegistry(),
+    loadVisiblePlaces(),
+  ]);
+  const catalogues = selectVisibleFeastCatalogues(places);
   return days.map((day) => ({
     params: { date: day.date },
-    props: { day, days, gospelReadings: gospelReadingsForDate(gospelDataset, day.date) },
+    props: {
+      day,
+      days,
+      gospelReadings: gospelReadingsForDate(gospelDataset, day.date),
+      patronalFeasts: patronalFeastDay(registry, catalogues, day.date),
+    },
   }));
 }
 
-interface Props { day: CalendarDay; days: CalendarDay[]; gospelReadings: readonly GospelReading[] }
-const { day, days, gospelReadings } = Astro.props;
+interface Props { day: CalendarDay; days: CalendarDay[]; gospelReadings: readonly GospelReading[]; patronalFeasts: PublicPatronalFeastDay }
+const { day, days, gospelReadings, patronalFeasts } = Astro.props;
 const index = days.findIndex((candidate) => candidate.date === day.date);
 const previous = days[index - 1];
 const next = days[index + 1];
@@ -40,6 +55,15 @@ const lastDate = days.at(-1)?.date;
         <button type="submit">Отвори дан</button>
       </form>
     </header>
+    <PatronalFeastGroups title="Славе овог дана" variant="selected" feasts={patronalFeasts.feasts} />
+    {patronalFeasts.upcoming && <PatronalFeastGroups
+      title="Предстојеће славе"
+      variant="upcoming"
+      date={patronalFeasts.upcoming.date}
+      dateLabel={patronalFeasts.upcoming.dateLabel}
+      calendarHref={patronalFeasts.upcoming.calendarHref}
+      feasts={patronalFeasts.upcoming.feasts}
+    />}
     <section class="calendar-day__readings" id="jevandjelje" aria-labelledby="gospel-title">
       <h2 id="gospel-title">Јеванђелска читања</h2>
       {gospelReadings.length > 0

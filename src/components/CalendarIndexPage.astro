@@ -3,10 +3,13 @@ import { routeFor, type Locale } from "../i18n/config";
 import { publicCopy } from "../i18n/public-copy";
 import { localizedCalendarDate, type CalendarDay } from "../lib/calendar/content";
 import { podgoricaDateKey } from "../lib/calendar/today-calendar";
+import type { PublicPatronalFeastDay } from "../lib/public-feast-catalogues";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import PatronalFeastGroups from "./PatronalFeastGroups.astro";
+import UpcomingPatronalFeastsHydration from "./UpcomingPatronalFeastsHydration.astro";
 
-interface Props { days: CalendarDay[]; locale?: Locale; metadataTitle?: string | undefined; metadataDescription?: string | undefined }
-const { days, locale = "sr", metadataTitle, metadataDescription } = Astro.props;
+interface Props { days: CalendarDay[]; locale?: Locale; metadataTitle?: string | undefined; metadataDescription?: string | undefined; patronalFeasts?: PublicPatronalFeastDay }
+const { days, locale = "sr", metadataTitle, metadataDescription, patronalFeasts } = Astro.props;
 const copy = publicCopy[locale].pages.calendar;
 const today = podgoricaDateKey(new Date());
 const selected = locale === "sr" && today.startsWith("2026-") ? days.find((day) => day.date === today) : undefined;
@@ -31,6 +34,19 @@ const pendingText = (locale === "sr" ? copy.pending : copy.translationPending).r
     ) : (
       <p class="calendar-index__pending">{pendingText}</p>
     )}
+    {locale === "sr" && <>
+      <template data-patronal-feasts-anchor="calendar-upcoming"></template>
+      {patronalFeasts?.upcoming && <PatronalFeastGroups
+        title="Предстојеће славе"
+        variant="upcoming"
+        target="calendar-upcoming"
+        date={patronalFeasts.upcoming.date}
+        dateLabel={patronalFeasts.upcoming.dateLabel}
+        calendarHref={patronalFeasts.upcoming.calendarHref}
+        feasts={patronalFeasts.upcoming.feasts}
+      />}
+      <UpcomingPatronalFeastsHydration />
+    </>}
   </section>
 </BaseLayout>
 

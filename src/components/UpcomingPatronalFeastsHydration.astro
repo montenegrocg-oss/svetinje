@@ -1,0 +1,20 @@
+<script>
+  import { podgoricaDateKey } from "../lib/calendar/today-calendar";
+  import { replacePatronalFeasts } from "../lib/calendar/patronal-feast-client";
+  import type { PublicPatronalFeastDay } from "../lib/public-feast-catalogues";
+
+  const root = document.querySelector<HTMLElement>("[data-calendar-index-locale='sr']");
+  const anchor = root?.querySelector<HTMLTemplateElement>("[data-patronal-feasts-anchor='calendar-upcoming']");
+  if (anchor) {
+    const dateKey = podgoricaDateKey(new Date());
+    fetch(`/feast-days/${dateKey}.json`)
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("patronal feasts unavailable")))
+      .then((payload: PublicPatronalFeastDay) => replacePatronalFeasts(anchor, {
+        title: "Предстојеће славе",
+        variant: "upcoming",
+        feasts: payload.upcoming?.feasts ?? [],
+        ...(payload.upcoming ? { upcoming: payload.upcoming } : {}),
+      }))
+      .catch(() => replacePatronalFeasts(anchor, { title: "Предстојеће славе", variant: "upcoming", feasts: [] }));
+  }
+</script>

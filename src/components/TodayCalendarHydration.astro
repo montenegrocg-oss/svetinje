@@ -1,6 +1,8 @@
 <script>
   import { formatGospelReferenceSr, type DailyGospelReading } from "../lib/calendar/gospel-presentation";
+  import { replacePatronalFeasts } from "../lib/calendar/patronal-feast-client";
   import { podgoricaDateKey } from "../lib/calendar/today-calendar";
+  import type { PublicPatronalFeastDay } from "../lib/public-feast-catalogues";
 
   const EMPTY_READING = "За овај дан литургијско јеванђељско читање није наведено.";
   const UNAVAILABLE_READING = "Јеванђелско читање тренутно није доступно.";
@@ -8,6 +10,7 @@
   const root = document.querySelector<HTMLElement>("[data-today-calendar]");
   if (root) {
     const gospelContent = root.querySelector<HTMLElement>("[data-calendar-gospel-content]");
+    const feastAnchor = root.querySelector<HTMLTemplateElement>("[data-patronal-feasts-anchor='today']");
 
     const replaceGospelMessage = (message: string, state: "empty" | "unavailable") => {
       if (!gospelContent) return;
@@ -75,13 +78,30 @@
       }
     };
 
+    const updatePatronalFeasts = async (date: string) => {
+      if (!feastAnchor) return;
+      try {
+        const response = await fetch(`/feast-days/${date}.json`);
+        if (!response.ok) throw new Error("patronal feasts unavailable");
+        const payload = await response.json() as PublicPatronalFeastDay;
+        replacePatronalFeasts(feastAnchor, { title: "Данас славе", variant: "today", feasts: payload.feasts });
+      } catch {
+        replacePatronalFeasts(feastAnchor, { title: "Данас славе", variant: "today", feasts: [] });
+      }
+    };
+
     const year = root.dataset.calendarYear;
     const dateKey = podgoricaDateKey(new Date());
-    if (year === dateKey.slice(0, 4)) {
+    const previewDate = new URL(window.location.href).searchParams.get("calendar-date");
+    const activeDateKey = root.dataset.previewTodayOverride === "true" && /^2026-\d{2}-\d{2}$/u.test(previewDate ?? "")
+      ? previewDate!
+      : dateKey;
+    void updatePatronalFeasts(activeDateKey);
+    if (year === activeDateKey.slice(0, 4)) {
       fetch(`/calendar/${year}.json`)
         .then((response) => response.ok ? response.json() : Promise.reject(new Error("calendar unavailable")))
         .then((payload) => {
-          const day = payload.days.find((candidate: any) => candidate.date === dateKey);
+          const day = payload.days.find((candidate: any) => candidate.date === activeDateKey);
           if (!day) {
             const title = root.querySelector<HTMLElement>("[data-calendar-title]");
             const link = root.querySelector<HTMLAnchorElement>("[data-calendar-day-link]");
@@ -99,7 +119,7 @@
           if (titleNode) titleNode.textContent = day.commemoration_sr;
           if (weekContext) weekContext.textContent = day.week_context_sr;
           if (link) link.href = `/kalendar/${day.date}/`;
-          void updateGospel(dateKey);
+          void updateGospel(activeDateKey);
         })
         .catch(() => undefined);
     } else {
