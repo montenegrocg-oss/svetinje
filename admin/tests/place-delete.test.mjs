@@ -14,6 +14,8 @@ const schemas = {
   "schemas/narrative.schema.json": await readFile(new URL("../../schemas/narrative.schema.json", import.meta.url), "utf8"),
   "schemas/common.schema.json": await readFile(new URL("../../schemas/common.schema.json", import.meta.url), "utf8"),
   "schemas/media.schema.json": await readFile(new URL("../../schemas/media.schema.json", import.meta.url), "utf8"),
+  "schemas/feast-registry.schema.json": await readFile(new URL("../../schemas/feast-registry.schema.json", import.meta.url), "utf8"),
+  "content/feasts/registry.yaml": await readFile(new URL("../../content/feasts/registry.yaml", import.meta.url), "utf8"),
 };
 const env = { GITHUB_EDITORIAL_BRANCH: "feature/podmaine-pilot", GITHUB_OWNER: "montenegrocg-oss", GITHUB_REPO: "svetinje" };
 const session = { subject: "user", email: "maxim@example.com", actor: "maxim", developmentBypass: false };

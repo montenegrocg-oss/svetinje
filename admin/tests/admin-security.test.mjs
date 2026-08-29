@@ -11,9 +11,11 @@ import { createPlace } from "../src/service.ts";
 import { handleRequest } from "../src/index.ts";
 
 const PLACE_SCHEMA = await readFile(new URL("../../schemas/place.schema.json", import.meta.url), "utf8");
-const NARRATIVE_SCHEMA = JSON.stringify({ $defs: { sectionKey: { enum: ["introduction", "history"] } } });
-const COMMON_SCHEMA = JSON.stringify({ $defs: { publicationSafety: { enum: ["public", "review-required"] }, verificationStatus: { enum: ["verified", "requires-verification"] } } });
-const MEDIA_SCHEMA = JSON.stringify({ $id: "https://svetinje.me/schemas/media.schema.json" });
+const NARRATIVE_SCHEMA = await readFile(new URL("../../schemas/narrative.schema.json", import.meta.url), "utf8");
+const COMMON_SCHEMA = await readFile(new URL("../../schemas/common.schema.json", import.meta.url), "utf8");
+const MEDIA_SCHEMA = await readFile(new URL("../../schemas/media.schema.json", import.meta.url), "utf8");
+const FEAST_SCHEMA = await readFile(new URL("../../schemas/feast-registry.schema.json", import.meta.url), "utf8");
+const FEAST_REGISTRY = await readFile(new URL("../../content/feasts/registry.yaml", import.meta.url), "utf8");
 const PREVIEW = JSON.stringify({ place_ids: ["existing-place"] });
 const EXISTING = `schema_version: 1\nid: existing-place\neditorial_status: research\nrelationships: {}\nsource_ids: []\napprovals: []\naudit: { created_at: 2026-08-01T00:00:00Z, created_by: maxim, updated_at: 2026-08-01T00:00:00Z, updated_by: maxim }\n`;
 const NARRATIVE = `---\nschema_version: 1\nplace_id: existing-place\nlocale: sr\neditorial_status: research\ntranslation_status: source\nslug: existing-place\npreferred_name: Постојећи објекат\nsource_ids: []\napprovals: []\naudit: { created_at: 2026-08-01T00:00:00Z, created_by: maxim, updated_at: 2026-08-01T00:00:00Z, updated_by: maxim }\n---\n`;
@@ -21,7 +23,7 @@ const NARRATIVE = `---\nschema_version: 1\nplace_id: existing-place\nlocale: sr\
 class FakeRepository {
   committed;
   constructor() {
-    this.blobs = { schema: PLACE_SCHEMA, narrativeSchema: NARRATIVE_SCHEMA, commonSchema: COMMON_SCHEMA, mediaSchema: MEDIA_SCHEMA, preview: PREVIEW, place: EXISTING, narrative: NARRATIVE };
+    this.blobs = { schema: PLACE_SCHEMA, narrativeSchema: NARRATIVE_SCHEMA, commonSchema: COMMON_SCHEMA, mediaSchema: MEDIA_SCHEMA, feastSchema: FEAST_SCHEMA, feastRegistry: FEAST_REGISTRY, preview: PREVIEW, place: EXISTING, narrative: NARRATIVE };
   }
   async readBranchState() { return { headSha: "a".repeat(40), treeSha: "b".repeat(40) }; }
   async readTree() {
@@ -30,6 +32,8 @@ class FakeRepository {
       { path: "schemas/narrative.schema.json", mode: "100644", type: "blob", sha: "narrativeSchema" },
       { path: "schemas/common.schema.json", mode: "100644", type: "blob", sha: "commonSchema" },
       { path: "schemas/media.schema.json", mode: "100644", type: "blob", sha: "mediaSchema" },
+      { path: "schemas/feast-registry.schema.json", mode: "100644", type: "blob", sha: "feastSchema" },
+      { path: "content/feasts/registry.yaml", mode: "100644", type: "blob", sha: "feastRegistry" },
       { path: "validation/editorial-preview.json", mode: "100644", type: "blob", sha: "preview" },
       { path: "content/places/existing-place/place.yaml", mode: "100644", type: "blob", sha: "place" },
       { path: "content/places/existing-place/narratives/sr.md", mode: "100644", type: "blob", sha: "narrative" },
@@ -49,6 +53,9 @@ const validBody = {
   slug: "probni-objekat",
   placeType: "monastery",
   expectedHeadSha: "a".repeat(40),
+  patronalFeastIds: [],
+  stagedFeasts: [],
+  expectedFeastRegistryBlobSha: "feastRegistry",
 };
 
 async function createAccessKeyPair(kid = "access-test-key") {

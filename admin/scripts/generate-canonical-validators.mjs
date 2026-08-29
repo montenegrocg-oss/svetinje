@@ -9,6 +9,7 @@ const schemaUrls = {
   media: new URL("../../schemas/media.schema.json", import.meta.url),
   place: new URL("../../schemas/place.schema.json", import.meta.url),
   narrative: new URL("../../schemas/narrative.schema.json", import.meta.url),
+  feastRegistry: new URL("../../schemas/feast-registry.schema.json", import.meta.url),
   route: new URL("../../schemas/route.schema.json", import.meta.url),
   routeNarrative: new URL("../../schemas/route-narrative.schema.json", import.meta.url),
 };
@@ -27,6 +28,7 @@ ajv.addSchema(schemas.common);
 ajv.addSchema(schemas.media);
 ajv.addSchema(schemas.place);
 ajv.addSchema(schemas.narrative);
+ajv.addSchema(schemas.feastRegistry);
 ajv.addSchema(schemas.route);
 ajv.addSchema(schemas.routeNarrative);
 
@@ -34,6 +36,7 @@ const standaloneValidators = standaloneCode(ajv, {
   validateMedia: schemas.media.$id,
   validatePlace: schemas.place.$id,
   validateNarrative: schemas.narrative.$id,
+  validateFeastRegistry: schemas.feastRegistry.$id,
   validateRoute: schemas.route.$id,
   validateRouteNarrative: schemas.routeNarrative.$id,
 });
@@ -56,4 +59,4 @@ const outputUrl = new URL("../src/generated/canonical-validators.js", import.met
 const declarationsUrl = new URL("../src/generated/canonical-validators.d.ts", import.meta.url);
 await mkdir(new URL("../src/generated/", import.meta.url), { recursive: true });
 await writeFile(outputUrl, output, "utf8");
-await writeFile(declarationsUrl, `import type { ValidateFunction } from "ajv";\nexport const validateMedia: ValidateFunction;\nexport const validatePlace: ValidateFunction;\nexport const validateNarrative: ValidateFunction;\nexport const validateRoute: ValidateFunction;\nexport const validateRouteNarrative: ValidateFunction;\nexport const CANONICAL_SCHEMA_FINGERPRINT: string;\nexport const ROUTE_SCHEMA_FINGERPRINT: string;\n`, "utf8");
+await writeFile(declarationsUrl, `import type { ValidateFunction } from "ajv";\nexport const validateMedia: ValidateFunction;\nexport const validatePlace: ValidateFunction;\nexport const validateNarrative: ValidateFunction;\nexport const validateFeastRegistry: ValidateFunction;\nexport const validateRoute: ValidateFunction;\nexport const validateRouteNarrative: ValidateFunction;\nexport const CANONICAL_SCHEMA_FINGERPRINT: string;\nexport const ROUTE_SCHEMA_FINGERPRINT: string;\n`, "utf8");

@@ -1,6 +1,7 @@
 import maplibregl from "maplibre-gl";
 import { CoordinatePickerState, parseCoordinateInputs } from "./coordinate-picker-state.ts";
 import { hasLoadedBaseStyle, isFatalBaseStyleError } from "./coordinate-map-readiness.ts";
+import { setupFeastSelectors } from "./feast-selector.ts";
 
 const form = document.querySelector<HTMLFormElement>("[data-place-editor]");
 if (!form) throw new Error("Place editor form is missing");
@@ -15,6 +16,7 @@ const markDirty = () => {
   dirty = true;
   if (dirtyStatus) { dirtyStatus.textContent = "Имате несачуване измјене."; dirtyStatus.className = "is-dirty"; }
 };
+const feastValue = setupFeastSelectors(markDirty);
 form.addEventListener("input", (event) => { if (!(event.target as HTMLElement).closest("#foto")) markDirty(); });
 window.addEventListener("beforeunload", (event) => { if (dirty || translationDirty) event.preventDefault(); });
 
@@ -219,7 +221,6 @@ const collectAlternateNames = () => [...form.querySelectorAll<HTMLElement>("[dat
   context: row.querySelector<HTMLTextAreaElement>("[data-alt-context]")?.value ?? "",
   verificationStatus: (row.querySelector("[data-alt-status]") as HTMLSelectElement | null)?.value ?? "requires-verification",
 }));
-const collectPatronalFeasts = () => [...form.querySelectorAll<HTMLInputElement>("[data-feast-name]")].map((input) => input.value);
 const placeTypeInput = field("placeType") as HTMLSelectElement;
 const monasticCommunityInput = field("monasticCommunity") as HTMLSelectElement;
 const monasticCommunityField = form.querySelector<HTMLElement>("[data-monastic-community-field]");
@@ -246,7 +247,7 @@ const body = () => ({
   settlement: field("settlement").value,
   latitude: field("latitude").value,
   longitude: field("longitude").value,
-  patronalFeasts: collectPatronalFeasts(),
+  ...feastValue(),
   serviceSchedule: field("serviceSchedule").value,
   youtubeUrl: field("youtubeUrl").value,
   narrativeBody: field("narrativeBody").value,
@@ -258,11 +259,6 @@ form.addEventListener("click", (event) => {
   if (target.closest("[data-add-alternate]")) {
     const template = document.querySelector<HTMLTemplateElement>("[data-alternate-template]");
     if (template) form.querySelector("[data-alternate-list]")?.appendChild(template.content.cloneNode(true));
-  }
-  if (target.closest("[data-remove-feast]")) target.closest("[data-feast-row]")?.remove();
-  if (target.closest("[data-add-feast]")) {
-    const template = document.querySelector<HTMLTemplateElement>("[data-serbian-feast-template]");
-    if (template) form.querySelector("[data-feast-list]")?.appendChild(template.content.cloneNode(true));
   }
   if (target.closest("button") && !target.closest("#foto")) markDirty();
 });
@@ -298,6 +294,7 @@ form.addEventListener("submit", async (event) => {
       if (result.unchanged) status.textContent = "Нема измјена за чување.";
       else { status.replaceChildren("Commit "); const code = document.createElement("code"); code.textContent = result.commitSha; status.appendChild(code); }
     }
+    if (result.registryChanged) location.reload();
   }
   if (saveButton) saveButton.disabled = false;
 });

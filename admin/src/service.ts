@@ -1,5 +1,5 @@
-import { AdminError } from "./errors.ts";
-import { stringify } from "yaml";
+import { AdminError, internalFailure } from "./errors.ts";
+import { parse, stringify } from "yaml";
 import { editorialBranch } from "./github.ts";
 import {
   editorialPreviewEligibilityErrors,
@@ -11,6 +11,7 @@ import {
   validateNarrative,
   validatePlace,
 } from "./generated/canonical-validators.js";
+import { prepareFeastMutation } from "./feast-registry.ts";
 import { loadAdminRepository, loadEditablePlace, loadPlaceDeletionRecord } from "./repository-content.ts";
 import { fingerprintCanonicalSchemas } from "./schema-fingerprint.ts";
 import { updateCanonicalPlace, type UpdatePlaceBody } from "./place-editor.ts";
@@ -33,6 +34,9 @@ interface CreatePlaceBody {
   municipalityId?: unknown;
   expectedHeadSha?: unknown;
   published?: unknown;
+  patronalFeastIds?: unknown;
+  stagedFeasts?: unknown;
+  expectedFeastRegistryBlobSha?: unknown;
 }
 
 export interface UpdatePlacePreviewBody {
@@ -121,6 +125,12 @@ export async function createPlace(
   if (Object.keys(taxonomyErrors).length > 0) {
     throw new AdminError("invalid_form_data", 400, "Place taxonomy selection is invalid", taxonomyErrors);
   }
+  const feastMutation = prepareFeastMutation(
+    snapshot.feastRegistry,
+    body.patronalFeastIds,
+    body.stagedFeasts,
+    body.expectedFeastRegistryBlobSha,
+  );
 
   let scaffold;
   try {
@@ -144,11 +154,27 @@ export async function createPlace(
     throw new AdminError("invalid_form_data", 400, message);
   }
 
+  const placeFile = scaffold.files.find(({ path }) => path.endsWith("/place.yaml"));
+  if (!placeFile || !("content" in placeFile)) throw internalFailure("catalog_tree_processing_failed");
+  const placeRecord = parse(placeFile.content) as Record<string, any>;
+  if (feastMutation.ids.length > 0) placeRecord.patronal_feast_ids = feastMutation.ids;
+  placeFile.content = stringify(placeRecord, { lineWidth: 0 });
+  const loadedSchemaFingerprint = await fingerprintCanonicalSchemas(snapshot.schemas);
+  if (loadedSchemaFingerprint !== CANONICAL_SCHEMA_FINGERPRINT) throw internalFailure("canonical_schema_fingerprint_mismatch");
+  if (!validatePlace(placeRecord)) {
+    throw new AdminError("invalid_form_data", 400, "Canonical schema validation failed", Object.fromEntries(
+      (validatePlace.errors ?? []).map((error) => [`place${error.instancePath || "/"}`, error.message ?? "Није важеће."]),
+    ));
+  }
+  const createFiles: RepositoryFile[] = [
+    ...(feastMutation.registryYaml ? [{ path: "content/feasts/registry.yaml", content: feastMutation.registryYaml }] : []),
+    ...scaffold.files,
+  ];
   const result = await repository.commitFilesAtomic({
     branch,
     expectedHeadSha,
     baseTreeSha: snapshot.state.treeSha,
-    files: scaffold.files,
+    files: createFiles,
     message: `Add research place ${scaffold.id}`,
   });
   const created = {
@@ -205,11 +231,21 @@ export async function updatePlace(
     throw new AdminError("invalid_form_data", 400, "Expected branch HEAD is invalid", { expectedHeadSha: "HEAD ревизија није важећа." });
   }
   if (expectedHeadSha !== record.state.headSha) throw new AdminError("git_conflict", 409, "Editorial branch moved before save validation");
-  const updated = await updateCanonicalPlace(record, body, session.actor, now);
+  const feastMutation = prepareFeastMutation(
+    record.feastRegistry,
+    body.patronalFeastIds ?? record.place.patronalFeastIds,
+    body.stagedFeasts,
+    body.expectedFeastRegistryBlobSha,
+  );
+  const updated = await updateCanonicalPlace({
+    ...record,
+    feastRegistry: { ...record.feastRegistry, registry: feastMutation.registry },
+  }, { ...body, patronalFeastIds: feastMutation.ids }, session.actor, now);
   if (updated.unchanged) {
     return { commitSha: expectedHeadSha, branch, placeId: id, unchanged: true };
   }
   const files: RepositoryFile[] = [
+    ...(feastMutation.registryYaml ? [{ path: "content/feasts/registry.yaml", content: feastMutation.registryYaml }] : []),
     { path: `content/places/${id}/place.yaml`, content: updated.placeYaml },
     { path: `content/places/${id}/narratives/sr.md`, content: updated.narrativeMarkdown },
   ];
@@ -226,7 +262,7 @@ export async function updatePlace(
     files,
     message: `Update research place ${id}`,
   });
-  return { commitSha: result.commitSha, branch: result.branch, placeId: id, unchanged: false };
+  return { commitSha: result.commitSha, branch: result.branch, placeId: id, unchanged: false, registryChanged: feastMutation.additions.length > 0 };
 }
 
 export async function updatePlaceNarrative(

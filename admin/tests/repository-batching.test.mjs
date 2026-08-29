@@ -5,6 +5,8 @@ import { loadAdminRepository } from "../src/repository-content.ts";
 
 const REPRESENTATIVE_PLACE_COUNT = 60;
 const PLACE_SCHEMA = await readFile(new URL("../../schemas/place.schema.json", import.meta.url), "utf8");
+const FEAST_SCHEMA = await readFile(new URL("../../schemas/feast-registry.schema.json", import.meta.url), "utf8");
+const FEAST_REGISTRY = await readFile(new URL("../../content/feasts/registry.yaml", import.meta.url), "utf8");
 
 class BatchRepository {
   constructor() {
@@ -27,6 +29,8 @@ class BatchRepository {
       },
     }));
     this.add("schemas/media.schema.json", JSON.stringify({ $id: "https://svetinje.me/schemas/media.schema.json" }));
+    this.add("schemas/feast-registry.schema.json", FEAST_SCHEMA);
+    this.add("content/feasts/registry.yaml", FEAST_REGISTRY);
     this.add("validation/editorial-preview.json", JSON.stringify({ place_ids: [] }));
 
     for (let index = 0; index < REPRESENTATIVE_PLACE_COUNT; index += 1) {

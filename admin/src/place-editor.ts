@@ -28,7 +28,9 @@ export interface UpdatePlaceBody {
   longitude?: unknown;
   alternateNames?: unknown;
   narrativeBody?: unknown;
-  patronalFeasts?: unknown;
+  patronalFeastIds?: unknown;
+  stagedFeasts?: unknown;
+  expectedFeastRegistryBlobSha?: unknown;
   serviceSchedule?: unknown;
   youtubeUrl?: unknown;
 }
@@ -75,15 +77,13 @@ function optionalTextList(value: unknown, field: string, errors: Record<string, 
   });
 }
 
-function existingPatronalFeasts(place: Record<string, any>): string[] {
-  const values = Array.isArray(place.patronal_feasts)
-    ? place.patronal_feasts
-    : place.patronal_feast
-      ? [place.patronal_feast]
-      : [];
-  return values.flatMap((entry: any) => typeof entry?.name === "string" && entry.name.trim()
-    ? [entry.name.trim()]
-    : []);
+function patronalFeastIds(value: unknown, knownIds: ReadonlySet<string>, errors: Record<string, string>): string[] {
+  const ids = optionalTextList(value, "patronalFeastIds", errors);
+  if (new Set(ids).size !== ids.length) errors.patronalFeastIds = "Иста слава не може бити изабрана два пута.";
+  for (const [index, id] of ids.entries()) {
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id) || !knownIds.has(id)) errors[`patronalFeastIds.${index}`] = "Слава није дио важећег регистра.";
+  }
+  return ids;
 }
 
 const normalizedOptionalText = (value: unknown): string | undefined => typeof value === "string"
@@ -216,7 +216,8 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   const rawYoutubeUrl = text(body.youtubeUrl);
   const youtubeUrl = rawYoutubeUrl ? canonicalYoutubeUrl(rawYoutubeUrl) : undefined;
   if (rawYoutubeUrl && !youtubeUrl) errors.youtubeUrl = "Унесите важећи YouTube линк.";
-  const patronalFeasts = optionalTextList(body.patronalFeasts ?? record.place.patronalFeasts, "patronalFeasts", errors);
+  const knownFeastIds = new Set(record.feastRegistry.registry.feasts.map((feast) => feast.id));
+  const selectedPatronalFeastIds = patronalFeastIds(body.patronalFeastIds ?? record.place.patronalFeastIds, knownFeastIds, errors);
   const serviceSchedule = body.serviceSchedule === undefined
     ? normalizedOptionalText(record.rawNarrative.service_schedule)
     : normalizedOptionalText(body.serviceSchedule);
@@ -233,7 +234,8 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
   setFact(place.ecclesiastical, "jurisdiction", text(body.jurisdiction));
   setFact(place.ecclesiastical, "community_type", placeType === "monastery" ? monasticCommunity : undefined);
   delete place.patronal_feast;
-  if (patronalFeasts.length > 0) place.patronal_feasts = patronalFeasts.map((name) => ({ name })); else delete place.patronal_feasts;
+  delete place.patronal_feasts;
+  if (selectedPatronalFeastIds.length > 0) place.patronal_feast_ids = selectedPatronalFeastIds; else delete place.patronal_feast_ids;
   if (youtubeUrl) place.video = { youtube_url: youtubeUrl }; else delete place.video;
   place.location ??= {};
   setFact(place.location, "municipality_id", municipalityId);
@@ -263,7 +265,7 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
       seo_title: narrative.seo_title,
       seo_description: narrative.seo_description,
       alternate_names: narrative.alternate_names,
-      patronal_feasts: patronalFeasts,
+      patronal_feast_ids: selectedPatronalFeastIds,
       service_schedule: narrative.service_schedule,
       body: narrativeBody,
     },
@@ -275,7 +277,7 @@ export async function updateCanonicalPlace(record: EditablePlaceRecord, body: Up
       seo_title: record.rawNarrative.seo_title,
       seo_description: record.rawNarrative.seo_description,
       alternate_names: record.rawNarrative.alternate_names,
-      patronal_feasts: existingPatronalFeasts(record.rawPlace),
+      patronal_feast_ids: record.place.patronalFeastIds,
       service_schedule: normalizedOptionalText(record.rawNarrative.service_schedule),
       body: normalizeUnifiedNarrativeBody(record.narrativeBody),
     },

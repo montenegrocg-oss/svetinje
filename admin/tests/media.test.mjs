@@ -10,6 +10,8 @@ const schemas = {
   narrative: await readFile(new URL("../../schemas/narrative.schema.json", import.meta.url), "utf8"),
   common: await readFile(new URL("../../schemas/common.schema.json", import.meta.url), "utf8"),
   media: await readFile(new URL("../../schemas/media.schema.json", import.meta.url), "utf8"),
+  feast: await readFile(new URL("../../schemas/feast-registry.schema.json", import.meta.url), "utf8"),
+  feastRegistry: await readFile(new URL("../../content/feasts/registry.yaml", import.meta.url), "utf8"),
 };
 const baseEnv = { GITHUB_EDITORIAL_BRANCH: "feature/media-test" };
 const session = { subject: "user", email: "maxim@example.test", actor: "maxim", developmentBypass: false };
@@ -77,6 +79,8 @@ class MediaRepository {
     this.addText("schemas/narrative.schema.json", schemas.narrative);
     this.addText("schemas/common.schema.json", schemas.common);
     this.addText("schemas/media.schema.json", schemas.media);
+    this.addText("schemas/feast-registry.schema.json", schemas.feast);
+    this.addText("content/feasts/registry.yaml", schemas.feastRegistry);
     this.addText("validation/editorial-preview.json", JSON.stringify({ place_ids: ["test-place"] }));
     this.addText("content/places/test-place/place.yaml", [
       "schema_version: 1", "id: test-place", "editorial_status: research", "place_type:", "  value: monastery", "  verification: { status: requires-verification }", "relationships: {}", "approvals: []", "audit: { created_at: 2026-08-01T00:00:00Z, created_by: maxim, updated_at: 2026-08-01T00:00:00Z, updated_by: maxim }", "",
