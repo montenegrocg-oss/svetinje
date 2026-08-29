@@ -55,7 +55,10 @@ test("shared public components implement absent, singular, plural, localized, an
   ]);
   assert.match(practical, /patronalFeasts\.length === 1 \? copy\.feast : copy\.feasts/);
   assert.match(practical, /patronalFeasts\.length > 0/);
-  assert.match(practical, /patronalFeasts\.map\(\(feast\) => <li>\{feast\}<\/li>\)/);
+  assert.match(practical, /place\.patronalFeastReferences\.map/);
+  assert.match(practical, /availableFeastIdSet\.has\(feast\.id\) \? feastPath\(feast\.id\) : undefined/);
+  assert.match(practical, /feast\.href \? <a href=\{feast\.href\}>\{feast\.name\}<\/a> : feast\.name/);
+  assert.match(practical, /feast\.dateLabel && <span> — \{feast\.dateLabel\}<\/span>/);
   assert.match(copy, /feast: "Слава", feasts: "Славе"/);
   assert.match(copy, /feast: "Престольный праздник", feasts: "Престольные праздники"/);
   assert.match(copy, /feast: "Patronal feast", feasts: "Patronal feasts"/);
@@ -67,7 +70,9 @@ test("shared public components implement absent, singular, plural, localized, an
   assert.match(styles, /"gallery practical"\s+"schedule practical"/);
   assert.match(styles, /"about gallery practical"\s+"about schedule practical"/);
   assert.match(styles, /\.place-service-schedule p[\s\S]*white-space: pre-line/);
-  assert.match(localized, /const \{ patronalFeasts: _serbianFeasts, serviceSchedule: _serbianSchedule, \.\.\.localeNeutralPlace \} = place/);
+  assert.match(localized, /patronalFeastReferences: _serbianFeastReferences/);
+  assert.match(localized, /unlinkedPatronalFeasts: _serbianUnlinkedFeasts/);
   assert.match(localized, /patronalFeasts: narrative\.patronalFeasts/);
+  assert.match(localized, /patronalFeastReferences: \[\]/);
   assert.match(localized, /narrative\.serviceSchedule \? \{ serviceSchedule: narrative\.serviceSchedule \} : \{\}/);
 });

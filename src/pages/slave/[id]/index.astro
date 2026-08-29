@@ -1,0 +1,14 @@
+---
+import FeastCataloguePage from "../../../components/FeastCataloguePage.astro";
+import { loadVisiblePlaces } from "../../../lib/content/publication";
+import { selectVisibleFeastCatalogues } from "../../../lib/public-feast-catalogues";
+
+export async function getStaticPaths() {
+  const feasts = selectVisibleFeastCatalogues(await loadVisiblePlaces());
+  return feasts.map((feast) => ({ params: { id: feast.id }, props: { feast } }));
+}
+
+const { feast } = Astro.props;
+---
+
+<FeastCataloguePage feast={feast} />

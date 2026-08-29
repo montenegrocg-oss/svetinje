@@ -302,7 +302,7 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.match(catalogue, /data-monastic-community=\{monasticCommunity\}/);
   assert.match(catalogue, /PLACE_AREAS\.filter/);
   assert.match(catalogue, /selectFeaturedCataloguePlaces\(places\)/);
-  assert.match(catalogue, /const usesSidebarCatalogue = category === "monasteries" \|\| category === "churches"/);
+  assert.match(catalogue, /const usesSidebarCatalogue = forceSidebar \|\| category === "monasteries" \|\| category === "churches"/);
   assert.match(catalogue, /const featuredPlaces = usesSidebarCatalogue \? \[\] : selectFeaturedCataloguePlaces\(places\)/);
   assert.match(catalogue, /!usesSidebarCatalogue && featuredPlaces\.length > 0/);
   assert.doesNotMatch(catalogue, /\{usesSidebarCatalogue && featuredPlaces\.length > 0/);
@@ -311,7 +311,7 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.match(styles, /\.page-hero\.category-page-hero\s*\{[\s\S]*?padding-block: clamp\(1\.25rem, 2\.4vw, 1\.5rem\);/);
   assert.equal([...catalogue.matchAll(/<h1>/g)].length, 1);
   assert.match(catalogue, /<h1>\{heading\}<\/h1>/);
-  assert.match(catalogue, /<aside class="catalogue-sidebar"[\s\S]*?<CatalogueToolbar searchPlaceholder=\{copy\.searchPlaceholder\} areas=\{relevantAreas\} eparchies=\{eparchies\} municipalities=\{municipalities\} locale=\{locale\} \/>[\s\S]*?<section class="catalogue-main"/);
+  assert.match(catalogue, /<aside class="catalogue-sidebar"[\s\S]*?<CatalogueToolbar searchPlaceholder=\{copy\.searchPlaceholder\} areas=\{relevantAreas\} eparchies=\{eparchies\} municipalities=\{municipalities\} locale=\{locale\} showMapAction=\{showMapAction\} \/>[\s\S]*?<section class="catalogue-main"/);
   assert.match(catalogue, /statusPrefix: "Пронађено је"/);
   assert.match(catalogue, /searchPlaceholder: "Претражите цркве…", statusPrefix: "Пронађено је", statusNoun: "цркава"/);
   assert.match(catalogue, /<section class="catalogue-main"[\s\S]*?<div class="catalogue-section-heading">\s*<h2 id="catalogue-main-title">\{copy\.allHeading\}<\/h2>/);

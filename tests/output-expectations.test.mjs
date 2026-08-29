@@ -19,6 +19,9 @@ const place = (id, placeType, options = {}) => ({
   preview: true,
   narrativeBody: "",
   narrativeSections: [],
+  patronalFeasts: [],
+  patronalFeastReferences: [],
+  unlinkedPatronalFeasts: [],
   sourceIds: [],
   sources: [],
   searchText: id,
@@ -160,4 +163,20 @@ test("privacy and storage disclosure routes are explicit static output in every 
   assert.ok(LOCALIZED_STATIC_HTML_ROUTES.includes("ru/cookies/index.html"));
   assert.ok(LOCALIZED_STATIC_HTML_ROUTES.includes("en/privacy/index.html"));
   assert.ok(LOCALIZED_STATIC_HTML_ROUTES.includes("en/cookies/index.html"));
+});
+
+test("feast routes derive only from public-discovery relationships", () => {
+  const nikoljdan = { id: "nikoljdan", name: "Никољдан", dateKind: "fixed", month: 12, day: 19, calendarPath: "/kalendar/2026-12-19/" };
+  const publicMonastery = place("public-monastery", "monastery", { patronalFeasts: ["Никољдан"], patronalFeastReferences: [nikoljdan] });
+  const hiddenHolyPlace = place("hidden-holy-place", "holy-spring", {
+    patronalFeasts: ["Скривена слава"],
+    patronalFeastReferences: [{ id: "hidden-feast", name: "Скривена слава", dateKind: "undated" }],
+  });
+  const model = createOutputModel([publicMonastery, hiddenHolyPlace]);
+
+  assert.deepEqual(model.feastCatalogues.map(({ id }) => id), ["nikoljdan"]);
+  assert.deepEqual(model.feastCatalogues[0].places.map(({ id }) => id), ["public-monastery"]);
+  assert.deepEqual(model.feastDetailRoutes.map(({ route }) => route), ["slave/nikoljdan/index.html"]);
+  assert.equal(model.allExpectedRoutes.includes("slave/hidden-feast/index.html"), false);
+  assert.ok(model.allExpectedRoutes.includes("slave/index.html"));
 });

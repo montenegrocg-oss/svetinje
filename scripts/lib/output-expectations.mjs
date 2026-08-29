@@ -8,6 +8,7 @@ import { PLACE_AREAS } from "../../src/lib/place-areas.ts";
 import { loadVisibleRoutes } from "../../src/lib/content/routes.ts";
 import { loadLocalizedVisiblePlaces } from "../../src/lib/content/localized-publication.ts";
 import { VERIFIED_CALENDAR_END, VERIFIED_CALENDAR_START } from "../../src/lib/calendar/verified-dataset.ts";
+import { feastPath, selectVisibleFeastCatalogues } from "../../src/lib/public-feast-catalogues.ts";
 
 export const LOCALIZED_STATIC_HTML_ROUTES = Object.freeze([
   "ru/index.html", "ru/monastyri/index.html", "ru/monastyri/muzhskie/index.html", "ru/monastyri/zhenskie/index.html", "ru/tserkvi/index.html", "ru/karta/index.html", "ru/marshruty/index.html", "ru/kalendar/index.html", "ru/novosti/index.html", "ru/o-proekte/index.html", "ru/izbrannoe/index.html", "ru/privacy/index.html", "ru/cookies/index.html",
@@ -30,6 +31,7 @@ export const STATIC_HTML_ROUTES = Object.freeze([
   "omiljeno/index.html",
   "politika-privatnosti/index.html",
   "kolacici-i-lokalno-skladistenje/index.html",
+  "slave/index.html",
 ]);
 
 export const CALENDAR_HTML_ROUTES = Object.freeze(
@@ -101,6 +103,11 @@ export function createOutputModel(places, news = [], routes = [], localizedPlace
     ...localizedPlaces.ru.map((place) => ({ locale: "ru", place, route: `ru/svyatyni/${place.slug}/index.html` })),
     ...localizedPlaces.en.map((place) => ({ locale: "en", place, route: `en/holy-places/${place.slug}/index.html` })),
   ];
+  const feastCatalogues = selectVisibleFeastCatalogues(discoveryPlaces);
+  const feastDetailRoutes = feastCatalogues.map((feast) => ({
+    feast,
+    route: feastPath(feast.id).slice(1) + "index.html",
+  }));
 
   return {
     places: normalizedPlaces,
@@ -113,6 +120,9 @@ export function createOutputModel(places, news = [], routes = [], localizedPlace
     routeDetailRoutes,
     localizedPlaces,
     localizedDetailRoutes,
+    feastCatalogues,
+    feastDetailRoutes,
+    feastDetailRoutesById: new Map(feastDetailRoutes.map((entry) => [entry.feast.id, entry])),
     allExpectedRoutes: [
       ...STATIC_HTML_ROUTES,
       ...LOCALIZED_STATIC_HTML_ROUTES,
@@ -121,8 +131,9 @@ export function createOutputModel(places, news = [], routes = [], localizedPlace
       ...routeDetailRoutes.map(({ path }) => path),
       ...CALENDAR_HTML_ROUTES,
       ...localizedDetailRoutes.map(({ route }) => route),
+      ...feastDetailRoutes.map(({ route }) => route),
     ],
-    expectedPageCount: STATIC_HTML_ROUTES.length + LOCALIZED_STATIC_HTML_ROUTES.length + normalizedPlaces.length + newsDetailRoutes.length + routeDetailRoutes.length + CALENDAR_HTML_ROUTES.length + localizedDetailRoutes.length,
+    expectedPageCount: STATIC_HTML_ROUTES.length + LOCALIZED_STATIC_HTML_ROUTES.length + normalizedPlaces.length + newsDetailRoutes.length + routeDetailRoutes.length + CALENDAR_HTML_ROUTES.length + localizedDetailRoutes.length + feastDetailRoutes.length,
     categoryMembership,
     monasteryCommunityMembership,
     areaMembership,

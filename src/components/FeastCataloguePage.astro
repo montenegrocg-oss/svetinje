@@ -1,0 +1,49 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import type { VisibleFeastCatalogue } from "../lib/public-feast-catalogues";
+import { feastDateLabel, feastPath, feastPlaceCountLabel } from "../lib/public-feast-catalogues";
+import CategoryCatalogue from "./CategoryCatalogue.astro";
+
+interface Props {
+  feast: VisibleFeastCatalogue;
+}
+
+const { feast } = Astro.props;
+const dateLabel = feastDateLabel(feast);
+const placeCount = feast.places.length;
+const title = `${feast.name} — славе и светиње`;
+const description = `Православне светиње у Црној Гори које прослављају славу ${feast.name}.`;
+---
+
+<BaseLayout title={title} description={description} canonicalPath={feastPath(feast.id)} locale="sr" localeLinks={{ sr: feastPath(feast.id) }}>
+  <header class="feast-catalogue-header">
+    <div class="shell">
+      <a class="feast-catalogue-header__back" href="/slave/"><span aria-hidden="true">←</span> Све славе</a>
+      <p class="eyebrow">Слава</p>
+      <h1>{feast.name}</h1>
+      {dateLabel && <p class="feast-catalogue-header__date">{dateLabel}</p>}
+      {feast.calendarPath && <a class="text-link feast-catalogue-header__calendar" href={feast.calendarPath}>Погледајте датум у календару <span aria-hidden="true">→</span></a>}
+      <p class="feast-catalogue-header__count">{feastPlaceCountLabel(placeCount)}</p>
+    </div>
+  </header>
+
+  <CategoryCatalogue
+    heading={feast.name}
+    description={description}
+    emptyHeading="Нема доступних светиња за ову славу."
+    catalogueHeading="Светиње које прослављају ову славу"
+    places={feast.places}
+    locale="sr"
+    showHero={false}
+    forceSidebar={true}
+    showMapAction={false}
+    presentation={{
+      searchPlaceholder: "Претражите светиње…",
+      statusPrefix: "Пронађено је",
+      statusNoun: "светиња",
+      allHeading: "Светиње које прослављају ову славу",
+      filterAriaLabel: "Филтери каталога славе",
+      emptyFilterHeading: "Нема светиња за изабране филтере.",
+    }}
+  />
+</BaseLayout>

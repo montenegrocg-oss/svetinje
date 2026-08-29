@@ -11,7 +11,14 @@ import {
   editorialPreviewEligibilityErrors,
   parseEditorialPreviewRegistry,
 } from "./editorial-preview-eligibility.ts";
-import { loadFeastRegistry, patronalFeastNames, type FeastRecord } from "./feast-registry.ts";
+import {
+  loadFeastRegistry,
+  patronalFeastNames,
+  patronalFeastReferences as projectPatronalFeastReferences,
+  unresolvedLegacyPatronalFeastNames,
+  type FeastRecord,
+  type VisibleFeastReference,
+} from "./feast-registry.ts";
 
 type ReviewRole = "publishing" | "factual" | "ecclesiastical" | "sr-language" | "media-rights";
 
@@ -140,6 +147,8 @@ export interface PublishablePlace {
   narrativeBody: string;
   monasticCommunity?: MonasticCommunity;
   patronalFeasts: string[];
+  patronalFeastReferences: VisibleFeastReference[];
+  unlinkedPatronalFeasts: string[];
   serviceSchedule?: string;
   youtubeVideoId?: string;
 }
@@ -438,6 +447,8 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
       placeType: place.place_type.value,
       narrativeBody: narrative.body,
       patronalFeasts: patronalFeastNames(place, { schema_version: 1, feasts }),
+      patronalFeastReferences: projectPatronalFeastReferences(place, { schema_version: 1, feasts }),
+      unlinkedPatronalFeasts: unresolvedLegacyPatronalFeastNames(place, { schema_version: 1, feasts }),
       ...(serviceSchedule ? { serviceSchedule } : {}),
       ...(monasticCommunity ? { monasticCommunity } : {}),
       ...(youtubeVideoId ? { youtubeVideoId } : {}),
@@ -589,7 +600,10 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
     const coordinateAccuracy = coordinates?.accuracy;
     const ecclesiasticalJurisdiction = place.ecclesiastical?.jurisdiction?.value;
     const monasticCommunity = monasticCommunityValue(place.ecclesiastical?.community_type?.value);
-    const patronalFeasts = patronalFeastNames(place, { schema_version: 1, feasts });
+    const feastRegistry = { schema_version: 1 as const, feasts };
+    const patronalFeasts = patronalFeastNames(place, feastRegistry);
+    const patronalFeastReferences = projectPatronalFeastReferences(place, feastRegistry);
+    const unlinkedPatronalFeasts = unresolvedLegacyPatronalFeastNames(place, feastRegistry);
     const serviceSchedule = optionalNonBlankText(narrative.service_schedule);
     const youtubeVideoId = parseYoutubeVideoId(place.video?.youtube_url);
     const mediaOrder = Array.isArray((place.relationships as { media_ids?: unknown } | undefined)?.media_ids)
@@ -625,6 +639,8 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       ...(ecclesiasticalJurisdiction !== undefined ? { ecclesiasticalJurisdiction } : {}),
       ...(monasticCommunity !== undefined ? { monasticCommunity } : {}),
       patronalFeasts,
+      patronalFeastReferences,
+      unlinkedPatronalFeasts,
       ...(serviceSchedule !== undefined ? { serviceSchedule } : {}),
       ...(youtubeVideoId !== undefined ? { youtubeVideoId } : {}),
       ...previewMedia,

@@ -313,8 +313,15 @@ function verifyDetail(detailCase, model, pagesByRoute, failures) {
     failures.push(`${place.id} detail page exposes retired practical-information labels`);
   }
   if (place.ecclesiasticalJurisdiction && !html.includes("Епархија")) failures.push(`${place.id} detail page is missing the Eparchy label`);
-  for (const feast of place.patronalFeasts) {
-    if (!html.includes(`<li>${feast}</li>`)) failures.push(`${place.id} detail page is missing patronal feast ${feast}`);
+  for (const feast of place.patronalFeastReferences) {
+    if (!html.includes(feast.name)) failures.push(`${place.id} detail page is missing patronal feast ${feast.name}`);
+    const feastHref = `/slave/${feast.id}/`;
+    const routeExists = model.feastDetailRoutesById.has(feast.id);
+    if (routeExists && !html.includes(`href="${feastHref}"`)) failures.push(`${place.id} detail page does not link visible feast ${feast.id}`);
+    if (!routeExists && html.includes(`href="${feastHref}"`)) failures.push(`${place.id} detail page links unavailable feast ${feast.id}`);
+  }
+  for (const feast of place.unlinkedPatronalFeasts) {
+    if (!html.includes(feast)) failures.push(`${place.id} detail page is missing unresolved legacy patronal feast ${feast}`);
   }
   if (place.patronalFeasts.length === 0 && /<dt[^>]*>[^<]*Слава/.test(html)) failures.push(`${place.id} detail page renders an empty patronal-feast row`);
   if (place.youtubeVideoId && !gallery.includes(`https://www.youtube-nocookie.com/embed/${place.youtubeVideoId}`)) {
@@ -475,6 +482,27 @@ try {
 if (files.length !== model.expectedPageCount) failures.push(`${editorialPreview ? "editorial preview" : "production"} must generate ${model.expectedPageCount} data-derived HTML page(s), found ${files.length}`);
 for (const route of model.allExpectedRoutes) {
   if (!pagesByRoute.has(route)) failures.push(`expected output route is missing: ${route}`);
+}
+
+const feastIndex = pagesByRoute.get("slave/index.html");
+if (!feastIndex) failures.push("public feast index is missing");
+else {
+  for (const feast of model.feastCatalogues) {
+    if (!feastIndex.html.includes(`/slave/${feast.id}/`) || !feastIndex.html.includes(feast.name)) {
+      failures.push(`public feast index is missing ${feast.id}`);
+    }
+  }
+}
+for (const { feast, route } of model.feastDetailRoutes) {
+  const page = pagesByRoute.get(route);
+  if (!page) continue;
+  if (!page.html.includes(`<h1>${feast.name}</h1>`)) failures.push(`${feast.id} feast catalogue is missing its heading`);
+  if (!page.html.includes("data-category-catalogue") || !page.html.includes("data-catalogue-eparchy") || !page.html.includes("data-catalogue-municipality")) {
+    failures.push(`${feast.id} feast catalogue is missing shared catalogue filters`);
+  }
+  for (const place of feast.places) {
+    if (!page.html.includes(`data-place-card="${place.id}"`)) failures.push(`${feast.id} feast catalogue is missing ${place.id}`);
+  }
 }
 for (const page of pages) {
   if (!model.allExpectedRoutes.includes(page.relative)) failures.push(`unexpected output route was generated: ${page.relative}`);
