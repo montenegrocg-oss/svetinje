@@ -1,8 +1,10 @@
 <script>
   import { formatGospelReferenceSr, type DailyGospelReading } from "../lib/calendar/gospel-presentation";
-  import { replacePatronalFeasts } from "../lib/calendar/patronal-feast-client";
-  import { podgoricaDateKey } from "../lib/calendar/today-calendar";
-  import type { PublicPatronalFeastDay } from "../lib/public-feast-catalogues";
+  import {
+    activeHomepagePatronalFeastDate,
+    loadPublicPatronalFeastDay,
+    replacePatronalFeasts,
+  } from "../lib/calendar/patronal-feast-client";
 
   const EMPTY_READING = "За овај дан литургијско јеванђељско читање није наведено.";
   const UNAVAILABLE_READING = "Јеванђелско читање тренутно није доступно.";
@@ -81,9 +83,7 @@
     const updatePatronalFeasts = async (date: string) => {
       if (!feastAnchor) return;
       try {
-        const response = await fetch(`/feast-days/${date}.json`);
-        if (!response.ok) throw new Error("patronal feasts unavailable");
-        const payload = await response.json() as PublicPatronalFeastDay;
+        const payload = await loadPublicPatronalFeastDay(date);
         replacePatronalFeasts(feastAnchor, { title: "Данас славе", variant: "today", feasts: payload.feasts });
       } catch {
         replacePatronalFeasts(feastAnchor, { title: "Данас славе", variant: "today", feasts: [] });
@@ -91,11 +91,7 @@
     };
 
     const year = root.dataset.calendarYear;
-    const dateKey = podgoricaDateKey(new Date());
-    const previewDate = new URL(window.location.href).searchParams.get("calendar-date");
-    const activeDateKey = root.dataset.previewTodayOverride === "true" && /^2026-\d{2}-\d{2}$/u.test(previewDate ?? "")
-      ? previewDate!
-      : dateKey;
+    const activeDateKey = activeHomepagePatronalFeastDate(root);
     void updatePatronalFeasts(activeDateKey);
     if (year === activeDateKey.slice(0, 4)) {
       fetch(`/calendar/${year}.json`)

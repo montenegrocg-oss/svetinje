@@ -236,6 +236,83 @@
   .patronal-feasts--today .patronal-feasts__groups {
     grid-template-columns: 1fr;
   }
+
+  .homepage-upcoming-feasts {
+    min-width: 0;
+    padding: clamp(1rem, 1.8vw, 1.35rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    box-shadow: var(--shadow-control);
+  }
+
+  .homepage-upcoming-feasts__label {
+    color: var(--gold);
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .homepage-upcoming-feasts__date {
+    margin-top: 0.4rem;
+    color: var(--navy-950);
+    font-family: var(--font-display);
+    font-size: clamp(1.15rem, 1.04rem + 0.3vw, 1.4rem);
+    font-weight: 700;
+  }
+
+  .homepage-upcoming-feasts a {
+    overflow-wrap: anywhere;
+    color: inherit;
+    text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+  }
+
+  .homepage-upcoming-feasts__groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 1rem;
+    margin-top: 0.85rem;
+  }
+
+  .homepage-upcoming-feasts__group {
+    min-width: 0;
+  }
+
+  .homepage-upcoming-feasts__group h3 {
+    color: var(--navy-950);
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  .homepage-upcoming-feasts__group ul {
+    display: grid;
+    gap: 0.15rem;
+    margin-top: 0.45rem;
+  }
+
+  .homepage-upcoming-feasts__group li a,
+  .homepage-upcoming-feasts__all {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    font-size: var(--text-sm);
+    font-weight: 650;
+    line-height: 1.35;
+  }
+
+  .homepage-upcoming-feasts__group li a {
+    text-decoration: none;
+  }
+
+  .homepage-upcoming-feasts__all {
+    color: var(--navy-900);
+    font-size: 0.78rem;
+    font-weight: 750;
+  }
 }
 
 @layer pages {
@@ -5195,7 +5272,7 @@
 
     .map-explorer__secondary-content {
       grid-row: 2;
-      grid-template-rows: auto auto minmax(0, 1fr);
+      grid-template-rows: auto auto auto;
     }
 
     .explorer-results {
