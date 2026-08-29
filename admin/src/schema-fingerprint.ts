@@ -3,6 +3,7 @@ export interface CanonicalSchemas {
   media: Record<string, unknown>;
   place: Record<string, unknown>;
   narrative: Record<string, unknown>;
+  feastRegistry: Record<string, unknown>;
 }
 export interface CanonicalRouteSchemas {
   common: Record<string, unknown>;
@@ -26,6 +27,7 @@ export async function fingerprintCanonicalSchemas(schemas: CanonicalSchemas): Pr
     media: schemas.media,
     narrative: schemas.narrative,
     place: schemas.place,
+    feastRegistry: schemas.feastRegistry,
   }));
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(canonicalJson));
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");

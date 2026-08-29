@@ -3,6 +3,12 @@ import { parseEditorialPreviewRegistry } from "../../src/lib/content/editorial-p
 import { resolveMediaUrl } from "../../src/lib/media-url.ts";
 import { PLACE_AREAS } from "../../src/lib/place-areas.ts";
 import { AdminError, internalFailure } from "./errors.ts";
+import {
+  parseFeastRegistry,
+  resolvePatronalFeastIds,
+  type FeastRecord,
+  type FeastRegistrySnapshot,
+} from "./feast-registry.ts";
 import type { BranchState, GitRepository, TreeEntry } from "./types.ts";
 
 export type MonasticCommunity = "male" | "female";
@@ -61,7 +67,7 @@ export interface EditablePlace extends AdminPlace {
   publicationSafety?: string;
   narrativeBody: string;
   narratives: Record<NarrativeLocale, AdminLocalizedNarrative>;
-  patronalFeasts: string[];
+  patronalFeastIds: string[];
   serviceSchedule?: string;
   youtubeUrl?: string;
   media: AdminMedia[];
@@ -88,6 +94,8 @@ export interface CanonicalOptions {
   publicationSafety: string[];
   verificationStatuses: string[];
   translationStatuses: string[];
+  feasts: FeastRecord[];
+  feastRegistryBlobSha: string;
 }
 
 export interface AdminRepositorySnapshot {
@@ -95,6 +103,8 @@ export interface AdminRepositorySnapshot {
   state: BranchState;
   supportedPlaceTypes: string[];
   options: CanonicalOptions;
+  schemas: EditablePlaceRecord["schemas"];
+  feastRegistry: FeastRegistrySnapshot;
   places: AdminPlace[];
   stats: { total: number; preview: number; withCoordinates: number; withoutCoordinates: number; statuses: Record<string, number> };
 }
@@ -109,7 +119,8 @@ export interface EditablePlaceRecord {
   options: CanonicalOptions;
   branch: string;
   state: BranchState;
-  schemas: { common: Record<string, any>; media: Record<string, any>; place: Record<string, any>; narrative: Record<string, any> };
+  schemas: { common: Record<string, any>; media: Record<string, any>; place: Record<string, any>; narrative: Record<string, any>; feastRegistry: Record<string, any> };
+  feastRegistry: FeastRegistrySnapshot;
   rawMedia: Array<{ path: string; record: Record<string, any> }>;
   previewPlaceIds: string[];
   knownSourceIds: ReadonlySet<string>;
@@ -128,17 +139,6 @@ export interface PlaceDeletionRecord {
 }
 
 const blob = (tree: TreeEntry[], path: string) => tree.find((entry) => entry.type === "blob" && entry.path === path);
-
-const patronalFeastNames = (place: Record<string, any>): string[] => {
-  const values = Array.isArray(place.patronal_feasts)
-    ? place.patronal_feasts
-    : place.patronal_feast
-      ? [place.patronal_feast]
-      : [];
-  return values.flatMap((entry: any) => typeof entry?.name === "string" && entry.name.trim()
-    ? [entry.name.trim()]
-    : []);
-};
 
 const localizedPatronalFeasts = (narrative: Record<string, any> | undefined): string[] =>
   Array.isArray(narrative?.patronal_feasts)
@@ -194,7 +194,7 @@ function parseCatalogYaml(content: string): Record<string, any> {
   }
 }
 
-function schemaEnums(placeSchema: any, _narrativeSchema: any, commonSchema: any): CanonicalOptions {
+function schemaEnums(placeSchema: any, _narrativeSchema: any, commonSchema: any): Omit<CanonicalOptions, "feasts" | "feastRegistryBlobSha"> {
   const stringArray = (value: unknown, label: string): string[] => {
     if (!Array.isArray(value) || value.some((entry) => typeof entry !== "string")) throw new Error(`Cannot read ${label} from canonical schema`);
     return value as string[];
@@ -230,7 +230,15 @@ function schemaEnums(placeSchema: any, _narrativeSchema: any, commonSchema: any)
 async function loadContext(repository: GitRepository, branch: string) {
   const state = await repository.readBranchState(branch);
   const tree = await repository.readTree(state.treeSha);
-  const required = ["schemas/place.schema.json", "schemas/narrative.schema.json", "schemas/common.schema.json", "schemas/media.schema.json", "validation/editorial-preview.json"];
+  const required = [
+    "schemas/place.schema.json",
+    "schemas/narrative.schema.json",
+    "schemas/common.schema.json",
+    "schemas/media.schema.json",
+    "schemas/feast-registry.schema.json",
+    "validation/editorial-preview.json",
+    "content/feasts/registry.yaml",
+  ];
   const entries = required.map((path) => blob(tree, path));
   if (entries.some((entry) => !entry)) throw internalFailure("catalog_tree_processing_failed");
   const requiredEntries = entries as TreeEntry[];
@@ -239,14 +247,18 @@ async function loadContext(repository: GitRepository, branch: string) {
   let narrativeSchema: Record<string, any>;
   let commonSchema: Record<string, any>;
   let mediaSchema: Record<string, any>;
+  let feastRegistrySchema: Record<string, any>;
   let previewData: Record<string, any>;
+  let feastRegistry: FeastRegistrySnapshot;
   try {
-    const parsed = requiredEntries.map((entry) => JSON.parse(contentFor(contents, entry)) as Record<string, any>);
+    const parsed = requiredEntries.slice(0, 6).map((entry) => JSON.parse(contentFor(contents, entry)) as Record<string, any>);
     placeSchema = parsed[0]!;
     narrativeSchema = parsed[1]!;
     commonSchema = parsed[2]!;
     mediaSchema = parsed[3]!;
-    previewData = parsed[4]!;
+    feastRegistrySchema = parsed[4]!;
+    previewData = parsed[5]!;
+    feastRegistry = parseFeastRegistry(contentFor(contents, requiredEntries[6]!), requiredEntries[6]!.sha);
   } catch {
     throw internalFailure("catalog_tree_processing_failed");
   }
@@ -259,15 +271,20 @@ async function loadContext(repository: GitRepository, branch: string) {
   return {
     state,
     tree,
-    options: schemaEnums(placeSchema, narrativeSchema, commonSchema),
+    options: {
+      ...schemaEnums(placeSchema, narrativeSchema, commonSchema),
+      feasts: structuredClone(feastRegistry.registry.feasts).sort((left, right) => left.name_sr.localeCompare(right.name_sr, "sr")),
+      feastRegistryBlobSha: feastRegistry.blobSha,
+    },
     previewIds: new Set(previewPlaceIds),
     previewPlaceIds,
-    schemas: { common: commonSchema, media: mediaSchema, place: placeSchema, narrative: narrativeSchema },
+    schemas: { common: commonSchema, media: mediaSchema, place: placeSchema, narrative: narrativeSchema, feastRegistry: feastRegistrySchema },
+    feastRegistry,
   };
 }
 
 export async function loadAdminRepository(repository: GitRepository, branch: string): Promise<AdminRepositorySnapshot> {
-  const { state, tree, options, previewIds } = await loadContext(repository, branch);
+  const { state, tree, options, previewIds, schemas, feastRegistry } = await loadContext(repository, branch);
   const placeEntries = tree.filter((entry) => entry.type === "blob" && /^content\/places\/[^/]+\/place\.yaml$/.test(entry.path));
   const mediaEntries = tree.filter((entry) => entry.type === "blob" && /^content\/media\/[^/]+\.ya?ml$/.test(entry.path));
   const narrativeEntries = tree.filter((entry) => entry.type === "blob" && /^content\/places\/[^/]+\/narratives\/sr\.md$/.test(entry.path));
@@ -312,11 +329,11 @@ export async function loadAdminRepository(repository: GitRepository, branch: str
   const statuses: Record<string, number> = {};
   for (const place of places) statuses[place.editorialStatus] = (statuses[place.editorialStatus] ?? 0) + 1;
   const withCoordinates = places.filter((place) => place.latitude !== undefined && place.longitude !== undefined).length;
-  return { branch, state, supportedPlaceTypes: options.placeTypes, options, places, stats: { total: places.length, preview: places.filter((place) => place.inPreview).length, withCoordinates, withoutCoordinates: places.length - withCoordinates, statuses } };
+  return { branch, state, supportedPlaceTypes: options.placeTypes, options, schemas, feastRegistry, places, stats: { total: places.length, preview: places.filter((place) => place.inPreview).length, withCoordinates, withoutCoordinates: places.length - withCoordinates, statuses } };
 }
 
 export async function loadEditablePlace(repository: GitRepository, branch: string, id: string): Promise<EditablePlaceRecord> {
-  const { state, tree, options, previewIds, previewPlaceIds, schemas } = await loadContext(repository, branch);
+  const { state, tree, options, previewIds, previewPlaceIds, schemas, feastRegistry } = await loadContext(repository, branch);
   const placeEntry = blob(tree, `content/places/${id}/place.yaml`);
   const narrativeEntry = blob(tree, `content/places/${id}/narratives/sr.md`);
   if (!placeEntry || !narrativeEntry) throw new AdminError("not_found", 404, "Place does not exist");
@@ -414,7 +431,7 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
     };
   };
   return {
-    rawPlace, rawNarrative, rawNarratives, rawMedia, narrativeBody: parsedNarrative.body, narrativeBodies, options, branch, state, schemas,
+    rawPlace, rawNarrative, rawNarratives, rawMedia, narrativeBody: parsedNarrative.body, narrativeBodies, options, branch, state, schemas, feastRegistry,
     previewPlaceIds,
     knownSourceIds,
     repositoryPaths: new Set(tree.filter((entry) => entry.type === "blob").map((entry) => entry.path)),
@@ -439,7 +456,7 @@ export async function loadEditablePlace(repository: GitRepository, branch: strin
       ...(typeof coordinates?.accuracy === "string" ? { coordinateAccuracy: coordinates.accuracy } : {}),
       ...(typeof coordinates?.publication_safety === "string" ? { publicationSafety: coordinates.publication_safety } : {}),
       ...(typeof rawNarrative.summary === "string" ? { summary: rawNarrative.summary } : {}),
-      patronalFeasts: patronalFeastNames(rawPlace),
+      patronalFeastIds: resolvePatronalFeastIds(rawPlace, feastRegistry.registry),
       ...(typeof rawNarrative.service_schedule === "string" && rawNarrative.service_schedule.trim() ? { serviceSchedule: rawNarrative.service_schedule.trim() } : {}),
       ...(typeof rawPlace.video?.youtube_url === "string" ? { youtubeUrl: rawPlace.video.youtube_url } : {}),
       alternateNames,

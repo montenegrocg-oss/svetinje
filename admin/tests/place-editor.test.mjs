@@ -14,6 +14,19 @@ const PLACE_SCHEMA = await readFile(new URL("../../schemas/place.schema.json", i
 const NARRATIVE_SCHEMA = await readFile(new URL("../../schemas/narrative.schema.json", import.meta.url), "utf8");
 const COMMON_SCHEMA = await readFile(new URL("../../schemas/common.schema.json", import.meta.url), "utf8");
 const MEDIA_SCHEMA = await readFile(new URL("../../schemas/media.schema.json", import.meta.url), "utf8");
+const FEAST_SCHEMA = await readFile(new URL("../../schemas/feast-registry.schema.json", import.meta.url), "utf8");
+const FEAST_REGISTRY = `schema_version: 1
+feasts:
+  - id: sveta-trojica
+    name_sr: Света Тројица
+    legacy_names: [Света Тројица]
+    date: { kind: movable }
+  - id: sveti-nikola
+    name_sr: Свети Никола
+    legacy_names: [Свети Никола]
+    date: { kind: fixed, month: 12, day: 19 }
+`;
+const FEAST_BLOB_SHA = "feastRegistry";
 const PLACE = `schema_version: 1
 id: existing-place
 editorial_status: research
@@ -147,11 +160,11 @@ const EN_NARRATIVE = RU_NARRATIVE
 class Repository {
   committed;
   constructor() {
-    this.blobs = { placeSchema: PLACE_SCHEMA, narrativeSchema: NARRATIVE_SCHEMA, commonSchema: COMMON_SCHEMA, mediaSchema: MEDIA_SCHEMA, preview: JSON.stringify({ place_ids: ["existing-place"] }), place: PLACE, narrative: NARRATIVE, sourceOne: "id: source-one\n", sourceMap: "id: source-map\n" };
+    this.blobs = { placeSchema: PLACE_SCHEMA, narrativeSchema: NARRATIVE_SCHEMA, commonSchema: COMMON_SCHEMA, mediaSchema: MEDIA_SCHEMA, feastSchema: FEAST_SCHEMA, feastRegistry: FEAST_REGISTRY, preview: JSON.stringify({ place_ids: ["existing-place"] }), place: PLACE, narrative: NARRATIVE, sourceOne: "id: source-one\n", sourceMap: "id: source-map\n" };
   }
   async readBranchState() { return { headSha: HEAD, treeSha: TREE }; }
   async readTree() { return [
-    ["schemas/place.schema.json", "placeSchema"], ["schemas/narrative.schema.json", "narrativeSchema"], ["schemas/common.schema.json", "commonSchema"], ["schemas/media.schema.json", "mediaSchema"], ["validation/editorial-preview.json", "preview"],
+    ["schemas/place.schema.json", "placeSchema"], ["schemas/narrative.schema.json", "narrativeSchema"], ["schemas/common.schema.json", "commonSchema"], ["schemas/media.schema.json", "mediaSchema"], ["schemas/feast-registry.schema.json", "feastSchema"], ["content/feasts/registry.yaml", "feastRegistry"], ["validation/editorial-preview.json", "preview"],
     ["content/places/existing-place/place.yaml", "place"], ["content/places/existing-place/narratives/sr.md", "narrative"], ["content/sources/source-one.yaml", "sourceOne"], ["content/sources/source-map.yaml", "sourceMap"],
   ].map(([path, sha]) => ({ path, sha, type: "blob", mode: "100644" })); }
   async readBlob(sha) { return this.blobs[sha]; }
@@ -181,6 +194,8 @@ class RoundTripRepository extends Repository {
     this.commitCount += 1;
     this.blobs.place = input.files.find(({ path }) => path.endsWith("/place.yaml")).content;
     this.blobs.narrative = input.files.find(({ path }) => path.endsWith("/narratives/sr.md")).content;
+    const registry = input.files.find(({ path }) => path === "content/feasts/registry.yaml");
+    if (registry) this.blobs.feastRegistry = registry.content;
     this.headSha = this.commitCount.toString(16).padStart(40, "0");
     return { commitSha: this.headSha, branch: input.branch };
   }
@@ -214,6 +229,8 @@ class CreateLifecycleRepository {
       ["schemas/narrative.schema.json", NARRATIVE_SCHEMA],
       ["schemas/common.schema.json", COMMON_SCHEMA],
       ["schemas/media.schema.json", MEDIA_SCHEMA],
+      ["schemas/feast-registry.schema.json", FEAST_SCHEMA],
+      ["content/feasts/registry.yaml", FEAST_REGISTRY],
       ["validation/editorial-preview.json", JSON.stringify({ place_ids: ["existing-place"] })],
       ["content/places/existing-place/place.yaml", PLACE],
       ["content/places/existing-place/narratives/sr.md", NARRATIVE],
@@ -222,7 +239,7 @@ class CreateLifecycleRepository {
     ]);
     this.commits = [];
   }
-  tree() { let index = 1; return [...this.files.keys()].sort().map((path) => ({ path, mode: "100644", type: "blob", sha: (index++).toString(16).padStart(40, "0") })); }
+  tree() { let index = 1; return [...this.files.keys()].sort().map((path) => ({ path, mode: "100644", type: "blob", sha: path === "content/feasts/registry.yaml" ? FEAST_BLOB_SHA : (index++).toString(16).padStart(40, "0") })); }
   async readBranchState() { return { headSha: this.headSha, treeSha: TREE }; }
   async readTree() { return this.tree(); }
   async readBlob(sha) { const entry = this.tree().find((item) => item.sha === sha); return this.files.get(entry.path); }
@@ -243,12 +260,12 @@ class CreateLifecycleRepository {
 
 const env = { GITHUB_EDITORIAL_BRANCH: "editorial/work" };
 const session = { subject: "user", email: "editor@example.com", actor: "editor-user", developmentBypass: false };
-const newPlaceBody = { preferredName: "Нови објекат", id: "novi-objekat", slug: "novi-objekat", placeType: "monastery", expectedHeadSha: HEAD };
+const newPlaceBody = { preferredName: "Нови објекат", id: "novi-objekat", slug: "novi-objekat", placeType: "monastery", expectedHeadSha: HEAD, patronalFeastIds: [], stagedFeasts: [], expectedFeastRegistryBlobSha: FEAST_BLOB_SHA };
 const body = (place) => ({
   expectedHeadSha: HEAD, preferredName: place.preferredName, shortName: place.shortName ?? "", slug: place.slug, placeType: place.placeType, browseAreaId: place.browseAreaId, summary: place.summary,
   monasticCommunity: place.monasticCommunity ?? "", eparchyId: place.eparchyId ?? "", jurisdiction: place.jurisdiction ?? "", municipalityId: place.municipalityId ?? "", settlement: place.settlement ?? "",
   latitude: place.latitude, longitude: place.longitude, alternateNames: place.alternateNames,
-  narrativeBody: place.narrativeBody, patronalFeasts: place.patronalFeasts, serviceSchedule: place.serviceSchedule ?? "", youtubeUrl: place.youtubeUrl ?? "",
+  narrativeBody: place.narrativeBody, patronalFeastIds: place.patronalFeastIds, stagedFeasts: [], expectedFeastRegistryBlobSha: FEAST_BLOB_SHA, serviceSchedule: place.serviceSchedule ?? "", youtubeUrl: place.youtubeUrl ?? "",
 });
 
 test("new place defaults to draft and immediate publication is safe", async () => {
@@ -345,18 +362,20 @@ test("canonical taxonomy schema rejects empty and unknown IDs", () => {
   }
 });
 
-test("legacy singular feast renders as one row and normalizes to plural on save", async () => {
+test("legacy singular feast resolves to a registry selection and normalizes to canonical IDs on save", async () => {
   const repository = new RoundTripRepository();
   repository.blobs.place = PLACE.replace("location:\n", "patronal_feast:\n  name: Света Тројица\nlocation:\n");
   const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
-  assert.deepEqual(loaded.place.patronalFeasts, ["Света Тројица"]);
+  assert.deepEqual(loaded.place.patronalFeastIds, ["sveta-trojica"]);
   const html = await editPlacePage(session, loaded).text();
-  assert.match(html, /data-feast-name value="Света Тројица"/);
+  assert.match(html, /data-patronal-feast-selector/);
+  assert.match(html, /sveta-trojica/);
 
   await updatePlace(repository, env, session, "existing-place", body(loaded.place), new Date("2026-08-20T11:00:00Z"));
   const saved = parse(repository.blobs.place);
   assert.equal(saved.patronal_feast, undefined);
-  assert.deepEqual(saved.patronal_feasts, [{ name: "Света Тројица" }]);
+  assert.equal(saved.patronal_feasts, undefined);
+  assert.deepEqual(saved.patronal_feast_ids, ["sveta-trojica"]);
 
   const reopened = await loadEditablePlace(repository, "editorial/work", "existing-place");
   const noOp = await updatePlace(repository, env, session, "existing-place", {
@@ -364,6 +383,46 @@ test("legacy singular feast renders as one row and normalizes to plural on save"
   }, new Date("2026-08-20T11:01:00Z"));
   assert.equal(noOp.unchanged, true);
   assert.equal(repository.commitCount, 1);
+});
+
+test("staged feasts update registry and canonical place IDs in one commit", async () => {
+  const repository = new RoundTripRepository();
+  const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  const result = await updatePlace(repository, env, session, "existing-place", {
+    ...body(loaded.place),
+    patronalFeastIds: ["sveti-luka", "pokrov-novi"],
+    stagedFeasts: [
+      { id: "sveti-luka", nameSr: "Свети Лука", dateKind: "fixed", month: 10, day: 31 },
+      { id: "pokrov-novi", nameSr: "Покров Нови", dateKind: "undated", nearDuplicateConfirmed: true },
+    ],
+  }, new Date("2026-08-20T11:05:00Z"));
+  assert.equal(result.registryChanged, true);
+  assert.equal(repository.commitCount, 1);
+  assert.deepEqual(repository.committed.files.slice(0, 3).map(({ path }) => path), [
+    "content/feasts/registry.yaml",
+    "content/places/existing-place/place.yaml",
+    "content/places/existing-place/narratives/sr.md",
+  ]);
+  assert.deepEqual(parse(repository.blobs.place).patronal_feast_ids, ["sveti-luka", "pokrov-novi"]);
+  assert.equal(parse(repository.blobs.place).patronal_feasts, undefined);
+  const registry = parse(repository.blobs.feastRegistry);
+  assert.equal(registry.feasts.some(({ id }) => id === "sveti-luka"), true);
+  assert.equal(registry.feasts.some(({ id }) => id === "pokrov-novi" && id), true);
+});
+
+test("stale feast registry SHA rejects staged writes without a commit", async () => {
+  const repository = new RoundTripRepository();
+  const loaded = await loadEditablePlace(repository, "editorial/work", "existing-place");
+  await assert.rejects(
+    () => updatePlace(repository, env, session, "existing-place", {
+      ...body(loaded.place),
+      expectedFeastRegistryBlobSha: "stale-registry",
+      patronalFeastIds: ["sveti-luka"],
+      stagedFeasts: [{ id: "sveti-luka", nameSr: "Свети Лука", dateKind: "fixed", month: 10, day: 31 }],
+    }),
+    (error) => error.code === "git_conflict" && error.status === 409,
+  );
+  assert.equal(repository.commitCount, 0);
 });
 
 test("admin locale-keyed model loads existing translations and accepts missing ones", async () => {
@@ -539,7 +598,7 @@ test("Serbian prose, schedule, and feast changes stale translations while coordi
 
   for (const change of [
     { serviceSchedule: "Недјељом у 9:00." },
-    { patronalFeasts: ["Света Тројица", "Свети Никола"] },
+    { patronalFeastIds: ["sveta-trojica", "sveti-nikola"] },
   ]) {
     const repository = new LocalizedRepository();
     const record = await loadEditablePlace(repository, "editorial/work", "existing-place");
@@ -978,37 +1037,38 @@ test("place editor saves plural patronal feasts, multiline service schedule, and
   const update = {
     ...body(loaded.place),
     narrativeBody: "## О манастиру\n\nЈединствени текст у више пасуса.\n\nДруги пасус.",
-    patronalFeasts: ["Света Тројица", "", "Свети Никола"],
+    patronalFeastIds: ["sveta-trojica", "sveti-nikola"],
     serviceSchedule: "Недјељом у 9:00.\r\nВечерње у 18:00.",
     youtubeUrl: "https://youtu.be/dQw4w9WgXcQ",
   };
   await updatePlace(repository, env, session, "existing-place", update, new Date("2026-08-15T14:00:00Z"));
   const savedPlace = parse(repository.blobs.place);
   const savedNarrative = parseNarrative(repository.blobs.narrative);
-  assert.deepEqual(savedPlace.patronal_feasts, [{ name: "Света Тројица" }, { name: "Свети Никола" }]);
+  assert.deepEqual(savedPlace.patronal_feast_ids, ["sveta-trojica", "sveti-nikola"]);
   assert.equal(savedPlace.patronal_feast, undefined);
+  assert.equal(savedPlace.patronal_feasts, undefined);
   assert.equal(savedNarrative.frontMatter.service_schedule, "Недјељом у 9:00.\nВечерње у 18:00.");
   assert.equal(savedPlace.video.youtube_url, "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
   assert.match(savedNarrative.body, /Јединствени текст у више пасуса\.[\s\S]*Други пасус\./);
 
   const reopened = await loadEditablePlace(repository, "editorial/work", "existing-place");
-  assert.deepEqual(reopened.place.patronalFeasts, ["Света Тројица", "Свети Никола"]);
+  assert.deepEqual(reopened.place.patronalFeastIds, ["sveta-trojica", "sveti-nikola"]);
   assert.equal(reopened.place.serviceSchedule, "Недјељом у 9:00.\nВечерње у 18:00.");
   assert.equal(reopened.place.youtubeUrl, "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
   assert.match(reopened.place.narrativeBody, /Други пасус/);
 
   await updatePlace(repository, env, session, "existing-place", {
     ...body(reopened.place), expectedHeadSha: repository.headSha,
-    patronalFeasts: ["Свети Никола"], youtubeUrl: "https://www.youtube.com/shorts/9bZkp7q19f0",
+    patronalFeastIds: ["sveti-nikola"], youtubeUrl: "https://www.youtube.com/shorts/9bZkp7q19f0",
   }, new Date("2026-08-15T14:03:00Z"));
   const edited = await loadEditablePlace(repository, "editorial/work", "existing-place");
-  assert.deepEqual(edited.place.patronalFeasts, ["Свети Никола"]);
+  assert.deepEqual(edited.place.patronalFeastIds, ["sveti-nikola"]);
   assert.equal(edited.place.youtubeUrl, "https://www.youtube.com/watch?v=9bZkp7q19f0");
 
   await updatePlace(repository, env, session, "existing-place", {
-    ...body(edited.place), expectedHeadSha: repository.headSha, patronalFeasts: ["", "   "], serviceSchedule: "", youtubeUrl: "",
+    ...body(edited.place), expectedHeadSha: repository.headSha, patronalFeastIds: [], serviceSchedule: "", youtubeUrl: "",
   }, new Date("2026-08-15T14:05:00Z"));
-  assert.equal(parse(repository.blobs.place).patronal_feasts, undefined);
+  assert.equal(parse(repository.blobs.place).patronal_feast_ids, undefined);
   assert.equal(parseNarrative(repository.blobs.narrative).frontMatter.service_schedule, undefined);
   assert.equal(parse(repository.blobs.place).video, undefined);
 });
@@ -1020,7 +1080,7 @@ test("place editor rejects unsafe video URLs without weakening optional fields",
     () => updatePlace(repository, env, session, "existing-place", { ...body(loaded.place), youtubeUrl: "https://youtube.example.com/watch?v=dQw4w9WgXcQ" }),
     (error) => error.code === "invalid_form_data" && error.fields?.youtubeUrl === "Унесите важећи YouTube линк.",
   );
-  const optional = await updateCanonicalPlace(loaded, { ...body(loaded.place), youtubeUrl: "", patronalFeasts: [] }, "editor-user", new Date("2026-08-15T14:00:00Z"));
+  const optional = await updateCanonicalPlace(loaded, { ...body(loaded.place), youtubeUrl: "", patronalFeastIds: [] }, "editor-user", new Date("2026-08-15T14:00:00Z"));
   assert.equal(optional.unchanged, true);
 });
 
@@ -1034,7 +1094,10 @@ test("place editor UI keeps one narrative field per locale and no legacy section
   assert.match(html, /data-language-tab="ru">Русский/);
   assert.match(html, /data-language-tab="en">English/);
   assert.match(html, /name="youtubeUrl"/);
-  assert.match(html, /data-add-feast>\+ Додај славу/);
+  assert.match(html, /data-patronal-feast-selector/);
+  assert.match(html, /<h2>Додај нову славу<\/h2>/);
+  assert.match(html, /<div data-new-feast-panel>/);
+  assert.doesNotMatch(html, /<form data-new-feast|data-new-feast-(?:name|day|month)[^>]* required/);
   assert.match(html, /name="serviceSchedule"/);
   assert.equal((html.match(/name="serviceSchedule"/g) ?? []).length, 3);
   assert.equal((html.match(/data-translation-editor/g) ?? []).length, 2);
@@ -1065,9 +1128,8 @@ test("place editor UI keeps one narrative field per locale and no legacy section
   assert.match(churchHtml, /name="monasticCommunity" disabled/);
 
   const clientSource = await readFile(new URL("../client/editor.ts", import.meta.url), "utf8");
-  assert.match(clientSource, /data-remove-feast/);
-  assert.match(clientSource, /data-add-feast/);
-  assert.match(clientSource, /patronalFeasts: collectPatronalFeasts\(\)/);
+  assert.match(clientSource, /setupFeastSelectors/);
+  assert.match(clientSource, /\.\.\.feastValue\(\)/);
   assert.match(clientSource, /placeTypeInput\.value === "monastery"/);
   assert.match(clientSource, /monasticCommunityInput\.value = ""/);
 });
