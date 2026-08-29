@@ -186,6 +186,7 @@ test("the explorer keeps one shared filter and pagination state across cards, co
   assert.match(mapCanvas, /link\.dataset\.placeCategory = place\.category \?\? ""/);
   assert.match(explorer, /const matchesCategory = activeFilter === "all" \|\| card\.dataset\.placeCategory === activeFilter/);
   assert.match(explorer, /const matchesSearch = matchesCatalogueSearch\(card\.dataset\.placeSearch \?\? "", query\)/);
+  assert.match(explorer, /const matches = matchesArea && matchesCategory && matchesSearch/);
   assert.match(explorer, /new CustomEvent\("svetinje:filter-change"/);
   assert.match(explorer, /new CustomEvent\("svetinje:place-visibility-change"/);
   assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
@@ -233,11 +234,13 @@ test("the explorer keeps one shared filter and pagination state across cards, co
   assert.match(controls, /variant === "map-page" && <button[^>]*data-route-toggle aria-pressed="false"/);
   assert.doesNotMatch(controls, /data-filter="routes"/);
   assert.match(explorer, /const filterIds = new Set\(\["all", "monasteries", "churches"\]\)/);
+  assert.match(explorer, /const handlePopState = \(\) => \{[\s\S]*?activeAreaId = getPlaceArea\(new URL\(window\.location\.href\)\.searchParams\.get\("area"\)\)\?\.id \?\? null;[\s\S]*?applyExplorerState\(true\)/);
+  assert.match(explorer, /window\.addEventListener\("popstate", handlePopState\)/);
   assert.doesNotMatch(controls, /data-notice-trigger|route-notice|builderNotice/);
   assert.doesNotMatch(explorer, /data-notice-trigger|noticeTrigger/);
 });
 
-test("mobile map and panel filters expose distinct responsive sets with one shared state", async () => {
+test("mobile exposes only map category controls while desktop keeps the sidebar group", async () => {
   const [explorer, sidebar, filters, controls, styles] = await Promise.all([
     source("src/components/MapExplorer.astro"),
     source("src/components/ExplorerSidebar.astro"),
@@ -254,7 +257,9 @@ test("mobile map and panel filters expose distinct responsive sets with one shar
   assert.doesNotMatch(controls, /data-filter="routes"/);
   assert.match(controls, /map-actions--map-page/);
   assert.doesNotMatch(controls, /map-route-toggle--mobile|map-action--mobile-hidden/);
-  assert.match(sidebar, /<FilterChips group="catalogue" includeRoutes=\{false\} locale=\{locale\} \/>/);
+  assert.match(sidebar, /<div class="explorer-sidebar__desktop-category-filters" data-desktop-category-filters>[\s\S]*?<FilterChips group="catalogue" includeRoutes=\{false\} locale=\{locale\} \/>[\s\S]*?<\/div>/);
+  assert.match(sidebar, /\.explorer-sidebar__desktop-category-filters\s*\{\s*display: contents;/);
+  assert.match(sidebar, /@media \(max-width: 47\.99rem\)\s*\{[\s\S]*?\.explorer-sidebar__desktop-category-filters\s*\{\s*display: none;/);
   assert.match(filters, /includeRoutes \|\| filter\.id !== "routes"/);
   assert.doesNotMatch(filters, /id: "holy-places"|Света мјеста/);
 
@@ -266,9 +271,7 @@ test("mobile map and panel filters expose distinct responsive sets with one shar
   assert.match(mobileRules, /\.map-actions\s*\{[\s\S]*?grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);[\s\S]*?overflow: visible/);
   assert.match(mobileRules, /\.map-actions--map-page\s*\{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(mobileRules, /\.dedicated-map-page \.map-tool-stack\s*\{[\s\S]*?top: 7\.25rem/);
-  assert.match(mobileRules, /\.explorer-sidebar \.filter-chips\s*\{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);[\s\S]*?overflow: visible/);
   assert.match(mobileRules, /\.map-action\s*\{[\s\S]*?min-height: 2\.75rem/);
-  assert.match(mobileRules, /\.explorer-sidebar \.filter-chip\s*\{[\s\S]*?min-height: 2\.75rem/);
 
   assert.match(styles, /@media \(min-width: 48rem\) and \(max-width: 67\.99rem\)/);
   assert.match(styles, /@media \(min-width: 68rem\)/);
