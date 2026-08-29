@@ -6,11 +6,12 @@ interface Props {
   municipalities?: ReadonlyArray<{ id: string; label: string }>;
   statusText?: string;
   locale?: import("../i18n/config").Locale;
+  showMapAction?: boolean;
 }
 
 import { routeFor, type Locale } from "../i18n/config";
 import { publicCopy } from "../i18n/public-copy";
-const { searchPlaceholder, areas, eparchies = [], municipalities = [], statusText, locale = "sr" } = Astro.props;
+const { searchPlaceholder, areas, eparchies = [], municipalities = [], statusText, locale = "sr", showMapAction = true } = Astro.props;
 const copy = publicCopy[locale as Locale];
 ---
 
@@ -50,7 +51,7 @@ const copy = publicCopy[locale as Locale];
     </p>
   )}
   <div class="catalogue-toolbar__actions">
-    <a href={routeFor(locale, "map")}>{copy.showMap} <span aria-hidden="true">→</span></a>
+    {showMapAction && <a href={routeFor(locale, "map")}>{copy.showMap} <span aria-hidden="true">→</span></a>}
     <button type="button" data-catalogue-reset hidden disabled>{copy.clear}</button>
   </div>
 </div>

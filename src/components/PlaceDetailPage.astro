@@ -21,9 +21,10 @@ interface Props {
   relatedPlaces: RelatedPlace[];
   routes: VisibleRoute[];
   localeLinks: Partial<Record<Locale, string>>;
+  availableFeastIds?: readonly string[];
 }
 
-const { place, locale = "sr", relatedPlaces, routes, localeLinks } = Astro.props;
+const { place, locale = "sr", relatedPlaces, routes, localeLinks, availableFeastIds = [] } = Astro.props;
 const copy = publicCopy[locale].pages.placeDetail;
 const metadataTitle = place.seoTitle ?? place.name;
 const metadataDescription = place.seoDescription ?? place.summary;
@@ -58,7 +59,7 @@ const aboutLabel = place.placeType === "monastery"
 
         <PlaceDetailGallery place={place} locale={locale} />
         <PlaceServiceSchedule schedule={place.serviceSchedule} locale={locale} />
-        <PlacePracticalPanel place={place} locale={locale} />
+        <PlacePracticalPanel place={place} locale={locale} availableFeastIds={availableFeastIds} />
         <PlaceRelatedShelf currentPlace={place} relatedPlaces={relatedPlaces} locale={locale} />
         <PlaceRouteBacklinks placeId={place.id} routes={routes} locale={locale} />
       </div>

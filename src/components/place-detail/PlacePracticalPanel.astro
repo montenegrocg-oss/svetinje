@@ -5,13 +5,15 @@ import PlaceMiniMap from "./PlaceMiniMap.astro";
 import type { Locale } from "../../i18n/config";
 import { publicCopy } from "../../i18n/public-copy";
 import { placePracticalTaxonomy } from "../../lib/place-practical-taxonomy";
+import { feastDateLabel, feastPath } from "../../lib/public-feast-catalogues";
 
 interface Props {
   place: VisiblePlace;
   locale?: Locale;
+  availableFeastIds?: readonly string[];
 }
 
-const { place, locale = "sr" } = Astro.props;
+const { place, locale = "sr", availableFeastIds = [] } = Astro.props;
 const copy = publicCopy[locale].pages.placeDetail.practical;
 const taxonomy = placePracticalTaxonomy(place, locale);
 const hasCoordinates = place.latitude !== undefined && place.longitude !== undefined;
@@ -28,7 +30,22 @@ const practicalRows = [
   { label: copy.type, value: place.typeLabel, icon: typeIcon },
   { label: taxonomy.eparchy ? copy.eparchy : copy.jurisdiction, value: taxonomy.eparchy?.value ?? taxonomy.legacyJurisdiction, href: taxonomy.eparchy?.href, icon: "church" as const },
 ].filter((row) => Boolean(row.value));
-const patronalFeasts = place.patronalFeasts.filter((feast) => feast.trim());
+const availableFeastIdSet = new Set(locale === "sr" ? availableFeastIds : []);
+interface PracticalFeastRow {
+  name: string;
+  dateLabel?: string;
+  href?: string;
+}
+const patronalFeasts: PracticalFeastRow[] = locale === "sr"
+  ? [
+      ...place.patronalFeastReferences.map((feast) => ({
+        name: feast.name,
+        dateLabel: feastDateLabel(feast),
+        href: availableFeastIdSet.has(feast.id) ? feastPath(feast.id) : undefined,
+      })),
+      ...place.unlinkedPatronalFeasts.filter((feast) => feast.trim()).map((name) => ({ name })),
+    ]
+  : place.patronalFeasts.filter((feast) => feast.trim()).map((name) => ({ name }));
 const feastLabel = patronalFeasts.length === 1 ? copy.feast : copy.feasts;
 const coordinateQualification = place.placeType === "cathedral"
   ? copy.cathedralNote
@@ -47,7 +64,16 @@ const coordinateQualification = place.placeType === "cathedral"
     {patronalFeasts.length > 0 && (
       <div>
         <dt><InterfaceIcon name="church" size={17} />{feastLabel}</dt>
-        <dd><ul class="place-practical-feasts">{patronalFeasts.map((feast) => <li>{feast}</li>)}</ul></dd>
+        <dd>
+          <ul class="place-practical-feasts">
+            {patronalFeasts.map((feast) => (
+              <li>
+                {feast.href ? <a href={feast.href}>{feast.name}</a> : feast.name}
+                {feast.dateLabel && <span> — {feast.dateLabel}</span>}
+              </li>
+            ))}
+          </ul>
+        </dd>
       </div>
     )}
     {coordinateText && (

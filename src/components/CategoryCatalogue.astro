@@ -28,6 +28,17 @@ interface Props {
   locale?: Locale;
   places?: VisiblePlace[] | undefined;
   showHero?: boolean;
+  forceSidebar?: boolean;
+  showMapAction?: boolean;
+  presentation?: Partial<{
+    searchPlaceholder: string;
+    statusPrefix: string;
+    statusNoun: string;
+    featuredHeading: string;
+    allHeading: string;
+    filterAriaLabel: string;
+    emptyFilterHeading: string;
+  }>;
 }
 
 const {
@@ -40,6 +51,9 @@ const {
   locale = "sr",
   places: suppliedPlaces,
   showHero = true,
+  forceSidebar = false,
+  showMapAction = true,
+  presentation,
 } = Astro.props;
 const ui = publicCopy[locale];
 const visiblePlaces = selectPublicDiscoveryPlaces(suppliedPlaces ?? await loadVisiblePlaces());
@@ -49,7 +63,7 @@ const categoryPlaces = category
 const places = category === "monasteries"
   ? selectMonasticCommunityPlaces(categoryPlaces, monasticCommunity)
   : categoryPlaces;
-const usesSidebarCatalogue = category === "monasteries" || category === "churches";
+const usesSidebarCatalogue = forceSidebar || category === "monasteries" || category === "churches";
 const featuredPlaces = usesSidebarCatalogue ? [] : selectFeaturedCataloguePlaces(places);
 const featuredPlaceIds = new Set(featuredPlaces.map((place) => place.id));
 const cataloguePlaces = places.filter((place) => !featuredPlaceIds.has(place.id));
@@ -58,7 +72,7 @@ const relevantAreas = PLACE_AREAS.filter((area) => relevantAreaIds.has(area.id))
 const eparchies = eparchyOptionsFor(locale);
 const municipalities = municipalityOptionsFor(locale);
 const catalogueLabel = heading;
-const copy = category === "monasteries"
+const defaultCopy = category === "monasteries"
   ? locale === "ru" ? {
       searchPlaceholder: "Найти монастырь…", statusPrefix: "Найдено:", statusNoun: "монастырей", featuredHeading: "Избранные монастыри", allHeading: catalogueHeading ?? "Все монастыри",
       countForms: ["православных монастырей", "православных монастырей", "православных монастырей"],
@@ -87,9 +101,15 @@ const copy = category === "monasteries"
           statusPrefix: "Пронађене",
           statusNoun: "светиња",
           featuredHeading: "Издвојене светиње",
-          allHeading: "Све светиње",
+          allHeading: catalogueHeading ?? "Све светиње",
           countForms: ["православну светињу", "православне светиње", "православних светиња"],
         };
+const copy = { ...defaultCopy, ...presentation };
+const filterAriaLabel = copy.filterAriaLabel ?? (category === "churches"
+  ? (locale === "ru" ? "Фильтры каталога храмов" : locale === "en" ? "Church catalogue filters" : "Филтери каталога цркава")
+  : category === "monasteries"
+    ? (locale === "ru" ? "Фильтры каталога монастырей" : locale === "en" ? "Monastery catalogue filters" : "Филтери каталога манастира")
+    : "Филтери каталога слава");
 const countFormIndex = places.length % 100 >= 11 && places.length % 100 <= 14
   ? 2
   : places.length % 10 === 1
@@ -136,8 +156,8 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
       ) : (
         <div class:list={["category-catalogue__body", usesSidebarCatalogue && "category-catalogue__body--sidebar"]}>
           {usesSidebarCatalogue && (
-            <aside class="catalogue-sidebar" aria-label={category === "churches" ? (locale === "ru" ? "Фильтры каталога храмов" : locale === "en" ? "Church catalogue filters" : "Филтери каталога цркава") : (locale === "ru" ? "Фильтры каталога монастырей" : locale === "en" ? "Monastery catalogue filters" : "Филтери каталога манастира")}>
-              <CatalogueToolbar searchPlaceholder={copy.searchPlaceholder} areas={relevantAreas} eparchies={eparchies} municipalities={municipalities} locale={locale} />
+            <aside class="catalogue-sidebar" aria-label={filterAriaLabel}>
+              <CatalogueToolbar searchPlaceholder={copy.searchPlaceholder} areas={relevantAreas} eparchies={eparchies} municipalities={municipalities} locale={locale} showMapAction={showMapAction} />
             </aside>
           )}
           {!usesSidebarCatalogue && (
@@ -198,7 +218,7 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
           </section>
 
           <section class="catalogue-filter-empty" data-catalogue-filter-empty hidden role="status" aria-live="polite">
-            <h2>{locale === "ru" ? "По выбранным фильтрам ничего не найдено." : locale === "en" ? "No results match the selected filters." : "Нема резултата за изабране филтере."}</h2>
+            <h2>{copy.emptyFilterHeading ?? (locale === "ru" ? "По выбранным фильтрам ничего не найдено." : locale === "en" ? "No results match the selected filters." : "Нема резултата за изабране филтере.")}</h2>
             <button type="button" data-catalogue-reset>{ui.clear}</button>
           </section>
         </div>

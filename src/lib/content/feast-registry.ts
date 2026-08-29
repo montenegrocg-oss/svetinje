@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { parseDocument } from "yaml";
+import { isVerifiedCalendarDate } from "../calendar/coverage.ts";
 
 export interface FixedFeastDate {
   kind: "fixed";
@@ -25,6 +26,15 @@ export interface FeastRegistry {
   feasts: FeastRecord[];
 }
 
+export interface VisibleFeastReference {
+  id: string;
+  name: string;
+  dateKind: "fixed" | "movable" | "undated";
+  month?: number;
+  day?: number;
+  calendarPath?: string;
+}
+
 export interface PatronalFeastSource {
   id?: string;
   patronal_feast_ids?: string[];
@@ -36,6 +46,38 @@ const EMPTY_REGISTRY: FeastRegistry = { schema_version: 1, feasts: [] };
 
 function normalizedName(value: string): string {
   return value.trim().replace(/\s+/gu, " ").toLocaleLowerCase("sr-Cyrl");
+}
+
+function calendarPathForFeast(feast: FeastRecord): string | undefined {
+  if (feast.date?.kind === "fixed") {
+    const date = `2026-${String(feast.date.month).padStart(2, "0")}-${String(feast.date.day).padStart(2, "0")}`;
+    return isVerifiedCalendarDate(date) ? `/kalendar/${date}/` : undefined;
+  }
+  if (feast.date?.kind === "movable") {
+    const date = feast.calendar_bindings?.find((binding) => binding.startsWith("2026-") && isVerifiedCalendarDate(binding));
+    return date ? `/kalendar/${date}/` : undefined;
+  }
+  return undefined;
+}
+
+function visibleReference(feast: FeastRecord): VisibleFeastReference {
+  const calendarPath = calendarPathForFeast(feast);
+  if (feast.date?.kind === "fixed") {
+    return {
+      id: feast.id,
+      name: feast.name_sr,
+      dateKind: "fixed",
+      month: feast.date.month,
+      day: feast.date.day,
+      ...(calendarPath ? { calendarPath } : {}),
+    };
+  }
+  return {
+    id: feast.id,
+    name: feast.name_sr,
+    dateKind: feast.date?.kind === "movable" ? "movable" : "undated",
+    ...(calendarPath ? { calendarPath } : {}),
+  };
 }
 
 export async function loadFeastRegistry(root = process.cwd()): Promise<FeastRegistry> {
@@ -80,6 +122,26 @@ export function patronalFeastNames(place: PatronalFeastSource, registry: FeastRe
       ? [place.patronal_feast]
       : [];
   return legacy.flatMap((entry) => typeof entry?.name === "string" && entry.name.trim() ? [entry.name.trim()] : []);
+}
+
+export function patronalFeastReferences(place: PatronalFeastSource, registry: FeastRegistry): VisibleFeastReference[] {
+  const byId = new Map(registry.feasts.map((feast) => [feast.id, feast]));
+  return [...new Set(patronalFeastIds(place, registry))].flatMap((id) => {
+    const feast = byId.get(id);
+    return feast ? [visibleReference(feast)] : [];
+  });
+}
+
+export function unresolvedLegacyPatronalFeastNames(place: PatronalFeastSource, registry: FeastRegistry): string[] {
+  if (Array.isArray(place.patronal_feast_ids)) return [];
+  const resolvedIds = patronalFeastIds(place, registry);
+  if (resolvedIds.length > 0) {
+    const resolvedLegacyNames = new Set(registry.feasts
+      .filter((feast) => resolvedIds.includes(feast.id))
+      .flatMap((feast) => feast.legacy_names.map(normalizedName)));
+    return patronalFeastNames(place, registry).filter((name) => !resolvedLegacyNames.has(normalizedName(name)));
+  }
+  return patronalFeastNames(place, registry);
 }
 
 export function feastIdsForDate(registry: FeastRegistry, dateKey: string): string[] {

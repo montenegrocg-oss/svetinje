@@ -55,7 +55,7 @@ test("monastery and church catalogues share one combined taxonomy filter state",
     source("src/styles/global.css"),
   ]);
 
-  assert.match(catalogue, /const usesSidebarCatalogue = category === "monasteries" \|\| category === "churches"/);
+  assert.match(catalogue, /const usesSidebarCatalogue = forceSidebar \|\| category === "monasteries" \|\| category === "churches"/);
   assert.match(catalogue, /eparchyOptionsFor\(locale\)/);
   assert.match(catalogue, /municipalityOptionsFor\(locale\)/);
   assert.match(toolbar, /data-catalogue-eparchy/);

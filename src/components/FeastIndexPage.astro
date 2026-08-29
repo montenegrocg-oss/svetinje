@@ -1,0 +1,49 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import type { VisibleFeastCatalogue } from "../lib/public-feast-catalogues";
+import { feastDateLabel, feastPath, feastPlaceCountLabel } from "../lib/public-feast-catalogues";
+
+interface Props {
+  feasts: VisibleFeastCatalogue[];
+}
+
+const { feasts } = Astro.props;
+---
+
+<BaseLayout
+  title="Славе православних светиња"
+  description="Преглед слава манастира и цркава доступних у јавном каталогу Светиње Црне Горе."
+  canonicalPath="/slave/"
+  locale="sr"
+  localeLinks={{ sr: "/slave/" }}
+>
+  <section class="section feast-index" aria-labelledby="feast-index-title">
+    <div class="shell">
+      <header class="feast-index__header">
+        <p class="eyebrow">Каталог</p>
+        <h1 id="feast-index-title">Славе</h1>
+        <p>Преглед слава светиња доступних у јавном каталогу.</p>
+      </header>
+
+      {feasts.length > 0 ? (
+        <ul class="feast-index__grid">
+          {feasts.map((feast) => (
+            <li>
+              <a href={feastPath(feast.id)}>
+                <span class="feast-index__name">{feast.name}</span>
+                {feastDateLabel(feast) && <span class="feast-index__date">{feastDateLabel(feast)}</span>}
+                <span class="feast-index__count">{feastPlaceCountLabel(feast.places.length)}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div class="empty-state" role="status">
+          <span class="empty-ornament" aria-hidden="true"></span>
+          <h2>Каталог слава је у припреми.</h2>
+          <p>Славе ће бити приказане када повезане светиње постану јавно доступне.</p>
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>

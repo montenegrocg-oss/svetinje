@@ -5,17 +5,19 @@ import { loadVisibleRoutes, routesForPlace } from "../../lib/content/routes";
 import { localizedSlugsForPlace } from "../../lib/content/localized-publication";
 import { placeDetailRoot, type Locale } from "../../i18n/config";
 import { relatedPlacesFor } from "../../lib/related-places";
+import { selectVisibleFeastCatalogues } from "../../lib/public-feast-catalogues";
 
 export async function getStaticPaths() {
   const [places, routes] = await Promise.all([loadVisiblePlaces(), loadVisibleRoutes()]);
+  const availableFeastIds = selectVisibleFeastCatalogues(places).map((feast) => feast.id);
   return places.map((place) => ({
     params: { slug: place.slug },
-    props: { place, relatedPlaces: relatedPlacesFor(place, places, "sr"), routes: routesForPlace(routes, place.id) },
+    props: { place, relatedPlaces: relatedPlacesFor(place, places, "sr"), routes: routesForPlace(routes, place.id), availableFeastIds },
   }));
 }
 
-const { place, relatedPlaces, routes } = Astro.props;
+const { place, relatedPlaces, routes, availableFeastIds } = Astro.props;
 const localeLinks = Object.fromEntries(Object.entries(await localizedSlugsForPlace(place.id)).map(([locale, slug]) => [locale, `${placeDetailRoot[locale as Locale]}${slug}/`]));
 ---
 
-<PlaceDetailPage place={place} locale="sr" relatedPlaces={relatedPlaces} routes={routes} localeLinks={localeLinks} />
+<PlaceDetailPage place={place} locale="sr" relatedPlaces={relatedPlaces} routes={routes} localeLinks={localeLinks} availableFeastIds={availableFeastIds} />

@@ -1,0 +1,9 @@
+---
+import FeastIndexPage from "../../components/FeastIndexPage.astro";
+import { loadVisiblePlaces } from "../../lib/content/publication";
+import { selectVisibleFeastCatalogues } from "../../lib/public-feast-catalogues";
+
+const feasts = selectVisibleFeastCatalogues(await loadVisiblePlaces());
+---
+
+<FeastIndexPage feasts={feasts} />
