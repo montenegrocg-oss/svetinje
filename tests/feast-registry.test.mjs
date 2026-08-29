@@ -48,22 +48,34 @@ test("the complete legacy inventory migrated losslessly to resolving canonical I
     feast_ids_created: 39,
   });
   const knownIds = new Set(registry.feasts.map((feast) => feast.id));
+  const migrationPlaceIds = new Set(migration.mappings.map((entry) => entry.place_id));
+  assert.equal(migration.mappings.length, migration.counts.place_records_migrated);
+  assert.equal(migrationPlaceIds.size, migration.counts.place_records_migrated);
   const placeDirectories = await readdir(path.join(ROOT, "content", "places"));
-  const migrated = [];
+  const placesById = new Map();
+  const canonicalFeastPlaces = [];
   for (const placeId of placeDirectories) {
     let place;
     try { place = parse(await readFile(path.join(ROOT, "content", "places", placeId, "place.yaml"), "utf8")); } catch { continue; }
+    placesById.set(place.id, place);
     if (!Array.isArray(place.patronal_feast_ids)) continue;
-    migrated.push(place);
+    canonicalFeastPlaces.push(place);
     assert.equal(place.patronal_feast, undefined);
     assert.equal(place.patronal_feasts, undefined);
     assert.equal(new Set(place.patronal_feast_ids).size, place.patronal_feast_ids.length);
     for (const id of place.patronal_feast_ids) assert.equal(knownIds.has(id), true, `${place.id}: ${id}`);
   }
-  assert.equal(migrated.length, 61);
+  const historicalMigratedPlaces = migration.mappings.map(({ place_id: placeId }) => {
+    const place = placesById.get(placeId);
+    assert.ok(place, `${placeId}: historical migrated place must still exist`);
+    assert.ok(Array.isArray(place.patronal_feast_ids), `${placeId}: canonical patronal_feast_ids must still exist`);
+    return place;
+  });
+  assert.equal(historicalMigratedPlaces.length, migration.counts.place_records_migrated);
+  assert.ok(canonicalFeastPlaces.length >= migration.counts.place_records_migrated);
   assert.equal(migration.legacy_inventory.length, 39);
   assert.equal(new Set(migration.legacy_inventory.map((entry) => entry.legacy_name)).size, 39);
-  assert.deepEqual(placeIdsForFeast(migrated, registry, "nikoljdan").sort(), ["crkva-svetog-nikole", "manastir-donje-brcele", "manastir-praskvica", "obodski-manastir"]);
+  assert.deepEqual(placeIdsForFeast(historicalMigratedPlaces, registry, "nikoljdan").sort(), ["crkva-svetog-nikole", "manastir-donje-brcele", "manastir-praskvica", "obodski-manastir"]);
 });
 
 test("fixed dates come only from explicit legacy text and verified coverage creates deterministic links", async () => {
