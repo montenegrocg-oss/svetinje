@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-crkva-na-cipuru-9431fbed5d31
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/crkva-na-cipuru/photo-crkva-na-cipuru-9431fbed5d31.jpg
+checksum_sha256: f2ad979316d49496e461aced0b00b48fa17d9fc22b2dceeb055e8daf344477ab
+mime_type: image/jpeg
+width: 2400
+height: 1800
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - crkva-na-cipuru
+localized_text:
+  sr:
+    alt_text: Црква на Ћипуру
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-08-29T08:03:23Z
+    reviewed_revision: 35a05eb9de1e9701c48377641d84cf369264c23d
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-08-29T08:03:23Z
+  created_by: montenegro-cg
+  updated_at: 2026-08-29T08:03:23Z
+  updated_by: montenegro-cg
