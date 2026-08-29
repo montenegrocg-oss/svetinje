@@ -408,6 +408,7 @@ function verifyFixedHomepageContracts(homepageHtml, model, failures) {
   const recommendationIds = [...homepageHtml.matchAll(/data-recommended-place="([^"]+)"/g)].map((match) => match[1]);
   if (JSON.stringify(recommendationIds) !== JSON.stringify(visibleRecommendations.map((place) => place.id))) failures.push("homepage most-visited places are outside canonical order");
   if (!homepageHtml.includes("Најпосјећеније светиње") || !homepageHtml.includes("data-today-calendar")) failures.push("homepage is missing its most-visited or Today section");
+  if (homepageHtml.includes('class="popular-routes') || homepageHtml.includes("Популарне руте")) failures.push("homepage still renders the removed Popular Routes section");
 }
 
 const root = process.cwd();
@@ -627,8 +628,8 @@ for (const { route, path: routePath } of model.routeDetailRoutes) {
   for (const duplicate of ["Дужина", "Вријеме", "Успон", "Најнижа тачка", "Највиша тачка", "Тежина"]) {
     if (practical.includes(`<dt>${duplicate}</dt>`)) failures.push(`route practical panel ${route.id} duplicates the ${duplicate} hero/profile metric`);
   }
-  if (!homepageHtml.includes(route.shortName) || !homepageHtml.includes(`/rute/${route.slug}/`)) {
-    failures.push(`homepage featured routes are missing ${route.id}`);
+  if (homepageHtml.includes(`/rute/${route.slug}/`)) {
+    failures.push(`homepage must not render the removed Popular Routes card ${route.id}`);
   }
   for (const extension of ["track.geojson", "track.gpx"]) {
     try { await readFile(path.join(distRoot, "rute", route.slug, extension), "utf8"); }

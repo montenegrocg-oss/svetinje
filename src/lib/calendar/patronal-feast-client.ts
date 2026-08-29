@@ -1,7 +1,35 @@
 import type {
+  PublicPatronalFeastDay,
   PublicPatronalFeastGroup,
   UpcomingPatronalFeasts,
 } from "../public-feast-catalogues.ts";
+import { homepageUpcomingFeasts } from "./homepage-patronal-feasts.ts";
+import { podgoricaDateKey } from "./today-calendar.ts";
+
+const patronalFeastDayRequests = new Map<string, Promise<PublicPatronalFeastDay>>();
+
+export function loadPublicPatronalFeastDay(date: string): Promise<PublicPatronalFeastDay> {
+  const cached = patronalFeastDayRequests.get(date);
+  if (cached) return cached;
+  const request = fetch(`/feast-days/${date}.json`).then((response) => {
+    if (!response.ok) throw new Error("patronal feasts unavailable");
+    return response.json() as Promise<PublicPatronalFeastDay>;
+  });
+  patronalFeastDayRequests.set(date, request);
+  return request;
+}
+
+export function activeHomepagePatronalFeastDate(
+  root: Pick<HTMLElement, "dataset">,
+  now = new Date(),
+  search = window.location.search,
+): string {
+  const dateKey = podgoricaDateKey(now);
+  const previewDate = new URLSearchParams(search).get("calendar-date");
+  return root.dataset.previewTodayOverride === "true" && /^2026-\d{2}-\d{2}$/u.test(previewDate ?? "")
+    ? previewDate!
+    : dateKey;
+}
 
 interface PatronalFeastSection {
   title: string;
@@ -79,4 +107,63 @@ export function replacePatronalFeasts(
   anchor.parentElement?.querySelector(`[data-patronal-feasts-target="${CSS.escape(target)}"]`)?.remove();
   const section = feastSection(model, target);
   if (section) anchor.insertAdjacentElement("afterend", section);
+}
+
+export function replaceHomepageUpcomingPatronalFeasts(
+  anchor: HTMLTemplateElement,
+  payload: PublicPatronalFeastDay,
+): void {
+  anchor.parentElement?.querySelector("[data-homepage-upcoming-feasts]")?.remove();
+  const model = homepageUpcomingFeasts(payload);
+  if (!model) return;
+
+  const section = element("section", "homepage-upcoming-feasts");
+  section.dataset.homepageUpcomingFeasts = "";
+  section.setAttribute("aria-labelledby", "homepage-upcoming-feasts-title");
+  const label = Object.assign(element("h2", "homepage-upcoming-feasts__label"), {
+    id: "homepage-upcoming-feasts-title",
+    textContent: "Предстојеће славе",
+  });
+  const date = element("p", "homepage-upcoming-feasts__date");
+  const time = Object.assign(element("time"), { dateTime: model.date, textContent: model.dateLabel });
+  if (model.calendarHref) {
+    const link = Object.assign(element("a"), { href: model.calendarHref });
+    const arrow = Object.assign(element("span"), { textContent: " →" });
+    arrow.setAttribute("aria-hidden", "true");
+    link.append(time, arrow);
+    date.append(link);
+  } else {
+    date.append(time);
+  }
+
+  const groups = element("div", "homepage-upcoming-feasts__groups");
+  model.feasts.forEach((feast) => {
+    const article = element("article", "homepage-upcoming-feasts__group");
+    article.dataset.homepageUpcomingFeastId = feast.id;
+    const heading = element("h3");
+    const feastLink = Object.assign(element("a"), { href: feast.href, textContent: feast.name });
+    const arrow = Object.assign(element("span"), { textContent: " →" });
+    arrow.setAttribute("aria-hidden", "true");
+    feastLink.append(arrow);
+    heading.append(feastLink);
+    const places = element("ul");
+    feast.places.forEach((place) => {
+      const item = element("li");
+      item.dataset.homepageUpcomingPlace = place.id;
+      item.append(Object.assign(element("a"), { href: place.href, textContent: place.name }));
+      places.append(item);
+    });
+    article.append(heading, places);
+    if (feast.allPlacesHref) {
+      const allPlaces = Object.assign(element("a", "homepage-upcoming-feasts__all"), {
+        href: feast.allPlacesHref,
+        textContent: `Све светиње (${feast.totalPlaces}) →`,
+      });
+      article.append(allPlaces);
+    }
+    groups.append(article);
+  });
+
+  section.append(label, date, groups);
+  anchor.insertAdjacentElement("afterend", section);
 }

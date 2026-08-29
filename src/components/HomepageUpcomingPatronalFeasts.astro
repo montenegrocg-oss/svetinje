@@ -1,0 +1,18 @@
+<template data-homepage-upcoming-feasts-anchor></template>
+
+<script>
+  import {
+    activeHomepagePatronalFeastDate,
+    loadPublicPatronalFeastDay,
+    replaceHomepageUpcomingPatronalFeasts,
+  } from "../lib/calendar/patronal-feast-client";
+
+  const todayRoot = document.querySelector<HTMLElement>("[data-today-calendar]");
+  const anchor = document.querySelector<HTMLTemplateElement>("[data-homepage-upcoming-feasts-anchor]");
+  if (todayRoot && anchor) {
+    const activeDate = activeHomepagePatronalFeastDate(todayRoot);
+    loadPublicPatronalFeastDay(activeDate)
+      .then((payload) => replaceHomepageUpcomingPatronalFeasts(anchor, payload))
+      .catch(() => replaceHomepageUpcomingPatronalFeasts(anchor, { date: activeDate, feasts: [] }));
+  }
+</script>

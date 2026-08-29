@@ -53,7 +53,7 @@ test("Today hydration resolves the Podgorica date at runtime and fetches only th
   assert.equal(nearMidnight.toISOString().slice(0, 10), "2026-08-24");
   assert.equal(podgoricaDateKey(nearMidnight), "2026-08-25");
   assert.match(today, /data-calendar-gospel-content/);
-  assert.match(hydration, /const dateKey = podgoricaDateKey\(new Date\(\)\)/);
+  assert.match(hydration, /const activeDateKey = activeHomepagePatronalFeastDate\(root\)/);
   assert.match(hydration, /fetch\(`\/gospel\/\$\{date\}\.json`\)/);
   assert.match(hydration, /renderGospelReadings\(payload\.readings\)/);
   assert.match(hydration, /readings\.forEach/);

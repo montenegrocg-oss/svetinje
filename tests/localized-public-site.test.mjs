@@ -136,9 +136,11 @@ test("Serbian, Russian, and English home routes share the complete homepage arch
   assert.match(home, /<PlaceAreas places=\{places\} locale=\{locale\} \/>/);
   assert.doesNotMatch(localizedPage, /page === "home"|pageCopy\.home/);
 
-  for (const component of ["ExplorerSidebar", "RecommendedPlaces", "TodayCalendar", "PopularRoutes"]) {
+  for (const component of ["ExplorerSidebar", "RecommendedPlaces", "TodayCalendar"]) {
     assert.match(explorer, new RegExp(`<${component}[^>]+locale=\\{locale\\}`));
   }
+  assert.doesNotMatch(explorer, /PopularRoutes/);
+  assert.match(explorer, /locale === "sr" && <HomepageUpcomingPatronalFeasts \/>/);
   assert.match(explorer, /data-explorer-copy/);
   assert.match(explorer, /runtimeCopy\.status/);
   assert.doesNotMatch(explorer, /Нема резултата|Нема записа|Приказана су|Страница \$\{currentPage\}/);

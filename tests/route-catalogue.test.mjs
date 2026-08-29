@@ -91,7 +91,7 @@ test("route catalogue copy has matching Serbian, Russian, and English controls",
   }
 });
 
-test("route catalogue remains loader-driven and homepage Popular Routes remains separate", async () => {
+test("route catalogue remains loader-driven after homepage route loading is removed", async () => {
   const [indexPage, localizedPage, component, popularRoutes, homePage] = await Promise.all([
     source("src/pages/rute/index.astro"),
     source("src/components/LocalizedPublicPage.astro"),
@@ -104,6 +104,5 @@ test("route catalogue remains loader-driven and homepage Popular Routes remains 
   assert.match(localizedPage, /page === "routes" && <RouteCataloguePage locale=\{locale\} routes=\{\[\]\}/);
   assert.doesNotMatch(component, /readFile|readdir|loadVisibleRoutes/);
   assert.match(popularRoutes, /<RouteCard route=\{route\} compact \/>/);
-  assert.match(homePage, /loadVisibleRoutes/);
-  assert.match(homePage, /<MapExplorer places=\{places\} routes=\{routes\}/);
+  assert.doesNotMatch(homePage, /loadVisibleRoutes|routes=\{routes\}/);
 });

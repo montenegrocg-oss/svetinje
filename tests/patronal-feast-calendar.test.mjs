@@ -157,8 +157,9 @@ test("Today and Calendar integrations stay SR-only and preserve daily Gospel hyd
   assert.match(today, /locale === "sr" \? <>[\s\S]*data-patronal-feasts-anchor="today"/);
   assert.doesNotMatch(today, /Данас славе/);
   assert.match(today, /process\.env\.EDITORIAL_PREVIEW === "true"/);
-  assert.match(todayHydration, /const dateKey = podgoricaDateKey\(new Date\(\)\)[\s\S]*dataset\.previewTodayOverride === "true"/);
-  assert.match(todayHydration, /fetch\(`\/feast-days\/\$\{date\}\.json`\)/);
+  assert.match(todayHydration, /activeHomepagePatronalFeastDate\(root\)/);
+  assert.match(todayHydration, /loadPublicPatronalFeastDay\(date\)/);
+  assert.doesNotMatch(todayHydration, /fetch\(`\/feast-days/);
   assert.match(todayHydration, /title: "Данас славе"[\s\S]*feasts: payload\.feasts/);
   assert.match(todayHydration, /fetch\(`\/gospel\/\$\{date\}\.json`\)/);
   assert.match(todayHydration, /renderGospelReadings\(payload\.readings\)/);
