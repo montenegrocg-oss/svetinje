@@ -16,9 +16,10 @@ const gospelReadings = locale === "sr" && fallback
   ? gospelReadingsForDate(await loadGospelReadingsDataset(), fallback.date)
   : [];
 const currentDate = new Intl.DateTimeFormat(localeConfig[locale].htmlLang, { timeZone: "Europe/Podgorica", day: "numeric", month: "long", year: "numeric" }).format(new Date());
+const calendarDateOverrideEnabled = locale === "sr" && process.env.EDITORIAL_PREVIEW === "true";
 ---
 
-<section class="today-calendar" aria-labelledby="today-calendar-title" data-today-calendar data-calendar-year="2026" data-calendar-locale={locale} data-calendar-gospel-date={fallback?.date}>
+<section class="today-calendar" aria-labelledby="today-calendar-title" data-today-calendar data-calendar-year="2026" data-calendar-locale={locale} data-calendar-gospel-date={fallback?.date} data-preview-today-override={calendarDateOverrideEnabled ? "true" : undefined}>
   <header class="today-calendar__header">
     <p class="today-calendar__label">{copy.label}</p>
     <p class="today-calendar__day" data-calendar-date>{locale === "sr" ? (fallback ? localizedCalendarDate(fallback.date, { day: "numeric", month: "long", year: "numeric" }) : copy.calendarPreparing) : currentDate}</p>
@@ -29,6 +30,7 @@ const currentDate = new Intl.DateTimeFormat(localeConfig[locale].htmlLang, { tim
     {locale === "sr" ? <>
       {fallback && <p data-calendar-week-context>{fallback.week_context_sr}</p>}
       <a data-calendar-day-link href={fallback ? `/kalendar/${fallback.date}/` : "/kalendar/"}>{copy.openCalendar} <span aria-hidden="true">→</span></a>
+      <template data-patronal-feasts-anchor="today"></template>
     </> : <>
       <p>{copy.translationBody}</p>
       <a data-calendar-day-link href={routeFor(locale, "calendar")}>{copy.openCalendar} <span aria-hidden="true">→</span></a>
