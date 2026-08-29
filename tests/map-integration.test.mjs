@@ -132,8 +132,10 @@ test("the renderer has a recoverable soft timeout and becomes ready after MapLib
   assert.match(mapCanvas, /stopWatchingInitialLoad = watchInitialMapLoad\(map, \{\s*onSlow: showSlowLoading,\s*onReady: showReadyMap,\s*onFatal: showFallback,\s*isFatalError: \(event\) => isFatalInitialStyleError\(event, MAP_STYLE_URL\),\s*\}\);/);
   assert.match(mapCanvas, /removeActiveMap = \(\) => \{[\s\S]*?stopWatchingInitialLoad\(\);/);
   const slowHandler = mapCanvas.match(/const showSlowLoading = \(\) => \{([\s\S]*?)\n    \};/)?.[1] ?? "";
+  const initialLoadHandlers = mapCanvas.slice(mapCanvas.indexOf("const showReadyMap"), loadIndex);
   assert.doesNotMatch(slowHandler, /showFallback|removeActiveMap|map\.remove/);
-  assert.doesNotMatch(mapCanvas, /showInteractiveMap\(\);|map\.on\("render"|map\.once\("idle"|triggerRepaint|requestAnimationFrame/);
+  assert.doesNotMatch(initialLoadHandlers, /requestAnimationFrame/);
+  assert.doesNotMatch(mapCanvas, /showInteractiveMap\(\);|map\.on\("render"|map\.once\("idle"|triggerRepaint/);
 });
 
 test("slow-loading copy is localized in Serbian, Russian, and English", async () => {
@@ -444,8 +446,17 @@ test("one accessible marker preview preserves desktop navigation and pins touch 
   assert.match(mapCanvas, /root\.dataset\.popupOpen = "true"/);
   assert.match(mapCanvas, /root\.removeAttribute\("data-popup-open"\)/);
   assert.match(mapCanvas, /if \(activePreview\?\.place\.id === place\.id\) \{[\s\S]*?root\.dataset\.popupOpen = "true"/);
-  assert.match(mapCanvas, /activePreview = \{ place, link, card, pinned \};[\s\S]*?root\.dataset\.popupOpen = "true"/);
+  assert.match(mapCanvas, /if \(activePreview\?\.place\.id === place\.id\) \{[\s\S]*?schedulePreviewVisibilityCheck\(\)/);
+  assert.match(mapCanvas, /activePreview = \{ place, link, card, pinned \};[\s\S]*?root\.dataset\.popupOpen = "true"[\s\S]*?schedulePreviewVisibilityCheck\(\)/);
   assert.match(mapCanvas, /activePreview = \{ place, link, card, pinned \}/);
+  assert.match(mapCanvas, /const keepPreviewVisibleOnMobile = \(requestId: number, retryAfterPan: boolean\) => \{[\s\S]*?requestId !== previewVisibilityRequest[\s\S]*?max-width: 47\.999rem/);
+  assert.match(mapCanvas, /querySelector<HTMLDetailsElement>\("\.mobile-navigation\[open\]"\)[\s\S]*?mobileNavigation\.open = false/);
+  assert.match(mapCanvas, /previewPopup\.getElement\(\)/);
+  assert.match(mapCanvas, /querySelector<HTMLElement>\("\.site-header"\)[\s\S]*?querySelector<HTMLElement>\("\.map-actions"\)/);
+  assert.match(mapCanvas, /getMapPopupPanOffset\(popupElement\.getBoundingClientRect\(\), safeRect\)/);
+  assert.match(mapCanvas, /map\.panBy\(panOffset, \{ duration: animationDuration\(\) \}\)/);
+  assert.match(mapCanvas, /window\.setTimeout\([\s\S]*?keepPreviewVisibleOnMobile\(requestId, false\)[\s\S]*?animationDuration\(\) \+ 50/);
+  assert.match(mapCanvas, /window\.requestAnimationFrame\(\(\) => keepPreviewVisibleOnMobile\(requestId, true\)\)/);
   assert.match(mapCanvas, /if \(activePreview\?\.place\.id === id\) closePreview\(\)/);
   assert.match(mapCanvas, /link\.href = `\$\{placeDetailRoot\}\$\{encodeURIComponent\(place\.slug\)\}\/`/);
   assert.match(mapCanvas, /map-place-preview__link[\s\S]*?link\.href = `\$\{placeDetailRoot\}\$\{encodeURIComponent\(place\.slug\)\}\/`/);

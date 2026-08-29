@@ -170,6 +170,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
   import { clusterProjectedMarkers, getClusterExpansionZoom, type ProjectedMarker } from "../lib/map-marker-clustering";
   import { createInitialMap, isFatalInitialStyleError, watchInitialMapLoad } from "../lib/map-load-lifecycle";
   import { resolveMarkerAsset } from "../lib/map-marker-assets";
+  import { getMapPopupPanOffset } from "../lib/map-popup-positioning";
 
   const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY?.trim();
   const MAP_STYLE_URL = MAPTILER_KEY
@@ -335,6 +336,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
     const markerRecords: { place: MarkerPlace; link: HTMLAnchorElement }[] = [];
     let clusterMarkers: MapLibreMarker[] = [];
     let visibleMarkerIds = new Set(markerPlaces.map(({ id }) => id));
+    const animationDuration = () => (reducedMotion.matches ? 0 : 420);
     const previewPopup = new maplibregl.Popup({
       closeButton: false,
       closeOnClick: false,
@@ -352,6 +354,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
       className: "editorial-route-popup",
     });
     let previewCloseTimer: number | undefined;
+    let previewVisibilityRequest = 0;
     let activePreview: {
       place: MarkerPlace;
       link: HTMLAnchorElement;
@@ -366,6 +369,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
 
     const closePreview = () => {
       clearPreviewCloseTimer();
+      previewVisibilityRequest += 1;
       root.removeAttribute("data-popup-open");
       if (!activePreview) return;
       activePreview.link.setAttribute("aria-expanded", "false");
@@ -454,12 +458,65 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
       return card;
     };
 
+    const keepPreviewVisibleOnMobile = (requestId: number, retryAfterPan: boolean) => {
+      if (requestId !== previewVisibilityRequest || !window.matchMedia("(max-width: 47.999rem)").matches) return;
+
+      const mobileNavigation = document.querySelector<HTMLDetailsElement>(".mobile-navigation[open]");
+      if (mobileNavigation) mobileNavigation.open = false;
+
+      const popupElement = previewPopup.getElement();
+      if (!popupElement) return;
+
+      const mapRect = root.getBoundingClientRect();
+      const viewportWidth = document.documentElement.clientWidth;
+      const viewportHeight = window.innerHeight;
+      const safeGap = 12;
+      let safeTop = Math.max(0, mapRect.top);
+
+      [
+        document.querySelector<HTMLElement>(".site-header"),
+        stage?.querySelector<HTMLElement>(".map-actions"),
+      ].forEach((overlay) => {
+        if (!overlay) return;
+        const overlayRect = overlay.getBoundingClientRect();
+        const overlapsMap = overlayRect.right > mapRect.left
+          && overlayRect.left < mapRect.right
+          && overlayRect.bottom > mapRect.top
+          && overlayRect.top < mapRect.bottom;
+        if (overlapsMap) safeTop = Math.max(safeTop, overlayRect.bottom);
+      });
+
+      const safeRect = {
+        top: safeTop + safeGap,
+        right: Math.min(viewportWidth, mapRect.right) - safeGap,
+        bottom: Math.min(viewportHeight, mapRect.bottom) - safeGap,
+        left: Math.max(0, mapRect.left) + safeGap,
+      };
+      const panOffset = getMapPopupPanOffset(popupElement.getBoundingClientRect(), safeRect);
+      if (panOffset[0] === 0 && panOffset[1] === 0) return;
+
+      visitorMovedMap = true;
+      map.panBy(panOffset, { duration: animationDuration() });
+      if (retryAfterPan) {
+        window.setTimeout(
+          () => keepPreviewVisibleOnMobile(requestId, false),
+          animationDuration() + 50,
+        );
+      }
+    };
+
+    const schedulePreviewVisibilityCheck = () => {
+      const requestId = ++previewVisibilityRequest;
+      window.requestAnimationFrame(() => keepPreviewVisibleOnMobile(requestId, true));
+    };
+
     const openPreview = (place: MarkerPlace, link: HTMLAnchorElement, pinned = false) => {
       clearPreviewCloseTimer();
       routePopup.remove();
       if (activePreview?.place.id === place.id) {
         root.dataset.popupOpen = "true";
         if (pinned) activePreview.pinned = true;
+        schedulePreviewVisibilityCheck();
         return;
       }
       closePreview();
@@ -472,6 +529,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
         .addTo(map);
       activePreview = { place, link, card, pinned };
       root.dataset.popupOpen = "true";
+      schedulePreviewVisibilityCheck();
     };
 
     markerPlaces.forEach((place) => {
@@ -536,7 +594,6 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
       markerRecords.push({ place, link });
     });
 
-    const animationDuration = () => (reducedMotion.matches ? 0 : 420);
     let routesVisible = false;
     let routeLayerPromise: Promise<void> | undefined;
     const routeBounds = new maplibregl.LngLatBounds();
