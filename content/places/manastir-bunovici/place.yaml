@@ -57,5 +57,5 @@ audit:
   created_by: codex
   updated_at: 2026-08-26T21:08:08Z
   updated_by: montenegro-cg
-patronal_feasts:
-  - name: Света Петка 27. октобар
+patronal_feast_ids:
+  - sveta-petka

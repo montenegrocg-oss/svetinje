@@ -54,5 +54,5 @@ ecclesiastical:
     value: male
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Силазак Светог Духа на апостоле - Педесетница
+patronal_feast_ids:
+  - silazak-svetog-duha-na-apostole-pedesetnica

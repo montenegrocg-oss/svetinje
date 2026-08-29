@@ -20,9 +20,9 @@ ecclesiastical:
     value: eparhija-budimljansko-niksicka
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Свети Василије Острошки Чудотворац 12. мај
-  - name: Свети мученик цар Николај Руски 17. јул
+patronal_feast_ids:
+  - sveti-vasilije-ostroski-cudotvorac
+  - sveti-mucenik-car-nikolaj-ruski
 location:
   municipality:
     value: Никшић

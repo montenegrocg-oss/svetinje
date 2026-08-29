@@ -43,5 +43,5 @@ ecclesiastical:
     value: male
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Икона Пресвете Богородице - Тројеручица 25. јул
+patronal_feast_ids:
+  - ikona-presvete-bogorodice-trojerucica

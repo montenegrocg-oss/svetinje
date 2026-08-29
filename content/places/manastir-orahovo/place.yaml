@@ -47,5 +47,5 @@ ecclesiastical:
     value: female
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Пренос моштију св. оца Николаја 22. мај
+patronal_feast_ids:
+  - prenos-mostiju-svetog-nikolaja

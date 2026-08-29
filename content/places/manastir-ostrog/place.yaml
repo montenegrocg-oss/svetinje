@@ -53,5 +53,5 @@ ecclesiastical:
     value: male
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Св. Василије Острошки Чудотворац 12. мај
+patronal_feast_ids:
+  - sv-vasilije-ostroski-cudotvorac

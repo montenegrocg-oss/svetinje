@@ -35,5 +35,5 @@ location:
     value: budva
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Света Петка 27. октобар
+patronal_feast_ids:
+  - sveta-petka

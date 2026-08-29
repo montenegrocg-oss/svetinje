@@ -61,5 +61,5 @@ audit:
   created_by: maxim
   updated_at: 2026-08-26T21:19:12Z
   updated_by: montenegro-cg
-patronal_feasts:
-  - name: Васкрсење Христово
+patronal_feast_ids:
+  - vaskrsenje-hristovo

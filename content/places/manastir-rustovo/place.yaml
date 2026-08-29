@@ -58,5 +58,5 @@ audit:
   created_by: codex
   updated_at: 2026-08-26T21:05:16Z
   updated_by: montenegro-cg
-patronal_feasts:
-  - name: Успеније Пресвете Богородице - Велика Госпојина 28. августа
+patronal_feast_ids:
+  - uspenije-presvete-bogorodice-velika-gospojina

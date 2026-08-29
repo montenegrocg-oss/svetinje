@@ -3,7 +3,7 @@ import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/pr
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { stringify } from "yaml";
+import { parse, stringify } from "yaml";
 import { validateRepository, validateRepositoryWithSummary } from "../scripts/content-validation.mjs";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
@@ -113,6 +113,7 @@ test("the repository summary reports actual validated record counts", async () =
   const result = await validateRepositoryWithSummary(PROJECT_ROOT);
   const contentRoot = path.join(PROJECT_ROOT, "content");
   const actualCounts = {
+    feasts: parse((await readFile(path.join(contentRoot, "feasts", "registry.yaml"), "utf8"))).feasts.length,
     places: await countFiles(path.join(contentRoot, "places"), (file) => path.basename(file) === "place.yaml"),
     narratives: await countFiles(path.join(contentRoot, "places"), (file) => file.endsWith(".md") && path.basename(path.dirname(file)) === "narratives"),
     sources: await countFiles(path.join(contentRoot, "sources"), (file) => file.endsWith(".yaml")),
@@ -140,6 +141,34 @@ test("neutral draft structural records validate", async (t) => {
   await yamlFile(root, "content/places/validation-subject/place.yaml", unsourcedPlace);
   await narrativeFile(root, "validation-subject", "sr", unsourcedNarrative);
   assert.deepEqual(await validateRepository(root), []);
+});
+
+test("feast validation rejects impossible fixed dates and duplicate registry identities", async (t) => {
+  const root = await project(t);
+  await yamlFile(root, "content/feasts/registry.yaml", {
+    schema_version: 1,
+    feasts: [
+      { id: "same-feast", name_sr: "Иста слава", legacy_names: ["Прва"], date: { kind: "fixed", month: 2, day: 30 } },
+      { id: "same-feast", name_sr: " иста   слава ", legacy_names: ["Друга"] },
+    ],
+  });
+  const errors = await validateRepository(root);
+  assert.equal(has(errors, "day is invalid for month 2"), true);
+  assert.equal(has(errors, "duplicate feast id same-feast"), true);
+  assert.equal(has(errors, "duplicate canonical feast name"), true);
+});
+
+test("feast validation rejects unresolved and duplicate place feast IDs", async (t) => {
+  const root = await project(t);
+  await yamlFile(root, "content/feasts/registry.yaml", {
+    schema_version: 1,
+    feasts: [{ id: "known-feast", name_sr: "Позната слава", legacy_names: ["Позната слава"], date: { kind: "movable" } }],
+  });
+  await yamlFile(root, "content/places/validation-subject/place.yaml", { ...place(), patronal_feast_ids: ["missing-feast"] });
+  assert.equal(has(await validateRepository(root), "unknown feast id missing-feast"), true);
+  await yamlFile(root, "content/places/validation-subject/place.yaml", { ...place(), patronal_feast_ids: ["known-feast", "known-feast"] });
+  const duplicateErrors = await validateRepository(root);
+  assert.ok(duplicateErrors.some((error) => error.field.startsWith("/patronal_feast_ids") && error.message.includes("duplicate")));
 });
 
 test("monastic community is optional, controlled, and monastery-only", async (t) => {

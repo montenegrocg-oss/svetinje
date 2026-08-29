@@ -44,5 +44,5 @@ location:
     value: bar
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Митровдан 8. новембар
+patronal_feast_ids:
+  - mitrovdan

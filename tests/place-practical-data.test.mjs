@@ -20,7 +20,9 @@ const audit = { created_at: "2026-08-23T00:00:00Z", created_by: "test", updated_
 const basePlace = { schema_version: 1, id: "synthetic-place", editorial_status: "research", relationships: {}, approvals: [], audit };
 const baseNarrative = { schema_version: 1, place_id: "synthetic-place", locale: "sr", editorial_status: "research", translation_status: "source", approvals: [], audit };
 
-test("place schema accepts legacy or plural patronal feasts, never both or empty values", () => {
+test("place schema accepts canonical IDs and temporary legacy patronal feast shapes", () => {
+  assert.equal(validatePlace({ ...basePlace, patronal_feast_ids: ["nikoljdan"] }), true);
+  assert.equal(validatePlace({ ...basePlace, patronal_feast_ids: ["nikoljdan", "nikoljdan"] }), false);
   assert.equal(validatePlace({ ...basePlace, patronal_feast: { name: "Слава" } }), true);
   assert.equal(validatePlace({ ...basePlace, patronal_feasts: [{ name: "Прва" }, { name: "Друга" }] }), true);
   assert.equal(validatePlace({ ...basePlace, patronal_feast: { name: "Слава" }, patronal_feasts: [{ name: "Друга" }] }), false);

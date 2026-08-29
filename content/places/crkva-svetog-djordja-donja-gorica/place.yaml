@@ -45,5 +45,5 @@ location:
     value: podgorica
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Ђурђиц 16. новембар
+patronal_feast_ids:
+  - djurdjic

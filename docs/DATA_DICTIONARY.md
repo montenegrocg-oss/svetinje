@@ -460,7 +460,8 @@ File:
 | place_type | fact block | Yes after identity research |
 | parent_place_id | fact block | No |
 | ecclesiastical | object | No, but required facts must be researched before publication |
-| patronal_feasts | list of `{ name }` objects | No; one or more items when present |
+| patronal_feast_ids | ordered FeastId list | No; one or more unique IDs when present |
+| patronal_feasts | legacy list of `{ name }` objects | No; read/validation compatibility only |
 | location | object | No |
 | relationships | object | Yes; empty lists allowed only in research or draft |
 | source_ids | SourceId list | Yes from fact-review onward |
@@ -510,9 +511,11 @@ EparchyId is controlled by `schemas/place.schema.json#/$defs/eparchyId`. It cont
 
 The Phase 1 project scope must not be copied automatically into authority_id or jurisdiction.
 
-### 7.6 patronal_feasts
+### 7.6 patronal feast registry and place references
 
-`patronal_feasts` is the canonical ordered list of patronal feast names. Each item contains exactly one non-empty `name`. The list is omitted when no feast has been recorded and must not be persisted as an empty array. The legacy singular `patronal_feast: { name }` remains readable and schema-valid during natural migration, but a record must never contain both forms. Admin saves normalize edited records to `patronal_feasts` without a repository-wide migration.
+`content/feasts/registry.yaml` is the canonical Feast registry. Every entry has an immutable `id`, required Serbian `name_sr`, and the exact `legacy_names` from which the registry was seeded. A `fixed` date stores only year-independent `month` and `day`; a `movable` date has no fixed month/day. Optional `calendar_bindings` are explicit year-specific civil dates and are intended for future verified movable-feast linkage. The registry never computes movable dates.
+
+`patronal_feast_ids` is the canonical ordered list of unique FeastIds in a place record. Every ID must resolve in the Feast registry. Runtime resolution priority is canonical IDs, then legacy plural `patronal_feasts`, then legacy singular `patronal_feast`. Both legacy name shapes remain schema-valid temporarily so the existing Admin workflow can continue until its separate FeastId rollout; new canonical content paths use IDs.
 
 ### 7.7 location object
 

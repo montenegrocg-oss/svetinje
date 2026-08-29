@@ -55,5 +55,5 @@ audit:
   created_by: codex
   updated_at: 2026-08-26T21:13:52Z
   updated_by: montenegro-cg
-patronal_feasts:
-  - name: Никољдан 19. децембар
+patronal_feast_ids:
+  - nikoljdan

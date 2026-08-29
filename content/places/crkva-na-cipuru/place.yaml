@@ -39,5 +39,5 @@ location:
     value: cetinje
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Рођење Пресвете Богородице 21. септембер
+patronal_feast_ids:
+  - rodjenje-presvete-bogorodice

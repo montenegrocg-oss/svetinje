@@ -55,5 +55,5 @@ audit:
   created_by: codex
   updated_at: 2026-08-26T19:43:41Z
   updated_by: montenegro-cg
-patronal_feasts:
-  - name: Ђурђевдан 6. мај
+patronal_feast_ids:
+  - djurdjevdan

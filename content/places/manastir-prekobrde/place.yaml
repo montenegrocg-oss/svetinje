@@ -57,5 +57,5 @@ audit:
   created_by: codex
   updated_at: 2026-08-26T20:59:58Z
   updated_by: montenegro-cg
-patronal_feasts:
-  - name: Аранђеловдан 21. новембар
+patronal_feast_ids:
+  - arandjelovdan

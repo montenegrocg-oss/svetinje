@@ -11,6 +11,7 @@ import {
   editorialPreviewEligibilityErrors,
   parseEditorialPreviewRegistry,
 } from "./editorial-preview-eligibility.ts";
+import { loadFeastRegistry, patronalFeastNames, type FeastRecord } from "./feast-registry.ts";
 
 type ReviewRole = "publishing" | "factual" | "ecclesiastical" | "sr-language" | "media-rights";
 
@@ -57,6 +58,7 @@ interface PlaceRecord {
   };
   patronal_feast?: { name?: string };
   patronal_feasts?: Array<{ name?: string }>;
+  patronal_feast_ids?: string[];
   video?: { youtube_url?: string };
   location?: {
     municipality_id?: StringFact;
@@ -295,6 +297,7 @@ async function loadRecords(root: string): Promise<{
   narratives: NarrativeRecord[];
   sources: SourceRecord[];
   media: MediaRecord[];
+  feasts: FeastRecord[];
 }> {
   const contentRoot = path.join(root, "content");
   const [placeFiles, narrativeFiles, sourceFiles, mediaFiles] = await Promise.all([
@@ -304,13 +307,14 @@ async function loadRecords(root: string): Promise<{
     filesIn(path.join(contentRoot, "media"), (file) => file.endsWith(".yaml")),
   ]);
 
-  const [places, narratives, sources, media] = await Promise.all([
+  const [places, narratives, sources, media, feastRegistry] = await Promise.all([
     Promise.all(placeFiles.map(async (file) => (await readYamlObject(file)) as unknown as PlaceRecord)),
     Promise.all(narrativeFiles.map(readNarrative)),
     Promise.all(sourceFiles.map(async (file) => (await readYamlObject(file)) as unknown as SourceRecord)),
     Promise.all(mediaFiles.map(async (file) => (await readYamlObject(file)) as unknown as MediaRecord)),
+    loadFeastRegistry(root),
   ]);
-  return { places, narratives, sources, media };
+  return { places, narratives, sources, media, feasts: feastRegistry.feasts };
 }
 
 function mediaRightsMetadataIsComplete(media: MediaRecord): boolean {
@@ -389,7 +393,7 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
   const policy = await loadPolicy(root);
   if (policy.public_publication_locked) return [];
 
-  const { places, narratives } = await loadRecords(root);
+  const { places, narratives, feasts } = await loadRecords(root);
   const narrativeByPlace = new Map(
     narratives
       .filter((narrative) => narrative.locale === "sr")
@@ -433,7 +437,7 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
       summary: narrative.summary,
       placeType: place.place_type.value,
       narrativeBody: narrative.body,
-      patronalFeasts: patronalFeastNames(place),
+      patronalFeasts: patronalFeastNames(place, { schema_version: 1, feasts }),
       ...(serviceSchedule ? { serviceSchedule } : {}),
       ...(monasticCommunity ? { monasticCommunity } : {}),
       ...(youtubeVideoId ? { youtubeVideoId } : {}),
@@ -503,17 +507,6 @@ function monasticCommunityValue(value: unknown): MonasticCommunity | undefined {
   return value === "male" || value === "female" ? value : undefined;
 }
 
-function patronalFeastNames(place: PlaceRecord): string[] {
-  const records = Array.isArray(place.patronal_feasts)
-    ? place.patronal_feasts
-    : place.patronal_feast
-      ? [place.patronal_feast]
-      : [];
-  return records.flatMap((record) => typeof record?.name === "string" && record.name.trim()
-    ? [record.name.trim()]
-    : []);
-}
-
 function optionalNonBlankText(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
@@ -542,7 +535,7 @@ export function isEditorialPreviewBuild(): boolean {
 }
 
 export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<VisiblePlace[]> {
-  const [{ places, narratives, sources, media }, policy] = await Promise.all([loadRecords(root), loadPolicy(root)]);
+  const [{ places, narratives, sources, media, feasts }, policy] = await Promise.all([loadRecords(root), loadPolicy(root)]);
   const placeById = new Map(places.map((place) => [place.id, place]));
   const narrativeByPlace = new Map(
     narratives.filter((narrative) => narrative.locale === "sr").map((narrative) => [narrative.place_id, narrative]),
@@ -596,7 +589,7 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
     const coordinateAccuracy = coordinates?.accuracy;
     const ecclesiasticalJurisdiction = place.ecclesiastical?.jurisdiction?.value;
     const monasticCommunity = monasticCommunityValue(place.ecclesiastical?.community_type?.value);
-    const patronalFeasts = patronalFeastNames(place);
+    const patronalFeasts = patronalFeastNames(place, { schema_version: 1, feasts });
     const serviceSchedule = optionalNonBlankText(narrative.service_schedule);
     const youtubeVideoId = parseYoutubeVideoId(place.video?.youtube_url);
     const mediaOrder = Array.isArray((place.relationships as { media_ids?: unknown } | undefined)?.media_ids)

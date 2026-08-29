@@ -55,5 +55,5 @@ audit:
   created_by: codex
   updated_at: 2026-08-26T20:09:12Z
   updated_by: montenegro-cg
-patronal_feasts:
-  - name: Улазак Господа Исуса Христа у Јерусалим - Цвети
+patronal_feast_ids:
+  - cvijeti

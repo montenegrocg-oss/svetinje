@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://svetinje.me/schemas/feast-registry.schema.json",
+  "title": "Svetinje.me canonical patronal feast registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "feasts"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "feasts": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/feast" }
+    }
+  },
+  "$defs": {
+    "feast": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name_sr", "legacy_names"],
+      "properties": {
+        "id": { "$ref": "common.schema.json#/$defs/entityId" },
+        "name_sr": { "$ref": "common.schema.json#/$defs/nonEmptyText" },
+        "legacy_names": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/$defs/nonEmptyText" }
+        },
+        "date": { "$ref": "#/$defs/feastDate" },
+        "calendar_bindings": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "common.schema.json#/$defs/date" }
+        }
+      }
+    },
+    "feastDate": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "month", "day"],
+          "properties": {
+            "kind": { "const": "fixed" },
+            "month": { "type": "integer", "minimum": 1, "maximum": 12 },
+            "day": { "type": "integer", "minimum": 1, "maximum": 31 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "movable" }
+          }
+        }
+      ]
+    }
+  }
+}

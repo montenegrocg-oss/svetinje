@@ -55,5 +55,5 @@ audit:
   created_by: codex
   updated_at: 2026-08-26T21:07:26Z
   updated_by: montenegro-cg
-patronal_feasts:
-  - name: Света Матрона Московска
+patronal_feast_ids:
+  - sveta-matrona-moskovska

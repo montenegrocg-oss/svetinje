@@ -149,6 +149,7 @@ test("editorial preview normalizes legacy and plural feasts and exposes an optio
   const placeFile = path.join(root, "content", "places", "podmaine", "place.yaml");
   const narrativeFile = path.join(root, "content", "places", "podmaine", "narratives", "sr.md");
   const place = parse(await readFile(placeFile, "utf8"));
+  delete place.patronal_feast_ids;
   delete place.patronal_feasts;
   place.patronal_feast = { name: "Тестна слава" };
   place.video = { youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" };

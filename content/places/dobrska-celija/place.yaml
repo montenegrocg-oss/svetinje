@@ -60,5 +60,5 @@ audit:
   created_by: codex
   updated_at: 2026-08-25T14:56:58Z
   updated_by: montenegro-cg
-patronal_feasts:
-  - name: Ваведење Пресвете Богородице 4. децембар
+patronal_feast_ids:
+  - vavedenje-presvete-bogorodice

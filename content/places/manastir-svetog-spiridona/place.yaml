@@ -43,5 +43,5 @@ location:
     value: budva
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Свети Спиридон Чудотворац 25. децембар
+patronal_feast_ids:
+  - sveti-spiridon-cudotvorac

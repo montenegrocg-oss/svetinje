@@ -55,5 +55,5 @@ audit:
   created_by: codex
   updated_at: 2026-08-26T21:06:47Z
   updated_by: montenegro-cg
-patronal_feasts:
-  - name: Свети Сава 27. јануар
+patronal_feast_ids:
+  - sveti-sava

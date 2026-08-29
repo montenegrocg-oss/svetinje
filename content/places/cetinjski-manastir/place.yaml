@@ -55,6 +55,6 @@ ecclesiastical:
     value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Свети Петар Цетињски 31. октобар
-  - name: Мала Госпојина 21. септембар
+patronal_feast_ids:
+  - sveti-petar-cetinjski
+  - mala-gospojina

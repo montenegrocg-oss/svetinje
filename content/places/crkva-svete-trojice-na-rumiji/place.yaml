@@ -41,5 +41,5 @@ location:
     value: bar
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Педесетница
+patronal_feast_ids:
+  - pedesetnica

@@ -4,6 +4,7 @@ import { validateRepositoryWithSummary, formatIssues } from "./content-validatio
 
 const { errors, counts, publicationLocked } = await validateRepositoryWithSummary(process.cwd());
 const summary = [
+  `${counts.feasts} feast registry entry(s)`,
   `${counts.places} place record(s)`,
   `${counts.narratives} narrative(s)`,
   `${counts.sources} source record(s)`,

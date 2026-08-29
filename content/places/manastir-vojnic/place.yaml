@@ -57,5 +57,5 @@ audit:
   created_by: codex
   updated_at: 2026-08-26T19:49:54Z
   updated_by: montenegro-cg
-patronal_feasts:
-  - name: Пренос моштију св. оца Николаја 22. мај
+patronal_feast_ids:
+  - prenos-mostiju-svetog-nikolaja

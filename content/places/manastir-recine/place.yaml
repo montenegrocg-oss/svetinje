@@ -58,5 +58,5 @@ ecclesiastical:
     value: male
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Икона Пресвете Богородице Јерусалимска 25. октобар
+patronal_feast_ids:
+  - ikona-presvete-bogorodice-jerusalimska

@@ -73,5 +73,5 @@ audit:
   created_by: maxim
   updated_at: 2026-08-26T21:17:49Z
   updated_by: montenegro-cg
-patronal_feasts:
-  - name: Свети мученик Јован Владимир 4. јун
+patronal_feast_ids:
+  - sveti-mucenik-jovan-vladimir

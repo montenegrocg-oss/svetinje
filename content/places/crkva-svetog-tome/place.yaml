@@ -39,5 +39,5 @@ location:
     value: budva
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Томиндан 19. октобар
+patronal_feast_ids:
+  - tomindan
