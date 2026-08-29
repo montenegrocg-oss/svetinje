@@ -43,7 +43,9 @@ const initialStatus = visiblePlaceCount === 1 && totalPlaces === 1
     />
   </form>
 
-  <FilterChips group="catalogue" includeRoutes={false} locale={locale} />
+  <div class="explorer-sidebar__desktop-category-filters" data-desktop-category-filters>
+    <FilterChips group="catalogue" includeRoutes={false} locale={locale} />
+  </div>
   <div class="explorer-area-filter" data-explorer-area-filter hidden>
     <span>{copy.areaPrefix}: <strong data-explorer-area-label></strong></span>
     <button type="button" data-clear-area-filter aria-label={copy.clearArea}>×</button>
@@ -70,3 +72,15 @@ const initialStatus = visiblePlaceCount === 1 && totalPlaces === 1
   )}
   <HomepagePagination totalPages={totalPages} position="bottom" locale={locale} />
 </aside>
+
+<style>
+  .explorer-sidebar__desktop-category-filters {
+    display: contents;
+  }
+
+  @media (max-width: 47.99rem) {
+    .explorer-sidebar__desktop-category-filters {
+      display: none;
+    }
+  }
+</style>
