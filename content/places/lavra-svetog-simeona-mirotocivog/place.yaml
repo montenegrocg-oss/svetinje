@@ -51,5 +51,5 @@ ecclesiastical:
     value: mitropolija-crnogorsko-primorska
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Свети Симеон Мироточиви 26. фебруар
+patronal_feast_ids:
+  - sveti-simeon-mirotocivi

@@ -54,5 +54,5 @@ location:
     verification:
       status: requires-verification
 browse_area_id: bar-crmnica-skadarsko-jezero
-patronal_feasts:
-  - name: Преподобни Сергије Радоњешки 8. октобар
+patronal_feast_ids:
+  - prepodobni-sergije-radonjeski

@@ -55,5 +55,5 @@ audit:
   created_by: codex
   updated_at: 2026-08-26T20:06:53Z
   updated_by: montenegro-cg
-patronal_feasts:
-  - name: Свети Арсеније Сремац 10. новембар
+patronal_feast_ids:
+  - sveti-arsenije-sremac

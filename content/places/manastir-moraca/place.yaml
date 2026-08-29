@@ -58,5 +58,5 @@ ecclesiastical:
       status: requires-verification
 video:
   youtube_url: https://www.youtube.com/watch?v=Wbmu3PUcva0
-patronal_feasts:
-  - name: Успеније Пресвете Богородице - Велика Госпојина 28. августа
+patronal_feast_ids:
+  - uspenije-presvete-bogorodice-velika-gospojina

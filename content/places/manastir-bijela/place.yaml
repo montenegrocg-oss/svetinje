@@ -49,5 +49,5 @@ ecclesiastical:
     value: eparhija-budimljansko-niksicka
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Ђурђевдан 6. мај
+patronal_feast_ids:
+  - djurdjevdan

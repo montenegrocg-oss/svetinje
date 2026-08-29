@@ -42,5 +42,5 @@ location:
     value: kotor
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Никољдан 19. децембар
+patronal_feast_ids:
+  - nikoljdan

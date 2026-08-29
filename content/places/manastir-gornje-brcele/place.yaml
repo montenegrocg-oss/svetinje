@@ -51,5 +51,5 @@ audit:
   created_by: codex
   updated_at: 2026-08-26T19:51:09Z
   updated_by: montenegro-cg
-patronal_feasts:
-  - name: Покров Пресвете Богородице 14. октобар
+patronal_feast_ids:
+  - pokrov-presvete-bogorodice

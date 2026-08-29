@@ -41,5 +41,5 @@ location:
     value: kotor
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Света великомученица Недјеља 10. август
+patronal_feast_ids:
+  - sveta-velikomucenica-nedjelja

@@ -50,5 +50,5 @@ ecclesiastical:
     value: male
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Тројичиндан
+patronal_feast_ids:
+  - trojicindan

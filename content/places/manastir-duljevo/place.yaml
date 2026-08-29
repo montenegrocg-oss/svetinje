@@ -55,5 +55,5 @@ audit:
   created_by: codex
   updated_at: 2026-08-26T20:03:46Z
   updated_by: montenegro-cg
-patronal_feasts:
-  - name: Свети првомученик и архиђакон Стефан 9. јануар, 15. август
+patronal_feast_ids:
+  - sveti-prvomucenik-arhidjakon-stefan

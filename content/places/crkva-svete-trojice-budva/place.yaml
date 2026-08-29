@@ -39,5 +39,5 @@ location:
     value: budva
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Тројичиндан
+patronal_feast_ids:
+  - trojicindan

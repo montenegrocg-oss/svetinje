@@ -1,0 +1,899 @@
+{
+  "schema_version": 1,
+  "source": "current user-owned content/places/*/place.yaml",
+  "external_sources_used": false,
+  "counts": {
+    "place_records_migrated": 61,
+    "legacy_values_migrated": 63,
+    "unique_legacy_values": 39,
+    "feast_ids_created": 39
+  },
+  "mappings": [
+    {
+      "place_id": "celija-piperska",
+      "legacy_values": [
+        "Свети Стефан Пиперски 2. јун"
+      ],
+      "feast_ids": [
+        "sveti-stefan-piperski"
+      ]
+    },
+    {
+      "place_id": "cetinjski-manastir",
+      "legacy_values": [
+        "Свети Петар Цетињски 31. октобар",
+        "Мала Госпојина 21. септембар"
+      ],
+      "feast_ids": [
+        "sveti-petar-cetinjski",
+        "mala-gospojina"
+      ]
+    },
+    {
+      "place_id": "crkva-na-cipuru",
+      "legacy_values": [
+        "Рођење Пресвете Богородице 21. септембер"
+      ],
+      "feast_ids": [
+        "rodjenje-presvete-bogorodice"
+      ]
+    },
+    {
+      "place_id": "crkva-svete-nedjelje",
+      "legacy_values": [
+        "Света великомученица Недјеља 10. август"
+      ],
+      "feast_ids": [
+        "sveta-velikomucenica-nedjelja"
+      ]
+    },
+    {
+      "place_id": "crkva-svete-petke",
+      "legacy_values": [
+        "Света Петка 27. октобар"
+      ],
+      "feast_ids": [
+        "sveta-petka"
+      ]
+    },
+    {
+      "place_id": "crkva-svete-trojice-budva",
+      "legacy_values": [
+        "Тројичиндан"
+      ],
+      "feast_ids": [
+        "trojicindan"
+      ]
+    },
+    {
+      "place_id": "crkva-svete-trojice-na-rumiji",
+      "legacy_values": [
+        "Педесетница"
+      ],
+      "feast_ids": [
+        "pedesetnica"
+      ]
+    },
+    {
+      "place_id": "crkva-svetog-djordja-donja-gorica",
+      "legacy_values": [
+        "Ђурђиц 16. новембар"
+      ],
+      "feast_ids": [
+        "djurdjic"
+      ]
+    },
+    {
+      "place_id": "crkva-svetog-nikole",
+      "legacy_values": [
+        "Никољдан 19. децембар"
+      ],
+      "feast_ids": [
+        "nikoljdan"
+      ]
+    },
+    {
+      "place_id": "crkva-svetog-tome",
+      "legacy_values": [
+        "Томиндан 19. октобар"
+      ],
+      "feast_ids": [
+        "tomindan"
+      ]
+    },
+    {
+      "place_id": "dajbabe",
+      "legacy_values": [
+        "Успеније Пресвете Богородице - Велика Госпојина 28. августа"
+      ],
+      "feast_ids": [
+        "uspenije-presvete-bogorodice-velika-gospojina"
+      ]
+    },
+    {
+      "place_id": "dobrska-celija",
+      "legacy_values": [
+        "Ваведење Пресвете Богородице 4. децембар"
+      ],
+      "feast_ids": [
+        "vavedenje-presvete-bogorodice"
+      ]
+    },
+    {
+      "place_id": "lavra-svetog-simeona-mirotocivog",
+      "legacy_values": [
+        "Свети Симеон Мироточиви 26. фебруар"
+      ],
+      "feast_ids": [
+        "sveti-simeon-mirotocivi"
+      ]
+    },
+    {
+      "place_id": "manastir-banja",
+      "legacy_values": [
+        "Ђурђевдан 6. мај"
+      ],
+      "feast_ids": [
+        "djurdjevdan"
+      ]
+    },
+    {
+      "place_id": "manastir-beska",
+      "legacy_values": [
+        "Благовести 7. април"
+      ],
+      "feast_ids": [
+        "blagovesti"
+      ]
+    },
+    {
+      "place_id": "manastir-bijela",
+      "legacy_values": [
+        "Ђурђевдан 6. мај"
+      ],
+      "feast_ids": [
+        "djurdjevdan"
+      ]
+    },
+    {
+      "place_id": "manastir-bijelici",
+      "legacy_values": [
+        "Чудо Светог архангела Михаила 19. септембар"
+      ],
+      "feast_ids": [
+        "cudo-arhangela-mihaila"
+      ]
+    },
+    {
+      "place_id": "manastir-boan-kadica",
+      "legacy_values": [
+        "Митровдан 8. новембар"
+      ],
+      "feast_ids": [
+        "mitrovdan"
+      ]
+    },
+    {
+      "place_id": "manastir-bunovici",
+      "legacy_values": [
+        "Света Петка 27. октобар"
+      ],
+      "feast_ids": [
+        "sveta-petka"
+      ]
+    },
+    {
+      "place_id": "manastir-cirilovac",
+      "legacy_values": [
+        "Свети равноапостолни Ћирило и Методије 24. мај"
+      ],
+      "feast_ids": [
+        "sveti-cirilo-i-metodije"
+      ]
+    },
+    {
+      "place_id": "manastir-djurdjevi-stupovi",
+      "legacy_values": [
+        "Ђурђевдан 6. мај"
+      ],
+      "feast_ids": [
+        "djurdjevdan"
+      ]
+    },
+    {
+      "place_id": "manastir-donje-brcele",
+      "legacy_values": [
+        "Никољдан 19. децембар"
+      ],
+      "feast_ids": [
+        "nikoljdan"
+      ]
+    },
+    {
+      "place_id": "manastir-duga",
+      "legacy_values": [
+        "Успеније Пресвете Богородице - Велика Госпојина 28. августа"
+      ],
+      "feast_ids": [
+        "uspenije-presvete-bogorodice-velika-gospojina"
+      ]
+    },
+    {
+      "place_id": "manastir-duljevo",
+      "legacy_values": [
+        "Свети првомученик и архиђакон Стефан 9. јануар, 15. август"
+      ],
+      "feast_ids": [
+        "sveti-prvomucenik-arhidjakon-stefan"
+      ]
+    },
+    {
+      "place_id": "manastir-gornje-brcele",
+      "legacy_values": [
+        "Покров Пресвете Богородице 14. октобар"
+      ],
+      "feast_ids": [
+        "pokrov-presvete-bogorodice"
+      ]
+    },
+    {
+      "place_id": "manastir-gostilje",
+      "legacy_values": [
+        "Света Петка 27. октобар"
+      ],
+      "feast_ids": [
+        "sveta-petka"
+      ]
+    },
+    {
+      "place_id": "manastir-gradiste",
+      "legacy_values": [
+        "Пренос моштију св. оца Николаја 22. мај"
+      ],
+      "feast_ids": [
+        "prenos-mostiju-svetog-nikolaja"
+      ]
+    },
+    {
+      "place_id": "manastir-kom",
+      "legacy_values": [
+        "Велика Госпојина 28. август"
+      ],
+      "feast_ids": [
+        "velika-gospojina"
+      ]
+    },
+    {
+      "place_id": "manastir-kosmac",
+      "legacy_values": [
+        "Ђурђевдан 6. мај"
+      ],
+      "feast_ids": [
+        "djurdjevdan"
+      ]
+    },
+    {
+      "place_id": "manastir-matrone-moskovske",
+      "legacy_values": [
+        "Света Матрона Московска"
+      ],
+      "feast_ids": [
+        "sveta-matrona-moskovska"
+      ]
+    },
+    {
+      "place_id": "manastir-moraca",
+      "legacy_values": [
+        "Успеније Пресвете Богородице - Велика Госпојина 28. августа"
+      ],
+      "feast_ids": [
+        "uspenije-presvete-bogorodice-velika-gospojina"
+      ]
+    },
+    {
+      "place_id": "manastir-moracnik",
+      "legacy_values": [
+        "Икона Пресвете Богородице - Тројеручица 25. јул"
+      ],
+      "feast_ids": [
+        "ikona-presvete-bogorodice-trojerucica"
+      ]
+    },
+    {
+      "place_id": "manastir-orahovo",
+      "legacy_values": [
+        "Пренос моштију св. оца Николаја 22. мај"
+      ],
+      "feast_ids": [
+        "prenos-mostiju-svetog-nikolaja"
+      ]
+    },
+    {
+      "place_id": "manastir-ostrog",
+      "legacy_values": [
+        "Св. Василије Острошки Чудотворац 12. мај"
+      ],
+      "feast_ids": [
+        "sv-vasilije-ostroski-cudotvorac"
+      ]
+    },
+    {
+      "place_id": "manastir-pelev-brijeg",
+      "legacy_values": [
+        "Пренос моштију св. оца Николаја 22. мај"
+      ],
+      "feast_ids": [
+        "prenos-mostiju-svetog-nikolaja"
+      ]
+    },
+    {
+      "place_id": "manastir-podlastva",
+      "legacy_values": [
+        "Рођење Пресвете Богородице 21. септембер"
+      ],
+      "feast_ids": [
+        "rodjenje-presvete-bogorodice"
+      ]
+    },
+    {
+      "place_id": "manastir-praskvica",
+      "legacy_values": [
+        "Никољдан 19. децембар"
+      ],
+      "feast_ids": [
+        "nikoljdan"
+      ]
+    },
+    {
+      "place_id": "manastir-precista-krajinska",
+      "legacy_values": [
+        "Успеније Пресвете Богородице - Велика Госпојина 28. августа"
+      ],
+      "feast_ids": [
+        "uspenije-presvete-bogorodice-velika-gospojina"
+      ]
+    },
+    {
+      "place_id": "manastir-prekobrde",
+      "legacy_values": [
+        "Аранђеловдан 21. новембар"
+      ],
+      "feast_ids": [
+        "arandjelovdan"
+      ]
+    },
+    {
+      "place_id": "manastir-recine",
+      "legacy_values": [
+        "Икона Пресвете Богородице Јерусалимска 25. октобар"
+      ],
+      "feast_ids": [
+        "ikona-presvete-bogorodice-jerusalimska"
+      ]
+    },
+    {
+      "place_id": "manastir-rezevici",
+      "legacy_values": [
+        "Силазак Светог Духа на апостоле - Педесетница"
+      ],
+      "feast_ids": [
+        "silazak-svetog-duha-na-apostole-pedesetnica"
+      ]
+    },
+    {
+      "place_id": "manastir-ribnjak",
+      "legacy_values": [
+        "Свети Василије Острошки Чудотворац 12. мај"
+      ],
+      "feast_ids": [
+        "sveti-vasilije-ostroski-cudotvorac"
+      ]
+    },
+    {
+      "place_id": "manastir-rustovo",
+      "legacy_values": [
+        "Успеније Пресвете Богородице - Велика Госпојина 28. августа"
+      ],
+      "feast_ids": [
+        "uspenije-presvete-bogorodice-velika-gospojina"
+      ]
+    },
+    {
+      "place_id": "manastir-savina",
+      "legacy_values": [
+        "Успеније Пресвете Богородице - Велика Госпојина 28. августа"
+      ],
+      "feast_ids": [
+        "uspenije-presvete-bogorodice-velika-gospojina"
+      ]
+    },
+    {
+      "place_id": "manastir-savina-glavica",
+      "legacy_values": [
+        "Свети Сава 27. јануар"
+      ],
+      "feast_ids": [
+        "sveti-sava"
+      ]
+    },
+    {
+      "place_id": "manastir-stanjevici",
+      "legacy_values": [
+        "Тројичиндан"
+      ],
+      "feast_ids": [
+        "trojicindan"
+      ]
+    },
+    {
+      "place_id": "manastir-svetog-sergija-radonjeskog",
+      "legacy_values": [
+        "Преподобни Сергије Радоњешки 8. октобар"
+      ],
+      "feast_ids": [
+        "prepodobni-sergije-radonjeski"
+      ]
+    },
+    {
+      "place_id": "manastir-svetog-spiridona",
+      "legacy_values": [
+        "Свети Спиридон Чудотворац 25. децембар"
+      ],
+      "feast_ids": [
+        "sveti-spiridon-cudotvorac"
+      ]
+    },
+    {
+      "place_id": "manastir-tophana",
+      "legacy_values": [
+        "Митровдан 8. новембар"
+      ],
+      "feast_ids": [
+        "mitrovdan"
+      ]
+    },
+    {
+      "place_id": "manastir-vojnic",
+      "legacy_values": [
+        "Пренос моштију св. оца Николаја 22. мај"
+      ],
+      "feast_ids": [
+        "prenos-mostiju-svetog-nikolaja"
+      ]
+    },
+    {
+      "place_id": "manastir-vranjina",
+      "legacy_values": [
+        "Пренос моштију св. оца Николаја 22. мај"
+      ],
+      "feast_ids": [
+        "prenos-mostiju-svetog-nikolaja"
+      ]
+    },
+    {
+      "place_id": "manastir-zanjice",
+      "legacy_values": [
+        "Ваведење Пресвете Богородице 4. децембар"
+      ],
+      "feast_ids": [
+        "vavedenje-presvete-bogorodice"
+      ]
+    },
+    {
+      "place_id": "manastir-zdrebaonik",
+      "legacy_values": [
+        "Свети Арсеније Сремац 10. новембар"
+      ],
+      "feast_ids": [
+        "sveti-arsenije-sremac"
+      ]
+    },
+    {
+      "place_id": "manastir-zlatica",
+      "legacy_values": [
+        "Улазак Господа Исуса Христа у Јерусалим - Цвети"
+      ],
+      "feast_ids": [
+        "cvijeti"
+      ]
+    },
+    {
+      "place_id": "miholjska-prevlaka",
+      "legacy_values": [
+        "Сабор св. архангела Гаврила 26. jul"
+      ],
+      "feast_ids": [
+        "sabor-arhangela-gavrila"
+      ]
+    },
+    {
+      "place_id": "obodski-manastir",
+      "legacy_values": [
+        "Никољдан 19. децембар"
+      ],
+      "feast_ids": [
+        "nikoljdan"
+      ]
+    },
+    {
+      "place_id": "podmaine",
+      "legacy_values": [
+        "Успеније Пресвете Богородице - Велика Госпојина 28. августа"
+      ],
+      "feast_ids": [
+        "uspenije-presvete-bogorodice-velika-gospojina"
+      ]
+    },
+    {
+      "place_id": "saborni-hram-bar",
+      "legacy_values": [
+        "Свети мученик Јован Владимир 4. јун"
+      ],
+      "feast_ids": [
+        "sveti-mucenik-jovan-vladimir"
+      ]
+    },
+    {
+      "place_id": "saborni-hram-podgorica",
+      "legacy_values": [
+        "Васкрсење Христово"
+      ],
+      "feast_ids": [
+        "vaskrsenje-hristovo"
+      ]
+    },
+    {
+      "place_id": "saborni-hram-svetog-vasilija",
+      "legacy_values": [
+        "Свети Василије Острошки Чудотворац 12. мај",
+        "Свети мученик цар Николај Руски 17. јул"
+      ],
+      "feast_ids": [
+        "sveti-vasilije-ostroski-cudotvorac",
+        "sveti-mucenik-car-nikolaj-ruski"
+      ]
+    },
+    {
+      "place_id": "vlaska-crkva",
+      "legacy_values": [
+        "Рођење Пресвете Богородице 21. септембер"
+      ],
+      "feast_ids": [
+        "rodjenje-presvete-bogorodice"
+      ]
+    }
+  ],
+  "legacy_inventory": [
+    {
+      "legacy_name": "Свети Стефан Пиперски 2. јун",
+      "feast_id": "sveti-stefan-piperski",
+      "place_ids": [
+        "celija-piperska"
+      ]
+    },
+    {
+      "legacy_name": "Свети Петар Цетињски 31. октобар",
+      "feast_id": "sveti-petar-cetinjski",
+      "place_ids": [
+        "cetinjski-manastir"
+      ]
+    },
+    {
+      "legacy_name": "Мала Госпојина 21. септембар",
+      "feast_id": "mala-gospojina",
+      "place_ids": [
+        "cetinjski-manastir"
+      ]
+    },
+    {
+      "legacy_name": "Рођење Пресвете Богородице 21. септембер",
+      "feast_id": "rodjenje-presvete-bogorodice",
+      "place_ids": [
+        "crkva-na-cipuru",
+        "manastir-podlastva",
+        "vlaska-crkva"
+      ]
+    },
+    {
+      "legacy_name": "Света великомученица Недјеља 10. август",
+      "feast_id": "sveta-velikomucenica-nedjelja",
+      "place_ids": [
+        "crkva-svete-nedjelje"
+      ]
+    },
+    {
+      "legacy_name": "Света Петка 27. октобар",
+      "feast_id": "sveta-petka",
+      "place_ids": [
+        "crkva-svete-petke",
+        "manastir-bunovici",
+        "manastir-gostilje"
+      ]
+    },
+    {
+      "legacy_name": "Тројичиндан",
+      "feast_id": "trojicindan",
+      "place_ids": [
+        "crkva-svete-trojice-budva",
+        "manastir-stanjevici"
+      ]
+    },
+    {
+      "legacy_name": "Педесетница",
+      "feast_id": "pedesetnica",
+      "place_ids": [
+        "crkva-svete-trojice-na-rumiji"
+      ]
+    },
+    {
+      "legacy_name": "Ђурђиц 16. новембар",
+      "feast_id": "djurdjic",
+      "place_ids": [
+        "crkva-svetog-djordja-donja-gorica"
+      ]
+    },
+    {
+      "legacy_name": "Никољдан 19. децембар",
+      "feast_id": "nikoljdan",
+      "place_ids": [
+        "crkva-svetog-nikole",
+        "manastir-donje-brcele",
+        "manastir-praskvica",
+        "obodski-manastir"
+      ]
+    },
+    {
+      "legacy_name": "Томиндан 19. октобар",
+      "feast_id": "tomindan",
+      "place_ids": [
+        "crkva-svetog-tome"
+      ]
+    },
+    {
+      "legacy_name": "Успеније Пресвете Богородице - Велика Госпојина 28. августа",
+      "feast_id": "uspenije-presvete-bogorodice-velika-gospojina",
+      "place_ids": [
+        "dajbabe",
+        "manastir-duga",
+        "manastir-moraca",
+        "manastir-precista-krajinska",
+        "manastir-rustovo",
+        "manastir-savina",
+        "podmaine"
+      ]
+    },
+    {
+      "legacy_name": "Ваведење Пресвете Богородице 4. децембар",
+      "feast_id": "vavedenje-presvete-bogorodice",
+      "place_ids": [
+        "dobrska-celija",
+        "manastir-zanjice"
+      ]
+    },
+    {
+      "legacy_name": "Свети Симеон Мироточиви 26. фебруар",
+      "feast_id": "sveti-simeon-mirotocivi",
+      "place_ids": [
+        "lavra-svetog-simeona-mirotocivog"
+      ]
+    },
+    {
+      "legacy_name": "Ђурђевдан 6. мај",
+      "feast_id": "djurdjevdan",
+      "place_ids": [
+        "manastir-banja",
+        "manastir-bijela",
+        "manastir-djurdjevi-stupovi",
+        "manastir-kosmac"
+      ]
+    },
+    {
+      "legacy_name": "Благовести 7. април",
+      "feast_id": "blagovesti",
+      "place_ids": [
+        "manastir-beska"
+      ]
+    },
+    {
+      "legacy_name": "Чудо Светог архангела Михаила 19. септембар",
+      "feast_id": "cudo-arhangela-mihaila",
+      "place_ids": [
+        "manastir-bijelici"
+      ]
+    },
+    {
+      "legacy_name": "Митровдан 8. новембар",
+      "feast_id": "mitrovdan",
+      "place_ids": [
+        "manastir-boan-kadica",
+        "manastir-tophana"
+      ]
+    },
+    {
+      "legacy_name": "Свети равноапостолни Ћирило и Методије 24. мај",
+      "feast_id": "sveti-cirilo-i-metodije",
+      "place_ids": [
+        "manastir-cirilovac"
+      ]
+    },
+    {
+      "legacy_name": "Свети првомученик и архиђакон Стефан 9. јануар, 15. август",
+      "feast_id": "sveti-prvomucenik-arhidjakon-stefan",
+      "place_ids": [
+        "manastir-duljevo"
+      ]
+    },
+    {
+      "legacy_name": "Покров Пресвете Богородице 14. октобар",
+      "feast_id": "pokrov-presvete-bogorodice",
+      "place_ids": [
+        "manastir-gornje-brcele"
+      ]
+    },
+    {
+      "legacy_name": "Пренос моштију св. оца Николаја 22. мај",
+      "feast_id": "prenos-mostiju-svetog-nikolaja",
+      "place_ids": [
+        "manastir-gradiste",
+        "manastir-orahovo",
+        "manastir-pelev-brijeg",
+        "manastir-vojnic",
+        "manastir-vranjina"
+      ]
+    },
+    {
+      "legacy_name": "Велика Госпојина 28. август",
+      "feast_id": "velika-gospojina",
+      "place_ids": [
+        "manastir-kom"
+      ]
+    },
+    {
+      "legacy_name": "Света Матрона Московска",
+      "feast_id": "sveta-matrona-moskovska",
+      "place_ids": [
+        "manastir-matrone-moskovske"
+      ]
+    },
+    {
+      "legacy_name": "Икона Пресвете Богородице - Тројеручица 25. јул",
+      "feast_id": "ikona-presvete-bogorodice-trojerucica",
+      "place_ids": [
+        "manastir-moracnik"
+      ]
+    },
+    {
+      "legacy_name": "Св. Василије Острошки Чудотворац 12. мај",
+      "feast_id": "sv-vasilije-ostroski-cudotvorac",
+      "place_ids": [
+        "manastir-ostrog"
+      ]
+    },
+    {
+      "legacy_name": "Аранђеловдан 21. новембар",
+      "feast_id": "arandjelovdan",
+      "place_ids": [
+        "manastir-prekobrde"
+      ]
+    },
+    {
+      "legacy_name": "Икона Пресвете Богородице Јерусалимска 25. октобар",
+      "feast_id": "ikona-presvete-bogorodice-jerusalimska",
+      "place_ids": [
+        "manastir-recine"
+      ]
+    },
+    {
+      "legacy_name": "Силазак Светог Духа на апостоле - Педесетница",
+      "feast_id": "silazak-svetog-duha-na-apostole-pedesetnica",
+      "place_ids": [
+        "manastir-rezevici"
+      ]
+    },
+    {
+      "legacy_name": "Свети Василије Острошки Чудотворац 12. мај",
+      "feast_id": "sveti-vasilije-ostroski-cudotvorac",
+      "place_ids": [
+        "manastir-ribnjak",
+        "saborni-hram-svetog-vasilija"
+      ]
+    },
+    {
+      "legacy_name": "Свети Сава 27. јануар",
+      "feast_id": "sveti-sava",
+      "place_ids": [
+        "manastir-savina-glavica"
+      ]
+    },
+    {
+      "legacy_name": "Преподобни Сергије Радоњешки 8. октобар",
+      "feast_id": "prepodobni-sergije-radonjeski",
+      "place_ids": [
+        "manastir-svetog-sergija-radonjeskog"
+      ]
+    },
+    {
+      "legacy_name": "Свети Спиридон Чудотворац 25. децембар",
+      "feast_id": "sveti-spiridon-cudotvorac",
+      "place_ids": [
+        "manastir-svetog-spiridona"
+      ]
+    },
+    {
+      "legacy_name": "Свети Арсеније Сремац 10. новембар",
+      "feast_id": "sveti-arsenije-sremac",
+      "place_ids": [
+        "manastir-zdrebaonik"
+      ]
+    },
+    {
+      "legacy_name": "Улазак Господа Исуса Христа у Јерусалим - Цвети",
+      "feast_id": "cvijeti",
+      "place_ids": [
+        "manastir-zlatica"
+      ]
+    },
+    {
+      "legacy_name": "Сабор св. архангела Гаврила 26. jul",
+      "feast_id": "sabor-arhangela-gavrila",
+      "place_ids": [
+        "miholjska-prevlaka"
+      ]
+    },
+    {
+      "legacy_name": "Свети мученик Јован Владимир 4. јун",
+      "feast_id": "sveti-mucenik-jovan-vladimir",
+      "place_ids": [
+        "saborni-hram-bar"
+      ]
+    },
+    {
+      "legacy_name": "Васкрсење Христово",
+      "feast_id": "vaskrsenje-hristovo",
+      "place_ids": [
+        "saborni-hram-podgorica"
+      ]
+    },
+    {
+      "legacy_name": "Свети мученик цар Николај Руски 17. јул",
+      "feast_id": "sveti-mucenik-car-nikolaj-ruski",
+      "place_ids": [
+        "saborni-hram-svetog-vasilija"
+      ]
+    }
+  ],
+  "manual_review": {
+    "multiple_explicit_dates": [
+      "sveti-prvomucenik-arhidjakon-stefan"
+    ],
+    "undated": [
+      "trojicindan",
+      "pedesetnica",
+      "sveta-matrona-moskovska",
+      "silazak-svetog-duha-na-apostole-pedesetnica",
+      "vaskrsenje-hristovo"
+    ],
+    "movable_without_year_binding": [
+      "cvijeti"
+    ],
+    "near_duplicate_groups_not_merged": [
+      [
+        "mala-gospojina",
+        "rodjenje-presvete-bogorodice"
+      ],
+      [
+        "uspenije-presvete-bogorodice-velika-gospojina",
+        "velika-gospojina"
+      ],
+      [
+        "trojicindan",
+        "pedesetnica",
+        "silazak-svetog-duha-na-apostole-pedesetnica"
+      ],
+      [
+        "sv-vasilije-ostroski-cudotvorac",
+        "sveti-vasilije-ostroski-cudotvorac"
+      ]
+    ]
+  }
+}

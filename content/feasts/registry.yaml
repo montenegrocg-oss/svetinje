@@ -1,0 +1,152 @@
+schema_version: 1
+feasts:
+  - id: sveti-stefan-piperski
+    name_sr: Свети Стефан Пиперски
+    legacy_names: [Свети Стефан Пиперски 2. јун]
+    date: { kind: fixed, month: 6, day: 2 }
+  - id: sveti-petar-cetinjski
+    name_sr: Свети Петар Цетињски
+    legacy_names: [Свети Петар Цетињски 31. октобар]
+    date: { kind: fixed, month: 10, day: 31 }
+  - id: mala-gospojina
+    name_sr: Мала Госпојина
+    legacy_names: [Мала Госпојина 21. септембар]
+    date: { kind: fixed, month: 9, day: 21 }
+  - id: rodjenje-presvete-bogorodice
+    name_sr: Рођење Пресвете Богородице
+    legacy_names: [Рођење Пресвете Богородице 21. септембер]
+    date: { kind: fixed, month: 9, day: 21 }
+  - id: sveta-velikomucenica-nedjelja
+    name_sr: Света великомученица Недјеља
+    legacy_names: [Света великомученица Недјеља 10. август]
+    date: { kind: fixed, month: 8, day: 10 }
+  - id: sveta-petka
+    name_sr: Света Петка
+    legacy_names: [Света Петка 27. октобар]
+    date: { kind: fixed, month: 10, day: 27 }
+  - id: trojicindan
+    name_sr: Тројичиндан
+    legacy_names: [Тројичиндан]
+  - id: pedesetnica
+    name_sr: Педесетница
+    legacy_names: [Педесетница]
+  - id: djurdjic
+    name_sr: Ђурђиц
+    legacy_names: [Ђурђиц 16. новембар]
+    date: { kind: fixed, month: 11, day: 16 }
+  - id: nikoljdan
+    name_sr: Никољдан
+    legacy_names: [Никољдан 19. децембар]
+    date: { kind: fixed, month: 12, day: 19 }
+  - id: tomindan
+    name_sr: Томиндан
+    legacy_names: [Томиндан 19. октобар]
+    date: { kind: fixed, month: 10, day: 19 }
+  - id: uspenije-presvete-bogorodice-velika-gospojina
+    name_sr: Успеније Пресвете Богородице - Велика Госпојина
+    legacy_names: [Успеније Пресвете Богородице - Велика Госпојина 28. августа]
+    date: { kind: fixed, month: 8, day: 28 }
+  - id: vavedenje-presvete-bogorodice
+    name_sr: Ваведење Пресвете Богородице
+    legacy_names: [Ваведење Пресвете Богородице 4. децембар]
+    date: { kind: fixed, month: 12, day: 4 }
+  - id: sveti-simeon-mirotocivi
+    name_sr: Свети Симеон Мироточиви
+    legacy_names: [Свети Симеон Мироточиви 26. фебруар]
+    date: { kind: fixed, month: 2, day: 26 }
+  - id: djurdjevdan
+    name_sr: Ђурђевдан
+    legacy_names: [Ђурђевдан 6. мај]
+    date: { kind: fixed, month: 5, day: 6 }
+  - id: blagovesti
+    name_sr: Благовести
+    legacy_names: [Благовести 7. април]
+    date: { kind: fixed, month: 4, day: 7 }
+  - id: cudo-arhangela-mihaila
+    name_sr: Чудо Светог архангела Михаила
+    legacy_names: [Чудо Светог архангела Михаила 19. септембар]
+    date: { kind: fixed, month: 9, day: 19 }
+  - id: mitrovdan
+    name_sr: Митровдан
+    legacy_names: [Митровдан 8. новембар]
+    date: { kind: fixed, month: 11, day: 8 }
+  - id: sveti-cirilo-i-metodije
+    name_sr: Свети равноапостолни Ћирило и Методије
+    legacy_names: [Свети равноапостолни Ћирило и Методије 24. мај]
+    date: { kind: fixed, month: 5, day: 24 }
+  - id: sveti-prvomucenik-arhidjakon-stefan
+    name_sr: Свети првомученик и архиђакон Стефан
+    legacy_names: ["Свети првомученик и архиђакон Стефан 9. јануар, 15. август"]
+  - id: pokrov-presvete-bogorodice
+    name_sr: Покров Пресвете Богородице
+    legacy_names: [Покров Пресвете Богородице 14. октобар]
+    date: { kind: fixed, month: 10, day: 14 }
+  - id: prenos-mostiju-svetog-nikolaja
+    name_sr: Пренос моштију св. оца Николаја
+    legacy_names: [Пренос моштију св. оца Николаја 22. мај]
+    date: { kind: fixed, month: 5, day: 22 }
+  - id: velika-gospojina
+    name_sr: Велика Госпојина
+    legacy_names: [Велика Госпојина 28. август]
+    date: { kind: fixed, month: 8, day: 28 }
+  - id: sveta-matrona-moskovska
+    name_sr: Света Матрона Московска
+    legacy_names: [Света Матрона Московска]
+  - id: ikona-presvete-bogorodice-trojerucica
+    name_sr: Икона Пресвете Богородице - Тројеручица
+    legacy_names: [Икона Пресвете Богородице - Тројеручица 25. јул]
+    date: { kind: fixed, month: 7, day: 25 }
+  - id: sv-vasilije-ostroski-cudotvorac
+    name_sr: Св. Василије Острошки Чудотворац
+    legacy_names: [Св. Василије Острошки Чудотворац 12. мај]
+    date: { kind: fixed, month: 5, day: 12 }
+  - id: arandjelovdan
+    name_sr: Аранђеловдан
+    legacy_names: [Аранђеловдан 21. новембар]
+    date: { kind: fixed, month: 11, day: 21 }
+  - id: ikona-presvete-bogorodice-jerusalimska
+    name_sr: Икона Пресвете Богородице Јерусалимска
+    legacy_names: [Икона Пресвете Богородице Јерусалимска 25. октобар]
+    date: { kind: fixed, month: 10, day: 25 }
+  - id: silazak-svetog-duha-na-apostole-pedesetnica
+    name_sr: Силазак Светог Духа на апостоле - Педесетница
+    legacy_names: [Силазак Светог Духа на апостоле - Педесетница]
+  - id: sveti-vasilije-ostroski-cudotvorac
+    name_sr: Свети Василије Острошки Чудотворац
+    legacy_names: [Свети Василије Острошки Чудотворац 12. мај]
+    date: { kind: fixed, month: 5, day: 12 }
+  - id: sveti-sava
+    name_sr: Свети Сава
+    legacy_names: [Свети Сава 27. јануар]
+    date: { kind: fixed, month: 1, day: 27 }
+  - id: prepodobni-sergije-radonjeski
+    name_sr: Преподобни Сергије Радоњешки
+    legacy_names: [Преподобни Сергије Радоњешки 8. октобар]
+    date: { kind: fixed, month: 10, day: 8 }
+  - id: sveti-spiridon-cudotvorac
+    name_sr: Свети Спиридон Чудотворац
+    legacy_names: [Свети Спиридон Чудотворац 25. децембар]
+    date: { kind: fixed, month: 12, day: 25 }
+  - id: sveti-arsenije-sremac
+    name_sr: Свети Арсеније Сремац
+    legacy_names: [Свети Арсеније Сремац 10. новембар]
+    date: { kind: fixed, month: 11, day: 10 }
+  - id: cvijeti
+    name_sr: Улазак Господа Исуса Христа у Јерусалим - Цвети
+    legacy_names: [Улазак Господа Исуса Христа у Јерусалим - Цвети]
+    date: { kind: movable }
+  - id: sabor-arhangela-gavrila
+    name_sr: Сабор св. архангела Гаврила
+    legacy_names: [Сабор св. архангела Гаврила 26. jul]
+    date: { kind: fixed, month: 7, day: 26 }
+  - id: sveti-mucenik-jovan-vladimir
+    name_sr: Свети мученик Јован Владимир
+    legacy_names: [Свети мученик Јован Владимир 4. јун]
+    date: { kind: fixed, month: 6, day: 4 }
+  - id: vaskrsenje-hristovo
+    name_sr: Васкрсење Христово
+    legacy_names: [Васкрсење Христово]
+  - id: sveti-mucenik-car-nikolaj-ruski
+    name_sr: Свети мученик цар Николај Руски
+    legacy_names: [Свети мученик цар Николај Руски 17. јул]
+    date: { kind: fixed, month: 7, day: 17 }

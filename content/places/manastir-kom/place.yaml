@@ -43,5 +43,5 @@ ecclesiastical:
     value: male
     verification:
       status: requires-verification
-patronal_feasts:
-  - name: Велика Госпојина 28. август
+patronal_feast_ids:
+  - velika-gospojina

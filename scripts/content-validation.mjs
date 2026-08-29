@@ -8,6 +8,7 @@ import { ROUTE_ENDPOINT_THRESHOLD_M, validateRouteGeoJson } from "../src/lib/rou
 import { loadVerifiedCalendarDataset } from "../src/lib/calendar/verified-dataset.ts";
 
 const SCHEMA_FILES = {
+  feastRegistry: "feast-registry.schema.json",
   place: "place.schema.json",
   narrative: "narrative.schema.json",
   source: "source.schema.json",
@@ -24,6 +25,7 @@ const SCHEMA_FILES = {
 const ALLOWED_ROUTE_SECTION_KEYS = new Set(["about-route", "route-course", "water-rest", "safety", "equipment", "notes"]);
 
 const ENTITY_PATHS = [
+  { kind: "feastRegistry", pattern: /^content\/feasts\/(registry)\.yaml$/ },
   { kind: "place", pattern: /^content\/places\/([^/]+)\/place\.yaml$/ },
   { kind: "narrative", pattern: /^content\/places\/([^/]+)\/narratives\/(sr|ru|en)\.md$/ },
   { kind: "source", pattern: /^content\/sources\/([^/]+)\.yaml$/ },
@@ -402,6 +404,62 @@ function validateUniqueness(records) {
   return errors;
 }
 
+function normalizeRegistryName(value) {
+  return value.trim().replace(/\s+/gu, " ").toLocaleLowerCase("sr-Cyrl");
+}
+
+function validateFeastRegistry(records, verifiedCalendarDates = new Set()) {
+  const errors = [];
+  const registryRecords = records.filter((record) => record.kind === "feastRegistry" && record.data);
+  if (registryRecords.length > 1) errors.push(issue(registryRecords[1].file, "/", "only one feast registry is allowed"));
+  const registry = registryRecords[0];
+  const feastIds = new Map();
+  const canonicalNames = new Map();
+  const legacyNames = new Map();
+  for (const [index, feast] of (registry?.data.feasts ?? []).entries()) {
+    const idPath = `/feasts/${index}/id`;
+    const previousId = feastIds.get(feast.id);
+    if (previousId) errors.push(issue(registry.file, idPath, `duplicate feast id ${feast.id}; first declared at ${previousId}`));
+    else feastIds.set(feast.id, idPath);
+
+    const nameKey = normalizeRegistryName(feast.name_sr ?? "");
+    const previousName = canonicalNames.get(nameKey);
+    if (previousName) errors.push(issue(registry.file, `/feasts/${index}/name_sr`, `duplicate canonical feast name; first declared at ${previousName}`));
+    else canonicalNames.set(nameKey, `/feasts/${index}/name_sr`);
+
+    for (const [legacyIndex, legacyName] of (feast.legacy_names ?? []).entries()) {
+      const legacyKey = normalizeRegistryName(legacyName);
+      const previousLegacy = legacyNames.get(legacyKey);
+      if (previousLegacy) errors.push(issue(registry.file, `/feasts/${index}/legacy_names/${legacyIndex}`, `duplicate legacy feast name; first declared at ${previousLegacy}`));
+      else legacyNames.set(legacyKey, `/feasts/${index}/legacy_names/${legacyIndex}`);
+    }
+
+    if (feast.date?.kind === "fixed") {
+      const maxDay = new Date(Date.UTC(2024, feast.date.month, 0)).getUTCDate();
+      if (feast.date.day > maxDay) errors.push(issue(registry.file, `/feasts/${index}/date/day`, `day is invalid for month ${feast.date.month}`));
+    }
+    const bindingYears = new Set();
+    for (const [bindingIndex, binding] of (feast.calendar_bindings ?? []).entries()) {
+      const year = binding.slice(0, 4);
+      if (bindingYears.has(year)) errors.push(issue(registry.file, `/feasts/${index}/calendar_bindings/${bindingIndex}`, `duplicate year-specific binding for ${year}`));
+      bindingYears.add(year);
+      if (verifiedCalendarDates.size > 0 && !verifiedCalendarDates.has(binding)) {
+        errors.push(issue(registry.file, `/feasts/${index}/calendar_bindings/${bindingIndex}`, `binding ${binding} is outside the verified calendar dataset`));
+      }
+      if (feast.date?.kind === "fixed" && binding.slice(5) !== `${String(feast.date.month).padStart(2, "0")}-${String(feast.date.day).padStart(2, "0")}`) {
+        errors.push(issue(registry.file, `/feasts/${index}/calendar_bindings/${bindingIndex}`, "fixed feast binding must match its month/day"));
+      }
+    }
+  }
+
+  for (const record of records.filter((candidate) => candidate.kind === "place" && candidate.data)) {
+    for (const [index, id] of (record.data.patronal_feast_ids ?? []).entries()) {
+      if (!feastIds.has(id)) errors.push(issue(record.file, `/patronal_feast_ids/${index}`, `unknown feast id ${id}`));
+    }
+  }
+  return errors;
+}
+
 function validateReferences(records) {
   const errors = [];
   const byKind = Object.fromEntries(["place", "source", "practical", "media", "news", "route"].map((kind) => [kind, new Map()]));
@@ -503,7 +561,7 @@ function validatePolicyState(records, policy, policyFile) {
 
 export async function validateRepositoryWithSummary(root) {
   const errors = [];
-  const counts = { places: 0, narratives: 0, sources: 0, practical: 0, media: 0, news: 0, routes: 0, routeNarratives: 0, routeTracks: 0, calendarDays: 0, scriptureCorpora: 0, lectionaryMaps: 0 };
+  const counts = { feasts: 0, places: 0, narratives: 0, sources: 0, practical: 0, media: 0, news: 0, routes: 0, routeNarratives: 0, routeTracks: 0, calendarDays: 0, scriptureCorpora: 0, lectionaryMaps: 0 };
   let validators;
   try {
     validators = await buildValidators(root);
@@ -539,7 +597,6 @@ export async function validateRepositoryWithSummary(root) {
       errors.push(issue(file, "/", "file is not in an allowed content path"));
       continue;
     }
-    counts[COUNT_KEY[classification.kind]] += 1;
     const text = await readFile(absoluteFile, "utf8");
     let parsed;
     if (["narrative", "routeNarrative", "news"].includes(classification.kind)) parsed = parseMarkdown(text, file);
@@ -555,6 +612,8 @@ export async function validateRepositoryWithSummary(root) {
       try { data = JSON.parse(text); } catch { jsonErrors.push(issue(file, "/", "file must be valid JSON")); }
       parsed = { data, errors: jsonErrors };
     } else parsed = parseYaml(text, file);
+    if (classification.kind === "feastRegistry") counts.feasts += Array.isArray(parsed.data?.feasts) ? parsed.data.feasts.length : 0;
+    else counts[COUNT_KEY[classification.kind]] += 1;
     errors.push(...parsed.errors);
     const record = { file, kind: classification.kind, match: classification.match, data: parsed.data, body: parsed.body ?? "" };
     records.push(record);
@@ -575,12 +634,15 @@ export async function validateRepositoryWithSummary(root) {
   }
   errors.push(...validateUniqueness(records), ...validateReferences(records));
 
+  let verifiedCalendarDates = new Set();
   try {
     const dataset = await loadVerifiedCalendarDataset(root);
     counts.calendarDays = dataset.days.length;
+    verifiedCalendarDates = new Set(dataset.days.map((day) => day.date));
   } catch (error) {
     if (error?.code !== "ENOENT") errors.push(issue("data/calendar/2026-08-01_2026-12-31.json", "/", error.message));
   }
+  errors.push(...validateFeastRegistry(records, verifiedCalendarDates));
 
   const routes = new Map(records.filter((record) => record.kind === "route" && record.data).map((record) => [record.data.id, record]));
   const tracks = new Map(records.filter((record) => record.kind === "routeTrack" && record.data).map((record) => [record.match[1], record]));
