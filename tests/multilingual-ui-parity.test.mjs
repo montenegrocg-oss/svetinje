@@ -42,8 +42,9 @@ test("shared place detail preserves hero, gallery, practical, related, route, an
   ]);
 
   assert.match(hero, /const detailCopy = copy\.pages\.placeDetail/);
-  assert.match(hero, /place-profile-hero__image[\s\S]*?place-profile-hero__overlay[\s\S]*?place-profile-breadcrumbs[\s\S]*?place-profile-actions[\s\S]*?place-profile-action-status/);
-  for (const action of ["plan", "route", "save"]) assert.match(hero, new RegExp(`data-place-detail-action="${action}"`));
+  assert.match(hero, /place-profile-hero__image[\s\S]*?place-profile-hero__overlay[\s\S]*?place-profile-breadcrumbs[\s\S]*?place-profile-actions/);
+  assert.match(hero, /data-favorite-toggle/);
+  assert.doesNotMatch(hero, /data-place-detail-action|place-profile-action-status/);
   assert.match(narrative, /parsePlaceNarrativeBlocks\(body\)/);
   assert.doesNotMatch(narrative, /split\(\/\\r\?\\n\\s\*\\r\?\\n\//);
   assert.match(gallery, /place-detail-gallery__main/);
@@ -52,6 +53,7 @@ test("shared place detail preserves hero, gallery, practical, related, route, an
   assert.match(gallery, /data-gallery-previous/);
   assert.match(gallery, /data-gallery-next/);
   assert.match(gallery, /place\.youtubeVideoId &&/);
+  assert.match(gallery, /data-youtube-load/);
   assert.match(styles, /\.place-detail-gallery__main img,[\s\S]*?\.place-detail-gallery__image img[\s\S]*?object-fit: cover;/);
   assert.match(styles, /\.place-detail-gallery__main\s*\{[\s\S]*?aspect-ratio: 16 \/ 10;/);
   for (const field of ["place.address", "place.typeLabel", "place.patronalFeasts", "coordinateText"]) assert.match(practical, new RegExp(field.replaceAll(".", "\\.")));
@@ -60,7 +62,7 @@ test("shared place detail preserves hero, gallery, practical, related, route, an
   assert.match(miniMap, /publicCopy\[locale\]\.pages\.placeDetail\.miniMap/);
   assert.match(related, /placeDetailRoot\[locale\]/);
   assert.match(backlinks, /localeSafeRoutes = locale === "sr" \? routes : \[\]/);
-  assert.match(backlinks, /copy\.empty/);
+  assert.doesNotMatch(backlinks, /copy\.empty|place-routes-title/);
   assert.match(relatedModel, /export function relatedPlacesFor/);
   assert.match(localizedPaths, /relatedPlacesFor\(place, places, locale\)/);
 });

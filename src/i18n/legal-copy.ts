@@ -47,6 +47,7 @@ interface LegalLocaleCopy {
 const cloudflarePrivacy = "https://www.cloudflare.com/privacypolicy/";
 const cloudflareCookies = "https://developers.cloudflare.com/fundamentals/reference/policies-compliances/cloudflare-cookies/";
 const mapTilerPrivacy = "https://www.maptiler.com/privacy-policy/";
+const googlePrivacy = "https://policies.google.com/privacy";
 
 export const legalCopy = {
   sr: {
@@ -60,7 +61,7 @@ export const legalCopy = {
       description: "Како svetinje.me обрађује техничке податке, користи инфраструктурне услуге и чува омиљене светиње у прегледачу.",
       intro: "Ова политика описује стварно понашање јавног сајта svetinje.me према тренутној имплементацији. Сајт нема корисничке налоге, јавне обрасце, огласне пикселе нити маркетиншко профилисање.",
       updatedLabel: "Ажурирано",
-      updatedDate: "26. августа 2026.",
+      updatedDate: "4. септембра 2026.",
       sections: [
         {
           heading: "Ко управља сајтом и како да нас контактирате",
@@ -142,8 +143,10 @@ export const legalCopy = {
         {
           heading: "Спољни видео",
           paragraphs: [
-            "Систем подржава приказ спољног видеа за записе који га имају, али у тренутној јавној верзији нема активног YouTube видеа. Ако такав садржај постане јаван, прије објављивања морају се поново провјерити начин учитавања, правни основ и потреба за додатном контролом приватности. YouTube се не представља као прималац података на свакој страници.",
+            "Уграђени YouTube видео не повезује се са YouTube-ом аутоматски при отварању странице. Веза се успоставља тек када корисник изричито изабере „Покрени видео“.",
+            "Након покретања, прегледач учитава видео са YouTube-а. YouTube/Google тада може обрађивати техничке податке, као што су IP адреса и подаци прегледача, у складу са сопственом политиком приватности.",
           ],
+          links: [{ label: "Google Privacy Policy", href: googlePrivacy }],
         },
         {
           heading: "Измјене политике",
@@ -159,7 +162,7 @@ export const legalCopy = {
       description: "Које колачиће и локално складиштење тренутно користи svetinje.me и како корисник може да их контролише.",
       intro: "Ова страница раздваја колачиће, localStorage и складиште које може да користи спољни пружалац услуге. Попис је заснован на тренутном изворном коду и техничкој провјери, а не на општем шаблону политике колачића.",
       updatedLabel: "Ажурирано",
-      updatedDate: "26. августа 2026.",
+      updatedDate: "4. септембра 2026.",
       sections: [
         {
           heading: "Колачић није исто што и localStorage",
@@ -175,6 +178,13 @@ export const legalCopy = {
           ],
         },
         {
+          heading: "YouTube видео",
+          paragraphs: [
+            "YouTube се не повезује и видео се не учитава при самом отварању странице. Спољна веза почиње тек након што корисник изабере „Покрени видео“.",
+            "Покретање се не памти у колачићу, localStorage-у или sessionStorage-у; сваки видео се учитава само послије нове изричите радње. Након покретања YouTube/Google може користити сопствене техничке механизме и обрађивати податке према својој политици.",
+          ],
+        },
+        {
           heading: "Зашто нема банера за сагласност",
           paragraphs: [
             "Садашњи сајт нема опционално аналитичко, огласно или маркетиншко складиштење за које би нудио избор „прихвати све“ или „одбиј све“. Зато није додат банер нити се чува запис о сагласности.",
@@ -184,12 +194,13 @@ export const legalCopy = {
         {
           heading: "Политике спољних пружалаца",
           paragraphs: [
-            "Cloudflare и MapTiler објављују сопствене информације о приватности и техничким колачићима. Њихове политике могу се мијењати независно од овог сајта.",
+            "Cloudflare, MapTiler и Google објављују сопствене информације о приватности и техничким колачићима. Њихове политике могу се мијењати независно од овог сајта.",
           ],
           links: [
             { label: "Cloudflare Cookies", href: cloudflareCookies },
             { label: "Cloudflare Privacy Policy", href: cloudflarePrivacy },
             { label: "MapTiler Privacy Policy", href: mapTilerPrivacy },
+            { label: "Google Privacy Policy", href: googlePrivacy },
           ],
         },
       ],
@@ -213,6 +224,13 @@ export const legalCopy = {
           duration: "Трајање и стварна постојаност нијесу потврђени за јавни домен; контролише се подешавањима прегледача и пружаоца.",
         },
         {
+          item: "YouTube / Google",
+          type: "Спољни мрежни захтјев и могуће складиштење треће стране",
+          purpose: "Не активира се при отварању странице; видео се учитава тек након што корисник изабере „Покрени видео“.",
+          transfer: "Послије покретања прегледач непосредно комуницира са YouTube/Google инфраструктуром и шаље техничке податке потребне за испоруку видеа.",
+          duration: "Зависи од YouTube/Google правила и подешавања прегледача; svetinje.me не памти покретање у колачићу, localStorage-у или sessionStorage-у.",
+        },
+        {
           item: "Колачићи домена svetinje.me",
           type: "Тренутно нијесу пронађени",
           purpose: "Тренутни изворни код и техничка провјера нијесу открили сопствене аналитичке, огласне или колачиће за сагласност.",
@@ -233,7 +251,7 @@ export const legalCopy = {
       description: "Как svetinje.me обрабатывает технические данные, использует инфраструктурные сервисы и хранит избранные святыни в браузере.",
       intro: "Эта политика описывает фактическую работу публичного сайта svetinje.me в его текущей реализации. На сайте нет пользовательских аккаунтов, публичных форм, рекламных пикселей и маркетингового профилирования.",
       updatedLabel: "Обновлено",
-      updatedDate: "26 августа 2026 года",
+      updatedDate: "4 сентября 2026 года",
       sections: [
         {
           heading: "Кто управляет сайтом и как с нами связаться",
@@ -313,8 +331,10 @@ export const legalCopy = {
         {
           heading: "Внешнее видео",
           paragraphs: [
-            "Система поддерживает внешнее видео для записей, где оно предусмотрено, но в текущей публичной версии нет активного YouTube-видео. Если такой материал станет публичным, до публикации необходимо повторно оценить способ загрузки, правовое основание и дополнительные средства контроля. YouTube не представлен как получатель данных на каждой странице.",
+            "Встроенное YouTube-видео не подключается к YouTube автоматически при открытии страницы. Соединение устанавливается только после явного выбора пользователем кнопки «Запустить видео».",
+            "После запуска браузер загружает видео с YouTube. YouTube/Google может обрабатывать технические данные, включая IP-адрес и сведения о браузере, в соответствии со своей политикой конфиденциальности.",
           ],
+          links: [{ label: "Политика конфиденциальности Google", href: googlePrivacy }],
         },
         {
           heading: "Изменения политики",
@@ -330,7 +350,7 @@ export const legalCopy = {
       description: "Какие cookies и локальное хранилище сейчас использует svetinje.me и как ими можно управлять.",
       intro: "Эта страница различает cookies, localStorage и хранилище внешнего поставщика. Перечень основан на текущем исходном коде и технической проверке, а не на универсальном шаблоне.",
       updatedLabel: "Обновлено",
-      updatedDate: "26 августа 2026 года",
+      updatedDate: "4 сентября 2026 года",
       sections: [
         {
           heading: "Cookie и localStorage — разные механизмы",
@@ -344,6 +364,13 @@ export const legalCopy = {
           paragraphs: ["Отдельную святыню можно удалить из избранного в интерфейсе. Все локальные данные удаляются через настройки браузера для данных сайта. Блокировка сторонних cookies может повлиять на технические механизмы MapTiler/Cloudflare, но основной контент отделён от списка избранного."],
         },
         {
+          heading: "YouTube-видео",
+          paragraphs: [
+            "YouTube не подключается и видео не загружается при самом открытии страницы. Внешнее соединение начинается только после выбора пользователем кнопки «Запустить видео».",
+            "Запуск не сохраняется в cookie, localStorage или sessionStorage; каждое видео загружается только после нового явного действия. После запуска YouTube/Google может применять собственные технические механизмы и обрабатывать данные по своей политике.",
+          ],
+        },
+        {
           heading: "Почему нет баннера согласия",
           paragraphs: [
             "На текущем сайте нет дополнительного аналитического, рекламного или маркетингового хранилища, для которого предлагался бы выбор «принять все» или «отклонить все». Поэтому баннер и запись о согласии не добавлены.",
@@ -352,11 +379,12 @@ export const legalCopy = {
         },
         {
           heading: "Политики внешних поставщиков",
-          paragraphs: ["Cloudflare и MapTiler публикуют собственную информацию о конфиденциальности и технических cookies. Их документы могут изменяться независимо от этого сайта."],
+          paragraphs: ["Cloudflare, MapTiler и Google публикуют собственную информацию о конфиденциальности и технических cookies. Их документы могут изменяться независимо от этого сайта."],
           links: [
             { label: "Cloudflare Cookies", href: cloudflareCookies },
             { label: "Cloudflare Privacy Policy", href: cloudflarePrivacy },
             { label: "MapTiler Privacy Policy", href: mapTilerPrivacy },
+            { label: "Политика конфиденциальности Google", href: googlePrivacy },
           ],
         },
       ],
@@ -380,6 +408,13 @@ export const legalCopy = {
           duration: "Срок и фактическая устойчивость не подтверждены для публичного домена; управляются браузером и поставщиком.",
         },
         {
+          item: "YouTube / Google",
+          type: "Внешний сетевой запрос и возможное стороннее хранилище",
+          purpose: "Не активируется при открытии страницы; видео загружается только после выбора пользователем кнопки «Запустить видео».",
+          transfer: "После запуска браузер напрямую обращается к инфраструктуре YouTube/Google и передаёт технические данные, необходимые для доставки видео.",
+          duration: "Зависит от правил YouTube/Google и настроек браузера; svetinje.me не сохраняет запуск в cookie, localStorage или sessionStorage.",
+        },
+        {
           item: "Cookies домена svetinje.me",
           type: "Сейчас не обнаружены",
           purpose: "Текущий исходный код и техническая проверка не выявили собственных аналитических, рекламных cookies или cookies согласия.",
@@ -400,7 +435,7 @@ export const legalCopy = {
       description: "How svetinje.me handles technical data, uses infrastructure services, and stores favourite holy places in the browser.",
       intro: "This policy describes how the public svetinje.me site actually works in its current implementation. The site has no user accounts, public data-collection forms, advertising pixels, or marketing profiling.",
       updatedLabel: "Updated",
-      updatedDate: "26 August 2026",
+      updatedDate: "4 September 2026",
       sections: [
         {
           heading: "Who operates the site and how to contact us",
@@ -480,8 +515,10 @@ export const legalCopy = {
         {
           heading: "External video",
           paragraphs: [
-            "The system supports external video for records that provide one, but the current public production output contains no active YouTube video. If such content becomes public, the loading method, legal basis, and need for additional privacy controls must be reassessed before publication. YouTube is not presented as receiving data on every page.",
+            "Embedded YouTube video does not connect to YouTube automatically when the page opens. The connection is established only after the user explicitly selects “Play video”.",
+            "After playback is started, the browser loads the video from YouTube. YouTube/Google may then process technical data, including the IP address and browser information, under its own privacy policy.",
           ],
+          links: [{ label: "Google Privacy Policy", href: googlePrivacy }],
         },
         {
           heading: "Policy changes",
@@ -497,7 +534,7 @@ export const legalCopy = {
       description: "Which cookies and local storage svetinje.me currently uses and how visitors can control them.",
       intro: "This page distinguishes cookies, localStorage, and storage that may be used by an external provider. The inventory comes from the current source and technical audit, not a generic cookie template.",
       updatedLabel: "Updated",
-      updatedDate: "26 August 2026",
+      updatedDate: "4 September 2026",
       sections: [
         {
           heading: "Cookies and localStorage are different",
@@ -511,6 +548,13 @@ export const legalCopy = {
           paragraphs: ["You can remove individual favourite holy places in the interface. You can remove all local data through the browser's site-data settings. Blocking third-party cookies may affect MapTiler/Cloudflare technical mechanisms, but the site's core content remains separate from the favourites list."],
         },
         {
+          heading: "YouTube video",
+          paragraphs: [
+            "YouTube is not contacted and the video is not loaded merely by opening the page. The external connection begins only after the user selects “Play video”.",
+            "Playback is not remembered in a cookie, localStorage, or sessionStorage; each video loads only after a new explicit action. After playback starts, YouTube/Google may use its own technical mechanisms and process data under its policy.",
+          ],
+        },
+        {
           heading: "Why there is no consent banner",
           paragraphs: [
             "The current site has no optional analytics, advertising, or marketing storage for which it would offer an “accept all” or “reject all” choice. No banner or consent state has therefore been added.",
@@ -519,11 +563,12 @@ export const legalCopy = {
         },
         {
           heading: "External provider policies",
-          paragraphs: ["Cloudflare and MapTiler publish their own information about privacy and technical cookies. Their documents may change independently of this site."],
+          paragraphs: ["Cloudflare, MapTiler, and Google publish their own information about privacy and technical cookies. Their documents may change independently of this site."],
           links: [
             { label: "Cloudflare Cookies", href: cloudflareCookies },
             { label: "Cloudflare Privacy Policy", href: cloudflarePrivacy },
             { label: "MapTiler Privacy Policy", href: mapTilerPrivacy },
+            { label: "Google Privacy Policy", href: googlePrivacy },
           ],
         },
       ],
@@ -545,6 +590,13 @@ export const legalCopy = {
           purpose: "When MapTiler resources are requested, Cloudflare may use it to distinguish visitors sharing one IP address for rate limiting and security.",
           transfer: "The browser connects directly to MapTiler infrastructure. Actual storage depends on the browser/request context.",
           duration: "Duration and actual persistence are not confirmed for the production domain; controlled by browser and provider settings.",
+        },
+        {
+          item: "YouTube / Google",
+          type: "External network request and possible third-party storage",
+          purpose: "Not activated when the page opens; the video loads only after the user selects “Play video”.",
+          transfer: "After playback starts, the browser connects directly to YouTube/Google infrastructure and sends technical data needed to deliver the video.",
+          duration: "Depends on YouTube/Google policies and browser settings; svetinje.me does not remember playback in a cookie, localStorage, or sessionStorage.",
         },
         {
           item: "Svetinje.me first-party cookies",

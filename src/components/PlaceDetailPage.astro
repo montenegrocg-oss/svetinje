@@ -28,6 +28,7 @@ const { place, locale = "sr", relatedPlaces, routes, localeLinks, availableFeast
 const copy = publicCopy[locale].pages.placeDetail;
 const metadataTitle = place.seoTitle ?? place.name;
 const metadataDescription = place.seoDescription ?? place.summary;
+const hasMedia = place.galleryImages.length > 0 || Boolean(place.youtubeVideoId);
 const aboutLabel = place.placeType === "monastery"
   ? copy.about.monastery
   : ["church", "chapel", "cathedral"].includes(place.placeType)
@@ -47,7 +48,10 @@ const aboutLabel = place.placeType === "monastery"
     <PlaceDetailHero place={place} locale={locale} />
 
     <section class="place-profile-body">
-      <div class:list={["shell", "place-profile-grid", { "place-profile-grid--has-schedule": place.serviceSchedule?.trim() }]}>
+      <div class:list={["shell", "place-profile-grid", {
+        "place-profile-grid--has-schedule": place.serviceSchedule?.trim(),
+        "place-profile-grid--no-media": !hasMedia,
+      }]}>
         <article class="place-profile-about prose" aria-labelledby="place-about-title">
           <h2 id="place-about-title">{aboutLabel}</h2>
           {place.narrativeBody.trim() ? (

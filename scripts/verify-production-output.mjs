@@ -229,7 +229,7 @@ function verifyNarrative(detail, place, failures) {
   }
 
   const articleStart = html.indexOf('id="place-about-title"');
-  const articleEnd = html.indexOf('data-testid="place-detail-gallery"');
+  const articleEnd = html.indexOf("</article>", articleStart);
   if (articleStart < 0 || articleEnd < 0 || articleStart >= articleEnd) {
     failures.push(`${place.id} detail page is missing its unified narrative boundary`);
     return;
@@ -281,12 +281,29 @@ function verifyDetail(detailCase, model, pagesByRoute, failures) {
     if (!gallery.includes(`src="${place.previewImageSrc}"`)) failures.push(`${place.id} detail gallery is missing its eligible image`);
   } else {
     if (!hero.includes("place-profile-hero__fallback")) failures.push(`${place.id} detail hero is missing its honest media fallback`);
-    if (!gallery.includes("Ауторска фотографија биће додата")) failures.push(`${place.id} detail gallery is missing its honest media fallback`);
   }
-  const expectedPlaceholderSlots = place.galleryImages.length === 0 ? 4 : Math.max(0, 5 - place.galleryImages.length);
-  if (!gallery || countMatches(gallery, /data-gallery-slot=/g) !== expectedPlaceholderSlots) {
-    failures.push(`${place.id} detail gallery must retain ${expectedPlaceholderSlots} honest preparation slot(s)`);
+  if (place.galleryImages.length === 0 && gallery) {
+    failures.push(`${place.id} detail page renders a gallery without real media`);
   }
+  if (place.galleryImages.length > 0 && !gallery) {
+    failures.push(`${place.id} detail page is missing its real gallery media`);
+  }
+  if (gallery && countMatches(gallery, /data-gallery-open(?:\s|>)/g) !== place.galleryImages.length) {
+    failures.push(`${place.id} detail gallery must contain exactly ${place.galleryImages.length} real media item(s)`);
+  }
+  if (gallery && /data-gallery-slot=|place-detail-gallery__placeholder|Фото у припреми|Галерија у припреми/.test(gallery)) {
+    failures.push(`${place.id} detail gallery renders a synthetic or preparation placeholder`);
+  }
+
+  if (/Планирај посјету|Изгради руту|Функција планирања посјете је у припреми|Израда персонализоване руте је у припреми/.test(hero)) {
+    failures.push(`${place.id} detail hero renders a non-functional launch CTA`);
+  }
+  if (!hero.includes("data-favorite-toggle")) failures.push(`${place.id} detail hero lost its working Favorites action`);
+
+  const linkedRoutes = model.routes.filter((candidate) => candidate.startPlace.id === place.id || candidate.endPlace.id === place.id);
+  const routeSections = countMatches(html, /data-testid="place-route-backlinks"/g);
+  if (linkedRoutes.length === 0 && routeSections !== 0) failures.push(`${place.id} detail page renders an empty pilgrimage-route section`);
+  if (linkedRoutes.length > 0 && routeSections === 0) failures.push(`${place.id} detail page is missing a publication-visible linked route`);
 
   if (!html.includes("Практичне информације")) failures.push(`${place.id} detail page is missing its repository-backed practical panel`);
   if (hasCoordinates && (!html.includes(`data-latitude="${place.latitude}"`) || !html.includes(`data-longitude="${place.longitude}"`))) {
@@ -329,10 +346,18 @@ function verifyDetail(detailCase, model, pagesByRoute, failures) {
     if (!html.includes(feast)) failures.push(`${place.id} detail page is missing unresolved legacy patronal feast ${feast}`);
   }
   if (place.patronalFeasts.length === 0 && /<dt[^>]*>[^<]*Слава/.test(html)) failures.push(`${place.id} detail page renders an empty patronal-feast row`);
-  if (place.youtubeVideoId && !gallery.includes(`https://www.youtube-nocookie.com/embed/${place.youtubeVideoId}`)) {
-    failures.push(`${place.id} detail page is missing its privacy-enhanced YouTube embed`);
+  const video = elementContaining(html, "section", 'data-testid="place-detail-video"');
+  if (place.youtubeVideoId) {
+    if (!video.includes(`data-youtube-video-id="${place.youtubeVideoId}"`) || !video.includes("data-youtube-load")) {
+      failures.push(`${place.id} detail page is missing its click-to-load YouTube control`);
+    }
+    if (/<iframe\b/i.test(video)) failures.push(`${place.id} detail page creates a YouTube iframe before user action`);
+  } else if (video) {
+    failures.push(`${place.id} detail page renders an empty video control`);
   }
-  if (!place.youtubeVideoId && gallery.includes("youtube-nocookie.com/embed/")) failures.push(`${place.id} detail page renders an empty video embed`);
+  if (/<link\b[^>]*rel="(?:preconnect|prefetch|dns-prefetch)"[^>]*(?:youtube|ytimg)|<link\b[^>]*(?:youtube|ytimg)[^>]*rel="(?:preconnect|prefetch|dns-prefetch)"/i.test(html)) {
+    failures.push(`${place.id} detail page preconnects or prefetches YouTube before user action`);
+  }
   verifyNarrative(detail, place, failures);
 }
 

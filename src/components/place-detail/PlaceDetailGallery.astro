@@ -7,38 +7,24 @@ interface Props { place: VisiblePlace; locale?: Locale; }
 const { place, locale = "sr" } = Astro.props;
 const copy = publicCopy[locale].pages.placeDetail.gallery;
 const [primaryImage, ...secondaryImages] = place.galleryImages;
-const placeholderSlots = [1, 2, 3, 4] as const;
 const galleryId = `place-gallery-${place.id}`;
+const videoTitle = `${copy.videoTitle} — ${place.name}`;
 ---
 
-<section class="place-detail-gallery" aria-labelledby="place-gallery-title" data-testid="place-detail-gallery" data-place-gallery={galleryId}>
-  <div class="place-section-heading"><h2 id="place-gallery-title">{copy.title}</h2></div>
-  <div class="place-detail-gallery__grid">
-    {primaryImage ? (
+{(primaryImage || place.youtubeVideoId) && <div class="place-detail-media">
+  {primaryImage && <section class="place-detail-gallery" aria-labelledby="place-gallery-title" data-testid="place-detail-gallery" data-place-gallery={galleryId}>
+    <div class="place-section-heading"><h2 id="place-gallery-title">{copy.title}</h2></div>
+    <div class="place-detail-gallery__grid" data-gallery-count={place.galleryImages.length}>
       <button class="place-detail-gallery__main place-detail-gallery__button" type="button" data-gallery-open data-gallery-index="0" aria-label={`${copy.enlarge}: ${primaryImage.alt}`}>
         <img src={primaryImage.src} alt={primaryImage.alt} width={primaryImage.width} height={primaryImage.height} loading="lazy" decoding="async" />
       </button>
-    ) : (
-      <div class="place-detail-gallery__main place-detail-gallery__placeholder"><span aria-hidden="true"></span><p>{copy.authorPending}</p></div>
-    )}
-    {secondaryImages.map((image, index) => (
-      <button class="place-detail-gallery__image place-detail-gallery__button" type="button" data-gallery-open data-gallery-index={String(index + 1)} aria-label={`${copy.enlarge}: ${image.alt}`}>
-        <img src={image.src} alt={image.alt} width={image.width} height={image.height} loading="lazy" decoding="async" />
-      </button>
-    ))}
-    {placeholderSlots.slice(secondaryImages.length).map((slot) => (
-      <div class="place-detail-gallery__placeholder" data-gallery-slot={slot}><span aria-hidden="true"></span><p>{slot === 4 ? copy.galleryPending : copy.morePending}</p></div>
-    ))}
-  </div>
+      {secondaryImages.map((image, index) => (
+        <button class="place-detail-gallery__image place-detail-gallery__button" type="button" data-gallery-open data-gallery-index={String(index + 1)} aria-label={`${copy.enlarge}: ${image.alt}`}>
+          <img src={image.src} alt={image.alt} width={image.width} height={image.height} loading="lazy" decoding="async" />
+        </button>
+      ))}
+    </div>
 
-  {place.youtubeVideoId && (
-    <section class="place-detail-video" aria-labelledby={`${galleryId}-video-title`}>
-      <h2 id={`${galleryId}-video-title`}>{copy.video}</h2>
-      <div class="place-detail-video__frame"><iframe src={`https://www.youtube-nocookie.com/embed/${place.youtubeVideoId}`} title={`${copy.videoTitle} — ${place.name}`} loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
-    </section>
-  )}
-
-  {primaryImage && (
     <dialog class="place-gallery-lightbox" data-gallery-dialog aria-label={`${copy.aria} — ${place.name}`}>
       <div class="place-gallery-lightbox__surface">
         <button class="place-gallery-lightbox__close" type="button" data-gallery-close aria-label={copy.close}>×</button>
@@ -47,8 +33,16 @@ const galleryId = `place-gallery-${place.id}`;
         <button class="place-gallery-lightbox__nav place-gallery-lightbox__nav--next" type="button" data-gallery-next aria-label={copy.next}>›</button>
       </div>
     </dialog>
-  )}
-</section>
+  </section>}
+
+  {place.youtubeVideoId && <section class="place-detail-video" aria-labelledby={`${galleryId}-video-title`} data-testid="place-detail-video">
+      <h2 id={`${galleryId}-video-title`}>{copy.video}</h2>
+      <div class="place-detail-video__frame" data-youtube-player data-youtube-video-id={place.youtubeVideoId} data-youtube-title={videoTitle}>
+        <p>{copy.videoPrompt}</p>
+        <button type="button" data-youtube-load aria-label={`${copy.playVideo}: ${place.name}`}>{copy.playVideo}</button>
+      </div>
+    </section>}
+</div>}
 
 <script>
   const initialisePlaceGalleries = () => {
@@ -90,6 +84,31 @@ const galleryId = `place-gallery-${place.id}`;
       dialog.addEventListener("close", () => { document.documentElement.classList.remove("has-open-lightbox"); trigger?.focus(); });
     });
   };
+
+  const initialiseYoutubePlayers = () => {
+    document.querySelectorAll<HTMLElement>("[data-youtube-player]").forEach((root) => {
+      if (root.dataset.youtubeInitialised === "true") return;
+      root.dataset.youtubeInitialised = "true";
+      const button = root.querySelector<HTMLButtonElement>("[data-youtube-load]");
+      const videoId = root.dataset.youtubeVideoId ?? "";
+      const title = root.dataset.youtubeTitle ?? "Video";
+      if (!button || !/^[A-Za-z0-9_-]{11}$/.test(videoId)) return;
+      button.addEventListener("click", () => {
+        const iframe = document.createElement("iframe");
+        iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`;
+        iframe.title = title;
+        iframe.referrerPolicy = "strict-origin-when-cross-origin";
+        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        iframe.allowFullscreen = true;
+        root.replaceChildren(iframe);
+      }, { once: true });
+    });
+  };
+
   initialisePlaceGalleries();
-  document.addEventListener("astro:page-load", initialisePlaceGalleries);
+  initialiseYoutubePlayers();
+  document.addEventListener("astro:page-load", () => {
+    initialisePlaceGalleries();
+    initialiseYoutubePlayers();
+  });
 </script>

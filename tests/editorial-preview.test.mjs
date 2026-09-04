@@ -514,11 +514,14 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.match(detailHero, /place\.previewImageSrc/);
   assert.match(detailHero, /categoryForPlaceType/);
   assert.doesNotMatch(detailHero, /Радни приказ|Центар комплекса|accuracyLabel/);
-  assert.match(detailGallery, /const placeholderSlots = \[1, 2, 3, 4\]/);
+  assert.doesNotMatch(detailGallery, /placeholderSlots|data-gallery-slot|place-detail-gallery__placeholder/);
   assert.match(detailGallery, /place\.galleryImages/);
+  assert.match(detailGallery, /primaryImage && <section class="place-detail-gallery"/);
   assert.match(detailGallery, /data-gallery-open/);
   assert.match(detailGallery, /<dialog class="place-gallery-lightbox"/);
   assert.match(detailGallery, /ArrowLeft|ArrowRight/);
+  assert.match(detailGallery, /data-youtube-load/);
+  assert.match(detailGallery, /document\.createElement\("iframe"\)/);
   assert.match(detailGallery, /youtube-nocookie\.com\/embed/);
   assert.doesNotMatch(detailGallery, /Ауторски медији/);
   assert.match(narrativeArticle, /parsePlaceNarrativeBlocks/);
