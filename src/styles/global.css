@@ -1958,7 +1958,8 @@
 
   .place-preview__record-link {
     display: grid;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto auto;
+    align-content: start;
     height: 100%;
     color: inherit;
     text-decoration: none;
@@ -1973,25 +1974,34 @@
   .place-preview__record-body {
     display: grid;
     align-content: start;
-    gap: 0.4rem;
-    padding: 0.72rem 0.75rem 0.8rem;
+    gap: 0.22rem;
+    padding: 0.62rem 0.7rem 0.68rem;
   }
 
   .place-preview__record-body h3 {
+    display: -webkit-box;
     margin: 0;
+    overflow: hidden;
     color: var(--navy);
     font-family: var(--font-serif);
     font-size: clamp(0.9rem, 1.1vw, 1.05rem);
     font-weight: 600;
     letter-spacing: 0.01em;
     line-height: 1.18;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
   .place-preview__record-body small {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
     color: color-mix(in srgb, var(--ink) 74%, var(--ink-soft));
     font-size: clamp(0.78rem, 0.75rem + 0.12vw, 0.875rem);
     font-weight: 500;
-    line-height: 1.4;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .map-explorer__recommended,
@@ -3708,11 +3718,18 @@
   }
 
   .editorial-place-card--sidebar {
+    position: relative;
+    isolation: isolate;
     display: flex;
     min-height: 0;
     flex-direction: column;
-    padding: 0.9rem;
+    padding: 0.8rem;
     box-shadow: 0 0.3rem 1rem rgba(10, 41, 68, 0.06);
+    transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+  }
+
+  .editorial-place-card--sidebar .editorial-place-card__media {
+    margin-bottom: 0.55rem;
   }
 
   .editorial-place-card--sidebar .editorial-place-card__media--fallback {
@@ -3869,11 +3886,42 @@
 
   .editorial-place-card--sidebar h2 {
     display: -webkit-box;
-    min-height: 2.4em;
+    margin-top: 0.35rem;
     overflow: hidden;
     line-height: 1.2;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+  }
+
+  .editorial-place-card--sidebar .editorial-place-card__title-link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .editorial-place-card--sidebar .editorial-place-card__title-link::after {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    content: "";
+  }
+
+  .editorial-place-card--sidebar:has(.editorial-place-card__title-link:focus-visible) {
+    border-color: var(--gold);
+    outline: 3px solid color-mix(in srgb, var(--gold) 72%, white);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgba(208, 171, 97, 0.14), var(--shadow-control);
+  }
+
+  .editorial-place-card--sidebar .editorial-place-card__title-link:focus-visible {
+    outline: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .editorial-place-card--sidebar:hover {
+      border-color: color-mix(in srgb, var(--gold) 52%, var(--line));
+      background: color-mix(in srgb, var(--paper) 96%, var(--ivory));
+      box-shadow: 0 0.45rem 1.2rem rgba(10, 41, 68, 0.1);
+    }
   }
 
   .editorial-place-card--catalogue h2 {
@@ -3893,6 +3941,7 @@
   }
 
   .editorial-place-card--sidebar .editorial-place-card__location {
+    margin-top: 0.2rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -3942,10 +3991,16 @@
 
   .editorial-place-card--sidebar .editorial-place-card__summary {
     display: -webkit-box;
-    min-height: 3em;
+    margin-top: 0.4rem;
     overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+  }
+
+  .editorial-place-card--sidebar .editorial-place-card__taxonomy {
+    position: relative;
+    z-index: 2;
+    margin-top: 0.35rem;
   }
 
   .editorial-place-card--catalogue .editorial-place-card__summary {
@@ -3966,11 +4021,6 @@
     font-size: 0.78rem;
     font-weight: 800;
     text-decoration: none;
-  }
-
-  .editorial-place-card--sidebar .editorial-place-card__link {
-    margin-top: auto;
-    padding-top: 0.85rem;
   }
 
   .editorial-place-card--catalogue .editorial-place-card__link,
@@ -5306,7 +5356,6 @@
     }
 
     .editorial-place-card--sidebar h2 {
-      min-height: 2.4em;
       margin-top: 0.3rem;
       font-size: 1.05rem;
       letter-spacing: 0.01em;
@@ -5317,17 +5366,10 @@
     }
 
     .editorial-place-card--sidebar .editorial-place-card__summary {
-      min-height: 2.8em;
       margin-top: 0.35rem;
       font-size: 0.74rem;
       line-height: 1.4;
       -webkit-line-clamp: 2;
-    }
-
-    .editorial-place-card--sidebar .editorial-place-card__link {
-      min-height: 2.25rem;
-      padding-top: 0.35rem;
-      font-size: 0.74rem;
     }
 
     .explorer-sidebar .filter-chips {
