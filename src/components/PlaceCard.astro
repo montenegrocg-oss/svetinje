@@ -14,6 +14,7 @@ interface Props {
 
 const { place, variant = "catalogue", initialExplorerPlacement, locale = "sr" } = Astro.props;
 const category = categoryForPlaceType(place.placeType);
+const detailHref = `${placeDetailRoot[locale]}${place.slug}/`;
 const location = [place.municipalityId ? undefined : place.municipality, place.settlement].filter(Boolean).join(" · ");
 const taxonomyItems = [
   place.eparchyId ? { kind: "eparchy" as const, id: place.eparchyId } : undefined,
@@ -55,7 +56,11 @@ const taxonomyItems = [
   <div class="editorial-place-card__topline">
     <p class="eyebrow">{place.typeLabel}</p>
   </div>
-  <h2>{place.name}</h2>
+  <h2>
+    {variant === "sidebar"
+      ? <a class="editorial-place-card__title-link" href={detailHref}>{place.name}</a>
+      : place.name}
+  </h2>
   {location && <p class="editorial-place-card__location">{location}</p>}
   {taxonomyItems.length > 0 && (
     <ul class="editorial-place-card__taxonomy">
@@ -67,7 +72,9 @@ const taxonomyItems = [
     </ul>
   )}
   {place.summary && <p class="editorial-place-card__summary">{place.summary}</p>}
-  <a class="editorial-place-card__link" href={`${placeDetailRoot[locale]}${place.slug}/`}>
-    {publicCopy[locale].openPage} <span aria-hidden="true">→</span>
-  </a>
+  {variant !== "sidebar" && (
+    <a class="editorial-place-card__link" href={detailHref}>
+      {publicCopy[locale].openPage} <span aria-hidden="true">→</span>
+    </a>
+  )}
 </article>
