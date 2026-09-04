@@ -358,8 +358,8 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.match(cataloguePage, /publicCopy\[locale\]\.pages\.catalogues\[page\]/);
   assert.match(cataloguePage, /canonicalPath=\{routeFor\(locale, page\)\}/);
   assert.match(cataloguePage, /<CategoryCatalogue[\s\S]*?heading=\{copy\.title\}[\s\S]*?category=\{category\}[\s\S]*?catalogueHeading=\{copy\.listTitle\}[\s\S]*?monasticCommunity=\{monasticCommunity\}/);
-  assert.match(cataloguePage, /const showHero = page !== "monasteries" && page !== "churches";/);
-  assert.match(cataloguePage, /<CategoryCatalogue[\s\S]*?showHero=\{showHero\}/);
+  assert.doesNotMatch(cataloguePage, /const showHero/);
+  assert.match(cataloguePage, /<CategoryCatalogue[\s\S]*?showHero=\{false\}/);
   assert.match(copy, /monasteries: \{ title: "Манастири", listTitle: "Сви манастири"/);
   assert.match(copy, /churches: \{ title: "Цркве", listTitle: "Све цркве"/);
   assert.match(copy, /maleMonasteries: \{ title: "Мушки манастири", listTitle: "Мушки манастири"[\s\S]*?empty: "Још нема мушких манастира спремних за приказ\."/);
