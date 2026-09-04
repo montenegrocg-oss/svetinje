@@ -13,4 +13,3 @@ const routeHref = (route: VisibleRoute) => locale === "sr" ? `/rute/${route.slug
 
 {from.length > 0 && <section class="place-route-links" aria-labelledby="routes-from-title" data-testid="place-route-backlinks"><h2 id="routes-from-title">{copy.from}</h2>{from.map((route) => <a href={routeHref(route)}>{route.shortName}<span aria-hidden="true">→</span></a>)}</section>}
 {to.length > 0 && <section class="place-route-links" aria-labelledby="routes-to-title" data-testid="place-route-backlinks"><h2 id="routes-to-title">{copy.to}</h2>{to.map((route) => <a href={routeHref(route)}>{route.shortName}<span aria-hidden="true">→</span></a>)}</section>}
-{from.length === 0 && to.length === 0 && <section class="place-route-links" aria-labelledby="place-routes-title" data-testid="place-route-backlinks"><h2 id="place-routes-title">{copy.title}</h2><p>{copy.empty}</p></section>}

@@ -65,7 +65,7 @@ test("legal pages use shared metadata, canonical routes, and language parity", a
     assert.ok(legalCopy[locale].privacy.title);
     assert.ok(legalCopy[locale].storage.title);
     assert.equal(legalCopy[locale].privacy.sections.length, legalCopy.sr.privacy.sections.length);
-    assert.equal(legalCopy[locale].storage.rows.length, 3);
+    assert.equal(legalCopy[locale].storage.rows.length, 4);
   }
 });
 
@@ -90,9 +90,12 @@ test("disclosures match audited storage and provider behavior", async () => {
     assert.match(copy, /svetinje:favorites:v1/);
     assert.match(copy, /Cloudflare/);
     assert.match(copy, /MapTiler/);
+    assert.match(copy, /YouTube/);
+    assert.match(copy, /Google/);
     assert.match(copy, /_cfuvid/);
     assert.match(copy, /localStorage/);
     assert.match(copy, /info@svetinje\.me/);
+    assert.match(copy, /sessionStorage/);
     assert.doesNotMatch(copy, /\b_ga\b|\b_gid\b|\b_fbp\b|cookie_consent/i);
     assert.doesNotMatch(copy, /we collect no data|не собираем никаких данных|не прикупљамо никакве податке/i);
   }

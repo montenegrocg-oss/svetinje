@@ -22,11 +22,9 @@ const breadcrumb = category === "monasteries"
       ? { href: routeFor(locale, "holyPlaces"), label: copy.siteName }
       : { href: routeFor(locale, "map"), label: copy.nav.map };
 const location = place.settlement ?? place.municipality;
-const hasCoordinates = place.latitude !== undefined && place.longitude !== undefined;
-const actionMessages = JSON.stringify(detailCopy.actionMessages).replaceAll("<", "\\u003c");
 ---
 
-<header class="place-profile-hero" data-place-id={place.id} data-place-detail-actions>
+<header class="place-profile-hero" data-place-id={place.id} data-place-favorites>
   {place.previewImageSrc ? (
     <img
       class="place-profile-hero__image"
@@ -58,30 +56,18 @@ const actionMessages = JSON.stringify(detailCopy.actionMessages).replaceAll("<",
     </div>
 
     <div class="place-profile-actions" aria-label={detailCopy.actions}>
-      <button type="button" class="place-profile-action place-profile-action--primary" data-place-detail-action="plan">
-        <InterfaceIcon name="info" size={18} /><span>{detailCopy.plan}</span>
-      </button>
-      <button type="button" class="place-profile-action" data-place-detail-action="route">
-        <InterfaceIcon name="route" size={18} /><span>{detailCopy.route}</span>
-      </button>
       <button
         type="button"
         class="place-profile-action"
-        data-place-detail-action="save"
         data-favorite-toggle
         data-favorite-id={place.id}
+        data-favorite-remove-label={detailCopy.removeFavorite}
         aria-label={detailCopy.addFavorite}
         aria-pressed="false"
       >
         <InterfaceIcon name="heart" size={18} /><span data-favorite-label>{detailCopy.addFavorite}</span>
       </button>
     </div>
-
-    <div class="place-profile-action-status" role="status" aria-live="polite" hidden>
-      <span data-place-detail-action-message></span>
-      {hasCoordinates && <a href={`${routeFor(locale, "home")}#mapa`} data-place-detail-map-link hidden>{detailCopy.openMap}</a>}
-    </div>
-    <script type="application/json" data-place-action-copy set:html={actionMessages} is:inline />
   </div>
 </header>
 
@@ -90,39 +76,14 @@ const actionMessages = JSON.stringify(detailCopy.actionMessages).replaceAll("<",
 
   type FavoritesDetailWindow = Window & { __svetinjeFavoritesDetailCleanup?: () => void };
 
-  const initialisePlaceActions = () => {
-    document.querySelectorAll<HTMLElement>("[data-place-detail-actions]").forEach((root) => {
-      if (root.dataset.actionsInitialised === "true") return;
-      root.dataset.actionsInitialised = "true";
-      const status = root.querySelector<HTMLElement>(".place-profile-action-status");
-      const message = root.querySelector<HTMLElement>("[data-place-detail-action-message]");
-      const mapLink = root.querySelector<HTMLElement>("[data-place-detail-map-link]");
-      const copyElement = root.querySelector<HTMLScriptElement>("[data-place-action-copy]");
-      const messages = JSON.parse(copyElement?.textContent ?? "{}") as Record<string, string>;
-
-      root.querySelectorAll<HTMLButtonElement>("[data-place-detail-action]").forEach((button) => {
-        button.addEventListener("click", () => {
-          const action = button.dataset.placeDetailAction ?? "";
-          if (action === "save") return;
-          if (!status || !message || !messages[action]) return;
-          message.textContent = messages[action];
-          if (mapLink) mapLink.hidden = action !== "route";
-          status.hidden = false;
-        });
-      });
-    });
-  };
-
   const initialiseFavoriteToggle = () => {
-    const root = document.querySelector<HTMLElement>("[data-place-detail-actions]");
+    const root = document.querySelector<HTMLElement>("[data-place-favorites]");
     if (!root || root.dataset.favoriteInitialised === "true") return;
     root.dataset.favoriteInitialised = "true";
     const buttons = [...root.querySelectorAll<HTMLButtonElement>("[data-favorite-toggle]")];
     const placeId = root.dataset.placeId ?? "";
-    const copyElement = root.querySelector<HTMLScriptElement>("[data-place-action-copy]");
-    const messages = JSON.parse(copyElement?.textContent ?? "{}") as Record<string, string>;
     const addLabel = buttons[0]?.getAttribute("aria-label") ?? "";
-    const removeLabel = messages.removeFavorite ?? addLabel;
+    const removeLabel = buttons[0]?.dataset.favoriteRemoveLabel ?? addLabel;
 
     const render = (ids: string[]) => {
       const active = ids.includes(placeId);
@@ -144,12 +105,8 @@ const actionMessages = JSON.stringify(detailCopy.actionMessages).replaceAll("<",
     favoritesWindow.__svetinjeFavoritesDetailCleanup = subscribeFavorites(render);
   };
 
-  initialisePlaceActions();
   initialiseFavoriteToggle();
-  document.addEventListener("astro:page-load", () => {
-    initialisePlaceActions();
-    initialiseFavoriteToggle();
-  });
+  document.addEventListener("astro:page-load", initialiseFavoriteToggle);
 </script>
 
 <style>

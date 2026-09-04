@@ -79,6 +79,9 @@ test("place detail keeps one shared article, ordered gallery, service schedule, 
   assert.match(gallery, /data-gallery-index=\{String\(index \+ 1\)\}/);
   assert.match(gallery, /place\.youtubeVideoId &&/);
   assert.match(gallery, /youtube-nocookie\.com\/embed/);
+  assert.match(gallery, /document\.createElement\("iframe"\)/);
+  assert.doesNotMatch(gallery, /<iframe\b/);
+  assert.doesNotMatch(gallery, /placeholderSlots|data-gallery-slot|place-detail-gallery__placeholder/);
   assert.match(gallery, /alt=\{primaryImage\.alt\}/);
   assert.match(practical, /place\.patronalFeasts\.filter/);
   assert.match(page, /<PlaceDetailGallery[\s\S]*<PlaceServiceSchedule[\s\S]*<PlacePracticalPanel/);
