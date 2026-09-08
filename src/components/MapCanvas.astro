@@ -6,6 +6,7 @@ import { categoryForPlaceType } from "../lib/place-filters";
 import { placeDetailRoot, type Locale } from "../i18n/config";
 import { placeTaxonomyLabel } from "../i18n/place-taxonomy";
 import { publicCopy } from "../i18n/public-copy";
+import { selectMappablePlaces } from "../lib/public-place-discovery";
 
 interface Props {
   places?: VisiblePlace[];
@@ -17,26 +18,22 @@ interface Props {
 const { places = [], routes = [], layout = "homepage", locale = "sr" } = Astro.props;
 const mapCopy = locale === "ru" ? { fallback: "Стилизованная карта Черногории без меток святынь.", region: "Интерактивная карта Черногории", loading: "Загрузка карты…", slowLoading: "Карта всё ещё загружается…", unavailable: "Интерактивная карта сейчас недоступна.", attribution: "Источники картографических данных", photo: "Авторская фотография будет добавлена", cluster: "святынь — приблизить карту", country: ["ЧЕРНО", "ГОРИЯ"], sea: "АДРИАТИЧЕСКОЕ МОРЕ", neighbours: ["СЕРБИЯ", "АЛБАНИЯ", "БОСНИЯ И ГЕРЦЕГОВИНА", "ХОРВАТИЯ"] } : locale === "en" ? { fallback: "A stylised map of Montenegro without holy-place markers.", region: "Interactive map of Montenegro", loading: "Loading map…", slowLoading: "The map is still loading…", unavailable: "The interactive map is currently unavailable.", attribution: "Map data sources", photo: "An original photograph will be added", cluster: "holy places — zoom in", country: ["MONTE", "NEGRO"], sea: "ADRIATIC SEA", neighbours: ["SERBIA", "ALBANIA", "BOSNIA AND HERZEGOVINA", "CROATIA"] } : { fallback: "Стилизована картографска површина Црне Горе без ознака светиња.", region: "Интерактивна карта Црне Горе", loading: "Учитавање карте…", slowLoading: "Карта се још учитава…", unavailable: "Интерактивна карта тренутно није доступна.", attribution: "Извори картографских података", photo: "Ауторска фотографија биће додата", cluster: "светиње — приближи карту", country: ["ЦРНА", "ГОРА"], sea: "ЈАДРАНСКО МОРЕ", neighbours: ["СРБИЈА", "АЛБАНИЈА", "БОСНА И ХЕРЦЕГОВИНА", "ХРВАТСКА"] };
 const hasMapTilerKey = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
-const markerPlaces = places.flatMap((place) =>
-  Number.isFinite(place.latitude) && Number.isFinite(place.longitude)
-    ? [{
-        id: place.id,
-        slug: place.slug,
-        name: place.name,
-        placeType: place.placeType,
-        typeLabel: place.typeLabel,
-        category: categoryForPlaceType(place.placeType),
-        municipality: place.municipalityId
-          ? placeTaxonomyLabel(locale, "municipality", place.municipalityId) ?? place.municipality
-          : place.municipality,
-        settlement: place.settlement,
-        latitude: place.latitude as number,
-        longitude: place.longitude as number,
-        previewImageSrc: place.previewImageSrc,
-        previewImageAlt: place.previewImageAlt,
-      }]
-    : [],
-);
+const markerPlaces = selectMappablePlaces(places).map((place) => ({
+  id: place.id,
+  slug: place.slug,
+  name: place.name,
+  placeType: place.placeType,
+  typeLabel: place.typeLabel,
+  category: categoryForPlaceType(place.placeType),
+  municipality: place.municipalityId
+    ? placeTaxonomyLabel(locale, "municipality", place.municipalityId) ?? place.municipality
+    : place.municipality,
+  settlement: place.settlement,
+  latitude: place.latitude as number,
+  longitude: place.longitude as number,
+  previewImageSrc: place.previewImageSrc,
+  previewImageAlt: place.previewImageAlt,
+}));
 const markerPayload = JSON.stringify(markerPlaces).replaceAll("<", "\\u003c");
 const routePayload = JSON.stringify(mapEditorialRoutes(routes)).replaceAll("<", "\\u003c");
 const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.routeSummary).replaceAll("<", "\\u003c");
@@ -257,6 +254,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
     const zoomInButton = stage?.querySelector<HTMLButtonElement>("[data-map-zoom-in]");
     const zoomOutButton = stage?.querySelector<HTMLButtonElement>("[data-map-zoom-out]");
     const resetButton = stage?.querySelector<HTMLButtonElement>("[data-map-reset]");
+    const mapSearchInput = stage?.querySelector<HTMLInputElement>("[data-map-search-input]");
     const routeToggleButtons = [...(stage?.querySelectorAll<HTMLButtonElement>("[data-route-toggle]") ?? [])];
     const mapContainer = root.querySelector<HTMLElement>("#montenegro-map");
     const markerDataElement = root.querySelector<HTMLScriptElement>("[data-map-place-data]");
@@ -279,6 +277,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
       [zoomInButton, zoomOutButton, resetButton, ...routeToggleButtons].forEach((button) => {
         if (button) button.disabled = !enabled;
       });
+      if (mapSearchInput) mapSearchInput.disabled = !enabled;
     };
 
     let map: MapLibreMap | undefined;
@@ -480,6 +479,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
 
       [
         document.querySelector<HTMLElement>(".site-header"),
+        stage?.querySelector<HTMLElement>("[data-map-search-panel]"),
         stage?.querySelector<HTMLElement>(".map-actions"),
       ].forEach((overlay) => {
         if (!overlay) return;

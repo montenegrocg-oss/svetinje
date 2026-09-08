@@ -4,17 +4,24 @@ import { routeFor, type Locale } from "../i18n/config";
 import { publicCopy } from "../i18n/public-copy";
 import type { VisiblePlace } from "../lib/content/publication";
 import type { VisibleRoute } from "../lib/content/routes";
-import { selectPublicDiscoveryPlaces } from "../lib/public-place-discovery";
+import { selectMappablePlaces, selectPublicDiscoveryPlaces } from "../lib/public-place-discovery";
 import DedicatedMap from "./DedicatedMap.astro";
 
 interface Props { places: VisiblePlace[]; routes?: VisibleRoute[]; locale?: Locale }
 const { places, routes = [], locale = "sr" } = Astro.props;
 const copy = publicCopy[locale].pages.map;
 const discoveryPlaces = selectPublicDiscoveryPlaces(places);
+const mappablePlaces = selectMappablePlaces(discoveryPlaces);
 ---
 
 <BaseLayout title={copy.title} description={copy.description} canonicalPath={routeFor(locale, "map")} locale={locale}>
-  <div data-testid="map-page" data-map-page-locale={locale}>
-    <DedicatedMap places={discoveryPlaces} routes={routes} locale={locale} />
+  <div class="dedicated-map-page" data-testid="map-page" data-map-page-locale={locale}>
+    <header class="dedicated-map-page__intro">
+      <div class="shell">
+        <h1>{copy.title}</h1>
+        <p>{copy.description}</p>
+      </div>
+    </header>
+    <DedicatedMap places={mappablePlaces} routes={routes} locale={locale} />
   </div>
 </BaseLayout>

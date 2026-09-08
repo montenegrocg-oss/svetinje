@@ -10,6 +10,7 @@ interface Props {
 const { variant = "homepage", locale = "sr" } = Astro.props;
 const copy = publicCopy[locale].homepage;
 const c = copy.mapControls;
+const help = variant === "map-page" ? publicCopy[locale].pages.map.help : { title: c.helpTitle, body: c.helpBody };
 ---
 
 <div class:list={["map-actions", { "map-actions--map-page": variant === "map-page" }]} aria-label={c.quickAria} data-filter-group="map">
@@ -20,12 +21,12 @@ const c = copy.mapControls;
 </div>
 
 <div class:list={["map-tool-stack", { "map-tool-stack--page": variant === "map-page" }]} aria-label={c.controls}>
-  <details class="map-popover map-layers">
+  {variant === "homepage" && <details class="map-popover map-layers">
     <summary><InterfaceIcon name="layers" size={21} /><span>{c.layers}</span></summary>
     <div class="map-popover__panel">
       <strong>{c.layersTitle}</strong><p>{c.layersBody}</p>
     </div>
-  </details>
+  </details>}
   <div class="map-zoom" aria-label={c.zoom}>
     <button type="button" data-map-zoom-in disabled aria-label={c.zoomIn}><InterfaceIcon name="plus" size={21} /></button>
     <button type="button" data-map-zoom-out disabled aria-label={c.zoomOut}><InterfaceIcon name="minus" size={21} /></button>
@@ -36,6 +37,6 @@ const c = copy.mapControls;
 <details class:list={["map-popover", "map-help", { "map-help--page": variant === "map-page" }]}>
   <summary><InterfaceIcon name="info" size={18} /><span>{c.help}</span></summary>
   <div class="map-popover__panel">
-    <strong>{c.helpTitle}</strong><p>{c.helpBody}</p>
+    <strong>{help.title}</strong><p>{help.body}</p>
   </div>
 </details>

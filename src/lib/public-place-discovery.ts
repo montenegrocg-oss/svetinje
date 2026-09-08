@@ -14,3 +14,16 @@ export function isPublicDiscoveryPlaceType(placeType: string): boolean {
 export function selectPublicDiscoveryPlaces<T extends { placeType: string }>(places: readonly T[]): T[] {
   return places.filter((place) => isPublicDiscoveryPlaceType(place.placeType));
 }
+
+export interface MappablePlaceCoordinates {
+  latitude?: number | undefined;
+  longitude?: number | undefined;
+}
+
+export function isMappablePlace(place: MappablePlaceCoordinates): boolean {
+  return Number.isFinite(place.latitude) && Number.isFinite(place.longitude);
+}
+
+export function selectMappablePlaces<T extends MappablePlaceCoordinates>(places: readonly T[]): T[] {
+  return places.filter(isMappablePlace);
+}

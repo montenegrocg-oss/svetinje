@@ -272,7 +272,7 @@ test("mobile exposes only map category controls while desktop keeps the sidebar 
   const mobileRules = styles.match(/@media \(max-width: 47\.99rem\) \{([\s\S]*?)\r?\n  \}\r?\n\r?\n  @media \(min-width: 48rem\)/)?.[1] ?? "";
   assert.match(mobileRules, /\.map-actions\s*\{[\s\S]*?grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);[\s\S]*?overflow: visible/);
   assert.match(mobileRules, /\.map-actions--map-page\s*\{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
-  assert.match(mobileRules, /\.dedicated-map-page \.map-tool-stack\s*\{[\s\S]*?top: 7\.25rem/);
+  assert.match(mobileRules, /\.dedicated-map-page \.map-tool-stack\s*\{[\s\S]*?top: 12\.65rem/);
   assert.match(mobileRules, /\.map-action\s*\{[\s\S]*?min-height: 2\.75rem/);
 
   assert.match(styles, /@media \(min-width: 48rem\) and \(max-width: 67\.99rem\)/);

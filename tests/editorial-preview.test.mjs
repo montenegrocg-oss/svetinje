@@ -9,6 +9,7 @@ import {
   loadVisiblePlaces,
 } from "../src/lib/content/publication.ts";
 import { PLACE_AREAS } from "../src/lib/place-areas.ts";
+import { selectMappablePlaces } from "../src/lib/public-place-discovery.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -407,11 +408,11 @@ test("a research monastery without coordinates gets a detail route but no marker
   assert.equal(noCoordinates.latitude, undefined);
   assert.equal(noCoordinates.longitude, undefined);
   const detailRoutes = [noCoordinates].map((place) => `/svetinje/${place.slug}/`);
-  const markerPlaces = [noCoordinates].filter((place) => Number.isFinite(place.latitude) && Number.isFinite(place.longitude));
+  const markerPlaces = selectMappablePlaces([noCoordinates]);
   assert.deepEqual(detailRoutes, ["/svetinje/synthetic-coordinate-less-place/"]);
   assert.deepEqual(markerPlaces, []);
   assert.equal(withCoordinates?.latitude, 42.29799);
-  assert.match(mapCanvas, /Number\.isFinite\(place\.latitude\)/);
+  assert.match(mapCanvas, /selectMappablePlaces\(places\)/);
   assert.match(practicalPanel, /\{hasCoordinates && \([\s\S]*<PlaceMiniMap/);
   assert.match(card, /\{location && <p class="editorial-place-card__location"/);
   assert.match(practicalPanel, /\.filter\(\(row\) => Boolean\(row\.value\)\)/);

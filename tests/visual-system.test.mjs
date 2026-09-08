@@ -220,7 +220,8 @@ test("the dedicated map route reuses the shared map without homepage-only UI", a
   assert.match(page, /loadVisibleRoutes/);
   assert.match(page, /<MapPage places=\{places\} routes=\{routes\} locale="sr" \/>/);
   assert.match(mapPage, /selectPublicDiscoveryPlaces\(places\)/);
-  assert.match(mapPage, /<DedicatedMap places=\{discoveryPlaces\} routes=\{routes\} locale=\{locale\} \/>/);
+  assert.match(mapPage, /selectMappablePlaces\(discoveryPlaces\)/);
+  assert.match(mapPage, /<DedicatedMap places=\{mappablePlaces\} routes=\{routes\} locale=\{locale\} \/>/);
   assert.match(mapPage, /canonicalPath=\{routeFor\(locale, "map"\)\}/);
   assert.doesNotMatch(page, /MapExplorer|ExplorerSidebar|RecommendedPlaces|PopularRoutes|PlaceAreas/);
   assert.match(dedicatedMap, /<MapCanvas places=\{places\} routes=\{routes\} layout="full" locale=\{locale\} \/>/);
@@ -407,11 +408,11 @@ test("map controls, search, and filters expose accessible states and honest feed
   assert.match(copy, /reset: "Прикажи поново Црну Гору"/);
   assert.match(controls, /aria-label=\{c\.reset\}/);
   assert.match(explorer, /querySelectorAll<HTMLButtonElement>\("button\[data-filter\]"\)/);
+  assert.match(controls, /variant === "homepage" && <details class="map-popover map-layers">/);
   assert.ok(
-    controls.indexOf("map-layers") < controls.indexOf("data-map-zoom-in")
-      && controls.indexOf("data-map-zoom-in") < controls.indexOf("data-map-zoom-out")
+    controls.indexOf("data-map-zoom-in") < controls.indexOf("data-map-zoom-out")
       && controls.indexOf("data-map-zoom-out") < controls.indexOf("data-map-reset"),
-    "map controls must remain layers, zoom in, zoom out, and recenter",
+    "map controls must remain zoom in, zoom out, and recenter",
   );
   assert.match(styles, /\.map-popover summary,[\s\S]*?\.map-zoom button\s*\{[\s\S]*?width: 2\.75rem;[\s\S]*?height: 2\.75rem;/);
 });

@@ -66,7 +66,7 @@ test("walking-route copy and map behavior are localized and limited to the dedic
   assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} locale=\{locale\} \/>/);
   assert.doesNotMatch(explorer, /<MapCanvas[^>]*routes=/);
   assert.match(dedicatedMap, /<MapCanvas places=\{places\} routes=\{routes\} layout="full" locale=\{locale\} \/>/);
-  assert.match(mapPage, /<DedicatedMap places=\{discoveryPlaces\} routes=\{routes\} locale=\{locale\} \/>/);
+  assert.match(mapPage, /<DedicatedMap places=\{mappablePlaces\} routes=\{routes\} locale=\{locale\} \/>/);
   assert.match(page, /Promise\.all\(\[loadVisiblePlaces\(\), loadVisibleRoutes\(\)\]\)/);
   assert.match(page, /<MapPage places=\{places\} routes=\{routes\} locale="sr" \/>/);
   assert.ok(

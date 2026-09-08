@@ -7,7 +7,7 @@ import { loadVisiblePlaces } from "../src/lib/content/publication.ts";
 import { categoryForPlaceType } from "../src/lib/place-filters.ts";
 import { MARKER_ASSETS, resolveMarkerAsset } from "../src/lib/map-marker-assets.ts";
 import { clusterProjectedMarkers, getClusterExpansionZoom } from "../src/lib/map-marker-clustering.ts";
-import { selectPublicDiscoveryPlaces } from "../src/lib/public-place-discovery.ts";
+import { selectMappablePlaces, selectPublicDiscoveryPlaces } from "../src/lib/public-place-discovery.ts";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -206,7 +206,7 @@ test("public map marker and cluster inventory excludes coordinate-bearing holy p
     { id: "church", placeType: "church", longitude: 19.1002, latitude: 42.1002 },
     { id: "holy-spring", placeType: "holy-spring", longitude: 19.1001, latitude: 42.1001 },
   ];
-  const mapPlaces = selectPublicDiscoveryPlaces(visiblePlaces);
+  const mapPlaces = selectMappablePlaces(selectPublicDiscoveryPlaces(visiblePlaces));
   const projectedMarkers = mapPlaces.map((place, index) => ({ item: place, x: 100 + index, y: 100 + index }));
   const clusters = clusterProjectedMarkers(projectedMarkers, 52);
 
@@ -231,9 +231,11 @@ test("homepage and dedicated map share place inventory while only the map page r
   assert.match(mapRoute, /loadVisibleRoutes/);
   assert.match(mapRoute, /<MapPage places=\{places\} routes=\{routes\} locale="sr" \/>/);
   assert.match(mapPage, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
-  assert.match(mapPage, /<DedicatedMap places=\{discoveryPlaces\} routes=\{routes\} locale=\{locale\} \/>/);
-  assert.match(dedicatedMap, /const filterIds = new Set\(\["all", "monasteries", "churches"\]\)/);
-  assert.match(dedicatedMap, /new CustomEvent\("svetinje:filter-change", \{ detail: \{ filter \} \}\)/);
+  assert.match(mapPage, /const mappablePlaces = selectMappablePlaces\(discoveryPlaces\)/);
+  assert.match(mapPage, /<DedicatedMap places=\{mappablePlaces\} routes=\{routes\} locale=\{locale\} \/>/);
+  assert.match(dedicatedMap, /filterDedicatedMapPlaces\(\{/);
+  assert.match(dedicatedMap, /new CustomEvent\("svetinje:place-visibility-change", \{ detail: \{ visibleIds \} \}\)/);
+  assert.doesNotMatch(dedicatedMap, /svetinje:filter-change/);
   assert.doesNotMatch(dedicatedMap, /data-filter="routes"|clusterProjectedMarkers/);
 });
 
