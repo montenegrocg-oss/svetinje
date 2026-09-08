@@ -13,18 +13,22 @@ const range = Math.max(maxElevation - minElevation, 1);
 const points = profile.map((point) => `${inset + point.distanceM / maxDistance * (width - inset * 2)},${height - inset - (point.elevationM - minElevation) / range * (height - inset * 2)}`).join(" ");
 const areaPoints = `${inset},${height - inset} ${points} ${width - inset},${height - inset}`;
 const startElevation = profile[0]?.elevationM;
-const startElevationText = (startElevation ?? route.metrics.min_elevation_m)?.toLocaleString("sr-ME", { maximumFractionDigits: 1 });
+const formatElevation = (value: number | undefined) => value?.toLocaleString("sr-ME", { maximumFractionDigits: 0 }) ?? "Није унесено";
+const startElevationText = formatElevation(startElevation ?? route.metrics.min_elevation_m);
+const minimumElevationText = formatElevation(route.metrics.min_elevation_m);
+const maximumElevationText = formatElevation(route.metrics.max_elevation_m);
+const ascentText = route.metrics.ascent_m === undefined ? "Није унесено" : `+${formatElevation(route.metrics.ascent_m)} m`;
 ---
 
 <section class="route-profile" aria-labelledby="route-profile-title">
   <header class="route-section-header"><p class="route-section-eyebrow">Висински профил</p><h2 class="route-section-title" id="route-profile-title">Профил висине</h2><p>Промјена надморске висине дуж цијеле трасе.</p></header>
-  <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Профил висине од ${route.metrics.min_elevation_m} до ${route.metrics.max_elevation_m} метара`}>
+  <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Профил висине од ${minimumElevationText} до ${maximumElevationText} метара`}>
     <polygon points={areaPoints} />
     <polyline points={points} />
   </svg>
   <dl>
     <div><dt class="route-stat__label">{startElevation === undefined ? "Најнижа тачка" : "Почетна висина"}</dt><dd class="route-stat__value">{startElevationText} m</dd></div>
-    <div><dt class="route-stat__label">Највиша тачка</dt><dd class="route-stat__value">{route.metrics.max_elevation_m} m</dd></div>
-    <div><dt class="route-stat__label">Укупни успон</dt><dd class="route-stat__value">+{route.metrics.ascent_m} m</dd></div>
+    <div><dt class="route-stat__label">Највиша тачка</dt><dd class="route-stat__value">{maximumElevationText} m</dd></div>
+    <div><dt class="route-stat__label">Укупни успон</dt><dd class="route-stat__value">{ascentText}</dd></div>
   </dl>
 </section>

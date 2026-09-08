@@ -312,8 +312,8 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.equal([...catalogue.matchAll(/<h1>/g)].length, 1);
   assert.match(catalogue, /<h1>\{heading\}<\/h1>/);
   assert.match(catalogue, /<aside class="catalogue-sidebar"[\s\S]*?<CatalogueToolbar searchPlaceholder=\{copy\.searchPlaceholder\} areas=\{relevantAreas\} eparchies=\{eparchies\} municipalities=\{municipalities\} locale=\{locale\} showMapAction=\{showMapAction\} \/>[\s\S]*?<section class="catalogue-main"/);
-  assert.match(catalogue, /statusPrefix: "Пронађено је"/);
-  assert.match(catalogue, /searchPlaceholder: "Претражите цркве…", statusPrefix: "Пронађено је", statusNoun: "цркава"/);
+  assert.match(catalogue, /formatCatalogueResultCount/);
+  assert.match(catalogue, /searchPlaceholder: "Претражите цркве…"/);
   assert.match(catalogue, /<section class="catalogue-main"[\s\S]*?<div class="catalogue-section-heading">\s*<h2 id="catalogue-main-title">\{copy\.allHeading\}<\/h2>/);
   assert.doesNotMatch(catalogue, /<section class="catalogue-main"[\s\S]*?<div class="catalogue-section-heading">\s*<p class="eyebrow">/);
   assert.match(catalogue, /<PlaceCard place=\{place\} variant="featured" locale=\{locale\} \/>/);
@@ -328,7 +328,7 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.match(catalogue, /matchedItems\.forEach\(\(item, index\)/);
   assert.match(catalogue, /item\.hidden = index < pageStart \|\| index >= pageEnd/);
   assert.match(catalogue, /const matchedTotal = matchedFeaturedItems\.length \+ matchedItems\.length/);
-  assert.match(catalogue, /resultStatus\.textContent = `\$\{statusPrefix\} \$\{matchedTotal\} \$\{statusNoun\}`/);
+  assert.match(catalogue, /resultStatus\.textContent = formatCatalogueResultCount\(matchedTotal, locale, countKind\)/);
   assert.match(catalogue, /currentPage = 1;[\s\S]*?renderPage\(1\)/);
   assert.match(card, /place\.previewImageSrc && variant !== "catalogue"/);
   assert.match(styles, /\.category-catalogue__body--sidebar\s*\{[\s\S]*?display: grid;[\s\S]*?gap: 1rem;/);

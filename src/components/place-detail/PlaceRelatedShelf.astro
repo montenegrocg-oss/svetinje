@@ -3,6 +3,7 @@ import type { VisiblePlace } from "../../lib/content/publication";
 import { localeConfig, placeDetailRoot, routeFor, type Locale } from "../../i18n/config";
 import { publicCopy } from "../../i18n/public-copy";
 import type { RelatedPlace } from "../../lib/related-places";
+import { placeTaxonomyLabel } from "../../i18n/place-taxonomy";
 
 interface Props {
   currentPlace: VisiblePlace;
@@ -13,7 +14,12 @@ interface Props {
 const { currentPlace, relatedPlaces, locale = "sr" } = Astro.props;
 const copy = publicCopy[locale].pages.placeDetail.related;
 const placeholders = Array.from({ length: Math.max(0, 4 - relatedPlaces.length) });
-const locationFor = (place: VisiblePlace) => [place.settlement, place.municipality].filter(Boolean).join(" · ");
+const locationFor = (place: VisiblePlace) => {
+  const municipality = place.municipalityId
+    ? placeTaxonomyLabel(locale, "municipality", place.municipalityId) ?? place.municipality
+    : place.municipality;
+  return [place.settlement, municipality].filter(Boolean).join(" · ");
+};
 const distanceFor = (distance: number) => copy.distance.replace("{distance}", new Intl.NumberFormat(localeConfig[locale].htmlLang, { maximumFractionDigits: 1 }).format(distance));
 const allPlacesHref = locale === "sr" ? routeFor(locale, "holyPlaces") : routeFor(locale, "map");
 ---

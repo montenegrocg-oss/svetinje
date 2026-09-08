@@ -102,7 +102,7 @@ test("feast routes reuse the shared catalogue state and remain Serbian-only", as
   assert.match(placeRoute, /availableFeastIds=\{availableFeastIds\}/);
   assert.doesNotMatch(practical, /loadVisiblePlaces/);
   assert.match(page, /<CategoryCatalogue[\s\S]*places=\{feast\.places\}[\s\S]*forceSidebar=\{true\}[\s\S]*showMapAction=\{false\}/);
-  assert.match(page, /statusPrefix: "Пронађено је"/);
+  assert.doesNotMatch(page, /statusPrefix:/);
   assert.match(catalogue, /matchesCatalogueSearch/);
   assert.match(catalogue, /&& \(!areaId[\s\S]*&& \(!eparchyId[\s\S]*&& \(!municipalityId/);
   assert.match(catalogue, /currentPage = 1;[\s\S]*renderPage\(1\)/);

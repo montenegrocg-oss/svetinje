@@ -409,7 +409,6 @@
     display: block;
     margin-top: 0.4rem;
     color: var(--gold);
-    text-transform: capitalize;
   }
 
   .calendar-day__header h1 {
