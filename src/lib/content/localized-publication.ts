@@ -1,4 +1,4 @@
-import { buildCatalogueSearchText } from "../catalogue-search.ts";
+import { buildCatalogueSearchText, type CatalogueSearchFields } from "../catalogue-search.ts";
 import { areaLabels, localizedPlaceType } from "../../i18n/public-copy.ts";
 import type { Locale } from "../../i18n/config.ts";
 import { loadLocalizedNarrative, type TranslationStatus } from "./localized-narrative.ts";
@@ -31,7 +31,17 @@ async function loadLocalizedVisiblePlacesUncached(locale: Locale, root: string, 
     const summary = narrative.summary?.trim() ?? "";
     const names = alternateNames(narrative.alternateNames);
     const browseAreaLabel = place.browseAreaId ? areaLabels[locale][place.browseAreaId] : undefined;
-    const catalogueSearchText = buildCatalogueSearchText({ name: narrative.preferredName, slug: narrative.slug, alternateNames: names, municipality: place.municipality, settlement: place.settlement, browseAreaLabel, summary });
+    const catalogueSearchFields = {
+      name: narrative.preferredName,
+      canonicalId: place.id,
+      slug: narrative.slug,
+      alternateNames: names,
+      municipality: place.municipality,
+      settlement: place.settlement,
+      browseAreaLabel,
+      summary,
+    } satisfies CatalogueSearchFields;
+    const catalogueSearchText = buildCatalogueSearchText(catalogueSearchFields);
     const {
       patronalFeasts: _serbianFeasts,
       patronalFeastReferences: _serbianFeastReferences,
@@ -45,7 +55,7 @@ async function loadLocalizedVisiblePlacesUncached(locale: Locale, root: string, 
       patronalFeastReferences: [],
       unlinkedPatronalFeasts: narrative.patronalFeasts,
       ...(narrative.serviceSchedule ? { serviceSchedule: narrative.serviceSchedule } : {}),
-      typeLabel: localizedPlaceType(locale, place.placeType), catalogueSearchText,
+      typeLabel: localizedPlaceType(locale, place.placeType), catalogueSearchFields, catalogueSearchText,
       searchText: [narrative.preferredName, ...names, summary, narrative.body, place.municipality, place.settlement, browseAreaLabel].filter(Boolean).join(" "),
       narrativeBody: narrative.body, narrativeSections: [], previewImageAlt: narrative.preferredName,
       galleryImages: place.galleryImages.map((image) => ({ ...image, alt: narrative.preferredName! })),

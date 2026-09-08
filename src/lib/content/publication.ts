@@ -1,7 +1,7 @@
 import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { parseDocument } from "yaml";
-import { buildCatalogueSearchText } from "../catalogue-search.ts";
+import { buildCatalogueSearchText, type CatalogueSearchFields } from "../catalogue-search.ts";
 import { resolveMediaUrl } from "../media-url.ts";
 import { parseYoutubeVideoId } from "../place-content.ts";
 import type { PlaceAreaId } from "../place-areas.ts";
@@ -142,6 +142,7 @@ export interface PublishablePlace {
   browseAreaId?: PlaceAreaId;
   eparchyId?: string;
   municipalityId?: string;
+  catalogueSearchFields: CatalogueSearchFields;
   catalogueSearchText: string;
   mediaIds?: string[];
   narrativeBody: string;
@@ -438,6 +439,16 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
     const monasticCommunity = monasticCommunityValue(place.ecclesiastical?.community_type?.value);
     const serviceSchedule = optionalNonBlankText(narrative.service_schedule);
     const youtubeVideoId = parseYoutubeVideoId(place.video?.youtube_url);
+    const catalogueSearchFields = {
+      name: narrative.preferred_name,
+      canonicalId: place.id,
+      slug: narrative.slug,
+      alternateNames: (narrative.alternate_names ?? []).flatMap((alternate) => alternate.name ?? []),
+      municipality: place.location?.municipality?.value,
+      settlement: place.location?.settlement?.value,
+      browseAreaLabel: getPlaceArea(browseAreaId)?.label,
+      summary: narrative.summary,
+    } satisfies CatalogueSearchFields;
     return [{
       id: place.id,
       createdAt: place.audit.created_at,
@@ -458,15 +469,8 @@ export async function loadPublishablePlaces(root = process.cwd()): Promise<Publi
       ...(browseAreaId ? { browseAreaId } : {}),
       ...(eparchyId ? { eparchyId } : {}),
       ...(municipalityId ? { municipalityId } : {}),
-      catalogueSearchText: buildCatalogueSearchText({
-        name: narrative.preferred_name,
-        slug: narrative.slug,
-        alternateNames: (narrative.alternate_names ?? []).flatMap((alternate) => alternate.name ?? []),
-        municipality: place.location?.municipality?.value,
-        settlement: place.location?.settlement?.value,
-        browseAreaLabel: getPlaceArea(browseAreaId)?.label,
-        summary: narrative.summary,
-      }),
+      catalogueSearchFields,
+      catalogueSearchText: buildCatalogueSearchText(catalogueSearchFields),
     }];
   });
 }
@@ -610,6 +614,16 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       ? (place.relationships as { media_ids: unknown[] }).media_ids.filter((value): value is string => typeof value === "string")
       : [];
     const previewMedia = await previewMediaForPlace(root, place.id, preferredName, media, "editorial-preview", policy, mediaOrder);
+    const catalogueSearchFields = {
+      name: preferredName,
+      canonicalId: place.id,
+      slug,
+      alternateNames: (narrative.alternate_names ?? []).flatMap((alternate) => alternate.name ?? []),
+      municipality,
+      settlement,
+      browseAreaLabel: getPlaceArea(browseAreaId)?.label,
+      summary,
+    } satisfies CatalogueSearchFields;
     return {
       id: place.id,
       createdAt: place.audit.created_at,
@@ -620,15 +634,8 @@ export async function loadEditorialPreviewPlaces(root = process.cwd()): Promise<
       ...(browseAreaId ? { browseAreaId } : {}),
       ...(eparchyId ? { eparchyId } : {}),
       ...(municipalityId ? { municipalityId } : {}),
-      catalogueSearchText: buildCatalogueSearchText({
-        name: preferredName,
-        slug,
-        alternateNames: (narrative.alternate_names ?? []).flatMap((alternate) => alternate.name ?? []),
-        municipality,
-        settlement,
-        browseAreaLabel: getPlaceArea(browseAreaId)?.label,
-        summary,
-      }),
+      catalogueSearchFields,
+      catalogueSearchText: buildCatalogueSearchText(catalogueSearchFields),
       typeLabel: placeTypeLabel(placeType),
       ...(municipality !== undefined ? { municipality } : {}),
       ...(settlement !== undefined ? { settlement } : {}),

@@ -148,8 +148,9 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.doesNotMatch(explorer, /<MapCanvas[^>]*routes=/);
   assert.match(explorer, /<MapControls locale=\{locale\} \/>/);
   assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
-  assert.match(explorer, /const initialPlaces = discoveryPlaces\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);
-  assert.match(explorer, /const inventoryPlaces = discoveryPlaces\.slice\(HOMEPAGE_PREVIEW_LIMIT\)/);
+  assert.match(explorer, /const orderedDiscoveryPlaces = orderHomepageDiscoveryPlaces\(discoveryPlaces\)/);
+  assert.match(explorer, /const initialPlaces = orderedDiscoveryPlaces\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);
+  assert.match(explorer, /const inventoryPlaces = orderedDiscoveryPlaces\.slice\(HOMEPAGE_PREVIEW_LIMIT\)/);
   assert.match(explorer, /<ExplorerSidebar places=\{initialPlaces\} totalPlaces=\{discoveryPlaces\.length\} locale=\{locale\} \/>/);
   assert.match(explorer, /<RecommendedPlaces places=\{discoveryPlaces\} locale=\{locale\} \/>/);
   assert.match(explorer, /<TodayCalendar days=\{calendarDays\} locale=\{locale\} \/>/);
@@ -177,7 +178,8 @@ test("the homepage is composed from reusable map-explorer components", async () 
   assert.match(recommended, /\{copy\.title\}/);
   assert.match(recommended, /data-testid="recommended-places"/);
   assert.match(recommended, /MOST_VISITED_PLACE_IDS/);
-  const selectedIds = [...selection.matchAll(/^\s*"([a-z0-9-]+)",?$/gm)].map((match) => match[1]);
+  const mostVisitedSelection = selection.match(/export const MOST_VISITED_PLACE_IDS = Object\.freeze\(\[([\s\S]*?)\]\s+as const\);/)?.[1] ?? "";
+  const selectedIds = [...mostVisitedSelection.matchAll(/^\s*"([a-z0-9-]+)",?$/gm)].map((match) => match[1]);
   assert.deepEqual(selectedIds, ["manastir-ostrog", "cetinjski-manastir", "manastir-moraca", "dajbabe", "saborni-hram-podgorica"]);
   assert.match(recommended, /places\.find\(\(candidate\) => candidate\.id === id\)/);
   assert.match(recommended, /href=\{`\$\{placeDetailRoot\[locale\]\}\$\{place\.slug\}\/`\}/);

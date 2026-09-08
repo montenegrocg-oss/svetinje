@@ -7,6 +7,7 @@ import HomepageUpcomingPatronalFeasts from "./HomepageUpcomingPatronalFeasts.ast
 import RecommendedPlaces from "./RecommendedPlaces.astro";
 import TodayCalendar from "./TodayCalendar.astro";
 import { HOMEPAGE_PREVIEW_LIMIT } from "../lib/explorer-preview";
+import { orderHomepageDiscoveryPlaces } from "../lib/homepage-selections";
 import { selectPublicDiscoveryPlaces } from "../lib/public-place-discovery";
 import type { VisiblePlace } from "../lib/content/publication";
 import type { CalendarDay } from "../lib/calendar/content";
@@ -22,8 +23,15 @@ interface Props {
 const { places, calendarDays, locale = "sr" } = Astro.props;
 const copy = publicCopy[locale].homepage;
 const discoveryPlaces = selectPublicDiscoveryPlaces(places);
-const initialPlaces = discoveryPlaces.slice(0, HOMEPAGE_PREVIEW_LIMIT);
-const inventoryPlaces = discoveryPlaces.slice(HOMEPAGE_PREVIEW_LIMIT);
+const orderedDiscoveryPlaces = orderHomepageDiscoveryPlaces(discoveryPlaces);
+const initialPlaces = orderedDiscoveryPlaces.slice(0, HOMEPAGE_PREVIEW_LIMIT);
+const inventoryPlaces = orderedDiscoveryPlaces.slice(HOMEPAGE_PREVIEW_LIMIT);
+const originalDiscoveryOrder = new Map(discoveryPlaces.map((place, index) => [place.id, index]));
+const explorerSearchIndex = JSON.stringify(orderedDiscoveryPlaces.map((place) => ({
+  id: place.id,
+  fields: place.catalogueSearchFields,
+  originalOrder: originalDiscoveryOrder.get(place.id) ?? Number.MAX_SAFE_INTEGER,
+}))).replaceAll("<", "\\u003c");
 const explorerRuntimeCopy = JSON.stringify({
   status: copy.explorer.status,
   noResults: copy.explorer.noResults,
@@ -60,21 +68,31 @@ const explorerRuntimeCopy = JSON.stringify({
       <PlaceCard place={place} variant="sidebar" initialExplorerPlacement="pool" locale={locale} />
     ))}
   </div>
+  <script type="application/json" data-explorer-search-index set:html={explorerSearchIndex} is:inline />
   <script type="application/json" data-explorer-copy set:html={explorerRuntimeCopy} is:inline />
 </section>
 
 <script>
-  import { matchesCatalogueSearch } from "../lib/catalogue-search";
+  import type { CatalogueSearchFields } from "../lib/catalogue-search";
   import {
     pageCountForHomepagePreview,
     paginateHomepagePreview,
   } from "../lib/explorer-preview";
+  import { rankHomepageDiscoverySearch } from "../lib/homepage-selections";
   import { getPlaceArea } from "../lib/place-areas";
 
   const searchForm = document.querySelector<HTMLFormElement>("[data-catalogue-search]");
   const searchInput = searchForm?.querySelector<HTMLInputElement>("input[type='search']");
   const explorerRoot = document.querySelector<HTMLElement>("[data-testid='map-explorer']");
   const copyElement = explorerRoot?.querySelector<HTMLScriptElement>("[data-explorer-copy]");
+  const searchIndexElement = explorerRoot?.querySelector<HTMLScriptElement>("[data-explorer-search-index]");
+  const searchIndex = JSON.parse(searchIndexElement?.textContent ?? "[]") as Array<{
+    id: string;
+    fields: CatalogueSearchFields;
+    originalOrder: number;
+  }>;
+  const searchFieldsById = new Map(searchIndex.map(({ id, fields }) => [id, fields]));
+  const originalOrderById = new Map(searchIndex.map(({ id, originalOrder }) => [id, originalOrder]));
   const runtimeCopy = JSON.parse(copyElement?.textContent ?? "{}") as {
     status: { none: string; page: string; one: string; many: string };
     noResults: Record<string, { title: string; body: string }>;
@@ -171,13 +189,23 @@ const explorerRuntimeCopy = JSON.stringify({
       placeCards.forEach((card) => { card.dataset.selected = "false"; });
     }
     const query = searchInput?.value ?? "";
-    matchedCards = placeCards.filter((card) => {
+    const filteredCards = placeCards.filter((card) => {
       const matchesArea = !activeAreaId || card.dataset.placeArea === activeAreaId;
       const matchesCategory = activeFilter === "all" || card.dataset.placeCategory === activeFilter;
-      const matchesSearch = matchesCatalogueSearch(card.dataset.placeSearch ?? "", query);
-      const matches = matchesArea && matchesCategory && matchesSearch;
+      const matches = matchesArea && matchesCategory;
       if (!matches) card.dataset.selected = "false";
       return matches;
+    });
+    const rankedCards = rankHomepageDiscoverySearch(
+      filteredCards.map((card) => ({ id: card.dataset.placeCard ?? "", card })),
+      query,
+      searchFieldsById,
+      originalOrderById,
+    );
+    matchedCards = rankedCards.map(({ card }) => card);
+    const matchedIds = new Set(matchedCards.map((card) => card.dataset.placeCard ?? ""));
+    filteredCards.forEach((card) => {
+      if (!matchedIds.has(card.dataset.placeCard ?? "")) card.dataset.selected = "false";
     });
     const visibleIds = matchedCards.map((card) => card.dataset.placeCard ?? "");
     const shown = renderPreview();
