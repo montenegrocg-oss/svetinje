@@ -200,7 +200,7 @@ test("news UI remains isolated to its shared archive and uses semantic linked ro
   assert.match(archive, /<NewsFeed items=\{items\} variant="archive"/);
 });
 
-test("news archive derives dates and filters from visible records", async () => {
+test("news archive derives dates, useful filters, and pagination from visible records", async () => {
   const archive = await readFile(path.join(PROJECT_ROOT, "src", "components", "NewsArchivePage.astro"), "utf8");
   assert.deepEqual(serbianNewsDateParts("2026-08-04T12:00:00Z"), {
     day: "04",
@@ -208,7 +208,7 @@ test("news archive derives dates and filters from visible records", async () => 
     archiveKey: "2026-08",
     archiveLabel: "август 2026.",
   });
-  assert.match(archive, /NEWS_TYPES\.map/);
+  assert.match(archive, /NEWS_TYPES/);
   assert.match(archive, /archiveByKey/);
   assert.match(archive, /newsDateParts\(item\.publishedAt, locale\)/);
   assert.match(archive, /id="news-archive-feed"/);
@@ -217,5 +217,10 @@ test("news archive derives dates and filters from visible records", async () => 
   assert.match(archive, /data-news-month/);
   assert.match(archive, /selectedCategory === "all" \|\| item\.dataset\.newsType === selectedCategory/);
   assert.match(archive, /selectedMonth === "all" \|\| item\.dataset\.newsMonth === selectedMonth/);
+  assert.match(archive, /NEWS_PER_PAGE/);
+  assert.match(archive, /pageCountForNews/);
+  assert.match(archive, /data-news-pagination/);
+  assert.match(archive, /hasCategoryFilters/);
+  assert.match(archive, /hasArchiveFilters/);
   assert.match(archive, /copy\.empty/);
 });

@@ -6,18 +6,20 @@ interface Props {
   items: VisibleNewsItem[];
   emptyText?: string;
   variant?: "homepage" | "archive";
+  initialVisibleCount?: number;
 }
 
 const {
   items,
   emptyText = "Нове објаве биће доступне овдје.",
   variant = "homepage",
+  initialVisibleCount,
 } = Astro.props;
 ---
 
 <div class:list={["news-feed", `news-feed--${variant}`]} data-news-feed data-news-count={items.length}>
   {items.length > 0 ? (
-    items.map((item) => <NewsFeedItem item={item} variant={variant} />)
+    items.map((item, index) => <NewsFeedItem item={item} variant={variant} hidden={initialVisibleCount !== undefined && index >= initialVisibleCount} />)
   ) : (
     <p class="news-feed__empty">{emptyText}</p>
   )}

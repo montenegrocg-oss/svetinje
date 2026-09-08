@@ -5,9 +5,10 @@ import { newsDateParts } from "../../lib/news-types";
 interface Props {
   item: VisibleNewsItem;
   variant?: "homepage" | "archive";
+  hidden?: boolean;
 }
 
-const { item, variant = "homepage" } = Astro.props;
+const { item, variant = "homepage", hidden = false } = Astro.props;
 const date = newsDateParts(item.publishedAt, item.locale);
 ---
 
@@ -17,6 +18,7 @@ const date = newsDateParts(item.publishedAt, item.locale);
   data-news-type={item.type}
   data-news-month={date.archiveKey}
   data-published-at={item.publishedAt}
+  hidden={hidden}
 >
   <a class="news-feed-item__link" href={item.href}>
     <time class="news-feed-item__date" datetime={item.publishedAt}>
