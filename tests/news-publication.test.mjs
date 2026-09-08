@@ -119,10 +119,10 @@ test("Russian and English derived feeds use localized names, labels, and links w
   const enItem = enNews.find((item) => item.relatedPlaceId === "podmaine");
   assert.equal(ruNews.length, ruPlaces.length);
   assert.equal(enNews.length, enPlaces.length);
-  assert.equal(ruItem?.title, `${ruPlace?.name} добавлен на сайт`);
+  assert.equal(ruItem?.title, `Добавлено в каталог: ${ruPlace?.name}`);
   assert.equal(ruItem?.href, `/ru/svyatyni/${ruPlace?.slug}/`);
   assert.equal(ruItem?.typeLabel, "НОВЫЙ ОБЪЕКТ");
-  assert.equal(enItem?.title, `${enPlace?.name} added to the site`);
+  assert.equal(enItem?.title, `Added to the catalogue: ${enPlace?.name}`);
   assert.equal(enItem?.href, `/en/holy-places/${enPlace?.slug}/`);
   assert.equal(enItem?.typeLabel, "NEW PLACE");
   assert.equal(ruNews.some((item) => /додат на сајт/.test(item.title)), false);

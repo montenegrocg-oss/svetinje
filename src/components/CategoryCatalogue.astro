@@ -15,6 +15,7 @@ import ExplorerPagination from "./ExplorerPagination.astro";
 import PlaceCard from "./PlaceCard.astro";
 import type { VisiblePlace } from "../lib/content/publication";
 import { areaLabels, publicCopy } from "../i18n/public-copy";
+import { formatCatalogueResultCount, pluralFormIndex, type CatalogueCountKind } from "../i18n/catalogue-count";
 import { routeFor, type Locale } from "../i18n/config";
 import { eparchyOptionsFor, municipalityOptionsFor } from "../i18n/place-taxonomy";
 
@@ -32,8 +33,6 @@ interface Props {
   showMapAction?: boolean;
   presentation?: Partial<{
     searchPlaceholder: string;
-    statusPrefix: string;
-    statusNoun: string;
     featuredHeading: string;
     allHeading: string;
     filterAriaLabel: string;
@@ -72,34 +71,33 @@ const relevantAreas = PLACE_AREAS.filter((area) => relevantAreaIds.has(area.id))
 const eparchies = eparchyOptionsFor(locale);
 const municipalities = municipalityOptionsFor(locale);
 const catalogueLabel = heading;
+const countKind: CatalogueCountKind = category === "monasteries" ? "monasteries" : category === "churches" ? "churches" : "holyPlaces";
 const defaultCopy = category === "monasteries"
   ? locale === "ru" ? {
-      searchPlaceholder: "Найти монастырь…", statusPrefix: "Найдено:", statusNoun: "монастырей", featuredHeading: "Избранные монастыри", allHeading: catalogueHeading ?? "Все монастыри",
-      countForms: ["православных монастырей", "православных монастырей", "православных монастырей"],
+      searchPlaceholder: "Найти монастырь…", featuredHeading: "Избранные монастыри", allHeading: catalogueHeading ?? "Все монастыри",
+      countForms: ["православный монастырь", "православных монастыря", "православных монастырей"],
     } : locale === "en" ? {
-      searchPlaceholder: "Search monasteries…", statusPrefix: "Found", statusNoun: "monasteries", featuredHeading: "Featured monasteries", allHeading: catalogueHeading ?? "All monasteries",
-      countForms: ["Orthodox monasteries", "Orthodox monasteries", "Orthodox monasteries"],
+      searchPlaceholder: "Search monasteries…", featuredHeading: "Featured monasteries", allHeading: catalogueHeading ?? "All monasteries",
+      countForms: ["Orthodox monastery", "Orthodox monasteries", "Orthodox monasteries"],
     } : {
-      searchPlaceholder: "Претражите манастире…", statusPrefix: "Пронађено је", statusNoun: "манастира", featuredHeading: "Издвојени манастири", allHeading: catalogueHeading ?? "Сви манастири",
+      searchPlaceholder: "Претражите манастире…", featuredHeading: "Издвојени манастири", allHeading: catalogueHeading ?? "Сви манастири",
       countForms: ["православни манастир", "православна манастира", "православних манастира"],
     }
   : category === "churches"
     ? locale === "ru" ? {
-        searchPlaceholder: "Найти храм…", statusPrefix: "Найдено:", statusNoun: "храмов", featuredHeading: "Избранные храмы", allHeading: catalogueHeading ?? "Все храмы", countForms: ["православных храмов", "православных храмов", "православных храмов"],
+        searchPlaceholder: "Найти храм…", featuredHeading: "Избранные храмы", allHeading: catalogueHeading ?? "Все храмы", countForms: ["православную церковь", "православные церкви", "православных церквей"],
       } : locale === "en" ? {
-        searchPlaceholder: "Search churches…", statusPrefix: "Found", statusNoun: "churches", featuredHeading: "Featured churches", allHeading: catalogueHeading ?? "All churches", countForms: ["Orthodox churches", "Orthodox churches", "Orthodox churches"],
+        searchPlaceholder: "Search churches…", featuredHeading: "Featured churches", allHeading: catalogueHeading ?? "All churches", countForms: ["Orthodox church", "Orthodox churches", "Orthodox churches"],
       } : {
-        searchPlaceholder: "Претражите цркве…", statusPrefix: "Пронађено је", statusNoun: "цркава", featuredHeading: "Издвојени храмови", allHeading: catalogueHeading ?? "Све цркве",
+        searchPlaceholder: "Претражите цркве…", featuredHeading: "Издвојени храмови", allHeading: catalogueHeading ?? "Све цркве",
         countForms: ["православни храм", "православна храма", "православних храмова"],
       }
     : locale === "ru" ? {
-          searchPlaceholder: "Найти святыню…", statusPrefix: "Найдено:", statusNoun: "святынь", featuredHeading: "Избранные святыни", allHeading: "Все святыни", countForms: ["православных святынь", "православных святынь", "православных святынь"],
+          searchPlaceholder: "Найти святыню…", featuredHeading: "Избранные святыни", allHeading: "Все святыни", countForms: ["православную святыню", "православные святыни", "православных святынь"],
       } : locale === "en" ? {
-          searchPlaceholder: "Search holy places…", statusPrefix: "Found", statusNoun: "holy places", featuredHeading: "Featured holy places", allHeading: "All holy places", countForms: ["Orthodox holy places", "Orthodox holy places", "Orthodox holy places"],
+          searchPlaceholder: "Search holy places…", featuredHeading: "Featured holy places", allHeading: "All holy places", countForms: ["Orthodox holy place", "Orthodox holy places", "Orthodox holy places"],
       } : {
           searchPlaceholder: "Претражите светиње…",
-          statusPrefix: "Пронађене",
-          statusNoun: "светиња",
           featuredHeading: "Издвојене светиње",
           allHeading: catalogueHeading ?? "Све светиње",
           countForms: ["православну светињу", "православне светиње", "православних светиња"],
@@ -110,22 +108,16 @@ const filterAriaLabel = copy.filterAriaLabel ?? (category === "churches"
   : category === "monasteries"
     ? (locale === "ru" ? "Фильтры каталога монастырей" : locale === "en" ? "Monastery catalogue filters" : "Филтери каталога манастира")
     : "Филтери каталога слава");
-const countFormIndex = places.length % 100 >= 11 && places.length % 100 <= 14
-  ? 2
-  : places.length % 10 === 1
-    ? 0
-    : places.length % 10 >= 2 && places.length % 10 <= 4
-      ? 1
-      : 2;
-const countAwareDescription = locale === "ru" ? `Откройте для себя ${places.length} ${copy.countForms[2]} по всей Черногории.` : locale === "en" ? `Explore ${places.length} ${copy.countForms[2]} across Montenegro.` : `Истражите ${places.length} ${copy.countForms[countFormIndex] ?? copy.countForms[2]} широм Црне Горе.`;
+const countFormIndex = locale === "en" ? (places.length === 1 ? 0 : 2) : pluralFormIndex(places.length);
+const countAwareDescription = locale === "ru" ? `Откройте для себя ${places.length} ${copy.countForms[countFormIndex]} по всей Черногории.` : locale === "en" ? `Explore ${places.length} ${copy.countForms[countFormIndex]} across Montenegro.` : `Истражите ${places.length} ${copy.countForms[countFormIndex]} широм Црне Горе.`;
 ---
 
 <div
   data-category-catalogue
   data-catalogue-total={places.length}
   data-catalogue-page-size={PLACES_PER_PAGE}
-  data-catalogue-status-noun={copy.statusNoun}
-  data-catalogue-status-prefix={copy.statusPrefix}
+  data-catalogue-count-kind={countKind}
+  data-catalogue-locale={locale}
   data-monastic-community={monasticCommunity}
   data-page-label={ui.page}
   data-page-of={ui.of}
@@ -164,7 +156,7 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
             <CatalogueToolbar
               searchPlaceholder={copy.searchPlaceholder}
               areas={relevantAreas}
-              statusText={`${copy.statusPrefix} ${places.length} ${copy.statusNoun}`}
+              statusText={formatCatalogueResultCount(places.length, locale, countKind)}
               locale={locale}
             />
           )}
@@ -196,7 +188,7 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
               <h2 id="catalogue-main-title">{copy.allHeading}</h2>
               {usesSidebarCatalogue && (
                 <p class="catalogue-main__status" data-catalogue-result-status role="status" aria-live="polite">
-                  {copy.statusPrefix} {places.length} {copy.statusNoun}
+                  {formatCatalogueResultCount(places.length, locale, countKind)}
                 </p>
               )}
             </div>
@@ -230,6 +222,7 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
 <script>
   import { matchesCatalogueSearch } from "../lib/catalogue-search";
   import { pageCountForPlaces, PLACES_PER_PAGE } from "../lib/explorer-pagination";
+  import { formatCatalogueResultCount, type CatalogueCountKind } from "../i18n/catalogue-count";
 
   document.querySelectorAll<HTMLElement>("[data-category-catalogue]").forEach((catalogue) => {
     const items = [...catalogue.querySelectorAll<HTMLElement>("[data-catalogue-item]")];
@@ -248,8 +241,8 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
     const nextButton = pagination?.querySelector<HTMLButtonElement>("[data-pagination-next]");
     const pageButtons = [...(pagination?.querySelectorAll<HTMLButtonElement>("[data-pagination-page]") ?? [])];
     const status = pagination?.querySelector<HTMLElement>("[data-pagination-status]");
-    const statusNoun = catalogue.dataset.catalogueStatusNoun ?? "results";
-    const statusPrefix = catalogue.dataset.catalogueStatusPrefix ?? "Found";
+    const countKind = (catalogue.dataset.catalogueCountKind ?? "holyPlaces") as CatalogueCountKind;
+    const locale = catalogue.dataset.catalogueLocale === "ru" ? "ru" : catalogue.dataset.catalogueLocale === "en" ? "en" : "sr";
     const pageLabel = catalogue.dataset.pageLabel ?? "Page";
     const pageOf = catalogue.dataset.pageOf ?? "of";
     let matchedItems = [...items];
@@ -332,7 +325,7 @@ const countAwareDescription = locale === "ru" ? `Откройте для себ�
       if (emptyState) emptyState.hidden = matchedTotal !== 0;
       const hasFilters = Boolean(query.trim() || areaId || eparchyId || municipalityId);
       if (resultStatus) {
-        resultStatus.textContent = `${statusPrefix} ${matchedTotal} ${statusNoun}`;
+        resultStatus.textContent = formatCatalogueResultCount(matchedTotal, locale, countKind);
       }
       resetButtons.forEach((button) => {
         button.hidden = !hasFilters;

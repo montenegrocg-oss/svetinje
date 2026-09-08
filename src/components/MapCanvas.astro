@@ -4,6 +4,7 @@ import type { VisibleRoute } from "../lib/content/routes";
 import { mapEditorialRoutes } from "../lib/map-editorial-routes";
 import { categoryForPlaceType } from "../lib/place-filters";
 import { placeDetailRoot, type Locale } from "../i18n/config";
+import { placeTaxonomyLabel } from "../i18n/place-taxonomy";
 import { publicCopy } from "../i18n/public-copy";
 
 interface Props {
@@ -25,7 +26,9 @@ const markerPlaces = places.flatMap((place) =>
         placeType: place.placeType,
         typeLabel: place.typeLabel,
         category: categoryForPlaceType(place.placeType),
-        municipality: place.municipality,
+        municipality: place.municipalityId
+          ? placeTaxonomyLabel(locale, "municipality", place.municipalityId) ?? place.municipality
+          : place.municipality,
         settlement: place.settlement,
         latitude: place.latitude as number,
         longitude: place.longitude as number,
@@ -171,6 +174,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
   import { createInitialMap, isFatalInitialStyleError, watchInitialMapLoad } from "../lib/map-load-lifecycle";
   import { resolveMarkerAsset } from "../lib/map-marker-assets";
   import { getMapPopupPanOffset } from "../lib/map-popup-positioning";
+  import { mapLibreLocale } from "../i18n/maplibre-locale";
 
   const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY?.trim();
   const MAP_STYLE_URL = MAPTILER_KEY
@@ -323,6 +327,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
         fadeDuration: reducedMotion.matches ? 0 : 300,
         minZoom: 4,
         maxZoom: 20,
+        locale: mapLibreLocale(mapLocale),
       }),
     });
 

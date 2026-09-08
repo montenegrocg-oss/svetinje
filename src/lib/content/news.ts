@@ -3,6 +3,7 @@ import path from "node:path";
 import { parseDocument } from "yaml";
 import { placeDetailRoot, type Locale } from "../../i18n/config.ts";
 import { areaLabels, publicCopy } from "../../i18n/public-copy.ts";
+import { placeTaxonomyLabel } from "../../i18n/place-taxonomy.ts";
 import { isNewsType, newsTypeLabel, type NewsType } from "../news-types.ts";
 import { loadLocalizedVisiblePlaces } from "./localized-publication.ts";
 import { loadVisiblePlaces, type VisiblePlace } from "./publication.ts";
@@ -241,7 +242,10 @@ function normalizeNews(record: NewsRecord, placesById: Map<string, VisiblePlace>
 }
 
 function derivedPlaceSummary(place: VisiblePlace, locale: Locale): string {
-  const location = [place.municipality, place.settlement].filter((value): value is string => Boolean(value?.trim()));
+  const municipality = place.municipalityId
+    ? placeTaxonomyLabel(locale, "municipality", place.municipalityId) ?? place.municipality
+    : place.municipality;
+  const location = [municipality, place.settlement].filter((value): value is string => Boolean(value?.trim()));
   if (location.length > 0) return location.join(" · ");
   if (place.browseAreaId) return areaLabels[locale][place.browseAreaId] ?? place.summary;
   return place.summary;
