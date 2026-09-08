@@ -4,7 +4,7 @@ export const publicCopy = {
   sr: {
     siteName: "Светиње.me", skip: "Пређи на главни садржај", menu: "Мени", openMenu: "Отвори главни мени",
     nav: { monasteries: "Манастири", maleMonasteries: "Мушки манастири", femaleMonasteries: "Женски манастири", churches: "Цркве", map: "Мапа", routes: "Руте", calendar: "Календар", news: "Новости", about: "О пројекту", sources: "Извори" },
-    allMonasteries: "Сви манастири", catalogue: "Каталог", allAreas: "Све области", chooseArea: "Изаберите област",
+    allMonasteries: "Сви манастири", catalogue: "Каталог", allAreas: "Све области", chooseArea: "Изаберите област", filterToggle: "Филтери",
     catalogueTaxonomy: { eparchy: "Епархија", allEparchies: "Све епархије", municipality: "Општина", allMunicipalities: "Све општине" },
     showMap: "Прикажи на карти", clear: "Очисти филтере", openPage: "Отвори страницу", page: "Страница", of: "од",
     footer: "Дигитални водич кроз православну баштину Црне Горе.", footerNav: "Навигација у подножју",
@@ -61,7 +61,7 @@ export const publicCopy = {
   ru: {
     siteName: "Святыни.me", skip: "Перейти к основному содержанию", menu: "Меню", openMenu: "Открыть главное меню",
     nav: { monasteries: "Монастыри", maleMonasteries: "Мужские монастыри", femaleMonasteries: "Женские монастыри", churches: "Храмы", map: "Карта", routes: "Маршруты", calendar: "Календарь", news: "Новости", about: "О проекте", sources: "Источники" },
-    allMonasteries: "Все монастыри", catalogue: "Каталог", allAreas: "Все регионы", chooseArea: "Выберите регион",
+    allMonasteries: "Все монастыри", catalogue: "Каталог", allAreas: "Все регионы", chooseArea: "Выберите регион", filterToggle: "Фильтры",
     catalogueTaxonomy: { eparchy: "Епархия", allEparchies: "Все епархии", municipality: "Муниципалитет", allMunicipalities: "Все муниципалитеты" },
     showMap: "Показать на карте", clear: "Сбросить фильтры", openPage: "Открыть страницу", page: "Страница", of: "из",
     footer: "Цифровой путеводитель по православному наследию Черногории.", footerNav: "Навигация в подвале",
@@ -118,7 +118,7 @@ export const publicCopy = {
   en: {
     siteName: "Holy Places.me", skip: "Skip to main content", menu: "Menu", openMenu: "Open main menu",
     nav: { monasteries: "Monasteries", maleMonasteries: "Men's monasteries", femaleMonasteries: "Women's monasteries", churches: "Churches", map: "Map", routes: "Routes", calendar: "Calendar", news: "News", about: "About", sources: "Sources" },
-    allMonasteries: "All monasteries", catalogue: "Catalogue", allAreas: "All regions", chooseArea: "Choose a region",
+    allMonasteries: "All monasteries", catalogue: "Catalogue", allAreas: "All regions", chooseArea: "Choose a region", filterToggle: "Filters",
     catalogueTaxonomy: { eparchy: "Eparchy", allEparchies: "All eparchies", municipality: "Municipality", allMunicipalities: "All municipalities" },
     showMap: "Show on map", clear: "Clear filters", openPage: "Open page", page: "Page", of: "of",
     footer: "A digital guide to the Orthodox heritage of Montenegro.", footerNav: "Footer navigation",

@@ -7,51 +7,82 @@ interface Props {
   statusText?: string;
   locale?: import("../i18n/config").Locale;
   showMapAction?: boolean;
+  mobileFilterDisclosure?: boolean;
+  advancedFiltersId?: string;
 }
 
 import { routeFor, type Locale } from "../i18n/config";
 import { publicCopy } from "../i18n/public-copy";
-const { searchPlaceholder, areas, eparchies = [], municipalities = [], statusText, locale = "sr", showMapAction = true } = Astro.props;
+const {
+  searchPlaceholder,
+  areas,
+  eparchies = [],
+  municipalities = [],
+  statusText,
+  locale = "sr",
+  showMapAction = true,
+  mobileFilterDisclosure = false,
+  advancedFiltersId,
+} = Astro.props;
 const copy = publicCopy[locale as Locale];
 ---
 
-<div class="catalogue-toolbar" data-catalogue-toolbar>
+<div
+  class="catalogue-toolbar"
+  data-catalogue-toolbar
+  data-mobile-filter-disclosure={mobileFilterDisclosure ? "" : undefined}
+  data-mobile-filters-open={mobileFilterDisclosure ? "false" : undefined}
+>
   <label class="catalogue-toolbar__search">
     <span class="sr-only">{searchPlaceholder}</span>
     <input type="search" placeholder={searchPlaceholder} autocomplete="off" data-catalogue-search />
   </label>
-  <label class="catalogue-toolbar__area">
-    <span class="sr-only">{copy.chooseArea}</span>
-    <select data-catalogue-area>
-      <option value="">{copy.allAreas}</option>
-      {areas.map((area) => <option value={area.id}>{area.label}</option>)}
-    </select>
-  </label>
-  {eparchies.length > 0 && (
-    <label class="catalogue-toolbar__eparchy">
-      <span class="catalogue-toolbar__label">{copy.catalogueTaxonomy.eparchy}</span>
-      <select data-catalogue-eparchy>
-        <option value="">{copy.catalogueTaxonomy.allEparchies}</option>
-        {eparchies.map((eparchy) => <option value={eparchy.id}>{eparchy.label}</option>)}
+  {mobileFilterDisclosure && (
+    <button
+      class="catalogue-toolbar__filter-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls={advancedFiltersId}
+      data-catalogue-filter-toggle
+    >
+      <span>{copy.filterToggle}</span>
+      <span class="catalogue-toolbar__filter-count" data-catalogue-filter-count hidden></span>
+    </button>
+  )}
+  <div class="catalogue-toolbar__advanced" id={advancedFiltersId} data-catalogue-advanced-filters={mobileFilterDisclosure ? "" : undefined}>
+    <label class="catalogue-toolbar__area">
+      <span class="sr-only">{copy.chooseArea}</span>
+      <select data-catalogue-area>
+        <option value="">{copy.allAreas}</option>
+        {areas.map((area) => <option value={area.id}>{area.label}</option>)}
       </select>
     </label>
-  )}
-  {municipalities.length > 0 && (
-    <label class="catalogue-toolbar__municipality">
-      <span class="catalogue-toolbar__label">{copy.catalogueTaxonomy.municipality}</span>
-      <select data-catalogue-municipality>
-        <option value="">{copy.catalogueTaxonomy.allMunicipalities}</option>
-        {municipalities.map((municipality) => <option value={municipality.id}>{municipality.label}</option>)}
-      </select>
-    </label>
-  )}
+    {eparchies.length > 0 && (
+      <label class="catalogue-toolbar__eparchy">
+        <span class="catalogue-toolbar__label">{copy.catalogueTaxonomy.eparchy}</span>
+        <select data-catalogue-eparchy>
+          <option value="">{copy.catalogueTaxonomy.allEparchies}</option>
+          {eparchies.map((eparchy) => <option value={eparchy.id}>{eparchy.label}</option>)}
+        </select>
+      </label>
+    )}
+    {municipalities.length > 0 && (
+      <label class="catalogue-toolbar__municipality">
+        <span class="catalogue-toolbar__label">{copy.catalogueTaxonomy.municipality}</span>
+        <select data-catalogue-municipality>
+          <option value="">{copy.catalogueTaxonomy.allMunicipalities}</option>
+          {municipalities.map((municipality) => <option value={municipality.id}>{municipality.label}</option>)}
+        </select>
+      </label>
+    )}
+    <div class="catalogue-toolbar__actions">
+      {showMapAction && <a href={routeFor(locale, "map")}>{copy.showMap} <span aria-hidden="true">→</span></a>}
+      <button type="button" data-catalogue-reset hidden disabled>{copy.clear}</button>
+    </div>
+  </div>
   {statusText && (
     <p class="catalogue-toolbar__status" data-catalogue-result-status role="status" aria-live="polite">
       {statusText}
     </p>
   )}
-  <div class="catalogue-toolbar__actions">
-    {showMapAction && <a href={routeFor(locale, "map")}>{copy.showMap} <span aria-hidden="true">→</span></a>}
-    <button type="button" data-catalogue-reset hidden disabled>{copy.clear}</button>
-  </div>
 </div>

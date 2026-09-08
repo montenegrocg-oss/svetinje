@@ -313,10 +313,11 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.match(styles, /\.page-hero\.category-page-hero\s*\{[\s\S]*?padding-block: clamp\(1\.25rem, 2\.4vw, 1\.5rem\);/);
   assert.equal([...catalogue.matchAll(/<h1>/g)].length, 1);
   assert.match(catalogue, /<h1>\{heading\}<\/h1>/);
-  assert.match(catalogue, /<aside class="catalogue-sidebar"[\s\S]*?<CatalogueToolbar searchPlaceholder=\{copy\.searchPlaceholder\} areas=\{relevantAreas\} eparchies=\{eparchies\} municipalities=\{municipalities\} locale=\{locale\} showMapAction=\{showMapAction\} \/>[\s\S]*?<section class="catalogue-main"/);
+  assert.match(catalogue, /<aside class="catalogue-sidebar"[\s\S]*?<CatalogueToolbar[\s\S]*?searchPlaceholder=\{copy\.searchPlaceholder\}[\s\S]*?areas=\{relevantAreas\}[\s\S]*?eparchies=\{eparchies\}[\s\S]*?municipalities=\{municipalities\}[\s\S]*?mobileFilterDisclosure=\{mobileFilterDisclosure\}[\s\S]*?advancedFiltersId=\{advancedFiltersId\}[\s\S]*?\/>[\s\S]*?<section class="catalogue-main"/);
   assert.match(catalogue, /formatCatalogueResultCount/);
   assert.match(catalogue, /searchPlaceholder: "Претражите цркве…"/);
-  assert.match(catalogue, /<section class="catalogue-main"[\s\S]*?<div class="catalogue-section-heading">\s*<h2 id="catalogue-main-title">\{copy\.allHeading\}<\/h2>/);
+  assert.match(catalogue, /const CatalogueHeading = catalogueHeadingLevel === 1 \? "h1" : "h2"/);
+  assert.match(catalogue, /<div class="catalogue-section-heading catalogue-main-heading"[\s\S]*?<CatalogueHeading id="catalogue-main-title"/);
   assert.doesNotMatch(catalogue, /<section class="catalogue-main"[\s\S]*?<div class="catalogue-section-heading">\s*<p class="eyebrow">/);
   assert.match(catalogue, /<PlaceCard place=\{place\} variant="featured" locale=\{locale\} \/>/);
   assert.match(catalogue, /<PlaceCard place=\{place\} variant="catalogue" locale=\{locale\} \/>/);
@@ -335,6 +336,7 @@ test("public catalogue pages share discovery policy, category mapping, filters, 
   assert.match(card, /place\.previewImageSrc && variant !== "catalogue"/);
   assert.match(styles, /\.category-catalogue__body--sidebar\s*\{[\s\S]*?display: grid;[\s\S]*?gap: 1rem;/);
   assert.match(styles, /@media \(min-width: 68rem\)[\s\S]*?\.category-catalogue__body--sidebar\s*\{[\s\S]*?grid-template-columns: minmax\(0, 1fr\) clamp\(18rem, 25vw, 22rem\);/);
+  assert.match(styles, /"heading sidebar"[\s\S]*?"main sidebar"/);
   assert.match(styles, /\.catalogue-sidebar\s*\{[\s\S]*?position: sticky;[\s\S]*?top: 6\.25rem;/);
   assert.match(styles, /\.catalogue-sidebar \.catalogue-toolbar\s*\{[\s\S]*?display: flex;[\s\S]*?flex-direction: column;[\s\S]*?align-items: stretch;/);
   assert.match(styles, /\.catalogue-sidebar \.catalogue-toolbar__search,[\s\S]*?\.catalogue-sidebar \.catalogue-toolbar__area,[\s\S]*?\.catalogue-sidebar \.catalogue-toolbar__actions\s*\{[\s\S]*?width: 100%;/);

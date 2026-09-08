@@ -18,7 +18,9 @@ test("all monastery and church catalogue kinds suppress the duplicate visual her
   assert.match(page, /<CategoryCatalogue[\s\S]*?showHero=\{false\}/);
   assert.doesNotMatch(page, /const showHero/);
   assert.match(catalogue, /\{showHero && \([\s\S]*?<header class="page-hero compact category-page-hero">/);
-  assert.match(catalogue, /<h2 id="catalogue-main-title">\{copy\.allHeading\}<\/h2>/);
+  assert.match(catalogue, /const CatalogueHeading = catalogueHeadingLevel === 1 \? "h1" : "h2"/);
+  assert.match(catalogue, /<CatalogueHeading id="catalogue-main-title"/);
+  assert.match(page, /catalogueHeadingLevel=\{1\}/);
   assert.match(catalogue, /data-catalogue-result-status/);
   assert.match(catalogue, /<aside class="catalogue-sidebar"/);
 });

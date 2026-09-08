@@ -2562,6 +2562,14 @@
     box-shadow: var(--shadow-control);
   }
 
+  .catalogue-toolbar__advanced {
+    display: contents;
+  }
+
+  .catalogue-toolbar__filter-toggle {
+    display: none;
+  }
+
   .catalogue-toolbar input,
   .catalogue-toolbar select {
     width: 100%;
@@ -2658,7 +2666,21 @@
     gap: 1rem;
   }
 
-  .category-catalogue__body--sidebar .catalogue-main {
+  .category-catalogue__body--mobile-ux {
+    grid-template-areas:
+      "heading"
+      "sidebar"
+      "main"
+      "empty";
+  }
+
+  .category-catalogue__body--mobile-ux .catalogue-main-heading {
+    grid-area: heading;
+    margin-bottom: 0;
+  }
+
+  .category-catalogue__body--mobile-ux .catalogue-main {
+    grid-area: main;
     margin-top: 0;
   }
 
@@ -2666,10 +2688,22 @@
     min-width: 0;
   }
 
+  .category-catalogue__body--mobile-ux .catalogue-sidebar {
+    grid-area: sidebar;
+  }
+
   .catalogue-sidebar .catalogue-toolbar {
     display: flex;
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .catalogue-sidebar .catalogue-toolbar__advanced {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
   }
 
   .catalogue-sidebar .catalogue-toolbar__search,
@@ -2693,7 +2727,8 @@
     text-align: left;
   }
 
-  .category-catalogue__body--sidebar .catalogue-filter-empty {
+  .category-catalogue__body--mobile-ux .catalogue-filter-empty {
+    grid-area: empty;
     margin-top: 0;
   }
 
@@ -4727,6 +4762,59 @@
   }
 
   @media (max-width: 47.99rem) {
+    .catalogue-sidebar .catalogue-toolbar[data-mobile-filter-disclosure] {
+      gap: 0.65rem;
+      padding: 0.85rem;
+    }
+
+    .catalogue-sidebar .catalogue-toolbar[data-mobile-filter-disclosure] .catalogue-toolbar__filter-toggle {
+      display: inline-flex;
+      width: 100%;
+      min-height: 2.75rem;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      color: var(--navy-900);
+      background: var(--paper);
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .catalogue-sidebar .catalogue-toolbar[data-mobile-filter-disclosure] .catalogue-toolbar__filter-toggle:focus-visible {
+      outline: 3px solid var(--gold);
+      outline-offset: 2px;
+    }
+
+    .catalogue-toolbar__filter-count {
+      display: inline-grid;
+      min-width: 1.5rem;
+      min-height: 1.5rem;
+      place-items: center;
+      padding-inline: 0.35rem;
+      border-radius: 999px;
+      color: var(--white);
+      background: var(--navy-900);
+      font-size: 0.72rem;
+      line-height: 1;
+    }
+
+    .catalogue-toolbar__filter-count[hidden] {
+      display: none;
+    }
+
+    .catalogue-sidebar .catalogue-toolbar[data-mobile-filter-disclosure] .catalogue-toolbar__advanced {
+      display: none;
+    }
+
+    .catalogue-sidebar .catalogue-toolbar[data-mobile-filter-disclosure][data-mobile-filters-open="true"] .catalogue-toolbar__advanced {
+      display: flex;
+    }
+
     .legal-page__content {
       padding-block: 2rem 3rem;
     }
@@ -4872,6 +4960,14 @@
 
     .catalogue-featured__grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .category-catalogue__body--mobile-ux {
+      grid-template-areas:
+        "sidebar"
+        "heading"
+        "main"
+        "empty";
     }
 
     .dedicated-map-page__stage {
@@ -5201,7 +5297,15 @@
         "main sidebar"
         "empty sidebar";
       align-items: start;
-      gap: 1.5rem;
+      column-gap: 1.5rem;
+      row-gap: 1rem;
+    }
+
+    .category-catalogue__body--mobile-ux {
+      grid-template-areas:
+        "heading sidebar"
+        "main sidebar"
+        "empty sidebar";
     }
 
     .category-catalogue__body--sidebar .catalogue-main {
@@ -5213,9 +5317,9 @@
     }
 
     .catalogue-sidebar {
+      grid-area: sidebar;
       position: sticky;
       top: 6.25rem;
-      grid-area: sidebar;
     }
 
     .editorial-place-card--featured {
