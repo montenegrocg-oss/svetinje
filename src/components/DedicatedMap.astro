@@ -44,7 +44,12 @@ const hasMapTilerKey = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
       </form>
       <p class="dedicated-map-search__status" role="status" aria-live="polite" data-map-visible-count>{initialCount}</p>
     </div>
-    <MapControls variant="map-page" locale={locale} />
+    <MapControls
+      variant="map-page"
+      locale={locale}
+      mapAvailable={hasMapTilerKey}
+      routesAvailable={routes.length > 0}
+    />
   </div>
   <script type="application/json" data-dedicated-map-search-index set:html={searchPayload} is:inline />
   <script type="application/json" data-dedicated-map-copy set:html={countCopyPayload} is:inline />

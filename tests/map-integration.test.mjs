@@ -31,8 +31,9 @@ test("MapLibre GL JS is pinned exactly to the v5 compatibility release", async (
 });
 
 test("MapTiler configuration uses only the approved public environment variable", async () => {
-  const [mapCanvas, envExample] = await Promise.all([
+  const [mapCanvas, mapBasemaps, envExample] = await Promise.all([
     source("src/components/MapCanvas.astro"),
+    source("src/lib/map-basemaps.ts"),
     source(".env.example"),
   ]);
 
@@ -40,7 +41,8 @@ test("MapTiler configuration uses only the approved public environment variable"
   assert.match(mapCanvas, /import maplibregl from "maplibre-gl"/);
   assert.doesNotMatch(mapCanvas, /import \* as maplibregl from "maplibre-gl"/);
   assert.match(mapCanvas, /import\.meta\.env\.PUBLIC_MAPTILER_KEY/);
-  assert.match(mapCanvas, /maps\/019fc7d8-717c-701d-9ca5-a53d9438d3ce\/style\.json\?key=\$\{encodeURIComponent\(MAPTILER_KEY\)\}/);
+  assert.match(mapBasemaps, /mapId: "019fc7d8-717c-701d-9ca5-a53d9438d3ce"/);
+  assert.match(mapBasemaps, /maps\/\$\{basemap\.mapId\}\/style\.json\?key=\$\{encodeURIComponent\(apiKey\)\}/);
   assert.match(mapCanvas, /style: MAP_STYLE_URL/);
   assert.doesNotMatch(mapCanvas, /maps\/streets-v4\/style\.json/);
   assert.doesNotMatch(mapCanvas, /maps\/outdoor-v4\/style\.json/);
@@ -113,7 +115,7 @@ test("mobile coarse-pointer maps pan with one finger while desktop keeps coopera
   const mapCanvas = await source("src/components/MapCanvas.astro");
 
   assert.match(mapCanvas, /const mobileTouch = window\.matchMedia\("\(max-width: 47\.999rem\) and \(pointer: coarse\)"\)\.matches/);
-  assert.match(mapCanvas, /cooperativeGestures: !mobileTouch/);
+  assert.match(mapCanvas, /cooperativeGestures: mapCooperativeGesturesForLayout\(mapLayout, mobileTouch\)/);
   assert.match(mapCanvas, /dragPan: true/);
   assert.match(mapCanvas, /touchZoomRotate: true/);
   assert.match(mapCanvas, /map\.touchZoomRotate\.disableRotation\(\)/);
@@ -146,15 +148,18 @@ test("slow-loading copy is localized in Serbian, Russian, and English", async ()
   assert.match(mapCanvas, /slowLoading: "The map is still loading…"/);
 });
 
-test("only reliable initial-style authorization errors enter fatal fallback", async () => {
+test("initial style failures remain fatal while alternate-style failures roll back in place", async () => {
   const [mapCanvas, lifecycle] = await Promise.all([
     source("src/components/MapCanvas.astro"),
     source("src/lib/map-load-lifecycle.ts"),
   ]);
 
   assert.doesNotMatch(mapCanvas, /handleMapError|dataset\.mapError/);
-  assert.doesNotMatch(mapCanvas, /map\.(?:on|once|off)\("error"/);
   assert.match(mapCanvas, /isFatalInitialStyleError\(event, MAP_STYLE_URL\)/);
+  assert.match(mapCanvas, /const handleStyleError = \(event: InitialMapErrorEvent\)/);
+  assert.match(mapCanvas, /isFatalInitialStyleError\(event, styleUrl\)/);
+  assert.match(mapCanvas, /await loadBasemapStyle\(previousStyleUrl\)/);
+  assert.doesNotMatch(mapCanvas.match(/const switchBasemap[\s\S]*?const handleBasemapChange/)?.[0] ?? "", /showFallback\(/);
   assert.match(lifecycle, /return \(status === 401 \|\| status === 403 \|\| status === 404\) && url === styleUrl;/);
   assert.doesNotMatch(lifecycle, /tile|glyph|sprite|terrain/);
   assert.doesNotMatch(mapCanvas, /__SVETINJE_MAP_DEBUG__|sourcedata|styledata|getContext\s*\(/);
@@ -178,6 +183,7 @@ test("the map keeps server-selected marker and editorial-route inventories separ
     source("src/components/MapCanvas.astro"),
     source("src/components/MapControls.astro"),
     source("src/components/MapExplorer.astro"),
+    source("src/lib/map-editorial-routes.ts"),
   ]);
   const mapSource = files.join("\n");
 
@@ -194,7 +200,7 @@ test("the map keeps server-selected marker and editorial-route inventories separ
   assert.match(mapSource, /link\.href = `\$\{placeDetailRoot\}\$\{encodeURIComponent\(place\.slug\)\}\/`/);
   assert.match(mapSource, /link\.setAttribute\("aria-label", `\$\{place\.name\} — \$\{openPageLabel\}`\)/);
   assert.match(mapSource, /addSource\(EDITORIAL_ROUTE_SOURCE_ID/);
-  assert.match(mapSource, /data: \{ type: "FeatureCollection", features \}/);
+  assert.match(mapSource, /return \{ type: "FeatureCollection", features \}/);
   assert.match(mapSource, /clusterProjectedMarkers\(projectedRecords, MARKER_CLUSTER_RADIUS\)/);
   assert.doesNotMatch(mapSource, /clusterProjectedMarkers\([^)]*editorialRoutes/);
   assert.doesNotMatch(mapSource, /42\.29799|18\.84452|Манастир Подмаине/iu);

@@ -225,7 +225,7 @@ test("the dedicated map route reuses the shared map without homepage-only UI", a
   assert.match(mapPage, /canonicalPath=\{routeFor\(locale, "map"\)\}/);
   assert.doesNotMatch(page, /MapExplorer|ExplorerSidebar|RecommendedPlaces|PopularRoutes|PlaceAreas/);
   assert.match(dedicatedMap, /<MapCanvas places=\{places\} routes=\{routes\} layout="full" locale=\{locale\} \/>/);
-  assert.match(dedicatedMap, /<MapControls variant="map-page" locale=\{locale\} \/>/);
+  assert.match(dedicatedMap, /<MapControls[\s\S]*?variant="map-page"[\s\S]*?locale=\{locale\}[\s\S]*?mapAvailable=\{hasMapTilerKey\}[\s\S]*?routesAvailable=\{routes\.length > 0\}[\s\S]*?\/>/);
   assert.match(canvas, /data-map-layout=\{layout\}/);
   assert.match(canvas, /if \(layout === "full"\)/);
   assert.match(controls, /variant === "map-page"/);

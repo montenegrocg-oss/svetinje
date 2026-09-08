@@ -42,6 +42,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
   class="map-canvas"
   data-home-map
   data-map-layout={layout}
+  data-map-basemap="default"
   data-testid="map-canvas"
   data-map-state={hasMapTilerKey ? "loading" : "fallback"}
   data-map-load-status={hasMapTilerKey ? "pending" : undefined}
@@ -166,17 +167,31 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
 <script>
   import maplibregl from "maplibre-gl";
   import "maplibre-gl/dist/maplibre-gl.css";
-  import type { LngLatBoundsLike, Map as MapLibreMap, Marker as MapLibreMarker, PaddingOptions } from "maplibre-gl";
+  import type { LngLatBoundsLike, Map as MapLibreMap, MapMouseEvent, Marker as MapLibreMarker, PaddingOptions } from "maplibre-gl";
   import { clusterProjectedMarkers, getClusterExpansionZoom, type ProjectedMarker } from "../lib/map-marker-clustering";
-  import { createInitialMap, isFatalInitialStyleError, watchInitialMapLoad } from "../lib/map-load-lifecycle";
+  import { createInitialMap, isFatalInitialStyleError, watchInitialMapLoad, type InitialMapErrorEvent } from "../lib/map-load-lifecycle";
   import { resolveMarkerAsset } from "../lib/map-marker-assets";
   import { getMapPopupPanOffset } from "../lib/map-popup-positioning";
+  import {
+    DEFAULT_MAP_BASEMAP_ID,
+    isMapBasemapId,
+    mapBasemapStyleUrl,
+    mapCooperativeGesturesForLayout,
+    type MapBasemapId,
+  } from "../lib/map-basemaps";
+  import {
+    EDITORIAL_ROUTE_LAYER_IDS,
+    ensureEditorialRouteLayers,
+    setEditorialRouteLayersVisibility,
+    type MapEditorialRouteFeatureCollection,
+  } from "../lib/map-editorial-routes";
   import { mapLibreLocale } from "../i18n/maplibre-locale";
 
   const MAPTILER_KEY = import.meta.env.PUBLIC_MAPTILER_KEY?.trim();
   const MAP_STYLE_URL = MAPTILER_KEY
-    ? `https://api.maptiler.com/maps/019fc7d8-717c-701d-9ca5-a53d9438d3ce/style.json?key=${encodeURIComponent(MAPTILER_KEY)}`
+    ? mapBasemapStyleUrl(DEFAULT_MAP_BASEMAP_ID, MAPTILER_KEY)
     : "";
+  const MAP_STYLE_SWITCH_TIMEOUT_MS = 12_000;
   const MARKER_CLUSTER_RADIUS = 52;
   const MARKER_CLUSTER_MAX_ZOOM = 12;
   interface MarkerPlace {
@@ -215,13 +230,6 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
     difficulties: Record<EditorialRoute["difficulty"], string>;
   }
 
-  const EDITORIAL_ROUTE_SOURCE_ID = "editorial-walking-routes";
-  const EDITORIAL_ROUTE_LAYER_IDS = [
-    "editorial-walking-routes-casing",
-    "editorial-walking-routes-line",
-    "editorial-walking-routes-hit",
-  ] as const;
-
   const MONTENEGRO_BOUNDS: LngLatBoundsLike = [
     [18.42, 41.8],
     [20.36, 43.57],
@@ -256,6 +264,8 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
     const resetButton = stage?.querySelector<HTMLButtonElement>("[data-map-reset]");
     const mapSearchInput = stage?.querySelector<HTMLInputElement>("[data-map-search-input]");
     const routeToggleButtons = [...(stage?.querySelectorAll<HTMLButtonElement>("[data-route-toggle]") ?? [])];
+    const basemapControl = stage?.querySelector<HTMLDetailsElement>("[data-map-basemap-control]");
+    const basemapInputs = [...(stage?.querySelectorAll<HTMLInputElement>("[data-map-basemap-option]") ?? [])];
     const mapContainer = root.querySelector<HTMLElement>("#montenegro-map");
     const markerDataElement = root.querySelector<HTMLScriptElement>("[data-map-place-data]");
     const routeDataElement = root.querySelector<HTMLScriptElement>("[data-map-route-data]");
@@ -277,6 +287,9 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
       [zoomInButton, zoomOutButton, resetButton, ...routeToggleButtons].forEach((button) => {
         if (button) button.disabled = !enabled;
       });
+      basemapInputs.forEach((input) => { input.disabled = !enabled; });
+      basemapControl?.querySelector("summary")?.setAttribute("aria-disabled", String(!enabled));
+      if (!enabled && basemapControl) basemapControl.open = false;
       if (mapSearchInput) mapSearchInput.disabled = !enabled;
     };
 
@@ -318,7 +331,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
         center: [19.25, 42.7],
         zoom: 6,
         attributionControl: false,
-        cooperativeGestures: !mobileTouch,
+        cooperativeGestures: mapCooperativeGesturesForLayout(mapLayout, mobileTouch),
         dragPan: true,
         touchZoomRotate: true,
         dragRotate: false,
@@ -600,7 +613,9 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
     });
 
     let routesVisible = false;
-    let routeLayerPromise: Promise<void> | undefined;
+    let routeGeoJson: MapEditorialRouteFeatureCollection | undefined;
+    let routeGeoJsonPromise: Promise<MapEditorialRouteFeatureCollection> | undefined;
+    let routeLayerEventsBound = false;
     const routeBounds = new maplibregl.LngLatBounds();
 
     const appendRouteMetric = (list: HTMLDListElement, labelText: string, valueText: string) => {
@@ -645,8 +660,9 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
       return card;
     };
 
-    const ensureRouteLayers = () => {
-      routeLayerPromise ??= (async () => {
+    const loadRouteGeoJson = async () => {
+      if (routeGeoJson) return routeGeoJson;
+      routeGeoJsonPromise ??= (async () => {
         const features: GeoJSON.Feature<GeoJSON.LineString, { id: string }>[] = [];
         for (const route of editorialRoutes) {
           const response = await fetch(route.trackUrl, { credentials: "same-origin" });
@@ -658,45 +674,49 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
           track.geometry.coordinates.forEach((coordinate) => routeBounds.extend([coordinate[0]!, coordinate[1]!]));
           features.push({ ...track, properties: { id: route.id } });
         }
-        map.addSource(EDITORIAL_ROUTE_SOURCE_ID, {
-          type: "geojson",
-          data: { type: "FeatureCollection", features },
-        });
-        map.addLayer({
-          id: EDITORIAL_ROUTE_LAYER_IDS[0], type: "line", source: EDITORIAL_ROUTE_SOURCE_ID,
-          layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
-          paint: { "line-color": "#0a2944", "line-width": ["interpolate", ["linear"], ["zoom"], 7, 4.5, 13, 7], "line-opacity": 0.72 },
-        });
-        map.addLayer({
-          id: EDITORIAL_ROUTE_LAYER_IDS[1], type: "line", source: EDITORIAL_ROUTE_SOURCE_ID,
-          layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
-          paint: { "line-color": "#d0ab61", "line-width": ["interpolate", ["linear"], ["zoom"], 7, 2.4, 13, 4], "line-opacity": 0.96 },
-        });
-        map.addLayer({
-          id: EDITORIAL_ROUTE_LAYER_IDS[2], type: "line", source: EDITORIAL_ROUTE_SOURCE_ID,
-          layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
-          paint: { "line-color": "#d0ab61", "line-width": 18, "line-opacity": 0.01 },
-        });
-        map.on("mouseenter", EDITORIAL_ROUTE_LAYER_IDS[2], () => { map.getCanvas().style.cursor = "pointer"; });
-        map.on("mouseleave", EDITORIAL_ROUTE_LAYER_IDS[2], () => { map.getCanvas().style.cursor = ""; });
-        map.on("click", (event) => {
-          if (!routesVisible || !map.getLayer(EDITORIAL_ROUTE_LAYER_IDS[2])) return;
-          const hitPadding = 10;
-          const feature = map.queryRenderedFeatures([
-            [event.point.x - hitPadding, event.point.y - hitPadding],
-            [event.point.x + hitPadding, event.point.y + hitPadding],
-          ], { layers: EDITORIAL_ROUTE_LAYER_IDS.slice(0, 2) })[0];
-          const routeId = feature?.properties?.id;
-          const route = editorialRoutes.find((candidate) => candidate.id === routeId);
-          if (!route) return;
-          closePreview();
-          const popupLngLat = root.clientWidth < 768
-            ? map.unproject([map.getCanvas().clientWidth / 2, 112])
-            : event.lngLat;
-          routePopup.setLngLat(popupLngLat).setDOMContent(createRouteSummary(route)).addTo(map);
-        });
+        return { type: "FeatureCollection", features };
       })();
-      return routeLayerPromise;
+      try {
+        routeGeoJson = await routeGeoJsonPromise;
+        return routeGeoJson;
+      } catch (error) {
+        routeGeoJsonPromise = undefined;
+        throw error;
+      }
+    };
+
+    const handleRouteMouseEnter = () => { map.getCanvas().style.cursor = "pointer"; };
+    const handleRouteMouseLeave = () => { map.getCanvas().style.cursor = ""; };
+    const handleRouteMapClick = (event: MapMouseEvent) => {
+      if (!routesVisible || !map.getLayer(EDITORIAL_ROUTE_LAYER_IDS[2])) return;
+      const hitPadding = 10;
+      const feature = map.queryRenderedFeatures([
+        [event.point.x - hitPadding, event.point.y - hitPadding],
+        [event.point.x + hitPadding, event.point.y + hitPadding],
+      ], { layers: EDITORIAL_ROUTE_LAYER_IDS.slice(0, 2) })[0];
+      const routeId = feature?.properties?.id;
+      const route = editorialRoutes.find((candidate) => candidate.id === routeId);
+      if (!route) return;
+      closePreview();
+      const popupLngLat = root.clientWidth < 768
+        ? map.unproject([map.getCanvas().clientWidth / 2, 112])
+        : event.lngLat;
+      routePopup.setLngLat(popupLngLat).setDOMContent(createRouteSummary(route)).addTo(map);
+    };
+
+    const bindRouteLayerEvents = () => {
+      if (routeLayerEventsBound) return;
+      map.on("mouseenter", EDITORIAL_ROUTE_LAYER_IDS[2], handleRouteMouseEnter);
+      map.on("mouseleave", EDITORIAL_ROUTE_LAYER_IDS[2], handleRouteMouseLeave);
+      map.on("click", handleRouteMapClick);
+      routeLayerEventsBound = true;
+    };
+
+    const ensureRouteLayersForCurrentStyle = async () => {
+      const data = await loadRouteGeoJson();
+      if (removed) return;
+      ensureEditorialRouteLayers(map, data, routesVisible);
+      bindRouteLayerEvents();
     };
 
     const syncRouteToggles = () => routeToggleButtons.forEach((button) => {
@@ -711,11 +731,9 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
         button.setAttribute("aria-busy", "true");
       });
       try {
-        if (showRoutes) await ensureRouteLayers();
+        if (showRoutes) await ensureRouteLayersForCurrentStyle();
         if (removed) return;
-        EDITORIAL_ROUTE_LAYER_IDS.forEach((layerId) => {
-          if (map.getLayer(layerId)) map.setLayoutProperty(layerId, "visibility", showRoutes ? "visible" : "none");
-        });
+        setEditorialRouteLayersVisibility(map, showRoutes);
         routesVisible = showRoutes;
         if (!showRoutes) routePopup.remove();
         if (showRoutes && !routeBounds.isEmpty()) {
@@ -779,6 +797,90 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
         );
       });
     };
+
+    let activeBasemapId: MapBasemapId = DEFAULT_MAP_BASEMAP_ID;
+    let basemapRequestVersion = 0;
+
+    const syncBasemapControls = (busy: boolean) => {
+      basemapInputs.forEach((input) => {
+        input.checked = input.value === activeBasemapId;
+        input.disabled = busy;
+      });
+      basemapControl?.setAttribute("aria-busy", String(busy));
+      root.dataset.mapBasemap = activeBasemapId;
+    };
+
+    const loadBasemapStyle = (styleUrl: string) => new Promise<void>((resolve, reject) => {
+      let timeoutId: number | undefined;
+      const cleanup = () => {
+        if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+        map.off("style.load", handleStyleLoad);
+        map.off("error", handleStyleError);
+      };
+      const handleStyleLoad = () => {
+        cleanup();
+        resolve();
+      };
+      const handleStyleError = (event: InitialMapErrorEvent) => {
+        if (!isFatalInitialStyleError(event, styleUrl)) return;
+        cleanup();
+        reject(new Error("Map basemap style unavailable"));
+      };
+
+      map.once("style.load", handleStyleLoad);
+      map.on("error", handleStyleError);
+      timeoutId = window.setTimeout(() => {
+        cleanup();
+        reject(new Error("Map basemap style timed out"));
+      }, MAP_STYLE_SWITCH_TIMEOUT_MS);
+
+      try {
+        map.setStyle(styleUrl);
+      } catch (error) {
+        cleanup();
+        reject(error);
+      }
+    });
+
+    const restoreStyleOverlays = async () => {
+      if (routesVisible) await ensureRouteLayersForCurrentStyle();
+      updateMarkerClusters();
+    };
+
+    const switchBasemap = async (nextBasemapId: MapBasemapId) => {
+      if (nextBasemapId === activeBasemapId || !MAPTILER_KEY) return;
+      const requestVersion = ++basemapRequestVersion;
+      const previousBasemapId = activeBasemapId;
+      const previousStyleUrl = mapBasemapStyleUrl(previousBasemapId, MAPTILER_KEY);
+      syncBasemapControls(true);
+
+      try {
+        await loadBasemapStyle(mapBasemapStyleUrl(nextBasemapId, MAPTILER_KEY));
+        if (removed || requestVersion !== basemapRequestVersion) return;
+        await restoreStyleOverlays();
+        if (removed || requestVersion !== basemapRequestVersion) return;
+        activeBasemapId = nextBasemapId;
+      } catch {
+        if (removed || requestVersion !== basemapRequestVersion) return;
+        try {
+          await loadBasemapStyle(previousStyleUrl);
+          if (removed || requestVersion !== basemapRequestVersion) return;
+          await restoreStyleOverlays();
+        } catch {
+          // Keep the existing MapLibre instance and controls recoverable after a failed alternate style.
+        }
+        activeBasemapId = previousBasemapId;
+      } finally {
+        if (!removed && requestVersion === basemapRequestVersion) syncBasemapControls(false);
+      }
+    };
+
+    const handleBasemapChange = (event: Event) => {
+      const input = event.currentTarget;
+      if (!(input instanceof HTMLInputElement) || !isMapBasemapId(input.value)) return;
+      void switchBasemap(input.value);
+    };
+
     const fitMontenegro = (animate: boolean) => {
       map.fitBounds(MONTENEGRO_BOUNDS, {
         padding: getInitialPadding(root.clientWidth, mapLayout),
@@ -819,6 +921,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
       if (fallbackNotice) fallbackNotice.hidden = true;
       if (attribution) attribution.hidden = false;
       setControlsEnabled(true);
+      syncBasemapControls(false);
       map.resize();
       fitMontenegro(false);
       updateMarkerClusters();
@@ -877,6 +980,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
       if (removed) return;
       removed = true;
       stopWatchingInitialLoad();
+      basemapRequestVersion += 1;
       window.clearTimeout(resizeTimer);
       closePreview();
       window.removeEventListener("resize", resizeMap);
@@ -888,6 +992,12 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
       zoomOutButton?.removeEventListener("click", zoomOut);
       resetButton?.removeEventListener("click", resetView);
       routeToggleButtons.forEach((button) => button.removeEventListener("click", handleRouteToggle));
+      basemapInputs.forEach((input) => input.removeEventListener("change", handleBasemapChange));
+      if (routeLayerEventsBound) {
+        map.off("mouseenter", EDITORIAL_ROUTE_LAYER_IDS[2], handleRouteMouseEnter);
+        map.off("mouseleave", EDITORIAL_ROUTE_LAYER_IDS[2], handleRouteMouseLeave);
+        map.off("click", handleRouteMapClick);
+      }
       window.removeEventListener("svetinje:filter-change", handleFilterChange);
       window.removeEventListener("svetinje:place-visibility-change", handlePlaceVisibilityChange);
       map.off("moveend", updateMarkerClusters);
@@ -900,6 +1010,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
     zoomOutButton?.addEventListener("click", zoomOut);
     resetButton?.addEventListener("click", resetView);
     routeToggleButtons.forEach((button) => button.addEventListener("click", handleRouteToggle));
+    basemapInputs.forEach((input) => input.addEventListener("change", handleBasemapChange));
     root.addEventListener("pointerdown", markVisitorMovement, { passive: true });
     root.addEventListener("wheel", markVisitorMovement, { passive: true });
     window.addEventListener("resize", resizeMap, { passive: true });

@@ -151,7 +151,9 @@ test("the map page renders localized compact context and dedicated accessible se
   assert.match(dedicatedMap, /role="status" aria-live="polite" data-map-visible-count/);
   assert.doesNotMatch(explorer, /data-map-search-input|data-dedicated-map-search/);
   assert.match(controls, /variant === "homepage" && <details class="map-popover map-layers">/);
-  assert.match(controls, /publicCopy\[locale\]\.pages\.map\.help/);
+  assert.match(controls, /variant === "map-page" && mapAvailable && <details[^>]*data-map-basemap-control/);
+  assert.match(controls, /variant === "homepage" && <details class="map-popover map-help">/);
+  assert.doesNotMatch(controls, /map-help--page/);
   assert.match(canvas, /stage\?\.querySelector<HTMLElement>\("\[data-map-search-panel\]"\)/);
 });
 

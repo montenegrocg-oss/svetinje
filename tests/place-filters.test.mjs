@@ -233,7 +233,7 @@ test("the explorer keeps one shared filter and pagination state across cards, co
   assert.match(controls, /data-filter="monasteries" aria-pressed="false"/);
   assert.match(controls, /data-filter="churches" aria-pressed="false"/);
   assert.doesNotMatch(controls, /data-filter="holy-places"|Света мјеста/);
-  assert.match(controls, /variant === "map-page" && <button[^>]*data-route-toggle aria-pressed="false"/);
+  assert.match(controls, /variant === "map-page" && routesAvailable && <button[^>]*data-route-toggle aria-pressed="false"/);
   assert.doesNotMatch(controls, /data-filter="routes"/);
   assert.match(explorer, /const filterIds = new Set\(\["all", "monasteries", "churches"\]\)/);
   assert.match(explorer, /const handlePopState = \(\) => \{[\s\S]*?activeAreaId = getPlaceArea\(new URL\(window\.location\.href\)\.searchParams\.get\("area"\)\)\?\.id \?\? null;[\s\S]*?applyExplorerState\(true\)/);

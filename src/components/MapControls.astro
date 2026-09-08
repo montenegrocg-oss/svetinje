@@ -1,23 +1,31 @@
 ---
 import InterfaceIcon from "./InterfaceIcon.astro";
 import { publicCopy } from "../i18n/public-copy";
+import { DEFAULT_MAP_BASEMAP_ID, MAP_BASEMAPS } from "../lib/map-basemaps";
 
 interface Props {
   variant?: "homepage" | "map-page";
   locale?: import("../i18n/config").Locale;
+  mapAvailable?: boolean;
+  routesAvailable?: boolean;
 }
 
-const { variant = "homepage", locale = "sr" } = Astro.props;
+const {
+  variant = "homepage",
+  locale = "sr",
+  mapAvailable = true,
+  routesAvailable = false,
+} = Astro.props;
 const copy = publicCopy[locale].homepage;
 const c = copy.mapControls;
-const help = variant === "map-page" ? publicCopy[locale].pages.map.help : { title: c.helpTitle, body: c.helpBody };
+const help = { title: c.helpTitle, body: c.helpBody };
 ---
 
 <div class:list={["map-actions", { "map-actions--map-page": variant === "map-page" }]} aria-label={c.quickAria} data-filter-group="map">
   <button type="button" class="map-action" data-filter="all" aria-pressed="true"><InterfaceIcon name="grid" size={18} /><span>{copy.filters.all}</span></button>
   <button type="button" class="map-action" data-filter="monasteries" aria-pressed="false"><InterfaceIcon name="monastery" size={18} /><span>{copy.filters.monasteries}</span></button>
   <button type="button" class="map-action" data-filter="churches" aria-pressed="false"><InterfaceIcon name="church" size={18} /><span>{copy.filters.churches}</span></button>
-  {variant === "map-page" && <button type="button" class="map-action map-action--wide" data-route-toggle aria-pressed="false" disabled><InterfaceIcon name="route" size={18} /><span>{copy.filters.routes}</span></button>}
+  {variant === "map-page" && routesAvailable && <button type="button" class="map-action map-action--wide" data-route-toggle aria-pressed="false" disabled><InterfaceIcon name="route" size={18} /><span>{copy.filters.routes}</span></button>}
 </div>
 
 <div class:list={["map-tool-stack", { "map-tool-stack--page": variant === "map-page" }]} aria-label={c.controls}>
@@ -27,6 +35,25 @@ const help = variant === "map-page" ? publicCopy[locale].pages.map.help : { titl
       <strong>{c.layersTitle}</strong><p>{c.layersBody}</p>
     </div>
   </details>}
+  {variant === "map-page" && mapAvailable && <details class="map-popover map-layers map-layers--switcher" data-map-basemap-control aria-busy="false">
+    <summary><InterfaceIcon name="layers" size={21} /><span>{c.layers}</span></summary>
+    <fieldset class="map-popover__panel map-basemap-options" aria-label={c.layers}>
+      <legend class="sr-only">{c.layers}</legend>
+      {MAP_BASEMAPS.map((basemap) => (
+        <label class="map-basemap-option">
+          <input
+            type="radio"
+            name={`map-basemap-${locale}`}
+            value={basemap.id}
+            data-map-basemap-option
+            checked={basemap.id === DEFAULT_MAP_BASEMAP_ID}
+            disabled
+          />
+          <span>{c.basemaps[basemap.labelKey]}</span>
+        </label>
+      ))}
+    </fieldset>
+  </details>}
   <div class="map-zoom" aria-label={c.zoom}>
     <button type="button" data-map-zoom-in disabled aria-label={c.zoomIn}><InterfaceIcon name="plus" size={21} /></button>
     <button type="button" data-map-zoom-out disabled aria-label={c.zoomOut}><InterfaceIcon name="minus" size={21} /></button>
@@ -34,9 +61,9 @@ const help = variant === "map-page" ? publicCopy[locale].pages.map.help : { titl
   <button class="map-target" type="button" data-map-reset disabled aria-label={c.reset}><InterfaceIcon name="target" size={21} /></button>
 </div>
 
-<details class:list={["map-popover", "map-help", { "map-help--page": variant === "map-page" }]}>
+{variant === "homepage" && <details class="map-popover map-help">
   <summary><InterfaceIcon name="info" size={18} /><span>{c.help}</span></summary>
   <div class="map-popover__panel">
     <strong>{help.title}</strong><p>{help.body}</p>
   </div>
-</details>
+</details>}

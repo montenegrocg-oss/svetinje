@@ -562,7 +562,7 @@ test("preview UI is allowlist-driven, noindex, and free of prohibited data", asy
   assert.doesNotMatch(productionWorkflow, /EDITORIAL_PREVIEW/);
   assert.doesNotMatch(combined, /rating|оцјена|радно вријеме|телефон|033\/|@gmail\.com/i);
   assert.doesNotMatch(detailSources, /180\s*m|08:00|16:00|18:00|Дјелимично активан|XVI вијек|Манастир Прасквица|Црква Св\. Тројице|Манастир Стањевићи|Манастир Дуљево/i);
-  assert.match(mapCanvas, /data-map-route-data[\s\S]*?addSource\(EDITORIAL_ROUTE_SOURCE_ID/);
+  assert.match(mapCanvas, /data-map-route-data[\s\S]*?ensureEditorialRouteLayers\(map, data, routesVisible\)/);
   assert.doesNotMatch([explorer, card, detailSources].join("\n"), /FeatureCollection|LineString|routeCoordinates|addSource\s*\(|addLayer\s*\(/);
   assert.doesNotMatch(miniMap, /FeatureCollection|LineString|routeCoordinates|addSource\s*\(|addLayer\s*\(/);
 });

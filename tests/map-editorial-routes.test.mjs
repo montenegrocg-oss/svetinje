@@ -61,7 +61,8 @@ test("walking-route copy and map behavior are localized and limited to the dedic
   assert.equal(publicCopy.ru.homepage.filters.routes, "Пешеходные маршруты");
   assert.equal(publicCopy.en.homepage.filters.routes, "Walking routes");
   assert.doesNotMatch(controls, /Поклоничке руте|data-filter="routes"/);
-  assert.match(controls, /variant === "map-page" && <button[^>]*data-route-toggle/);
+  assert.match(controls, /variant === "map-page" && routesAvailable && <button[^>]*data-route-toggle/);
+  assert.match(dedicatedMap, /routesAvailable=\{routes\.length > 0\}/);
   assert.doesNotMatch(controls, /Изгради руту|data-notice-trigger|route-notice/);
   assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} locale=\{locale\} \/>/);
   assert.doesNotMatch(explorer, /<MapCanvas[^>]*routes=/);
@@ -75,9 +76,9 @@ test("walking-route copy and map behavior are localized and limited to the dedic
       && controls.indexOf('data-filter="churches"') < controls.indexOf("data-route-toggle"),
     "the dedicated map controls must keep the requested surface order",
   );
-  assert.match(canvas, /EDITORIAL_ROUTE_SOURCE_ID = "editorial-walking-routes"/);
+  assert.match(canvas, /ensureRouteLayersForCurrentStyle/);
   assert.match(canvas, /fetch\(route\.trackUrl, \{ credentials: "same-origin" \}\)/);
-  assert.match(canvas, /visibility", showRoutes \? "visible" : "none"/);
+  assert.match(canvas, /setEditorialRouteLayersVisibility\(map, showRoutes\)/);
   assert.match(canvas, /map\.queryRenderedFeatures\(\[/);
   assert.match(canvas, /root\.clientWidth < 768[\s\S]*map\.unproject\(\[map\.getCanvas\(\)\.clientWidth \/ 2, 112\]\)/);
   assert.match(canvas, /routePopup\.setLngLat\(popupLngLat\)\.setDOMContent\(createRouteSummary\(route\)\)/);
