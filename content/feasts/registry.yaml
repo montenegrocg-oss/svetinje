@@ -158,3 +158,11 @@ feasts:
       kind: fixed
       month: 7
       day: 12
+  - id: ivanjdan-rodjenje-svetog-jovana-krstitelja
+    name_sr: Ивањдан - Рођење Светог Јована Крститеља
+    legacy_names:
+      - Ивањдан - Рођење Светог Јована Крститеља 7. јул
+    date:
+      kind: fixed
+      month: 7
+      day: 7
