@@ -38,13 +38,14 @@ relationships:
     - photo-manastir-praskvica-6db91cce09e4
     - photo-manastir-praskvica-47b437bfbf79
     - photo-manastir-praskvica-d25a25757eb4
+    - photo-manastir-praskvica-31ab95770c18
 source_ids:
   - mitropolija-muski-manastiri
 approvals: []
 audit:
   created_at: 2026-08-07T12:00:00Z
   created_by: codex
-  updated_at: 2026-09-09T18:50:57Z
+  updated_at: 2026-09-09T18:51:44Z
   updated_by: montenegro-cg
 ecclesiastical:
   authority_id:

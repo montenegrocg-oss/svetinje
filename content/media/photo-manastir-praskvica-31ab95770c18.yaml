@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-manastir-praskvica-31ab95770c18
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/manastir-praskvica/photo-manastir-praskvica-31ab95770c18.jpg
+checksum_sha256: 0ae7dac54e43726d4960810e60578f138f7db18e1e462f4971ce7e55de6c67f3
+mime_type: image/jpeg
+width: 2400
+height: 1600
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - manastir-praskvica
+localized_text:
+  sr:
+    alt_text: Манастир Прасквица
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-09-09T18:51:44Z
+    reviewed_revision: 5f75b163485c27646a993458043287e09910e4b3
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-09-09T18:51:44Z
+  created_by: montenegro-cg
+  updated_at: 2026-09-09T18:51:44Z
+  updated_by: montenegro-cg
