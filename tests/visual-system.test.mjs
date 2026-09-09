@@ -146,7 +146,7 @@ test("the homepage is composed from reusable map-explorer components", async () 
   ]);
   assert.match(explorer, /<MapCanvas places=\{discoveryPlaces\} locale=\{locale\} \/>/);
   assert.doesNotMatch(explorer, /<MapCanvas[^>]*routes=/);
-  assert.match(explorer, /<MapControls locale=\{locale\} \/>/);
+  assert.match(explorer, /<MapControls locale=\{locale\} mapAvailable=\{hasMapTilerKey\} \/>/);
   assert.match(explorer, /const discoveryPlaces = selectPublicDiscoveryPlaces\(places\)/);
   assert.match(explorer, /const orderedDiscoveryPlaces = orderHomepageDiscoveryPlaces\(discoveryPlaces\)/);
   assert.match(explorer, /const initialPlaces = orderedDiscoveryPlaces\.slice\(0, HOMEPAGE_PREVIEW_LIMIT\)/);
@@ -408,7 +408,7 @@ test("map controls, search, and filters expose accessible states and honest feed
   assert.match(copy, /reset: "Прикажи поново Црну Гору"/);
   assert.match(controls, /aria-label=\{c\.reset\}/);
   assert.match(explorer, /querySelectorAll<HTMLButtonElement>\("button\[data-filter\]"\)/);
-  assert.match(controls, /variant === "homepage" && <details class="map-popover map-layers">/);
+  assert.match(controls, /mapAvailable && <details[^>]*data-map-basemap-control/);
   assert.ok(
     controls.indexOf("data-map-zoom-in") < controls.indexOf("data-map-zoom-out")
       && controls.indexOf("data-map-zoom-out") < controls.indexOf("data-map-reset"),
@@ -433,7 +433,6 @@ test("the required Serbian interface labels are present", async () => {
     "Цркве",
     "Пјешачке руте",
     "Слојеви",
-    "Како користити карту?",
     "Популарне руте",
     "Најпосјећеније светиње",
     "Прикажи све",

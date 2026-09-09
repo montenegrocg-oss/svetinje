@@ -18,7 +18,6 @@ const {
 } = Astro.props;
 const copy = publicCopy[locale].homepage;
 const c = copy.mapControls;
-const help = { title: c.helpTitle, body: c.helpBody };
 ---
 
 <div class:list={["map-actions", { "map-actions--map-page": variant === "map-page" }]} aria-label={c.quickAria} data-filter-group="map">
@@ -29,13 +28,7 @@ const help = { title: c.helpTitle, body: c.helpBody };
 </div>
 
 <div class:list={["map-tool-stack", { "map-tool-stack--page": variant === "map-page" }]} aria-label={c.controls}>
-  {variant === "homepage" && <details class="map-popover map-layers">
-    <summary><InterfaceIcon name="layers" size={21} /><span>{c.layers}</span></summary>
-    <div class="map-popover__panel">
-      <strong>{c.layersTitle}</strong><p>{c.layersBody}</p>
-    </div>
-  </details>}
-  {variant === "map-page" && mapAvailable && <details class="map-popover map-layers map-layers--switcher" data-map-basemap-control aria-busy="false">
+  {mapAvailable && <details class="map-popover map-layers map-layers--switcher" data-map-basemap-control aria-busy="false">
     <summary><InterfaceIcon name="layers" size={21} /><span>{c.layers}</span></summary>
     <fieldset class="map-popover__panel map-basemap-options" aria-label={c.layers}>
       <legend class="sr-only">{c.layers}</legend>
@@ -60,10 +53,3 @@ const help = { title: c.helpTitle, body: c.helpBody };
   </div>
   <button class="map-target" type="button" data-map-reset disabled aria-label={c.reset}><InterfaceIcon name="target" size={21} /></button>
 </div>
-
-{variant === "homepage" && <details class="map-popover map-help">
-  <summary><InterfaceIcon name="info" size={18} /><span>{c.help}</span></summary>
-  <div class="map-popover__panel">
-    <strong>{help.title}</strong><p>{help.body}</p>
-  </div>
-</details>}

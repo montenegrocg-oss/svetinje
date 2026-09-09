@@ -21,6 +21,6 @@ export const mapBasemapStyleUrl = (id: MapBasemapId, apiKey: string): string => 
 };
 
 export const mapCooperativeGesturesForLayout = (
-  layout: MapLayout,
-  mobileTouch: boolean,
-): boolean => layout === "homepage" && !mobileTouch;
+  _layout: MapLayout,
+  _mobileTouch: boolean,
+): boolean => false;

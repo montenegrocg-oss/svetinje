@@ -20,9 +20,9 @@ import {
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "..");
 const source = (file) => readFile(path.join(PROJECT_ROOT, file), "utf8");
 
-test("dedicated maps use ordinary wheel zoom while homepage cooperation and mobile touch stay unchanged", async () => {
+test("homepage and dedicated maps use ordinary wheel zoom while mobile touch stays unchanged", async () => {
   assert.equal(mapCooperativeGesturesForLayout("full", false), false);
-  assert.equal(mapCooperativeGesturesForLayout("homepage", false), true);
+  assert.equal(mapCooperativeGesturesForLayout("homepage", false), false);
   assert.equal(mapCooperativeGesturesForLayout("full", true), false);
   assert.equal(mapCooperativeGesturesForLayout("homepage", true), false);
 
@@ -53,20 +53,23 @@ test("the MapTiler basemap registry is exact, ordered, unique, and key-safe", ()
   assert.doesNotMatch(JSON.stringify(MAP_BASEMAPS), /key=/i);
 });
 
-test("the dedicated layer control is localized, accessible, and absent from fallback promises", async () => {
+test("the shared layer control is localized, accessible, and removed with unavailable maps", async () => {
   const [controls, dedicatedMap, styles] = await Promise.all([
     source("src/components/MapControls.astro"),
     source("src/components/DedicatedMap.astro"),
     source("src/styles/global.css"),
   ]);
 
-  assert.match(controls, /variant === "map-page" && mapAvailable && <details[^>]*data-map-basemap-control aria-busy="false"/);
+  assert.match(controls, /mapAvailable && <details[^>]*data-map-basemap-control aria-busy="false"/);
   assert.match(controls, /type="radio"[\s\S]*data-map-basemap-option[\s\S]*checked=\{basemap\.id === DEFAULT_MAP_BASEMAP_ID\}/);
   assert.match(controls, /<fieldset[^>]*aria-label=\{c\.layers\}>/);
-  assert.match(controls, /variant === "homepage" && <details class="map-popover map-help">/);
-  assert.doesNotMatch(controls, /map-help--page/);
+  assert.doesNotMatch(controls, /map-help/);
+  assert.doesNotMatch(controls, /helpTitle|helpBody/);
   assert.match(dedicatedMap, /mapAvailable=\{hasMapTilerKey\}/);
   assert.match(dedicatedMap, /routesAvailable=\{routes\.length > 0\}/);
+  const explorer = await source("src/components/MapExplorer.astro");
+  assert.match(explorer, /const hasMapTilerKey = Boolean\(import\.meta\.env\.PUBLIC_MAPTILER_KEY\?\.trim\(\)\)/);
+  assert.match(explorer, /<MapControls locale=\{locale\} mapAvailable=\{hasMapTilerKey\} \/>/);
   assert.match(controls, /variant === "map-page" && routesAvailable && <button[^>]*data-route-toggle/);
   assert.match(styles, /\.map-basemap-option span\s*\{[\s\S]*?min-height: 2\.75rem/);
   assert.match(styles, /\.map-basemap-option input:focus-visible \+ span/);

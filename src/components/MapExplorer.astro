@@ -21,6 +21,7 @@ interface Props {
 }
 
 const { places, calendarDays, locale = "sr" } = Astro.props;
+const hasMapTilerKey = Boolean(import.meta.env.PUBLIC_MAPTILER_KEY?.trim());
 const copy = publicCopy[locale].homepage;
 const discoveryPlaces = selectPublicDiscoveryPlaces(places);
 const orderedDiscoveryPlaces = orderHomepageDiscoveryPlaces(discoveryPlaces);
@@ -49,7 +50,7 @@ const explorerRuntimeCopy = JSON.stringify({
 
   <div class="map-stage">
     <MapCanvas places={discoveryPlaces} locale={locale} />
-    <MapControls locale={locale} />
+    <MapControls locale={locale} mapAvailable={hasMapTilerKey} />
   </div>
 
   <div class="map-explorer__content">
