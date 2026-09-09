@@ -5,12 +5,20 @@ place_type:
   value: church
   verification:
     status: requires-verification
-relationships: {}
+relationships:
+  media_ids:
+    - photo-crkva-svetog-tome-1ff3c16c8dd1
+    - photo-crkva-svetog-tome-295d71ccb4d7
+    - photo-crkva-svetog-tome-a0eb018f7c5b
+    - photo-crkva-svetog-tome-c5cecb5034d2
+    - photo-crkva-svetog-tome-35ce87d54b5e
+    - photo-crkva-svetog-tome-3dc838159305
+    - photo-crkva-svetog-tome-760b940fbaa8
 approvals: []
 audit:
   created_at: 2026-08-18T10:58:28.728Z
   created_by: montenegro-cg
-  updated_at: 2026-08-26T21:24:32Z
+  updated_at: 2026-09-09T17:29:50Z
   updated_by: montenegro-cg
 browse_area_id: budva-pastrovici
 ecclesiastical:

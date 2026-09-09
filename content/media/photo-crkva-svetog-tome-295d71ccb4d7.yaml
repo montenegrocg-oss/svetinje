@@ -1,0 +1,40 @@
+schema_version: 1
+id: photo-crkva-svetog-tome-295d71ccb4d7
+editorial_status: approved
+media_type: image
+storage_provider: cloudflare-r2
+object_key: places/crkva-svetog-tome/photo-crkva-svetog-tome-295d71ccb4d7.jpg
+checksum_sha256: 9ddc55d873a6bacf93d3312fae8d5202faa2857bcdd1f8e889988da566d437e0
+mime_type: image/jpeg
+width: 2400
+height: 1600
+creator: montenegro-cg
+copyright_owner: montenegro-cg
+rights_basis: project-original
+credit_line: "Фото: montenegro-cg"
+allowed_uses:
+  - web-display
+  - responsive-derivative
+  - editorial-crop
+  - social-preview
+  - archival
+publication_safety: public
+related_place_ids:
+  - crkva-svetog-tome
+localized_text:
+  sr:
+    alt_text: Црква Светог апостола Томе
+    translation_status: source
+    approvals: []
+approvals:
+  - role: project-owner
+    reviewer_id: montenegro-cg
+    outcome: approved
+    reviewed_at: 2026-09-09T17:29:50Z
+    reviewed_revision: 3169181b82a000e9bb67d35f03d97d9c4cc32208
+    scope: Ауторска фотографија отпремљена кроз приватну администрацију.
+audit:
+  created_at: 2026-09-09T17:29:50Z
+  created_by: montenegro-cg
+  updated_at: 2026-09-09T17:29:50Z
+  updated_by: montenegro-cg
