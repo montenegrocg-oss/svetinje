@@ -15,12 +15,25 @@ location:
     value: budva
     verification:
       status: requires-verification
+  settlement:
+    value: Близикући
+    verification:
+      status: requires-verification
+  coordinates:
+    latitude: 42.24455098798071
+    longitude: 18.902466787867134
+    accuracy: complex-centroid
+    publication_safety: public
+    crs: EPSG:4326
+    verification:
+      status: requires-verification
 relationships: {}
 approvals: []
 audit:
   created_at: 2026-09-09T19:49:19.634Z
   created_by: montenegro-cg
-  updated_at: 2026-09-09T19:49:19.634Z
+  updated_at: 2026-09-09T19:51:15Z
   updated_by: montenegro-cg
 patronal_feast_ids:
   - ivanjdan-rodjenje-svetog-jovana-krstitelja
+browse_area_id: budva-pastrovici
