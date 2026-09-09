@@ -88,7 +88,7 @@ test("style switching preserves app state and uses one MapLibre and marker lifec
   const switchBlock = canvas.match(/const switchBasemap = async[\s\S]*?\n    const handleBasemapChange/)?.[0] ?? "";
 
   assert.match(switchBlock, /mapBasemapStyleUrl\(nextBasemapId, MAPTILER_KEY\)/);
-  assert.match(canvas, /map\.setStyle\(styleUrl\)/);
+  assert.match(canvas, /map\.setStyle\(styleUrl, \{ diff: false \}\)/);
   assert.match(switchBlock, /requestVersion !== basemapRequestVersion/);
   assert.match(switchBlock, /await loadBasemapStyle\(previousStyleUrl\)/);
   assert.match(switchBlock, /await restoreStyleOverlays\(\)/);

@@ -835,7 +835,7 @@ const routeCopyPayload = JSON.stringify(publicCopy[locale].homepage.mapControls.
       }, MAP_STYLE_SWITCH_TIMEOUT_MS);
 
       try {
-        map.setStyle(styleUrl);
+        map.setStyle(styleUrl, { diff: false });
       } catch (error) {
         cleanup();
         reject(error);
